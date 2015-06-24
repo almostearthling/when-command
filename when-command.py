@@ -52,7 +52,6 @@ import signal
 import subprocess
 import threading
 import configparser
-import argparse
 import pickle
 import logging
 import logging.config
@@ -62,7 +61,6 @@ import shutil
 from concurrent.futures import ThreadPoolExecutor
 
 from collections import OrderedDict, deque, namedtuple
-import re
 
 
 #############################################################################
