@@ -205,8 +205,6 @@ resources.LISTCOL_HISTORY_ROWID = "Row ID"
 
 
 # utility to create a desktop file
-
-
 def create_desktop_file(overwrite=False):
     desktop_file_content = """\
 #!/usr/bin/env xdg-open

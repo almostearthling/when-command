@@ -10,6 +10,8 @@
     <property name="version">Version 0.1.0 Alpha</property>
     <property name="copyright" translatable="yes">Copyright (c) 2015 Francesco Garosi</property>
     <property name="comments" translatable="yes">When is a configurable user scheduler designed to work in an X/Gnome session.</property>
+    <property name="website">https://github.com/almostearthling/when-command</property>
+    <property name="website_label" translatable="yes">Fork me on GitHub!</property>
     <property name="logo">alarmclock-128.png</property>
     <property name="logo_icon_name"/>
     <property name="license_type">bsd</property>

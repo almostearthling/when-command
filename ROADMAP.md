@@ -34,7 +34,7 @@ List of achievements and expectations for the When applet.
 * Suspend condition :ok:
 * Notifications (when activated) :ok:
 * Icon change on task failure (when notifications are active) :ok:
-* *System-wide* vs *Local* vs *User* installation (*to be tested test*) :ok:
+* *System-wide* vs *Local* vs *User* installation (*to be tested*) :ok:
   - *System-wide* based on `/usr` :ok:
   - *Local* based on `/usr/local` :ok:
   - *Local* based on `/opt` :ok:
