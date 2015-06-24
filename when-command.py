@@ -34,8 +34,8 @@
 # * function names are all lowercase with underscores
 # * transitional (or debug) functions start with underscores
 # * the core classes implement their own loggers, borrowing from global
-# * user interaction strings (as log messages) use double quotes (TODO: verify)
-# * program internal strings use single quotes (TODO: verify)
+# * user interaction strings (as log messages) use double quotes
+# * program internal strings use single quotes
 # * log messages mostly sport a prefix to determine what part generated them
 # * log messages containing the NTBS strings are *never to be seen*
 # * commented functions are due to be removed soon
@@ -342,8 +342,8 @@ class Config(object):
             show icon = true
             autostart = true
             notifications = true
-            icon theme = color
-            log level = debug
+            icon theme = guess
+            log level = warning
 
             [Concurrency]
             max threads = 5
@@ -1207,7 +1207,6 @@ class IntervalBasedCondition(Condition):
         Condition.__init__(self, name, repeat, exec_sequence)
 
 
-# TODO: Implement TimeBasedCondition first
 class TimeBasedCondition(Condition):
 
     def _check_condition(self):
