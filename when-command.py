@@ -742,6 +742,7 @@ class Task(object):
         self._process_status = 0
         self._process_failed = False
         self._name = name
+        self._running = False
         if name is None:
             self._info("empty task created")
         else:
@@ -825,6 +826,11 @@ class Task(object):
 
     # run a task in a subprocess possibly specifying trigger condition name
     def run(self, trigger_name=None):
+        if self._running:
+            raise RuntimeError("overlapping tasks")
+        applet_lock.acquire()
+        self._running = True
+        applet_lock.release()
         self._process_failed = False
         if self._name is None:
             self._process_failed = True
@@ -962,6 +968,9 @@ class Task(object):
                                 self._warning("task failed (stderr check, case insensitive)")
                                 self._process_failed = True
                                 failure_reason = 'stderr'
+        except RuntimeError as e:
+            self._warning("task failed, runtime error: %s" % e)
+            failure_reason = 'overlap'
         except OSError as e:
             self._warning("task failed, system error: %s" % e)
             self._process_failed = True
@@ -979,7 +988,7 @@ class Task(object):
             self._process_failed = True
             failure_reason = 'generic'
         finally:
-            success = not self._process_failed
+            success = self._running and not self._process_failed
             history.append(self._name, startup_time, success, trigger_name,
                            self._process_status, self._process_stdout,
                            self._process_stderr, failure_reason)
@@ -988,6 +997,10 @@ class Task(object):
                 applet.notify(resources.NOTIFY_TASK_FAILED % self._name)
             else:
                 self._info("task successfully finished")
+            if self._running:
+                applet_lock.acquire()
+                self._running = False
+                applet_lock.release()
             return success
 
 
