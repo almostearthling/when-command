@@ -2156,6 +2156,9 @@ class HistoryDialog(object):
         for row in rows:
             m.append(row)
 
+    def click_btnReload(self, _):
+        self.update_list()
+
     def run(self):
         self.update_list()
         ret = self.dialog.run()
