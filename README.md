@@ -40,6 +40,8 @@ The selected task (if any) can be deleted clicking the *Delete* button in the di
 
 to determine whether the process succeeded or failed. When choosing to check for  *Success*, the operation is considered successful *if and only if* the process result (exit code, output, or error) corresponds to the user provided value. Same yields for *Failure*: if *Failure* is chosen, only the provided result will indicate a failure. For example, in the most common case the user will choose to expect *Success* to correspond to an *Exit Code* of `0` (in fact the default choice), all other exit codes will indicate a failure. And if the user chooses to expect *Failure* to be reported as the word `Error` in the error messages, whatever other error messages will be ignored and the operation will turn out successful.
 
+**A note about the exit code:** Since all commands are executed in the default shell, expect an exit code different from `0` when the command is not found. On Ubuntu, with the `/bin/sh` shell, the `not found` code is `127`.
+
 
 ### Conditions
 
@@ -47,7 +49,7 @@ There are several types of condition available:
 
 1. **Interval based**: After a certain time interval the associated tasks are executed, if the condition is set to repeat checks, the tasks will be executed again regularly after the same time interval.
 2. **Time based**: The tasks are executed when the time specification is matched.
-3. **Command based**: When the execution of a specified command gives the expected result (in terms of **exit code**, **stdout** or **stderr**), the tasks are executed.
+3. **Command based**: When the execution of a specified command gives the expected result (in terms of **exit code**, **stdout** or **stderr**), the tasks are executed. The way the test command is specified is similar (although simpler) to the specification of a command in the *Task* definition dialog box. The command is run in the same environment (and startup directory) as **When** at the moment it was started.
 4. **Idle time based**: When the session has been idle for the specified amount of time the tasks are executed. This actually is implemented as a shortcut to the command based condition based upon the `xprintidle` command, which must be installed for the applet to work properly.
 5. **System event based**: The tasks are executed when a certain system event occurs. Currently only *startup* and *shutdown* are the implemented system events.
 
@@ -177,7 +179,7 @@ The program is designed to run mainly on Ubuntu, so the chosen framework is *Pyt
 
 The top panel icons and the emblems used in the application were selected within Google's [Material Design](https://materialdesignicons.com/) icon collection.
 
-Application icon by Rafi at [GraphicsFuel](http://www.graphicsfuel.com/).
+Application [icon](http://www.graphicsfuel.com/2012/08/alarm-clock-icon-psd/) by Rafi at [GraphicsFuel](http://www.graphicsfuel.com/).
 
 The guidelines specified in [UnityLaunchersAndDesktopFiles](https://help.ubuntu.com/community/UnityLaunchersAndDesktopFiles) have been roughly followed to create the launcher from within the application.
 
