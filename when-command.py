@@ -853,16 +853,16 @@ class Task(object):
         try:
             failure_reason = None
             startup_dir = self._startup_dir if self._startup_dir else '.'
+            self._debug("spawning subprocess: %s" % self._command)
             with subprocess.Popen(self._command,
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.PIPE,
                                   shell=True,
                                   cwd=startup_dir,
                                   env=env) as proc:
-                self._debug("spawning subprocess: %s" % self._command)
-                proc.wait()
-                self._process_stdout = proc.stdout.read().decode().strip()
-                self._process_stderr = proc.stderr.read().decode().strip()
+                stdout, stderr = proc.communicate()
+                self._process_stdout = stdout.decode().strip()
+                self._process_stderr = stderr.decode().strip()
                 self._process_status = proc.returncode
                 if self._success_status is not None:
                     if self._process_status != self._success_status:
@@ -1267,12 +1267,12 @@ class CommandBasedCondition(Condition):
     def _check_condition(self):
         self._debug("checking command based condition")
         try:
+            self._debug("spawning test subprocess: %s" % self._command)
             with subprocess.Popen(self._command,
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.PIPE,
                                   shell=True) as proc:
-                self._debug("spawning test subprocess: %s" % self._command)
-                proc.wait()
+                stdout, stderr = proc.communicate()
                 if self._expected_status is not None:
                     self._info("checking condition command exit status")
                     self._debug("test: %s == %s" % (proc.returncode, self._expected_status))
@@ -1281,7 +1281,7 @@ class CommandBasedCondition(Condition):
                 elif self._expected_stdout:
                     self._info("checking condition command output")
                     expected = self._expected_stdout
-                    returned = proc.stdout.read().decode().strip()
+                    returned = stdout.decode().strip()
                     if self._case_sensitive:
                         expected = expected.upper()
                         returned = returned.upper()
@@ -1296,7 +1296,7 @@ class CommandBasedCondition(Condition):
                 elif self._expected_stderr:
                     self._info("checking condition command error output")
                     expected = self._expected_stderr
-                    returned = proc.stderr.read().decode().strip()
+                    returned = stderr.decode().strip()
                     if self._case_sensitive:
                         expected = expected.upper()
                         returned = returned.upper()
