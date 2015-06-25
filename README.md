@@ -48,7 +48,7 @@ There are several types of condition available:
 1. **Interval based**: After a certain time interval the associated tasks are executed, if the condition is set to repeat checks, the tasks will be executed again regularly after the same time interval.
 2. **Time based**: The tasks are executed when the time specification is matched.
 3. **Command based**: When the execution of a specified command gives the expected result (in terms of **exit code**, **stdout** or **stderr**), the tasks are executed.
-4. **Idle time based**: When the session has been idle for the specified amount of time the tasks are executed. This actually is implemented as a shortcut to the command based condition based upon the *xprintidle* command, which must be installed for the applet to work properly.
+4. **Idle time based**: When the session has been idle for the specified amount of time the tasks are executed. This actually is implemented as a shortcut to the command based condition based upon the `xprintidle` command, which must be installed for the applet to work properly.
 5. **System event based**: The tasks are executed when a certain system event occurs. Currently only *startup* and *shutdown* are the implemented system events.
 
 Also, the condition configuration interface allows to decide:
@@ -70,6 +70,7 @@ Since logs aren't always easy to deal with, **When** provides an easier interfac
 * The *unique name* of the condition that triggered the task
 * The process *exit code* (as captured by the shell)
 * The result (green :heavy_check_mark: for success, red :x: for failure)
+* A short hint on the failure *reason* (only in case of failure, obviously)
 
 and when the user clicks a line in the table, the tabbed box below will possibly show the output (*stdout*) and errors (*stderr*) reported by the underlying process.
 
@@ -125,7 +126,7 @@ Manual configuration is particularly useful to bring back the program icon once 
 
 ### Installation requirements and Directory structure
 
-For the applet to function and before unpacking it to the destination directory, make sure that *Python 3.x*,  *PyGObject* for *Python 3.x* and the *xprintidle* utility are installed. For example, not all of these are installed by default on Ubuntu: in this case use the following commands.
+For the applet to function and before unpacking it to the destination directory, make sure that *Python 3.x*,  *PyGObject* for *Python 3.x* and the `xprintidle` utility are installed. For example, not all of these are installed by default on Ubuntu: in this case use the following commands.
 
 ```
 ~$ sudo apt-get install python3-gi
