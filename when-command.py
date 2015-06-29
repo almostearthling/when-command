@@ -89,9 +89,9 @@ USER_DATA_FOLDER = os.path.join(USER_FOLDER, '.local', 'share', APPLET_NAME)
 USER_LAUNCHER_FOLDER = os.path.join(USER_FOLDER, '.local', 'share', 'applications')
 USER_CONFIG_FOLDER = os.path.join(USER_FOLDER, '.config', APPLET_NAME)
 USER_LOG_FOLDER = os.path.join(USER_DATA_FOLDER, 'log')
-USER_TEMP_FOLDER = os.path.join(USER_FOLDER, '.local', 'tmp')
-if not os.path.exists(USER_TEMP_FOLDER):
-    USER_TEMP_FOLDER = os.path.join(USER_DATA_FOLDER, 'tmp')
+# USER_TEMP_FOLDER = os.path.join(USER_FOLDER, '.local', 'tmp')
+# if not os.path.exists(USER_TEMP_FOLDER):
+#     USER_TEMP_FOLDER = os.path.join(USER_DATA_FOLDER, 'tmp')
 USER_LOG_FILE = os.path.join(USER_LOG_FOLDER, "%s.log" % APPLET_NAME)
 USER_CONFIG_FILE = os.path.join(USER_CONFIG_FOLDER, "%s.conf" % APPLET_NAME)
 
@@ -102,8 +102,8 @@ def verify_user_folders():
         os.mkdir(USER_DATA_FOLDER)
     if not os.path.exists(USER_LOG_FOLDER):
         os.mkdir(USER_LOG_FOLDER)
-    if not os.path.exists(USER_TEMP_FOLDER):
-        os.mkdir(USER_TEMP_FOLDER)
+    # if not os.path.exists(USER_TEMP_FOLDER):
+    #     os.mkdir(USER_TEMP_FOLDER)
     if not os.path.exists(USER_CONFIG_FOLDER):
         os.mkdir(USER_CONFIG_FOLDER)
 
