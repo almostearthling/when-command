@@ -71,6 +71,7 @@ APPLET_NAME = 'when-command'
 APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_VERSION = "0.1.0"
+APPLET_ID = "it.jks.WhenCommand"
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -2196,7 +2197,7 @@ class AppletIndicator(Gtk.Application):
 
     def __init__(self):
         Gtk.Application.__init__(self,
-                                 application_id='it.jks.WhenApplet',
+                                 application_id=APPLET_ID,
                                  flags=Gio.ApplicationFlags.FLAGS_NONE)
         self.connect("activate", self.applet_activate)
 
