@@ -167,9 +167,31 @@ Being an applet oriented mostly towards users of recent Ubuntu editions, it is d
 To implement the "*Idle Session*" based condition (i.e. the one that lets a task run when the session has been idle for a while), however, the external `xprintidle` command is used that is not installed by default on Ubuntu: this seemed easier than to implement an idle time detection function from scratch, which could possibly be even more resource hungry than the available small external utility. Also, by doing this, the "*Idle Session*" based condition is not much more than a *Command* based condition, and this simplified the development a lot.
 
 
+### Contributing
+
+**When** is open source software, this means that contributions are welcome. To contribute with code, please consider following the minimal recommendations that usually apply to the software published on GitHub:
+
+1. Fork the [When repository](https://github.com/almostearthling/when-command) and pull it to your working directory
+2. Create a branch for the new feature or fix: `git checkout -b new-branch`
+3. Edit the code and commit: `git commit -am "Add this feature to When"`
+4. Push your changes to the new branch: `git push origin new-branch`
+5. Compare and submit a [Pull Request](https://github.com/almostearthling/when-command/compare)
+
+A more general discussion about contribution can be found [here](https://help.github.com/articles/using-pull-requests/). Otherwise, just submit an issue to notify a bug, a mistake or something that could just have been implemented better. Just consider that the applet is intended to be and remain minimal in terms of code and features, so that it can stay in the background of an user session without disturbing it too much.
+
+
+### Breaking the compatibility
+
+As long as the software can be considered in its *pre-release* state, breaking the backwards-compatibility is allowed although undesirable. **When** has actually been released as *beta* software, since it has been tested for a while and with a suite that covered all the cases it can handle. Probably there are still bugs and they will have to be corrected. Unfortunately these bugs could also pop up in the two main classes that build the core of the applet, and the "form" of these classes could affect the way the stateful part of the program data (namely, *Tasks* and *Conditions*) is stored to disk: when it comes to bugs, until **When** enters a *production* state (which will be the 1.0.0 release, as per the [Semantic Versioning](https://github.com/mojombo/semver/blob/master/semver.md) specification), compatibility break will be preferred to bug persistence. In all other cases I'll grant special attention to the possibility to install newer versions of the software without having to redefine all rules.
+
+However, there are on the roadmap some changes that, when implemented, could break the backwards compatibility. These changes are mostly pertinent to the *Code Cleanup* section: it's still to decide whether or not to pursue them.
+
+In all cases, I'll try to find workarounds to give the users the possibility to either backup their *Tasks* and *Conditions* and restore them for use in new versions, or to convert them when the program starts.
+
+
 ### Resources
 
-The program is designed to run mainly on Ubuntu, so the chosen framework is *Python 3.x* with *PyGObject 3.x* (*GTK 3.0*); the interface is developed using the *Glade* interface designer. The used resources are:
+This software is designed to run mainly on Ubuntu, so the chosen framework is *Python 3.x* with *PyGObject 3.x* (*GTK 3.0*); the interface is developed using the *Glade* interface designer. The used resources are:
 
 * [Python 3.x Documentation](https://docs.python.org/3/)
 * [PyGTK 3.x Tutorial](http://python-gtk-3-tutorial.readthedocs.org/en/latest/index.html)
