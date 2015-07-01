@@ -87,6 +87,7 @@ ACTION_DELETE = 9
 USER_FOLDER = os.path.expanduser('~')
 USER_DATA_FOLDER = os.path.join(USER_FOLDER, '.local', 'share', APPLET_NAME)
 USER_LAUNCHER_FOLDER = os.path.join(USER_FOLDER, '.local', 'share', 'applications')
+USER_AUTOSTART_FOLDER = os.path.join(USER_FOLDER, '.config', 'autostart')
 USER_CONFIG_FOLDER = os.path.join(USER_FOLDER, '.config', APPLET_NAME)
 USER_LOG_FOLDER = os.path.join(USER_DATA_FOLDER, 'log')
 USER_LOG_FILE = os.path.join(USER_LOG_FOLDER, "%s.log" % APPLET_NAME)
@@ -198,9 +199,8 @@ resources.LISTCOL_HISTORY_REASON = "Reason"
 resources.LISTCOL_HISTORY_ROWID = "Row ID"
 
 
-# utility to create a desktop file
-def create_desktop_file(overwrite=False):
-    desktop_file_content = """\
+# constants for desktop entry and autostart entry
+APP_ENTRY_DESKTOP = """\
 #!/usr/bin/env xdg-open
 [Desktop Entry]
 Version={applet_version}
@@ -212,11 +212,29 @@ Type=Application
 Categories=Utility;Application;System;
 Exec=/usr/bin/env python3 {applet_exec}
 """
+
+APP_ENTRY_AUTOSTART = """\
+[Desktop Entry]
+Name={applet_shortname}
+GenericName={applet_fullname}
+Comment={applet_fullname}
+Icon={icon_path}/alarmclock-128.png
+Terminal=false
+Type=Application
+Categories=Utility;Application;System;
+Exec=/usr/bin/env python3 {applet_exec}
+StartupNotify=false
+X-GNOME-Autostart-enabled={autostart_enable}
+"""
+
+
+# utility to create a desktop file
+def create_desktop_file(overwrite=False):
     filename = "%s.desktop" % APPLET_NAME
     pathname = os.path.join(USER_DATA_FOLDER, filename)
     if not os.path.exists(pathname) or overwrite:
         applet_log.info("MAIN: creating desktop entries")
-        content = desktop_file_content.format(
+        content = APP_ENTRY_DESKTOP.format(
             applet_version=APPLET_VERSION,
             applet_shortname=APPLET_SHORTNAME,
             applet_fullname=APPLET_FULLNAME,
@@ -231,6 +249,26 @@ Exec=/usr/bin/env python3 {applet_exec}
                 os.symlink(pathname, os.path.join(USER_LAUNCHER_FOLDER, filename))
             except Error:
                 applet_log.error("MAIN: could not create the launcher")
+
+
+# utility to create the autostart file
+def create_autostart_file(overwrite=True):
+    filename = "%s.desktop" % APPLET_NAME
+    pathname = os.path.join(USER_AUTOSTART_FOLDER, filename)
+    enable = 'true' if config.get('General', 'autostart') else 'false'
+    if not os.path.exists(pathname) or overwrite:
+        applet_log.info("MAIN: creating autostart entries")
+        content = APP_ENTRY_AUTOSTART.format(
+            applet_version=APPLET_VERSION,
+            applet_shortname=APPLET_SHORTNAME,
+            applet_fullname=APPLET_FULLNAME,
+            icon_path=APP_ICON_FOLDER,
+            autostart_enable=enable,
+            applet_exec=sys.argv[0],
+        )
+        with open(pathname, 'w') as f:
+            f.write(content)
+        os.chmod(pathname, 0o755)
 
 
 # logger
@@ -334,7 +372,7 @@ class Config(object):
 
             [General]
             show icon = true
-            autostart = true
+            autostart = false
             notifications = true
             icon theme = guess
             log level = warning
@@ -2067,11 +2105,12 @@ class SettingsDialog(object):
             applet_log.info("DLGCONF: saving user configuration")
             config.save()
             # reconfigure running applet as much as possible
+            applet_log.info("DLGCONF: reconfiguring application")
             config_loghandler()
             config_loglevel()
-            applet_log.info("DLGCONF: reconfiguring application")
             periodic.restart(new_interval=config.get('Scheduler', 'tick seconds'))
             history.resize()
+            create_autostart_file()
             # FIXME: find applet even when called by a second instance
             if applet:
                 applet.hide_icon(not config.get('General', 'show icon'))
@@ -2398,6 +2437,7 @@ def main():
 # implement the applet and start
 if __name__ == '__main__':
     create_desktop_file()
+    create_autostart_file(False)
     applet = AppletIndicator()
     main()
 
