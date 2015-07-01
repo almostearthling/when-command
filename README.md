@@ -85,7 +85,7 @@ The options are:
 
 1. **General**
   * *Show Icon*: whether or not to show the indicator icon and menu
-  * *Autostart*: set up the applet to run on login
+  * *Autostart*: set up the applet to run automatically at login
   * *Notifications*: whether or not to show notifications upon task failure
   * *Icon Theme*: `Guess` to let the application decide, otherwise one of `Dark` (light icons for dark themes), `Light` (dark icons for light themes), and `Color` for colored icons that should be visible on all themes.
 2. **Scheduler**
@@ -109,7 +109,7 @@ skip seconds = 60
 
 [General]
 show icon = true
-autostart = true
+autostart = false
 notifications = true
 log level = warning
 icon theme = guess
@@ -137,7 +137,7 @@ For the applet to function and before unpacking it to the destination directory,
 ~$ sudo tar xzf /path/to/when-command.tar.gz
 ```
 
-The instructions given in the following section will complete the installation for the current user. For now the applet has to be manually added to the *Startup Applications*: for Ubuntu the instructions are in [Startup Applications](https://help.ubuntu.com/stable/ubuntu-help/startup-applications.html), and the command to specify in the *Command* entry is `python3 /opt/when-command/when-command.py` (or whatever is the path to `when-command.py`). The applet icon will display at every login.
+The instructions given in the following section will complete the installation for the current user. The applet icon will display at every login.
 
 The **When** utility will try to recognize the way it has been set up the first time it's invoked. Since there is no application icon, it has to be invoked from the command line. Assuming that it has been unarchived in `/opt` (possibly in the `/opt/when-command` directory), it's advisable to run it for the first time using the command
 
@@ -150,7 +150,7 @@ and it will create all the needed directory structure in the user folder, and no
 * `~/.config/when-command` where it will store all configuration
 * `~/.local/share/when-command` where it stores resources and logs (in the `log` subdirectory)
 
-In the first run the utility also installs launchers and icons for the user, so that it can be launched using the Gnome shell or Ubuntu *Dash*.
+In the first run the utility also installs launchers and icons for the user, so that it can be launched using the Gnome shell or Ubuntu *Dash*. Also, the applet can be configured to start up at login by checking the *Autostart* box in the *Settings* dialog: an entry will be created in the *Startup Applications* for **When**. If the box is unchecked the autostart feature is inhibited.
 
 
 ## Developer notes and resources
