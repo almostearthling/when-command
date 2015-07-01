@@ -368,7 +368,7 @@
                         <property name="margin_right">10</property>
                         <property name="hexpand">False</property>
                         <property name="ypad">10</property>
-                        <property name="label" translatable="yes">Debug Level:</property>
+                        <property name="label" translatable="yes">Log Level:</property>
                         <property name="ellipsize">start</property>
                       </object>
                       <packing>

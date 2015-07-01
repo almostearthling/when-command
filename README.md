@@ -93,7 +93,7 @@ The options are:
   * *Condition Check Skip Time*: all conditions will skip this amount of seconds from previous test to perform an actual test, should be at least the same as *Application Clock Tick Time*; this is named `skip seconds` in the configuration file.
 3. **Advanced**
   * *Max Concurrent Tasks*: maximum number of tasks that can be run in a parallel run (`max threads` in the configuration file)
-  * *Debug Level*: the amount of detail in the log file
+  * *Log Level*: the amount of detail in the log file
   * *Max Log Size*: max size (in bytes) for the log file
   * *Number Of Log Backups*: number of backup log files (older ones are erased)
   * *Instance History Items*: max number of tasks in the event list (*History* window); this option is named `max items` in the configuration file.
