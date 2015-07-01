@@ -8,6 +8,7 @@ List of achievements and expectations for the When applet.
 * Configuration :ok:
   - General configuration file :ok:
   - User configuration directory :ok:
+  - Autostart :ok:
 * Tasks :ok:
   1. Shell command execution :ok:
   2. Import environment variables upon request :ok:
@@ -63,6 +64,7 @@ List of achievements and expectations for the When applet.
 * Log management :ok:
 * Application icon :ok:
 * Application `.desktop` entry :ok:
+* Ubuntu/Debian package :ok:
 
 
 ## 2) To *Working* Alpha Release
@@ -97,7 +99,6 @@ List of achievements and expectations for the When applet.
 * Clean up code
   - Use instance variables instead of properties and setters
   - Fix GTK errors
-* Ubuntu/Debian package
 
 
 ## 6) Desirable features
