@@ -79,7 +79,7 @@ and when the user clicks a line in the table, the tabbed box below will possibly
 
 ### Settings
 
-The program settings are available through the specific *Settings* dialog box, and can be manually set in the main configuration file, which can be found in `~/.config/when-command/when-command.conf`. By defaults the settings are as follows:
+The program settings are available through the specific *Settings* dialog box, and can be manually set in the main configuration file, which can be found in `~/.config/when-command/when-command.conf`.
 
 The options are:
 
