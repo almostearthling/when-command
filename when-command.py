@@ -176,6 +176,7 @@ resources.DLG_CANNOT_DELETE_TASK = "Task %s could not be deleted."
 resources.DLG_CANNOT_DELETE_CONDITION = "Condition %s could not be deleted."
 resources.DLG_CANNOT_FIND_TASK = "Task %s could not be found."
 resources.DLG_CANNOT_FIND_CONDITION = "Condition %s could not be found."
+resources.DLG_WRONG_EXIT_STATUS = "Wrong value for exit status specified.\nPlease consider reviewing it."
 
 resources.NOTIFY_TASK_FAILED = "Task failed: %s"
 
@@ -1462,6 +1463,18 @@ class TaskDialog(object):
         c = Gtk.TreeViewColumn(resources.LISTCOL_ENVVARS_VALUE, Gtk.CellRendererText(), text=1)
         l.append_column(c)
 
+    def validate_int(self, s, min_value=None, max_value=None):
+        try:
+            n = int(s)
+            if min_value is not None and n < min_value:
+                return None
+            elif max_value is not None and n > max_value:
+                return None
+            else:
+                return n
+        except ValueError as e:
+            return None
+
     def click_btnVarAdd(self, _):
         o = self.builder.get_object
         name = o('txtVarName').get_text()
@@ -1604,7 +1617,14 @@ class TaskDialog(object):
             idx = o('cbCheckWhat').get_active()
             if o('rdSuccess').get_active():
                 if idx == 0:
-                    s = int(o('txtCheckValue').get_text())
+                    s = self.validate_int(o('txtCheckValue').get_text(), 0)
+                    if s is None:
+                        msgbox = Gtk.MessageDialog(type=Gtk.MessageType.ERROR,
+                                                   buttons=Gtk.ButtonsType.OK)
+                        msgbox.set_markup(resources.DLG_WRONG_EXIT_STATUS)
+                        msgbox.run()
+                        msgbox.hide()
+                        s = 0
                     task.set_check(success_status=s)
                 elif idx == 1:
                     s = str(o('txtCheckValue').get_text())
@@ -1614,7 +1634,14 @@ class TaskDialog(object):
                     task.set_check(success_stderr=s)
             elif o('rdFailure').get_active():
                 if idx == 0:
-                    s = int(o('txtCheckValue').get_text())
+                    s = self.validate_int(o('txtCheckValue').get_text(), 0)
+                    if s is None:
+                        msgbox = Gtk.MessageDialog(type=Gtk.MessageType.ERROR,
+                                                   buttons=Gtk.ButtonsType.OK)
+                        msgbox.set_markup(resources.DLG_WRONG_EXIT_STATUS)
+                        msgbox.run()
+                        msgbox.hide()
+                        s = 0
                     task.set_check(failure_status=s)
                 elif idx == 1:
                     s = str(o('txtCheckValue').get_text())
@@ -1927,7 +1954,14 @@ class ConditionDialog(object):
                 status, stdout, stderr = None, None, None
                 chk = o('cbCheckWhat').get_active()
                 if chk == 0:
-                    status = int(o('txtCheckValue').get_text())
+                    status = self.validate_int(o('txtCheckValue').get_text(), 0)
+                    if status is None:
+                        msgbox = Gtk.MessageDialog(type=Gtk.MessageType.ERROR,
+                                                   buttons=Gtk.ButtonsType.OK)
+                        msgbox.set_markup(resources.DLG_WRONG_EXIT_STATUS)
+                        msgbox.run()
+                        msgbox.hide()
+                        status = 0
                 elif chk == 1:
                     stdout = str(o('txtCheckValue').get_text())
                 elif chk == 2:
