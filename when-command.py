@@ -1624,6 +1624,7 @@ class TaskDialog(object):
                         msgbox.set_markup(resources.DLG_WRONG_EXIT_STATUS)
                         msgbox.run()
                         msgbox.hide()
+                        applet_log.warning("DLGTASK: wrong exit code specification")
                         s = 0
                     task.set_check(success_status=s)
                 elif idx == 1:
@@ -1961,6 +1962,7 @@ class ConditionDialog(object):
                         msgbox.set_markup(resources.DLG_WRONG_EXIT_STATUS)
                         msgbox.run()
                         msgbox.hide()
+                        applet_log.warning("DLGCOND: wrong exit code specification")
                         status = 0
                 elif chk == 1:
                     stdout = str(o('txtCheckValue').get_text())
