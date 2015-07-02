@@ -1592,8 +1592,10 @@ class TaskDialog(object):
         cb_tasks.get_model().clear()
         for x in self.stored_tasks:
             cb_tasks.append_text(x)
+        self.dialog.set_keep_above(True)
         ret = self.dialog.run()
         self.dialog.hide()
+        self.dialog.set_keep_above(False)
         if ret == 0:
             name = o('txtName').get_text()
             command = o('txtCommand').get_text()
@@ -1887,8 +1889,10 @@ class ConditionDialog(object):
         cb_tasks.get_model().clear()
         for x in self.stored_tasks:
             cb_tasks.append_text(x)
+        self.dialog.set_keep_above(True)
         ret = self.dialog.run()
         self.dialog.hide()
+        self.dialog.set_keep_above(False)
         if ret == 0:
             name = o('txtName').get_text()
             repeat = o('chkRepeat').get_active()
@@ -2032,8 +2036,10 @@ class SettingsDialog(object):
 
     def run(self):
         self.default_box()
+        self.dialog.set_keep_above(True)
         ret = self.dialog.run()
         self.dialog.hide()
+        self.dialog.set_keep_above(False)
         o = self.builder.get_object
         if ret == 0:
             config_skip = []
@@ -2196,8 +2202,10 @@ class HistoryDialog(object):
 
     def run(self):
         self.update_list()
+        self.dialog.set_keep_above(True)
         ret = self.dialog.run()
         self.dialog.hide()
+        self.dialog.set_keep_above(False)
 
 
 class AboutDialog(object):
@@ -2212,8 +2220,10 @@ class AboutDialog(object):
         self.dialog.set_icon_from_file(os.path.join(APP_ICON_FOLDER, 'alarmclock.png'))
 
     def run(self):
+        self.dialog.set_keep_above(True)
         ret = self.dialog.run()
         self.dialog.hide()
+        self.dialog.set_keep_above(False)
 
 
 #############################################################################
