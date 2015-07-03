@@ -110,9 +110,11 @@ List of achievements and expectations for the When applet.
 * Configuration directory maintenance tools
 * Package repository
 * Icons as specified in https://developer.gnome.org/icon-theme-spec/
+* Tests and amendments for other Linux flavors and distributions
 
 
 ## 7) Cyclic development actions
 
 * Check code consistency
 * Remove unused functions
+* Obviously bugfix and maintenance
