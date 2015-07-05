@@ -1606,6 +1606,7 @@ class TaskDialog(object):
         for x in self.stored_tasks:
             cb_tasks.append_text(x)
         self.dialog.set_keep_above(True)
+        self.dialog.present()
         ret = self.dialog.run()
         self.dialog.hide()
         self.dialog.set_keep_above(False)
@@ -1918,6 +1919,7 @@ class ConditionDialog(object):
         for x in self.stored_tasks:
             cb_tasks.append_text(x)
         self.dialog.set_keep_above(True)
+        self.dialog.present()
         ret = self.dialog.run()
         self.dialog.hide()
         self.dialog.set_keep_above(False)
@@ -2073,6 +2075,7 @@ class SettingsDialog(object):
     def run(self):
         self.default_box()
         self.dialog.set_keep_above(True)
+        self.dialog.present()
         ret = self.dialog.run()
         self.dialog.hide()
         self.dialog.set_keep_above(False)
@@ -2239,6 +2242,7 @@ class HistoryDialog(object):
     def run(self):
         self.update_list()
         self.dialog.set_keep_above(True)
+        self.dialog.present()
         ret = self.dialog.run()
         self.dialog.hide()
         self.dialog.set_keep_above(False)
@@ -2257,6 +2261,7 @@ class AboutDialog(object):
 
     def run(self):
         self.dialog.set_keep_above(True)
+        self.dialog.present()
         ret = self.dialog.run()
         self.dialog.hide()
         self.dialog.set_keep_above(False)
