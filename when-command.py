@@ -44,6 +44,7 @@
 from gi.repository import GLib, Gtk, Gio
 from gi.repository import AppIndicator3 as AppIndicator
 from gi.repository import Notify
+from gi.repository import Pango
 
 import os
 import sys
@@ -2195,6 +2196,8 @@ class HistoryDialog(object):
         c = Gtk.TreeViewColumn(resources.LISTCOL_HISTORY_ROWID, renderer, text=6)
         c.set_visible(False)
         l.append_column(c)
+        o('txtStdOut').modify_font(Pango.FontDescription("Monospace"))
+        o('txtStdErr').modify_font(Pango.FontDescription("Monospace"))
 
     def choose_item(self, selected):
         o = self.builder.get_object
