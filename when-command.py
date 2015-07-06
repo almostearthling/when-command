@@ -255,8 +255,9 @@ def create_desktop_file(overwrite=False):
 
 # utility to create the autostart file
 def create_autostart_file(overwrite=True):
-    filename = "%s.desktop" % APPLET_NAME
-    pathname = os.path.join(USER_AUTOSTART_FOLDER, filename)
+    filename = "%s-startup.desktop" % APPLET_NAME
+    pathname = os.path.join(USER_DATA_FOLDER, filename)
+    # pathname = os.path.join(USER_AUTOSTART_FOLDER, filename)
     enable = 'true' if config.get('General', 'autostart') else 'false'
     if not os.path.exists(pathname) or overwrite:
         applet_log.info("MAIN: creating autostart entries")
@@ -271,6 +272,12 @@ def create_autostart_file(overwrite=True):
         with open(pathname, 'w') as f:
             f.write(content)
         os.chmod(pathname, 0o755)
+        linkname = os.path.join(USER_AUTOSTART_FOLDER, filename)
+        if os.path.isdir(USER_AUTOSTART_FOLDER) and not os.path.exists(linkname):
+            try:
+                os.symlink(pathname, linkname)
+            except Error:
+                applet_log.error("MAIN: could not create the autostart launcher")
 
 
 # logger
