@@ -257,7 +257,6 @@ def create_desktop_file(overwrite=False):
 def create_autostart_file(overwrite=True):
     filename = "%s-startup.desktop" % APPLET_NAME
     pathname = os.path.join(USER_DATA_FOLDER, filename)
-    # pathname = os.path.join(USER_AUTOSTART_FOLDER, filename)
     enable = 'true' if config.get('General', 'autostart') else 'false'
     if not os.path.exists(pathname) or overwrite:
         applet_log.info("MAIN: creating autostart entries")
