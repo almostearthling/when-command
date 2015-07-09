@@ -108,6 +108,7 @@ List of achievements and expectations for the When applet.
 * File watch conditions
 * Stop task sequence upon failure (or success) of one task
 * Configuration directory maintenance tools
+* Regexp match for shell command results (in both tasks and conditions)
 * Package repository
 * Icons as specified in https://developer.gnome.org/icon-theme-spec/
 * Tests and amendments for other Linux flavors and distributions
