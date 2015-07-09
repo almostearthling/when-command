@@ -429,14 +429,14 @@ config = Config()
 # scheduler logic, see http://stackoverflow.com/a/18906292 for details
 class Periodic(object):
     def __init__(self, interval, function, *args, **kwargs):
+        self.stopped = True
+        self.interval = interval
+        self.function = function
+        self.args = args
+        self.kwargs = kwargs
         self._logger = logging.getLogger(APPLET_NAME)
         self._lock = threading.Lock()
         self._timer = None
-        self._function = function
-        self._interval = interval
-        self._args = args
-        self._kwargs = kwargs
-        self._stopped = True
         self._logger.info("SCHED: initialized")
         if kwargs.pop('autostart', True):
             self.start()
@@ -444,15 +444,13 @@ class Periodic(object):
     def _run(self):
         self.start(from_run=True)
         self._logger.info("SCHED: periodic run")
-        self._function(*self._args, **self._kwargs)
-
-    stopped = property(lambda self: self._stopped)
+        self.function(*self.args, **self.kwargs)
 
     def start(self, from_run=False):
         self._lock.acquire()
-        if from_run or self._stopped:
-            self._stopped = False
-            self._timer = threading.Timer(self._interval, self._run)
+        if from_run or self.stopped:
+            self.stopped = False
+            self._timer = threading.Timer(self.interval, self._run)
             self._timer.start()
         self._lock.release()
         if not from_run:
@@ -460,7 +458,7 @@ class Periodic(object):
 
     def stop(self):
         self._lock.acquire()
-        self._stopped = True
+        self.stopped = True
         self._timer.cancel()
         self._lock.release()
         self._logger.info("SCHED: stopped")
@@ -468,7 +466,7 @@ class Periodic(object):
     def restart(self, new_interval=None):
         if new_interval:
             self._logger.info("SCHED: changing interval to %s" % new_interval)
-            self._interval = new_interval
+            self.interval = new_interval
         self.stop()
         self.start()
 
@@ -509,7 +507,7 @@ class Tasks(object):
         for task in self._list:
             yield task
 
-    names = property(lambda self: [t._name for t in self._list])
+    names = property(lambda self: [t.task_name for t in self._list])
 
     def get_id(self):
         self._lock.acquire()
@@ -598,7 +596,7 @@ class Conditions(object):
         for condition in self._list:
             yield condition
 
-    names = property(lambda self: [t._name for t in self._list])
+    names = property(lambda self: [t.cond_name for t in self._list])
 
     def get_id(self):
         self._lock.acquire()
@@ -685,7 +683,7 @@ class HistoryQueue(object):
             max_items = config.get('History', 'max items')
         self._lock = threading.Lock()
         self._queue = deque(maxlen=max_items)
-        self._id = self._item_id()
+        self.cond_id = self._item_id()
 
     def _item_id(self):
         # an ID that is unique just within the queue: a reusable int is enough
@@ -699,7 +697,7 @@ class HistoryQueue(object):
         t = time.time()
         run_time = t - startup_time
         item_id = self._item_id()
-        item = historyitem(next(self._id), startup_time, run_time, name,
+        item = historyitem(next(self.cond_id), startup_time, run_time, name,
                            trigger, success, status, stdout, stderr, reason)
         self._lock.acquire()
         self._queue.append(item)
@@ -711,7 +709,7 @@ class HistoryQueue(object):
         self._lock.acquire()
         self._queue = deque(self._queue, max_items)
         self._lock.release()
-        self._id = self._item_id()
+        self.cond_id = self._item_id()
 
     def clear(self):
         self._lock.acquire()
@@ -747,78 +745,51 @@ class Task(object):
 
     # make task level logging easier
     def _debug(self, msg):
-        self._logger.debug("TASK: %s [%s]: %s" % (self._name, self._id, msg))
+        self._logger.debug("TASK: %s [%s]: %s" % (self.task_name, self.task_id, msg))
 
     def _info(self, msg):
-        self._logger.info("TASK: %s [%s]: %s" % (self._name, self._id, msg))
+        self._logger.info("TASK: %s [%s]: %s" % (self.task_name, self.task_id, msg))
 
     def _warning(self, msg):
-        self._logger.warning("TASK: %s [%s]: %s" % (self._name, self._id, msg))
+        self._logger.warning("TASK: %s [%s]: %s" % (self.task_name, self.task_id, msg))
 
     def _error(self, msg):
-        self._logger.error("TASK: %s [%s]: %s" % (self._name, self._id, msg))
+        self._logger.error("TASK: %s [%s]: %s" % (self.task_name, self.task_id, msg))
 
     def _critical(self, msg):
-        self._logger.critical("TASK: %s [%s]: %s" % (self._name, self._id, msg))
+        self._logger.critical("TASK: %s [%s]: %s" % (self.task_name, self.task_id, msg))
 
     # the real McCoy
     def __init__(self, name=None, command=None, startup_dir=None):
-        self._name = ""
-        self._id = 0
-        self._environment_vars = {}
-        self._include_env = True
-        self._success_stdout = None
-        self._success_stderr = None
-        self._success_status = None
-        self._failure_stdout = None
-        self._failure_stderr = None
-        self._failure_status = None
-        self._match_exact = False
-        self._case_sensitive = False
-        self._command = ""
-        self._startup_dir = None
-        self._process_stdout = ""
-        self._process_stderr = ""
-        self._process_status = 0
-        self._process_failed = False
-        self._name = name
-        self._running = False
+        self.task_id = 0
+        self.environment_vars = {}
+        self.include_env = True
+        self.success_stdout = None
+        self.success_stderr = None
+        self.success_status = None
+        self.failure_stdout = None
+        self.failure_stderr = None
+        self.failure_status = None
+        self.match_exact = False
+        self.case_sensitive = False
+        self.command = ""
+        self.startup_dir = None
+        self.process_stdout = ""
+        self.process_stderr = ""
+        self.process_status = 0
+        self.process_failed = False
+        self.task_name = name
+        self.running = False
         if name is None:
             self._info("empty task created")
         else:
-            self._command = command
-            self._startup_dir = startup_dir
-            self._id = tasks.get_id()
+            self.command = command
+            self.startup_dir = startup_dir
+            self.task_id = tasks.get_id()
             self._info("task created")
 
-    task_name = property(lambda self: self._name)
-    task_id = property(lambda self: self._id)
-    command = property(lambda self: self._command)
-    startup_dir = property(lambda self: self._startup_dir)
-
-    task_env = property(lambda self: self._environment_vars.copy())
-    include_env = property(lambda self: self._include_env)
-    success_stdout = property(lambda self: self._success_stdout)
-    success_stderr = property(lambda self: self._success_stderr)
-    success_status = property(lambda self: self._success_status)
-    failure_stdout = property(lambda self: self._failure_stdout)
-    failure_stderr = property(lambda self: self._failure_stderr)
-    failure_status = property(lambda self: self._failure_status)
-
-    match_exact = property(lambda self: self._match_exact)
-    case_sensitive = property(lambda self: self._case_sensitive)
-
     def set_env(self, var, value):
-        self._environment_vars[var] = value
-
-    def set_match_exact(self, v=True):
-        self._match_exact = v
-
-    def set_include_env(self, v=True):
-        self._include_env = v
-
-    def set_case_sensitive(self, v=False):
-        self._case_sensitive = v
+        self.environment_vars[var] = value
 
     def clear_env(self, var):
         self.set_env(var, None)
@@ -826,33 +797,33 @@ class Task(object):
     def set_check(self, **kwargs):
         for k in kwargs.keys():
             if k == 'success_stdout':
-                self._success_stdout = str(kwargs[k])
+                self.success_stdout = str(kwargs[k])
             elif k == 'success_stderr':
-                self._success_stderr = str(kwargs[k])
+                self.success_stderr = str(kwargs[k])
             elif k == 'failure_stdout':
-                self._failure_stdout = str(kwargs[k])
+                self.failure_stdout = str(kwargs[k])
             elif k == 'failure_stderr':
-                self._failure_stderr = str(kwargs[k])
+                self.failure_stderr = str(kwargs[k])
             elif k == 'success_status':
-                self._success_status = int(kwargs[k])
+                self.success_status = int(kwargs[k])
             elif k == 'failure_status':
-                self._failure_status = int(kwargs[k])
+                self.failure_status = int(kwargs[k])
             else:
                 self._error("internal error")
                 raise TypeError("keyword argument '%s' not supported" % k)
 
     def renew_id(self):
-        self._id = tasks.get_id()
+        self.task_id = tasks.get_id()
 
     def dump(self):
-        if self._name is None:
+        if self.task_name is None:
             raise RuntimeError("task not initialized")
-        file_name = os.path.join(USER_CONFIG_FOLDER, "%s.task" % self._name)
+        file_name = os.path.join(USER_CONFIG_FOLDER, "%s.task" % self.task_name)
         with open(file_name, 'wb') as f:
             pickle.dump(self, f)
 
     def unlink_file(self):
-        file_name = os.path.join(USER_CONFIG_FOLDER, "%s.task" % self._name)
+        file_name = os.path.join(USER_CONFIG_FOLDER, "%s.task" % self.task_name)
         if os.path.exists(file_name):
             os.unlink(file_name)
 
@@ -866,180 +837,180 @@ class Task(object):
 
     # run a task in a subprocess possibly specifying trigger condition name
     def run(self, trigger_name=None):
-        if self._running:
+        if self.running:
             raise RuntimeError("overlapping tasks")
         applet_lock.acquire()
-        self._running = True
+        self.running = True
         applet_lock.release()
-        self._process_failed = False
-        if self._name is None:
-            self._process_failed = True
+        self.process_failed = False
+        if self.task_name is None:
+            self.process_failed = True
             raise RuntimeError("task not initialized")
         if trigger_name:
-            self._info("[trigger: %s] running command: %s" % (trigger_name, self._command))
+            self._info("[trigger: %s] running command: %s" % (trigger_name, self.command))
         else:
-            self._info("[trigger: unknown] running command: %s" % self._command)
-        if self._environment_vars:
-            if self._include_env:
+            self._info("[trigger: unknown] running command: %s" % self.command)
+        if self.environment_vars:
+            if self.include_env:
                 env = os.environ
-                for k in self._environment_vars:
-                    env[k] = self._environment_vars[k]
+                for k in self.environment_vars:
+                    env[k] = self.environment_vars[k]
             else:
-                env = self._environment_vars
+                env = self.environment_vars
         else:
             env = None
         startup_time = time.time()
-        self._process_stdout = None
-        self._process_stderr = None
-        self._process_status = None
+        self.process_stdout = None
+        self.process_stderr = None
+        self.process_status = None
         try:
             failure_reason = None
-            startup_dir = self._startup_dir if self._startup_dir else '.'
-            self._debug("spawning subprocess: %s" % self._command)
-            with subprocess.Popen(self._command,
+            startup_dir = self.startup_dir if self.startup_dir else '.'
+            self._debug("spawning subprocess: %s" % self.command)
+            with subprocess.Popen(self.command,
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.PIPE,
                                   shell=True,
                                   cwd=startup_dir,
                                   env=env) as proc:
                 stdout, stderr = proc.communicate()
-                self._process_stdout = stdout.decode().strip()
-                self._process_stderr = stderr.decode().strip()
-                self._process_status = proc.returncode
-                if self._success_status is not None:
-                    if self._process_status != self._success_status:
-                        self._warning("task failed (process status=%s)" % self._process_status)
-                        self._process_failed = True
+                self.process_stdout = stdout.decode().strip()
+                self.process_stderr = stderr.decode().strip()
+                self.process_status = proc.returncode
+                if self.success_status is not None:
+                    if self.process_status != self.success_status:
+                        self._warning("task failed (process status=%s)" % self.process_status)
+                        self.process_failed = True
                         failure_reason = 'status'
-                elif self._failure_status is not None:
-                    if self._process_status == self._failure_status:
-                        self._warning("task failed (process status=%s)" % self._process_status)
-                        self._process_failed = True
+                elif self.failure_status is not None:
+                    if self.process_status == self.failure_status:
+                        self._warning("task failed (process status=%s)" % self.process_status)
+                        self.process_failed = True
                         failure_reason = 'status'
-                elif self._failure_stdout is not None:
-                    if self._case_sensitive:
-                        if self._match_exact:
-                            if self._process_stdout == self._failure_stdout:
+                elif self.failure_stdout is not None:
+                    if self.case_sensitive:
+                        if self.match_exact:
+                            if self.process_stdout == self.failure_stdout:
                                 self._warning("task failed (stdout check)")
-                                self._process_failed = True
+                                self.process_failed = True
                                 failure_reason = 'stdout'
                         else:
-                            if self._failure_stdout in self._process_stdout:
+                            if self.failure_stdout in self.process_stdout:
                                 self._warning("task failed (stdout check)")
-                                self._process_failed = True
+                                self.process_failed = True
                                 failure_reason = 'stdout'
                     else:
-                        if self._match_exact:
-                            if self._process_stdout.upper() == self._failure_stdout.upper():
+                        if self.match_exact:
+                            if self.process_stdout.upper() == self.failure_stdout.upper():
                                 self._warning("task failed (stdout check, case insensitive)")
-                                self._process_failed = True
+                                self.process_failed = True
                                 failure_reason = 'stdout'
                         else:
-                            if self._failure_stdout.upper() in self._process_stdout.upper():
+                            if self.failure_stdout.upper() in self.process_stdout.upper():
                                 self._warning("task failed (stdout check, case insensitive)")
-                                self._process_failed = True
+                                self.process_failed = True
                                 failure_reason = 'stdout'
-                elif self._failure_stderr is not None:
-                    if self._case_sensitive:
-                        if self._match_exact:
-                            if self._process_stderr == self._failure_stderr:
+                elif self.failure_stderr is not None:
+                    if self.case_sensitive:
+                        if self.match_exact:
+                            if self.process_stderr == self.failure_stderr:
                                 self._warning("task failed (stderr check)")
-                                self._process_failed = True
+                                self.process_failed = True
                                 failure_reason = 'stderr'
                         else:
-                            if self._failure_stderr in self._process_stderr:
+                            if self.failure_stderr in self.process_stderr:
                                 self._warning("task failed (stderr check)")
-                                self._process_failed = True
+                                self.process_failed = True
                                 failure_reason = 'stderr'
                     else:
-                        if self._match_exact:
-                            if self._process_stderr.upper() == self._failure_stderr.upper():
+                        if self.match_exact:
+                            if self.process_stderr.upper() == self.failure_stderr.upper():
                                 self._warning("task failed (stderr check, case insensitive)")
-                                self._process_failed = True
+                                self.process_failed = True
                                 failure_reason = 'stderr'
                         else:
-                            if self._failure_stderr.upper() in self._process_stderr.upper():
+                            if self.failure_stderr.upper() in self.process_stderr.upper():
                                 self._warning("task failed (stderr check, case insensitive)")
-                                self._process_failed = True
+                                self.process_failed = True
                                 failure_reason = 'stderr'
-                elif self._success_stdout is not None:
-                    if self._case_sensitive:
-                        if self._match_exact:
-                            if self._process_stdout != self._success_stdout:
+                elif self.success_stdout is not None:
+                    if self.case_sensitive:
+                        if self.match_exact:
+                            if self.process_stdout != self.success_stdout:
                                 self._warning("task failed (stdout check)")
-                                self._process_failed = True
+                                self.process_failed = True
                                 failure_reason = 'stdout'
                         else:
-                            if self._success_stdout not in self._process_stdout:
+                            if self.success_stdout not in self.process_stdout:
                                 self._warning("task failed (stdout check, case insensitive)")
-                                self._process_failed = True
+                                self.process_failed = True
                                 failure_reason = 'stdout'
                     else:
-                        if self._match_exact:
-                            if self._process_stdout.upper() != self._success_stdout.upper():
+                        if self.match_exact:
+                            if self.process_stdout.upper() != self.success_stdout.upper():
                                 self._warning("task failed (stdout check)")
-                                self._process_failed = True
+                                self.process_failed = True
                                 failure_reason = 'stdout'
                         else:
-                            if not self._success_stdout.upper() in self._process_stdout.upper():
+                            if not self.success_stdout.upper() in self.process_stdout.upper():
                                 self._warning("task failed (stdout check, case insensitive)")
-                                self._process_failed = True
+                                self.process_failed = True
                                 failure_reason = 'stdout'
-                elif self._success_stderr is not None:
-                    if self._case_sensitive:
-                        if self._match_exact:
-                            if self._process_stderr != self._success_stderr:
+                elif self.success_stderr is not None:
+                    if self.case_sensitive:
+                        if self.match_exact:
+                            if self.process_stderr != self.success_stderr:
                                 self._warning("task failed (stderr check)")
-                                self._process_failed = True
+                                self.process_failed = True
                                 failure_reason = 'stderr'
                         else:
-                            if self._success_stderr not in self._process_stderr:
+                            if self.success_stderr not in self.process_stderr:
                                 self._warning("task failed (stderr check)")
-                                self._process_failed = True
+                                self.process_failed = True
                                 failure_reason = 'stderr'
                     else:
-                        if self._match_exact:
-                            if self._process_stderr.upper() != self._success_stderr.upper():
+                        if self.match_exact:
+                            if self.process_stderr.upper() != self.success_stderr.upper():
                                 self._warning("task failed (stderr check, case insensitive)")
-                                self._process_failed = True
+                                self.process_failed = True
                                 failure_reason = 'stderr'
                         else:
-                            if self._success_stderr.upper() not in self._process_stderr.upper():
+                            if self.success_stderr.upper() not in self.process_stderr.upper():
                                 self._warning("task failed (stderr check, case insensitive)")
-                                self._process_failed = True
+                                self.process_failed = True
                                 failure_reason = 'stderr'
         except RuntimeError as e:
             self._warning("task failed, runtime error: %s" % e)
             failure_reason = 'overlap'
         except OSError as e:
             self._warning("task failed, system error: %s" % e)
-            self._process_failed = True
+            self.process_failed = True
             failure_reason = 'system'
         except subprocess.CalledProcessError as e:
             self._warning("task failed, called process error")
-            self._process_failed = True
+            self.process_failed = True
             failure_reason = 'process'
         except subprocess.TimeoutExpired as e:
             self._warning("task failed, timeout expired")
-            self._process_failed = True
+            self.process_failed = True
             failure_reason = 'timeout'
         except Exception as e:
             self._error("task failed (unexpected error)")
-            self._process_failed = True
+            self.process_failed = True
             failure_reason = 'generic'
         finally:
-            success = self._running and not self._process_failed
-            history.append(self._name, startup_time, success, trigger_name,
-                           self._process_status, self._process_stdout,
-                           self._process_stderr, failure_reason)
-            if self._process_failed:
+            success = self.running and not self.process_failed
+            history.append(self.task_name, startup_time, success, trigger_name,
+                           self.process_status, self.process_stdout,
+                           self.process_stderr, failure_reason)
+            if self.process_failed:
                 applet.set_attention(True)
-                applet.notify(resources.NOTIFY_TASK_FAILED % self._name)
+                applet.notify(resources.NOTIFY_TASK_FAILED % self.task_name)
             else:
                 self._info("task successfully finished")
-            if self._running:
+            if self.running:
                 applet_lock.acquire()
-                self._running = False
+                self.running = False
                 applet_lock.release()
             return success
 
@@ -1057,102 +1028,72 @@ class Condition(object):
         return False
 
     def _start_timer(self):
-        self._startup_time = time.time()
-        self._last_tested = self._startup_time
-
-    def _get_last_tested(self):
-        return self._last_tested
-    last_tested = property(_get_last_tested)
-
-    def _get_last_succeeded(self):
-        return self._last_succeeded
-    last_succeeded = property(_get_last_succeeded)
-
-    def _get_startup_time(self):
-        return self._startup_time
-    startup_time = property(_get_startup_time)
-
-    def _get_repeat(self):
-        return self._repeat
-    repeat = property(_get_repeat)
-
-    def _get_exec_sequence(self):
-        return self._exec_sequence
-    exec_sequence = property(_get_exec_sequence)
+        self.startup_time = time.time()
+        self.last_tested = self.startup_time
 
     _logger = logging.getLogger(APPLET_NAME)
 
     # make condition level logging easier
     def _debug(self, msg):
-        self._logger.debug("COND: %s [%s]: %s" % (self._name, self._id, msg))
+        self._logger.debug("COND: %s [%s]: %s" % (self.cond_name, self.cond_id, msg))
 
     def _info(self, msg):
-        self._logger.info("COND: %s [%s]: %s" % (self._name, self._id, msg))
+        self._logger.info("COND: %s [%s]: %s" % (self.cond_name, self.cond_id, msg))
 
     def _warning(self, msg):
-        self._logger.warning("COND: %s [%s]: %s" % (self._name, self._id, msg))
+        self._logger.warning("COND: %s [%s]: %s" % (self.cond_name, self.cond_id, msg))
 
     def _error(self, msg):
-        self._logger.error("COND: %s [%s]: %s" % (self._name, self._id, msg))
+        self._logger.error("COND: %s [%s]: %s" % (self.cond_name, self.cond_id, msg))
 
     def _critical(self, msg):
-        self._logger.critical("COND: %s [%s]: %s" % (self._name, self._id, msg))
+        self._logger.critical("COND: %s [%s]: %s" % (self.cond_name, self.cond_id, msg))
 
     def __init__(self, name=None, repeat=True, exec_sequence=True):
-        self._name = None
-        self._id = None
-        self._last_tested = None
-        self._last_succeeded = None
+        self.cond_name = None
+        self.cond_id = None
+        self.last_tested = None
+        self.last_succeeded = None
+        self.skip_seconds = config.get('Scheduler', 'skip seconds')
+        self.startup_time = None
+        self.task_names = []
+        self.repeat = True
+        self.exec_sequence = True
+        self.suspended = False
+        self.cond_name = name
         self._has_succeeded = False
-        self._skip_seconds = config.get('Scheduler', 'skip seconds')
-        self._startup_time = None
-        self._task_names = []
-        self._repeat = True
-        self._exec_sequence = True
-        self._suspended = False
         if self.__class__.__name__ == 'Condition':
             raise NotImplementedError("abstract class")
-        self._name = name
         if name is None:
             self._info("empty condition created")
         else:
-            self._repeat = repeat
-            self._exec_sequence = exec_sequence
-            self._id = conditions.get_id()
+            self.repeat = repeat
+            self.exec_sequence = exec_sequence
+            self.cond_id = conditions.get_id()
             self._info("condition created")
             self._start_timer()
 
-    def _get_name(self):
-        return self._name
-    cond_name = property(_get_name)
-
-    def _get_id(self):
-        return self._id
-    cond_id = property(_get_id)
-
     def add_task(self, task_name):
-        l = list(filter(lambda x: x != task_name, self._task_names))
-        self._task_names = l
-        self._task_names.append(task_name)
+        l = list(filter(lambda x: x != task_name, self.task_names))
+        self.task_names = l
+        self.task_names.append(task_name)
 
     def delete_task(self, task_name):
-        l = list(filter(lambda x: x != task_name, self._task_names))
-        self._task_names = l
-
-    task_names = property(lambda self: self._task_names[:])
+        l = list(filter(lambda x: x != task_name, self.task_names))
+        self.task_names = l
 
     def renew_id(self):
-        self._id = conditions.get_id()
+        self.cond_id = conditions.get_id()
 
     def dump(self):
-        if self._name is None:
+        if self.cond_name is None:
             raise RuntimeError("condition not initialized")
-        file_name = os.path.join(USER_CONFIG_FOLDER, '%s.cond' % self._name)
+        file_name = os.path.join(USER_CONFIG_FOLDER, '%s.cond' % self.cond_name)
         with open(file_name, 'wb') as f:
             pickle.dump(self, f)
 
     def unlink_file(self):
-        file_name = os.path.join(USER_CONFIG_FOLDER, "%s.cond" % self._name)
+        file_name = os.path.join(USER_CONFIG_FOLDER, "%s.cond" % self.cond_name)
         if os.path.exists(file_name):
             os.unlink(file_name)
 
@@ -1165,38 +1106,36 @@ class Condition(object):
             return o
 
     def reset(self):
-        self._last_tested = None
-        self._last_succeeded = None
+        self.last_tested = None
+        self.last_succeeded = None
         self._has_succeeded = False
 
     def suspend(self):
-        self._suspended = True
+        self.suspended = True
 
     def resume(self):
-        self._suspended = False
-
-    suspended = property(lambda self: self._suspended)
+        self.suspended = False
 
     def test(self):
-        if self._name is None:
+        if self.cond_name is None:
             raise RuntimeError("condition not initialized")
-        if self._suspended:
+        if self.suspended:
             self._info("check skipped (suspended condition)")
             return False
-        elif not self._repeat and self._has_succeeded:
+        elif not self.repeat and self._has_succeeded:
             self._info("check skipped (non-repeating condition)")
             return False
         else:
             self._debug("check or skip condition test")
             t = time.time()
-            if not self._last_tested:
-                self._last_tested = t
-            delta_t = round(t - self._last_tested, 3)
-            self._debug("verifying check time (%s >= %s)" % (delta_t, self._skip_seconds))
-            if delta_t >= self._skip_seconds:
-                self._last_tested = t
+            if not self.last_tested:
+                self.last_tested = t
+            delta_t = round(t - self.last_tested, 3)
+            self._debug("verifying check time (%s >= %s)" % (delta_t, self.skip_seconds))
+            if delta_t >= self.skip_seconds:
+                self.last_tested = t
                 if self._check_condition():
-                    self._last_succeeded = t
+                    self.last_succeeded = t
                     self._has_succeeded = True
                     self._info("check successful")
                     return True
@@ -1206,30 +1145,29 @@ class Condition(object):
                 self._info("check skipped")
         return False
 
-    def _verified(self):
-        if self._last_succeeded:
-            rv = bool(self._last_tested == self._last_succeeded)
+    def verified(self):
+        if self.last_succeeded:
+            rv = bool(self.last_tested == self.last_succeeded)
         else:
             rv = False
-        self._last_succeeded = None
+        self.last_succeeded = None
         return rv
-    verified = property(_verified)
 
     def tick(self):
         self.test()
-        if self._verified():
-            if self._exec_sequence:
-                for task_name in self._task_names:
+        if self.verified():
+            if self.exec_sequence:
+                for task_name in self.task_names:
                     task = tasks.get(task_name=task_name)
                     if task:
                         self._info("sequential run of task %s" % task_name)
-                        task.run(self._name)
+                        task.run(self.cond_name)
                     else:
                         self._warning("task not found: %s" % task_name)
             else:
                 localtasks = []
                 foundnames = []
-                for task_name in self._task_names:
+                for task_name in self.task_names:
                     task = tasks.get(task_name=task_name)
                     if task:
                         localtasks.append(task)
@@ -1238,25 +1176,23 @@ class Condition(object):
                         self._warning("task not found: %s" % task_name)
                 self._info("parallel run of tasks %s" % ", ".join(foundnames))
                 with ThreadPoolExecutor(config.get('Concurrency', 'max threads')) as e:
-                    e.map(lambda task: task.run(self._name), localtasks)
+                    e.map(lambda task: task.run(self.cond_name), localtasks)
 
 
 class IntervalBasedCondition(Condition):
 
     def _check_condition(self):
         self._debug("checking interval based condition")
-        if self._interval:
+        if self.interval:
             t = time.time()
-            if self._interval <= round(t - self._checked):
-                self._checked = t
+            if self.interval <= round(t - self.checked):
+                self.checked = t
                 return True
         return False
 
-    interval = property(lambda self: self._interval)
-
     def __init__(self, name, interval, repeat=True, exec_sequence=True):
-        self._interval = interval
-        self._checked = time.time()
+        self.interval = interval
+        self.checked = time.time()
         Condition.__init__(self, name, repeat, exec_sequence)
 
 
@@ -1267,40 +1203,33 @@ class TimeBasedCondition(Condition):
         cur_time = time.time()
         now = time.localtime(cur_time)
         test_tuple = (
-            self._year or now[0],
-            self._month or now[1],
-            self._day or now[2],
-            self._hour or now[3],
-            self._minute or now[4],
+            self.year or now[0],
+            self.month or now[1],
+            self.day or now[2],
+            self.hour or now[3],
+            self.minute or now[4],
             0,
             now[6],
-            self._weekday or now[6],
+            self.weekday or now[6],
             now[8],
         )
         test_time = time.mktime(test_tuple)
-        self._debug("checking %.3f - %.3f (=%.3f) in [0-%s]" % (cur_time, test_time, cur_time - test_time, self._skip_seconds))
-        if 0 < cur_time - test_time <= self._skip_seconds:
+        self._debug("checking %.3f - %.3f (=%.3f) in [0-%s]" % (cur_time, test_time, cur_time - test_time, self.skip_seconds))
+        if 0 < cur_time - test_time <= self.skip_seconds:
             return True
         else:
             return False
 
-    year = property(lambda self: self._year)
-    month = property(lambda self: self._month)
-    day = property(lambda self: self._day)
-    hour = property(lambda self: self._hour)
-    minute = property(lambda self: self._minute)
-    weekday = property(lambda self: self._weekday)
-
     def __init__(self, name, timedict, repeat=True, exec_sequence=True):
         if not timedict:
             raise ValueError("time specification must be given")
-        self._year = None if 'year' not in timedict.keys() else timedict['year']
-        self._month = None if 'month' not in timedict.keys() else timedict['month']
-        self._day = None if 'day' not in timedict.keys() else timedict['day']
-        self._hour = None if 'hour' not in timedict.keys() else timedict['hour']
-        self._minute = None if 'minute' not in timedict.keys() else timedict['minute']
-        self._weekday = None if 'weekday' not in timedict.keys() else timedict['weekday']
-        self._tick_seconds = config.get('Scheduler', 'tick seconds')
+        self.year = None if 'year' not in timedict.keys() else timedict['year']
+        self.month = None if 'month' not in timedict.keys() else timedict['month']
+        self.day = None if 'day' not in timedict.keys() else timedict['day']
+        self.hour = None if 'hour' not in timedict.keys() else timedict['hour']
+        self.minute = None if 'minute' not in timedict.keys() else timedict['minute']
+        self.weekday = None if 'weekday' not in timedict.keys() else timedict['weekday']
+        self.tick_seconds = config.get('Scheduler', 'tick seconds')
         Condition.__init__(self, name, repeat, exec_sequence)
 
 
@@ -1309,25 +1238,25 @@ class CommandBasedCondition(Condition):
     def _check_condition(self):
         self._debug("checking command based condition")
         try:
-            self._debug("spawning test subprocess: %s" % self._command)
-            with subprocess.Popen(self._command,
+            self._debug("spawning test subprocess: %s" % self.command)
+            with subprocess.Popen(self.command,
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.PIPE,
                                   shell=True) as proc:
                 stdout, stderr = proc.communicate()
-                if self._expected_status is not None:
+                if self.expected_status is not None:
                     self._info("checking condition command exit status")
-                    self._debug("test: %s == %s" % (proc.returncode, self._expected_status))
-                    if int(proc.returncode) == self._expected_status:
+                    self._debug("test: %s == %s" % (proc.returncode, self.expected_status))
+                    if int(proc.returncode) == self.expected_status:
                         return True
-                elif self._expected_stdout:
+                elif self.expected_stdout:
                     self._info("checking condition command output")
-                    expected = self._expected_stdout
+                    expected = self.expected_stdout
                     returned = stdout.decode().strip()
-                    if self._case_sensitive:
+                    if self.case_sensitive:
                         expected = expected.upper()
                         returned = returned.upper()
-                    if self._match_exact:
+                    if self.match_exact:
                         self._debug("test: '%s' == '%s'" % (expected, returned))
                         if expected == returned:
                             return True
@@ -1335,14 +1264,14 @@ class CommandBasedCondition(Condition):
                         self._debug("test: '%s' in '%s'" % (expected, returned))
                         if expected in returned:
                             return True
-                elif self._expected_stderr:
+                elif self.expected_stderr:
                     self._info("checking condition command error output")
-                    expected = self._expected_stderr
+                    expected = self.expected_stderr
                     returned = stderr.decode().strip()
-                    if self._case_sensitive:
+                    if self.case_sensitive:
                         expected = expected.upper()
                         returned = returned.upper()
-                    if self._match_exact:
+                    if self.match_exact:
                         self._debug("test: '%s' == '%s'" % (expected, returned))
                         if expected == returned:
                             return True
@@ -1365,23 +1294,16 @@ class CommandBasedCondition(Condition):
             self._error("condition failed (unexpected error: %s)" % e)
             return False
 
-    match_exact = property(lambda self: self._match_exact)
-    case_sensitive = property(lambda self: self._case_sensitive)
-    command = property(lambda self: self._command)
-    expected_status = property(lambda self: self._expected_status)
-    expected_stdout = property(lambda self: self._expected_stdout)
-    expected_stderr = property(lambda self: self._expected_stderr)
-
     def command_properties(self, **kwargs):
         for k in kwargs.keys():
             if k == 'match_exact':
-                self._match_exact = bool(kwargs[k])
+                self.match_exact = bool(kwargs[k])
             elif k == 'case_sensitive':
-                self._case_sensitive = bool(kwargs[k])
+                self.case_sensitive = bool(kwargs[k])
 
     def __init__(self, name, command, status=None, stdout=None, stderr=None, repeat=True, exec_sequence=True):
-        self._match_exact = False
-        self._case_sensitive = False
+        self.match_exact = False
+        self.case_sensitive = False
         check_count = 0
         if status is not None:
             check_count += 1
@@ -1391,11 +1313,11 @@ class CommandBasedCondition(Condition):
             check_count += 1
         if check_count != 1:
             raise ValueError("only one of status, stdout, stderr should be set")
-        self._command = command
-        self._expected_status = status
-        self._expected_stdout = stdout
-        self._expected_stderr = stderr
-        self._last_tick = time.time()
+        self.command = command
+        self.expected_status = status
+        self.expected_stdout = stdout
+        self.expected_stderr = stderr
+        self.last_tick = time.time()
         Condition.__init__(self, name, repeat, exec_sequence)
 
 
@@ -1403,24 +1325,22 @@ class CommandBasedCondition(Condition):
 # time condition is implemented as a special case of the command condition
 class IdleTimeBasedCondition(CommandBasedCondition):
 
-    idle_secs = property(lambda self: self._idle_secs)
-
     def _check_condition(self):
-        if self._reset:
+        if self.reset:
             if CommandBasedCondition._check_condition(self):
-                self._reset = False
+                self.reset = False
                 return True
             else:
-                self._reset = True
+                self.reset = True
                 return False
         else:
             if not CommandBasedCondition._check_condition(self):
-                self._reset = True
+                self.reset = True
             return False
 
     def __init__(self, name, idle_secs, repeat=True, exec_sequence=True):
-        self._idle_secs = idle_secs
-        self._reset = True
+        self.idle_secs = idle_secs
+        self.reset = True
         command = """test $(xprintidle) -gt %s""" % (idle_secs * 1000)
         CommandBasedCondition.__init__(self, name, command, status=0, repeat=repeat, exec_sequence=exec_sequence)
 
@@ -1430,20 +1350,18 @@ class IdleTimeBasedCondition(CommandBasedCondition):
 # is closed: consider the idea of renaming both conditions and events
 class EventBasedCondition(Condition):
 
-    event = property(lambda self: self._event)
-
     def _check_condition(self):
-        self._debug("checking event based condition: %s" % self._event)
-        if self._event == current_system_event:
+        self._debug("checking event based condition: %s" % self.event)
+        if self.event == current_system_event:
             return True
         else:
             return False
 
     def __init__(self, name, event, no_skip=True, repeat=False, exec_sequence=True):
-        self._event = event
+        self.event = event
         Condition.__init__(self, name, repeat, exec_sequence)
         if no_skip:
-            self._skip_seconds = 0
+            self.skip_seconds = 0
 
 
 #############################################################################
@@ -1580,7 +1498,7 @@ class TaskDialog(object):
             o('chkImportEnvironment').set_active(task.include_env)
             m = o('store_listEnvVars')
             li = []
-            e = task.task_env
+            e = task.environment_vars
             for k in e.keys():
                 li.append([k, e[k]])
             li.sort()
@@ -1661,9 +1579,9 @@ class TaskDialog(object):
             m = o('store_listEnvVars')
             for row in m:
                 task.set_env(row[0], row[1])
-            task.set_match_exact(o('chkExactMatch').get_active())
-            task.set_case_sensitive(o('chkCaseSensitive').get_active())
-            task.set_include_env(o('chkImportEnvironment').get_active())
+            task.match_exact = o('chkExactMatch').get_active()
+            task.case_sensitive = o('chkCaseSensitive').get_active()
+            task.include_env = o('chkImportEnvironment').get_active()
             task.dump()
             tasks.add(task)
             tasks.save()
