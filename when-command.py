@@ -5,20 +5,8 @@
 # Copyright (c) 2015 Francesco Garosi
 # Released under the BSD License (see LICENSE.md)
 #
-# Small startup application that runs tasks when particular conditions are
-# met. The conditions for now are:
+# Small startup application that runs tasks when particular conditions are met.
 #
-# * at certain times of the day
-# * after a certain time from start
-# * repeat every specified amount of time
-# * when the execution of a command has a certain status, or output, or
-#   prints a specified text to stderr
-# * whenever a certain event takes place (eg. start applet, terminate applet)
-# * after a certain amount of idle time (through an external command!)
-#
-# The program is configured using a dialog box, and the task
-# list (and editor) is accessible using a graphical user interface
-
 #############################################################################
 # SOME NOTES ABOUT THE CODE
 # The code tries to follow the usual guidelines for Python 3.x, and takes
