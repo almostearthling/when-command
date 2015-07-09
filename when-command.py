@@ -610,6 +610,7 @@ class Conditions(object):
             l = pickle.load(f)
         for x, xc in l:
             c = Condition.restore(x)
+            print(c)
             c.reset()
             self.add(c)
 
@@ -1314,21 +1315,21 @@ class CommandBasedCondition(Condition):
 class IdleTimeBasedCondition(CommandBasedCondition):
 
     def _check_condition(self):
-        if self.reset:
+        if self.idle_reset:
             if CommandBasedCondition._check_condition(self):
-                self.reset = False
+                self.idle_reset = False
                 return True
             else:
-                self.reset = True
+                self.idle_reset = True
                 return False
         else:
             if not CommandBasedCondition._check_condition(self):
-                self.reset = True
+                self.idle_reset = True
             return False
 
     def __init__(self, name, idle_secs, repeat=True, exec_sequence=True):
         self.idle_secs = idle_secs
-        self.reset = True
+        self.idle_reset = True
         command = """test $(xprintidle) -gt %s""" % (idle_secs * 1000)
         CommandBasedCondition.__init__(self, name, command, status=0, repeat=repeat, exec_sequence=exec_sequence)
 
