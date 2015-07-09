@@ -610,7 +610,6 @@ class Conditions(object):
             l = pickle.load(f)
         for x, xc in l:
             c = Condition.restore(x)
-            print(c)
             c.reset()
             self.add(c)
 
