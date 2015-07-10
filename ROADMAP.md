@@ -113,7 +113,7 @@ List of achievements and expectations for the When applet.
 * Tests and amendments for other Linux flavors and distributions
 
 
-## 7) Cyclic development actions
+## 7) Ongoing actions
 
 * Check code consistency
 * Remove unused functions
