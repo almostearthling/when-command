@@ -671,7 +671,7 @@ class HistoryQueue(object):
             max_items = config.get('History', 'max items')
         self._lock = threading.Lock()
         self._queue = deque(maxlen=max_items)
-        self.cond_id = self._item_id()
+        self._iter_id = self._item_id()
 
     def _item_id(self):
         # an ID that is unique just within the queue: a reusable int is enough
@@ -684,8 +684,7 @@ class HistoryQueue(object):
     def append(self, name, startup_time, success, trigger, status=None, stdout=None, stderr=None, reason=None):
         t = time.time()
         run_time = t - startup_time
-        item_id = self._item_id()
-        item = historyitem(next(self.cond_id), startup_time, run_time, name,
+        item = historyitem(next(self._iter_id), startup_time, run_time, name,
                            trigger, success, status, stdout, stderr, reason)
         self._lock.acquire()
         self._queue.append(item)
@@ -696,8 +695,8 @@ class HistoryQueue(object):
             max_items = config.get('History', 'max items')
         self._lock.acquire()
         self._queue = deque(self._queue, max_items)
+        self._iter_id = self._item_id()
         self._lock.release()
-        self.cond_id = self._item_id()
 
     def clear(self):
         self._lock.acquire()
@@ -750,6 +749,7 @@ class Task(object):
     # the real McCoy
     def __init__(self, name=None, command=None, startup_dir=None):
         self.task_id = 0
+        self.task_name = name
         self.environment_vars = {}
         self.include_env = True
         self.success_stdout = None
@@ -762,12 +762,11 @@ class Task(object):
         self.case_sensitive = False
         self.command = ""
         self.startup_dir = None
-        self.process_stdout = ""
-        self.process_stderr = ""
-        self.process_status = 0
-        self.process_failed = False
-        self.task_name = name
         self.running = False
+        self._process_stdout = ""
+        self._process_stderr = ""
+        self._process_status = 0
+        self._process_failed = False
         if name is None:
             self._info("empty task created")
         else:
@@ -830,9 +829,9 @@ class Task(object):
         applet_lock.acquire()
         self.running = True
         applet_lock.release()
-        self.process_failed = False
+        self._process_failed = False
         if self.task_name is None:
-            self.process_failed = True
+            self._process_failed = True
             raise RuntimeError("task not initialized")
         if trigger_name:
             self._info("[trigger: %s] running command: %s" % (trigger_name, self.command))
@@ -848,9 +847,9 @@ class Task(object):
         else:
             env = None
         startup_time = time.time()
-        self.process_stdout = None
-        self.process_stderr = None
-        self.process_status = None
+        self._process_stdout = None
+        self._process_stderr = None
+        self._process_status = None
         try:
             failure_reason = None
             startup_dir = self.startup_dir if self.startup_dir else '.'
@@ -862,136 +861,136 @@ class Task(object):
                                   cwd=startup_dir,
                                   env=env) as proc:
                 stdout, stderr = proc.communicate()
-                self.process_stdout = stdout.decode().strip()
-                self.process_stderr = stderr.decode().strip()
-                self.process_status = proc.returncode
+                self._process_stdout = stdout.decode().strip()
+                self._process_stderr = stderr.decode().strip()
+                self._process_status = proc.returncode
                 if self.success_status is not None:
-                    if self.process_status != self.success_status:
-                        self._warning("task failed (process status=%s)" % self.process_status)
-                        self.process_failed = True
+                    if self._process_status != self.success_status:
+                        self._warning("task failed (process status=%s)" % self._process_status)
+                        self._process_failed = True
                         failure_reason = 'status'
                 elif self.failure_status is not None:
-                    if self.process_status == self.failure_status:
-                        self._warning("task failed (process status=%s)" % self.process_status)
-                        self.process_failed = True
+                    if self._process_status == self.failure_status:
+                        self._warning("task failed (process status=%s)" % self._process_status)
+                        self._process_failed = True
                         failure_reason = 'status'
                 elif self.failure_stdout is not None:
                     if self.case_sensitive:
                         if self.match_exact:
-                            if self.process_stdout == self.failure_stdout:
+                            if self._process_stdout == self.failure_stdout:
                                 self._warning("task failed (stdout check)")
-                                self.process_failed = True
+                                self._process_failed = True
                                 failure_reason = 'stdout'
                         else:
-                            if self.failure_stdout in self.process_stdout:
+                            if self.failure_stdout in self._process_stdout:
                                 self._warning("task failed (stdout check)")
-                                self.process_failed = True
+                                self._process_failed = True
                                 failure_reason = 'stdout'
                     else:
                         if self.match_exact:
-                            if self.process_stdout.upper() == self.failure_stdout.upper():
+                            if self._process_stdout.upper() == self.failure_stdout.upper():
                                 self._warning("task failed (stdout check, case insensitive)")
-                                self.process_failed = True
+                                self._process_failed = True
                                 failure_reason = 'stdout'
                         else:
-                            if self.failure_stdout.upper() in self.process_stdout.upper():
+                            if self.failure_stdout.upper() in self._process_stdout.upper():
                                 self._warning("task failed (stdout check, case insensitive)")
-                                self.process_failed = True
+                                self._process_failed = True
                                 failure_reason = 'stdout'
                 elif self.failure_stderr is not None:
                     if self.case_sensitive:
                         if self.match_exact:
-                            if self.process_stderr == self.failure_stderr:
+                            if self._process_stderr == self.failure_stderr:
                                 self._warning("task failed (stderr check)")
-                                self.process_failed = True
+                                self._process_failed = True
                                 failure_reason = 'stderr'
                         else:
-                            if self.failure_stderr in self.process_stderr:
+                            if self.failure_stderr in self._process_stderr:
                                 self._warning("task failed (stderr check)")
-                                self.process_failed = True
+                                self._process_failed = True
                                 failure_reason = 'stderr'
                     else:
                         if self.match_exact:
-                            if self.process_stderr.upper() == self.failure_stderr.upper():
+                            if self._process_stderr.upper() == self.failure_stderr.upper():
                                 self._warning("task failed (stderr check, case insensitive)")
-                                self.process_failed = True
+                                self._process_failed = True
                                 failure_reason = 'stderr'
                         else:
-                            if self.failure_stderr.upper() in self.process_stderr.upper():
+                            if self.failure_stderr.upper() in self._process_stderr.upper():
                                 self._warning("task failed (stderr check, case insensitive)")
-                                self.process_failed = True
+                                self._process_failed = True
                                 failure_reason = 'stderr'
                 elif self.success_stdout is not None:
                     if self.case_sensitive:
                         if self.match_exact:
-                            if self.process_stdout != self.success_stdout:
+                            if self._process_stdout != self.success_stdout:
                                 self._warning("task failed (stdout check)")
-                                self.process_failed = True
+                                self._process_failed = True
                                 failure_reason = 'stdout'
                         else:
-                            if self.success_stdout not in self.process_stdout:
+                            if self.success_stdout not in self._process_stdout:
                                 self._warning("task failed (stdout check, case insensitive)")
-                                self.process_failed = True
+                                self._process_failed = True
                                 failure_reason = 'stdout'
                     else:
                         if self.match_exact:
-                            if self.process_stdout.upper() != self.success_stdout.upper():
+                            if self._process_stdout.upper() != self.success_stdout.upper():
                                 self._warning("task failed (stdout check)")
-                                self.process_failed = True
+                                self._process_failed = True
                                 failure_reason = 'stdout'
                         else:
-                            if not self.success_stdout.upper() in self.process_stdout.upper():
+                            if not self.success_stdout.upper() in self._process_stdout.upper():
                                 self._warning("task failed (stdout check, case insensitive)")
-                                self.process_failed = True
+                                self._process_failed = True
                                 failure_reason = 'stdout'
                 elif self.success_stderr is not None:
                     if self.case_sensitive:
                         if self.match_exact:
-                            if self.process_stderr != self.success_stderr:
+                            if self._process_stderr != self.success_stderr:
                                 self._warning("task failed (stderr check)")
-                                self.process_failed = True
+                                self._process_failed = True
                                 failure_reason = 'stderr'
                         else:
-                            if self.success_stderr not in self.process_stderr:
+                            if self.success_stderr not in self._process_stderr:
                                 self._warning("task failed (stderr check)")
-                                self.process_failed = True
+                                self._process_failed = True
                                 failure_reason = 'stderr'
                     else:
                         if self.match_exact:
-                            if self.process_stderr.upper() != self.success_stderr.upper():
+                            if self._process_stderr.upper() != self.success_stderr.upper():
                                 self._warning("task failed (stderr check, case insensitive)")
-                                self.process_failed = True
+                                self._process_failed = True
                                 failure_reason = 'stderr'
                         else:
-                            if self.success_stderr.upper() not in self.process_stderr.upper():
+                            if self.success_stderr.upper() not in self._process_stderr.upper():
                                 self._warning("task failed (stderr check, case insensitive)")
-                                self.process_failed = True
+                                self._process_failed = True
                                 failure_reason = 'stderr'
         except RuntimeError as e:
             self._warning("task failed, runtime error: %s" % e)
             failure_reason = 'overlap'
         except OSError as e:
             self._warning("task failed, system error: %s" % e)
-            self.process_failed = True
+            self._process_failed = True
             failure_reason = 'system'
         except subprocess.CalledProcessError as e:
             self._warning("task failed, called process error")
-            self.process_failed = True
+            self._process_failed = True
             failure_reason = 'process'
         except subprocess.TimeoutExpired as e:
             self._warning("task failed, timeout expired")
-            self.process_failed = True
+            self._process_failed = True
             failure_reason = 'timeout'
         except Exception as e:
             self._error("task failed (unexpected error)")
-            self.process_failed = True
+            self._process_failed = True
             failure_reason = 'generic'
         finally:
-            success = self.running and not self.process_failed
+            success = self.running and not self._process_failed
             history.append(self.task_name, startup_time, success, trigger_name,
-                           self.process_status, self.process_stdout,
-                           self.process_stderr, failure_reason)
-            if self.process_failed:
+                           self._process_status, self._process_stdout,
+                           self._process_stderr, failure_reason)
+            if self._process_failed:
                 applet.set_attention(True)
                 applet.notify(resources.NOTIFY_TASK_FAILED % self.task_name)
             else:
