@@ -1618,7 +1618,7 @@ class TaskDialog(object):
         ret = self.dialog.run()
         self.dialog.hide()
         self.dialog.set_keep_above(False)
-        if ret == 0:
+        if ret == ACTION_OK:
             name = o('txtName').get_text()
             command = o('txtCommand').get_text()
             startup_dir = o('txtFolder').get_text()
@@ -1931,7 +1931,7 @@ class ConditionDialog(object):
         ret = self.dialog.run()
         self.dialog.hide()
         self.dialog.set_keep_above(False)
-        if ret == 0:
+        if ret == ACTION_OK:
             name = o('txtName').get_text()
             repeat = o('chkRepeat').get_active()
             sequence = o('chkSequence').get_active()
@@ -2088,7 +2088,7 @@ class SettingsDialog(object):
         self.dialog.hide()
         self.dialog.set_keep_above(False)
         o = self.builder.get_object
-        if ret == 0:
+        if ret == ACTION_OK:
             config_skip = []
             v = o('cbLogLevel').get_active()
             if v >= 0:
