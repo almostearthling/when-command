@@ -184,9 +184,7 @@ A more general discussion about contribution can be found [here](https://help.gi
 
 As long as the software can be considered in its *pre-release* state, breaking the backwards-compatibility is allowed although undesirable. **When** has actually been released as *beta* software, since it has been tested for a while and with a suite that covered all the cases it can handle. Probably there are still bugs and they will have to be corrected. Unfortunately these bugs could also pop up in the two main classes that build the core of the applet, and the "form" of these classes could affect the way the stateful part of the program data (namely, *Tasks* and *Conditions*) is stored to disk: when it comes to bugs, until **When** enters a *production* state (which will be the 1.0.0 release, as per the [Semantic Versioning](https://github.com/mojombo/semver/blob/master/semver.md) specification), compatibility break will be preferred to bug persistence. In all other cases I'll grant special attention to the possibility to install newer versions of the software without having to redefine all rules.
 
-However, there are on the roadmap some changes that, when implemented, could break the backwards compatibility. These changes are mostly pertinent to the *Code Cleanup* section: it's still to decide whether or not to pursue them.
-
-In all cases, I'll try to find workarounds to give the users the possibility to either backup their *Tasks* and *Conditions* and restore them for use in new versions, or to convert them when the program starts.
+However, there have been some changes that actually broke the backwards compatibility: explicit variables were instead of properties and setters/getters in the main classes, to improve readability and clarity of code. *Tasks* and *Conditions* (and other configuration parts) created with the 0.1.x releases are not compatible with the ones that are created with version 0.2.x (and further). Until another way of saving tasks and conditions is found, or at least to dump/restore them in a portable form, no other compatibility breaks should occur.
 
 
 ### Resources

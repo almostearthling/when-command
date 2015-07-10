@@ -65,6 +65,7 @@ List of achievements and expectations for the When applet.
 * Application icon :ok:
 * Application `.desktop` entry :ok:
 * Ubuntu/Debian package :ok:
+* Refactoring: instance variables instead of properties and setters :ok:
 
 
 ## 2) To *Working* Alpha Release
@@ -96,9 +97,7 @@ List of achievements and expectations for the When applet.
   - Time condition time definition line
   - Better control shapes and types
   - Use a more homogeneous design (padding, spacing, fill, etc.)
-* Clean up code
-  - Use instance variables instead of properties and setters
-  - Fix GTK errors
+* Fix GTK errors
 
 
 ## 6) Desirable features
