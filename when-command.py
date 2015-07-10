@@ -178,6 +178,7 @@ resources.DLG_CANNOT_DELETE_CONDITION = "Condition %s could not be deleted."
 resources.DLG_CANNOT_FIND_TASK = "Task %s could not be found."
 resources.DLG_CANNOT_FIND_CONDITION = "Condition %s could not be found."
 resources.DLG_WRONG_EXIT_STATUS = "Wrong value for exit status specified.\nPlease consider reviewing it."
+resources.DLG_ABOUT_VERSION_STRING = "Version: %s"
 
 resources.NOTIFY_TASK_FAILED = "Task failed: %s"
 
@@ -2266,6 +2267,7 @@ class AboutDialog(object):
         o = self.builder.get_object
         self.dialog = o('dlgAbout')
         self.dialog.set_logo(self.image_logo.get_pixbuf())
+        self.dialog.set_version(resources.DLG_ABOUT_VERSION_STRING % APPLET_VERSION)
         self.dialog.set_icon_from_file(os.path.join(APP_ICON_FOLDER, 'alarmclock.png'))
 
     def run(self):
