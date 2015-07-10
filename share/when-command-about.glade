@@ -4,7 +4,6 @@
   <requires lib="gtk+" version="3.10"/>
   <object class="GtkAboutDialog" id="dlgAbout">
     <property name="can_focus">False</property>
-    <property name="icon">alarmclock-128.png</property>
     <property name="type_hint">dialog</property>
     <property name="program_name">When</property>
     <property name="version">0.0.0</property>
@@ -12,7 +11,6 @@
     <property name="comments" translatable="yes">When is a configurable user scheduler designed to work in an X/Gnome session.</property>
     <property name="website">http://almostearthling.github.io/when-command/</property>
     <property name="website_label" translatable="yes">When's Web Page</property>
-    <property name="logo">alarmclock-128.png</property>
     <property name="logo_icon_name"/>
     <property name="license_type">bsd</property>
     <child internal-child="vbox">
