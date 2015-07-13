@@ -99,11 +99,14 @@ List of achievements and expectations for the When applet.
   - Use a more homogeneous design (padding, spacing, fill, etc.)
 * Fix GTK errors
 * Command line switches
+  - Close current instance
   - Restart current instance
+  - Start and open settings dialog
   - Rewrite configuration
   - Rewrite configuration and exit
   - Install icons and exit
   - Force indicator icon on
+
 
 
 ## 6) Desirable features
