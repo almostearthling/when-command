@@ -274,7 +274,7 @@ def create_autostart_file(overwrite=True):
 # manage pause file
 def create_pause_file():
     if not os.path.exists(USER_PAUSE_FILE):
-        file(USER_PAUSE_FILE, 'w')
+        open(USER_PAUSE_FILE, 'w')
         return True
     else:
         return False
