@@ -102,6 +102,8 @@ List of achievements and expectations for the When applet.
   - Close current instance
   - Restart current instance
   - Start and open settings dialog
+  - Clear/Rebuild configuration directory
+  - Clear/Rebuild data directory
   - Rewrite configuration
   - Rewrite configuration and exit
   - Install icons and exit
