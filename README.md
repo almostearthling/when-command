@@ -50,10 +50,10 @@ to determine whether the process succeeded or failed. When choosing to check for
 There are several types of condition available:
 
 1. **Interval based**: After a certain time interval the associated tasks are executed, if the condition is set to repeat checks, the tasks will be executed again regularly after the same time interval.
-2. **Time based**: The tasks are executed when the time specification is matched.
+2. **Time based**: The tasks are executed when the time specification is matched. Time definitions can be partial, and in that case only the defined parts will be taken into account for checking: for instance, if the user only specifies minutes, the condition is verified at the specified minute for every hour.
 3. **Command based**: When the execution of a specified command gives the expected result (in terms of **exit code**, **stdout** or **stderr**), the tasks are executed. The way the test command is specified is similar (although simpler) to the specification of a command in the *Task* definition dialog box. The command is run in the same environment (and startup directory) as **When** at the moment it was started.
 4. **Idle time based**: When the session has been idle for the specified amount of time the tasks are executed. This actually is implemented as a shortcut to the command based condition based upon the `xprintidle` command, which must be installed for the applet to work properly.
-5. **System event based**: The tasks are executed when a certain system event occurs. Currently only *startup* and *shutdown* are the implemented system events.
+5. **Event based**: The tasks are executed when a certain event occurs. Currently only *startup* and *shutdown* are the implemented events.
 
 Also, the condition configuration interface allows to decide:
 
