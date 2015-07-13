@@ -93,6 +93,7 @@ The options are:
 2. **Scheduler**
   * *Application Clock Tick Time*: represents the tick frequency of the application clock, sort of a heartbeat, each tick verifies whether or not a condition has to be checked; this option is called `tick seconds` in the configuration file
   * *Condition Check Skip Time*: all conditions will skip this amount of seconds from previous test to perform an actual test, should be at least the same as *Application Clock Tick Time*; this is named `skip seconds` in the configuration file.
+  * *Preserve Pause Across Sessions*: if *true* (the default) the scheduler will remain paused upon applet restart if it was paused when the applet (or session) was closed. Please notice that the indicator icon gives feedback anyway about the paused/non-paused state.
 3. **Advanced**
   * *Max Concurrent Tasks*: maximum number of tasks that can be run in a parallel run (`max threads` in the configuration file)
   * *Log Level*: the amount of detail in the log file
@@ -108,6 +109,7 @@ By default the applet creates a file with the following configuration, which sho
 [Scheduler]
 tick seconds = 15
 skip seconds = 60
+preserve pause = true
 
 [General]
 show icon = true
