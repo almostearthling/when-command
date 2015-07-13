@@ -81,6 +81,7 @@ USER_CONFIG_FOLDER = os.path.join(USER_FOLDER, '.config', APPLET_NAME)
 USER_LOG_FOLDER = os.path.join(USER_DATA_FOLDER, 'log')
 USER_LOG_FILE = os.path.join(USER_LOG_FOLDER, "%s.log" % APPLET_NAME)
 USER_CONFIG_FILE = os.path.join(USER_CONFIG_FOLDER, "%s.conf" % APPLET_NAME)
+USER_PAUSE_FILE = os.path.join(USER_CONFIG_FOLDER, "%s.pause" % APPLET_NAME)
 
 
 # verify that the user folders are present, otherwise create them
@@ -268,6 +269,27 @@ def create_autostart_file(overwrite=True):
                 applet_log.error("MAIN: could not create the autostart launcher")
 
 
+# manage pause file
+def create_pause_file():
+    if not os.path.exists(USER_PAUSE_FILE):
+        file(USER_PAUSE_FILE, 'w')
+        return True
+    else:
+        return False
+
+
+def check_pause_file():
+    return os.path.exists(USER_PAUSE_FILE)
+
+
+def unlink_pause_file():
+    if os.path.exists(USER_PAUSE_FILE):
+        os.unlink(USER_PAUSE_FILE)
+        return True
+    else:
+        return False
+
+
 # logger
 applet_log_handler = logging.NullHandler()
 applet_log_formatter = logging.Formatter(fmt=LOG_FORMAT, datefmt="%Y-%m-%d %H:%M:%S")
@@ -343,6 +365,7 @@ class Config(object):
             'Scheduler': {
                 'tick seconds': int,
                 'skip seconds': int,
+                'preserve pause': bool_spec,
             },
             'General': {
                 'show icon': bool_spec,
@@ -366,6 +389,7 @@ class Config(object):
             [Scheduler]
             tick seconds = 15
             skip seconds = 60
+            preserve pause = true
 
             [General]
             show icon = true
