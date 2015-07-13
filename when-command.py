@@ -56,10 +56,12 @@ from collections import OrderedDict, deque, namedtuple
 # constants
 
 # base constants
+VERSION = "0.2.0-beta.2"
+
 APPLET_NAME = 'when-command'
 APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
-APPLET_VERSION = "0.2.0-beta.1"
+APPLET_VERSION = VERSION
 APPLET_ID = "it.jks.WhenCommand"
 
 # logging constants
@@ -2000,6 +2002,7 @@ class SettingsDialog(object):
         o('chkShowIcon').set_active(config.get('General', 'show icon'))
         o('chkAutostart').set_active(config.get('General', 'autostart'))
         o('chkNotifications').set_active(config.get('General', 'notifications'))
+        o('chkPreservePause').set_active(config.get('Scheduler', 'preserve pause'))
         o('cbLogLevel').set_active(log_level_idx)
         o('cbIconTheme').set_active(icon_theme_idx)
         o('txtTickSeconds').set_text(str(config.get('Scheduler', 'tick seconds')))
@@ -2028,6 +2031,10 @@ class SettingsDialog(object):
             config.set('General', 'show icon', o('chkShowIcon').get_active())
             config.set('General', 'autostart', o('chkAutostart').get_active())
             config.set('General', 'notifications', o('chkNotifications').get_active())
+            preserve_pause = o('chkPreservePause').get_active()
+            config.set('Scheduler', 'preserve pause', preserve_pause)
+            if not preserve_pause:
+                unlink_pause_file()
             try:
                 t = o('txtTickSeconds').get_text()
                 v = int(t)
@@ -2287,11 +2294,15 @@ class AppletIndicator(Gtk.Application):
         if o.get_active():
             applet_log.info("MAIN: pausing the scheduler")
             periodic.stop()
+            if config.get('Scheduler', 'preserve pause'):
+                create_pause_file()
             self.indicator.set_icon('alarm-off')
             self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
         else:
             self.indicator.set_icon('alarm')
             self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
+            if config.get('Scheduler', 'preserve pause'):
+                unlink_pause_file()
             periodic.start()
             applet_log.info("MAIN: scheduler resumed operation")
 
@@ -2384,6 +2395,8 @@ class AppletIndicator(Gtk.Application):
         menu.append(separator)
 
         item_pause = Gtk.CheckMenuItem(label=resources.MENU_PAUSE)
+        if config.get('Scheduler', 'preserve pause') and check_pause_file():
+            item_pause.set_active(True)
         item_pause.connect('activate', self.pause)
         item_pause.show()
         menu.append(item_pause)
@@ -2419,7 +2432,10 @@ def main():
     config_loghandler()
     config_loglevel()
     signal.signal(signal.SIGINT, signal.SIG_DFL)
-    periodic.start()
+    if not config.get('Scheduler', 'preserve pause') or not check_pause_file():
+        periodic.start()
+    else:
+        unlink_pause_file()
     applet.run([])
     if not periodic.stopped:
         periodic.stop()
