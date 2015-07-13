@@ -75,7 +75,7 @@ List of achievements and expectations for the When applet.
 
 ## 3) To Beta Release
 
-**All goals for beta release have been achieved: testing is on the way.**
+**All goals for beta release have been achieved.**
 
 
 ## 4) To Github Release
@@ -98,6 +98,12 @@ List of achievements and expectations for the When applet.
   - Better control shapes and types
   - Use a more homogeneous design (padding, spacing, fill, etc.)
 * Fix GTK errors
+* Command line switches
+  - Restart current instance
+  - Rewrite configuration
+  - Rewrite configuration and exit
+  - Install icons and exit
+  - Force indicator icon on
 
 
 ## 6) Desirable features
