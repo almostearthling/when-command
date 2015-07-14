@@ -56,10 +56,12 @@ from collections import OrderedDict, deque, namedtuple
 # constants
 
 # base constants
+VERSION = "0.2.0-beta.2"
+
 APPLET_NAME = 'when-command'
 APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
-APPLET_VERSION = "0.2.0-beta.1"
+APPLET_VERSION = VERSION
 APPLET_ID = "it.jks.WhenCommand"
 
 # logging constants
@@ -81,6 +83,7 @@ USER_CONFIG_FOLDER = os.path.join(USER_FOLDER, '.config', APPLET_NAME)
 USER_LOG_FOLDER = os.path.join(USER_DATA_FOLDER, 'log')
 USER_LOG_FILE = os.path.join(USER_LOG_FOLDER, "%s.log" % APPLET_NAME)
 USER_CONFIG_FILE = os.path.join(USER_CONFIG_FOLDER, "%s.conf" % APPLET_NAME)
+USER_PAUSE_FILE = os.path.join(USER_CONFIG_FOLDER, "%s.pause" % APPLET_NAME)
 
 
 # verify that the user folders are present, otherwise create them
@@ -268,6 +271,36 @@ def create_autostart_file(overwrite=True):
                 applet_log.error("MAIN: could not create the autostart launcher")
 
 
+# manage pause file
+def create_pause_file():
+    if not os.path.exists(USER_PAUSE_FILE):
+        applet_log.info("MAIN: creating pause file")
+        with open(USER_PAUSE_FILE, 'w') as f:
+            f.write('paused')
+        return True
+    else:
+        return False
+
+
+def check_pause_file():
+    applet_log.info("MAIN: checking if pause file exists")
+    if os.path.exists(USER_PAUSE_FILE):
+        applet_log.debug("MAIN: pause file exists")
+        return True
+    else:
+        applet_log.debug("MAIN: pause file does not exist")
+        return False
+
+
+def unlink_pause_file():
+    if os.path.exists(USER_PAUSE_FILE):
+        applet_log.info("MAIN: removing pause file")
+        os.unlink(USER_PAUSE_FILE)
+        return True
+    else:
+        return False
+
+
 # logger
 applet_log_handler = logging.NullHandler()
 applet_log_formatter = logging.Formatter(fmt=LOG_FORMAT, datefmt="%Y-%m-%d %H:%M:%S")
@@ -343,6 +376,7 @@ class Config(object):
             'Scheduler': {
                 'tick seconds': int,
                 'skip seconds': int,
+                'preserve pause': bool_spec,
             },
             'General': {
                 'show icon': bool_spec,
@@ -366,6 +400,7 @@ class Config(object):
             [Scheduler]
             tick seconds = 15
             skip seconds = 60
+            preserve pause = true
 
             [General]
             show icon = true
@@ -448,7 +483,8 @@ class Periodic(object):
     def stop(self):
         self._lock.acquire()
         self.stopped = True
-        self._timer.cancel()
+        if self._timer is not None:
+            self._timer.cancel()
         self._lock.release()
         self._logger.info("SCHED: stopped")
 
@@ -467,7 +503,7 @@ def periodic_condition_check():
 
 
 # the module level scheduler
-periodic = Periodic(config.get('Scheduler', 'tick seconds'), periodic_condition_check)
+periodic = Periodic(config.get('Scheduler', 'tick seconds'), periodic_condition_check, autostart=False)
 
 
 # utilities to check for system events
@@ -479,6 +515,9 @@ def sysevent_condition_check(event):
     global current_system_event
     current_system_event = event
     try:
+        if periodic.stopped:
+            applet_log.info("SYSEVENT: check skipped due to scheduler pause")
+            return
         conds = filter(lambda c: type(c) == EventBasedCondition, conditions)
         with ThreadPoolExecutor(config.get('Concurrency', 'max threads')) as e:
             e.map(lambda c: c.tick(), conds)
@@ -1976,6 +2015,7 @@ class SettingsDialog(object):
         o('chkShowIcon').set_active(config.get('General', 'show icon'))
         o('chkAutostart').set_active(config.get('General', 'autostart'))
         o('chkNotifications').set_active(config.get('General', 'notifications'))
+        o('chkPreservePause').set_active(config.get('Scheduler', 'preserve pause'))
         o('cbLogLevel').set_active(log_level_idx)
         o('cbIconTheme').set_active(icon_theme_idx)
         o('txtTickSeconds').set_text(str(config.get('Scheduler', 'tick seconds')))
@@ -2004,6 +2044,10 @@ class SettingsDialog(object):
             config.set('General', 'show icon', o('chkShowIcon').get_active())
             config.set('General', 'autostart', o('chkAutostart').get_active())
             config.set('General', 'notifications', o('chkNotifications').get_active())
+            preserve_pause = o('chkPreservePause').get_active()
+            config.set('Scheduler', 'preserve pause', preserve_pause)
+            if not preserve_pause:
+                unlink_pause_file()
             try:
                 t = o('txtTickSeconds').get_text()
                 v = int(t)
@@ -2263,11 +2307,15 @@ class AppletIndicator(Gtk.Application):
         if o.get_active():
             applet_log.info("MAIN: pausing the scheduler")
             periodic.stop()
+            if config.get('Scheduler', 'preserve pause'):
+                create_pause_file()
             self.indicator.set_icon('alarm-off')
             self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
         else:
             self.indicator.set_icon('alarm')
             self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
+            if config.get('Scheduler', 'preserve pause'):
+                unlink_pause_file()
             periodic.start()
             applet_log.info("MAIN: scheduler resumed operation")
 
@@ -2360,6 +2408,10 @@ class AppletIndicator(Gtk.Application):
         menu.append(separator)
 
         item_pause = Gtk.CheckMenuItem(label=resources.MENU_PAUSE)
+        if config.get('Scheduler', 'preserve pause') and check_pause_file():
+            item_pause.set_active(True)
+            self.indicator.set_icon('alarm-off')
+            self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
         item_pause.connect('activate', self.pause)
         item_pause.show()
         menu.append(item_pause)
@@ -2395,7 +2447,14 @@ def main():
     config_loghandler()
     config_loglevel()
     signal.signal(signal.SIGINT, signal.SIG_DFL)
-    periodic.start()
+    preserve_pause = config.get('Scheduler', 'preserve pause')
+    if not (preserve_pause and check_pause_file()):
+        periodic.start()
+    # the following two cases should be useless, but do some cleanup anyway
+    elif not preserve_pause:
+        unlink_pause_file()
+    else:
+        periodic.stop()
     applet.run([])
     if not periodic.stopped:
         periodic.stop()
