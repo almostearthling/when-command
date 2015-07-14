@@ -2287,17 +2287,13 @@ class AppletIndicator(Gtk.Application):
         except FileNotFoundError:
             conditions.save()
 
-        # if the scheduler was born alive perform startup tasks now
-        if not periodic.stopped:
-            applet_log.info("MAIN: running startup tasks")
-            sysevent_condition_check('startup')
+        applet_log.info("MAIN: trying to run startup tasks")
+        sysevent_condition_check('startup')
         Gtk.main()
 
     def quit(self, _):
-        # if the scheduler is alive perform shutdown tasks before leaving
-        if not periodic.stopped:
-            applet_log.info("MAIN: running shutdown tasks")
-            sysevent_condition_check('shutdown')
+        applet_log.info("MAIN: trying to run shutdown tasks")
+        sysevent_condition_check('shutdown')
         Notify.uninit()
         Gtk.main_quit()
 
