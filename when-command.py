@@ -47,7 +47,9 @@ import logging
 import logging.config
 import logging.handlers
 import shutil
+
 import dbus
+from dbus.mainloop.glib import DBusGMainLoop
 
 from concurrent.futures import ThreadPoolExecutor
 
@@ -2245,6 +2247,7 @@ class AppletIndicator(Gtk.Application):
                                  application_id=APPLET_ID,
                                  flags=Gio.ApplicationFlags.FLAGS_NONE)
         self.connect("activate", self.applet_activate)
+        DBusGMainLoop(set_as_default=True)
         self.bus = dbus.SystemBus()
         self.bus.add_signal_receiver(self.before_shutdown,
                                      signal_name='PrepareForShutdown',
