@@ -2448,41 +2448,41 @@ applet = None
 
 
 # signal handler (see http://stackoverflow.com/questions/26388088)
-def init_signal_handler(applet_instance):
-    def signal_action(signum):
-        if signum is signal.SIGHUP:
-            applet_log.info("SIGHANDLER: caught SIGHUP")
-        elif signum is signal.SIGINT:
-            applet_log.info("SIGHANDLER: caught SIGINT")
-        elif signum is signal.SIGTERM:
-            applet_log.info("SIGHANDLER: caught SIGTERM")
-        applet_instance.before_shutdown()
-
-    def idle_handler(*args):
-        applet_log.info("SIGHANDLER: handler activated (system)")
-        GLib.idle_add(signal_action, priority=GLib.PRIORITY_HIGH)
-
-    def handler(*args):
-        applet_log.info("SIGHANDLER: handler activated (desktop)")
-        signal_action(args[0])
-
-    def install_glib_handler(signum):
-        unix_signal_add = None
-        if hasattr(GLib, "unix_signal_add"):
-            unix_signal_add = GLib.unix_signal_add
-        elif hasattr(GLib, "unix_signal_add_full"):
-            unix_signal_add = GLib.unix_signal_add_full
-        if unix_signal_add:
-            applet_log.info("SIGHANDLER: register desktop handler for signal: %r" % signum)
-            unix_signal_add(GLib.PRIORITY_HIGH, signum, handler, signum)
-        else:
-            applet_log.warning("SIGHANDLER: cannot install signal handler")
-
-    SIGS = [getattr(signal, s, None) for s in "SIGINT SIGTERM SIGHUP".split()]
-    for signum in filter(None, SIGS):
-        applet_log.info("SIGHANDLER: register system handler for signal: %r" % signum)
-        signal.signal(signum, idle_handler)
-        GLib.idle_add(install_glib_handler, signum, priority=GLib.PRIORITY_HIGH)
+# def init_signal_handler(applet_instance):
+#     def signal_action(signum):
+#         if signum is signal.SIGHUP:
+#             applet_log.info("SIGHANDLER: caught SIGHUP")
+#         elif signum is signal.SIGINT:
+#             applet_log.info("SIGHANDLER: caught SIGINT")
+#         elif signum is signal.SIGTERM:
+#             applet_log.info("SIGHANDLER: caught SIGTERM")
+#         applet_instance.before_shutdown()
+#
+#     def idle_handler(*args):
+#         applet_log.info("SIGHANDLER: handler activated (system)")
+#         GLib.idle_add(signal_action, priority=GLib.PRIORITY_HIGH)
+#
+#     def handler(*args):
+#         applet_log.info("SIGHANDLER: handler activated (desktop)")
+#         signal_action(args[0])
+#
+#     def install_glib_handler(signum):
+#         unix_signal_add = None
+#         if hasattr(GLib, "unix_signal_add"):
+#             unix_signal_add = GLib.unix_signal_add
+#         elif hasattr(GLib, "unix_signal_add_full"):
+#             unix_signal_add = GLib.unix_signal_add_full
+#         if unix_signal_add:
+#             applet_log.info("SIGHANDLER: register desktop handler for signal: %r" % signum)
+#             unix_signal_add(GLib.PRIORITY_HIGH, signum, handler, signum)
+#         else:
+#             applet_log.warning("SIGHANDLER: cannot install signal handler")
+#
+#     SIGS = [getattr(signal, s, None) for s in "SIGINT SIGTERM SIGHUP".split()]
+#     for signum in filter(None, SIGS):
+#         applet_log.info("SIGHANDLER: register system handler for signal: %r" % signum)
+#         signal.signal(signum, idle_handler)
+#         GLib.idle_add(install_glib_handler, signum, priority=GLib.PRIORITY_HIGH)
 
 
 # Check whether another instance of the application is running: if so the
@@ -2492,8 +2492,8 @@ def init_signal_handler(applet_instance):
 def main():
     config_loghandler()
     config_loglevel()
-    init_signal_handler(applet)
-    # signal.signal(signal.SIGINT, signal.SIG_DFL)
+    # init_signal_handler(applet)
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
     preserve_pause = config.get('Scheduler', 'preserve pause')
     if not (preserve_pause and check_pause_file()):
         periodic.start()
