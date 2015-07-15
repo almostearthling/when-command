@@ -2245,8 +2245,12 @@ class AppletIndicator(Gtk.Application):
                                  application_id=APPLET_ID,
                                  flags=Gio.ApplicationFlags.FLAGS_NONE)
         self.connect("activate", self.applet_activate)
-        self.dbus_session = dbus.SessionBus()
-        self.dbus_session.call_on_disconnection(self.before_shutdown)
+        self.bus = dbus.SystemBus()
+        self.bus.add_signal_receiver(self.before_shutdown,
+                                     signal_name='PrepareForShutdown',
+                                     dbus_interface='org.freedesktop.login1.Manager',
+                                     bus_name='org.freedesktop.login1',
+                                     path=None)
 
     def applet_activate(self, applet_instance):
         if self.running:
