@@ -30,6 +30,7 @@
 # * classes don't expose variables directly, but will after some debugging
 
 from gi.repository import GLib, Gtk, Gio
+from gi.repository import GObject
 from gi.repository import AppIndicator3 as AppIndicator
 from gi.repository import Notify
 from gi.repository import Pango
@@ -46,6 +47,7 @@ import logging
 import logging.config
 import logging.handlers
 import shutil
+import dbus
 
 from concurrent.futures import ThreadPoolExecutor
 
@@ -2243,6 +2245,8 @@ class AppletIndicator(Gtk.Application):
                                  application_id=APPLET_ID,
                                  flags=Gio.ApplicationFlags.FLAGS_NONE)
         self.connect("activate", self.applet_activate)
+        self.dbus_session = dbus.SessionBus()
+        self.dbus_session.call_on_disconnection(self.before_shutdown)
 
     def applet_activate(self, applet_instance):
         if self.running:
@@ -2291,9 +2295,12 @@ class AppletIndicator(Gtk.Application):
         sysevent_condition_check('startup')
         Gtk.main()
 
-    def quit(self, _):
+    def before_shutdown(self, *args):
         applet_log.info("MAIN: trying to run shutdown tasks")
         sysevent_condition_check('shutdown')
+
+    def quit(self, _):
+        self.before_shutdown()
         Notify.uninit()
         Gtk.main_quit()
 
@@ -2442,7 +2449,7 @@ def init_signal_handler(applet_instance):
             applet_log.info("SIGHANDLER: caught SIGINT")
         elif signum is signal.SIGTERM:
             applet_log.info("SIGHANDLER: caught SIGTERM")
-        applet_instance.quit(None)
+        applet_instance.before_shutdown()
 
     def idle_handler(*args):
         applet_log.info("SIGHANDLER: handler activated (system)")
@@ -2479,6 +2486,7 @@ def main():
     config_loghandler()
     config_loglevel()
     init_signal_handler(applet)
+    # signal.signal(signal.SIGINT, signal.SIG_DFL)
     preserve_pause = config.get('Scheduler', 'preserve pause')
     if not (preserve_pause and check_pause_file()):
         periodic.start()
@@ -2496,6 +2504,7 @@ def main():
 if __name__ == '__main__':
     create_desktop_file()
     create_autostart_file(False)
+    GObject.threads_init()
     applet = AppletIndicator()
     main()
 
