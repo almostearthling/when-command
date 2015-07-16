@@ -2248,13 +2248,13 @@ class AppletIndicator(Gtk.Application):
                                  application_id=APPLET_ID,
                                  flags=Gio.ApplicationFlags.FLAGS_NONE)
         self.connect("activate", self.applet_activate)
-        DBusGMainLoop(set_as_default=True)
-        self.bus = dbus.SystemBus()
-        self.bus.add_signal_receiver(self.before_shutdown,
-                                     signal_name='PrepareForShutdown',
-                                     dbus_interface='org.freedesktop.login1.Manager',
-                                     bus_name='org.freedesktop.login1',
-                                     path=None)
+
+        # The system and session bus signals give many possibilities for events
+        self.system_bus = dbus.SystemBus()
+        self.login_mgr = dbus.Interface(
+            self.system_bus.get_object('org.freedesktop.login1', '/org/freedesktop/login1'),
+            'org.freedesktop.login1.Manager')
+        self.login_mgr.connect_to_signal('PrepareForShutdown', self.before_shutdown)
 
     def applet_activate(self, applet_instance):
         if self.running:
@@ -2450,7 +2450,8 @@ class AppletIndicator(Gtk.Application):
 applet = None
 
 
-# signal handler (see http://stackoverflow.com/questions/26388088)
+# signal handler (see http://stackoverflow.com/questions/26388088): this is
+# needed in order to handle the logout event (until it is managed by dbus)
 def init_signal_handler(applet_instance):
     def signal_action(signum):
         if signum is signal.SIGHUP:
@@ -2512,6 +2513,7 @@ def main():
 
 # implement the applet and start
 if __name__ == '__main__':
+    DBusGMainLoop(set_as_default=True)
     create_desktop_file()
     create_autostart_file(False)
     GObject.threads_init()
