@@ -63,7 +63,7 @@ from collections import OrderedDict, deque, namedtuple
 APPLET_NAME = 'when-command'
 APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
-APPLET_VERSION = "0.2.0-beta.3"
+APPLET_VERSION = "0.2.0-beta.4"
 APPLET_ID = "it.jks.WhenCommand"
 
 # logging constants
@@ -96,6 +96,8 @@ def verify_user_folders():
         os.mkdir(USER_LOG_FOLDER)
     if not os.path.exists(USER_CONFIG_FOLDER):
         os.mkdir(USER_CONFIG_FOLDER)
+    if not os.path.exists(USER_AUTOSTART_FOLDER):
+        os.mkdir(USER_AUTOSTART_FOLDER)
 
 verify_user_folders()
 
