@@ -114,7 +114,10 @@ List of achievements and expectations for the When applet.
 ## 6) Desirable features
 
 * Modal dialog boxes
-* System event conditions
+* More system and session event conditions
+  - System suspend and/or resume
+  - Screen lock
+  - Device attach/detach
 * File watch conditions
 * Stop task sequence upon failure (or success) of one task
 * Configuration directory maintenance tools
