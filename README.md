@@ -53,7 +53,7 @@ There are several types of condition available:
 2. **Time based**: The tasks are executed when the time specification is matched. Time definitions can be partial, and in that case only the defined parts will be taken into account for checking: for instance, if the user only specifies minutes, the condition is verified at the specified minute for every hour.
 3. **Command based**: When the execution of a specified command gives the expected result (in terms of **exit code**, **stdout** or **stderr**), the tasks are executed. The way the test command is specified is similar (although simpler) to the specification of a command in the *Task* definition dialog box. The command is run in the same environment (and startup directory) as **When** at the moment it was started.
 4. **Idle time based**: When the session has been idle for the specified amount of time the tasks are executed. This actually is implemented as a shortcut to the command based condition based upon the `xprintidle` command, which must be installed for the applet to work properly.
-5. **Event based**: The tasks are executed when a certain event occurs. Currently only *startup* and *shutdown* are the implemented events.
+5. **Event based**: The tasks are executed when a certain event occurs. Currently only *startup* and *shutdown* are the implemented events. *Warning*: because of the way applications are notified that the session is ending (first a TERM signal is sent, then a KILL if the first was unsuccessful), the *shutdown* event is not suitable for long running tasks, such as file synchronizations, disk cleanup and similar actions.
 
 Also, the condition configuration interface allows to decide:
 
