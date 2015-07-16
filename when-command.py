@@ -30,6 +30,7 @@
 # * classes don't expose variables directly, but will after some debugging
 
 from gi.repository import GLib, Gtk, Gio
+from gi.repository import GObject
 from gi.repository import AppIndicator3 as AppIndicator
 from gi.repository import Notify
 from gi.repository import Pango
@@ -47,6 +48,9 @@ import logging.config
 import logging.handlers
 import shutil
 
+import dbus
+from dbus.mainloop.glib import DBusGMainLoop
+
 from concurrent.futures import ThreadPoolExecutor
 
 from collections import OrderedDict, deque, namedtuple
@@ -59,7 +63,7 @@ from collections import OrderedDict, deque, namedtuple
 APPLET_NAME = 'when-command'
 APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
-APPLET_VERSION = "0.2.0-beta.2"
+APPLET_VERSION = "0.2.0-beta.3"
 APPLET_ID = "it.jks.WhenCommand"
 
 # logging constants
@@ -2237,12 +2241,20 @@ class AppletIndicator(Gtk.Application):
     dialog_settings = SettingsDialog()
     dialog_history = HistoryDialog()
     running = False
+    leaving = False
 
     def __init__(self):
         Gtk.Application.__init__(self,
                                  application_id=APPLET_ID,
                                  flags=Gio.ApplicationFlags.FLAGS_NONE)
         self.connect("activate", self.applet_activate)
+
+        # The system and session bus signals give many possibilities for events
+        self.system_bus = dbus.SystemBus()
+        self.login_mgr = dbus.Interface(
+            self.system_bus.get_object('org.freedesktop.login1', '/org/freedesktop/login1'),
+            'org.freedesktop.login1.Manager')
+        self.login_mgr.connect_to_signal('PrepareForShutdown', self.before_shutdown)
 
     def applet_activate(self, applet_instance):
         if self.running:
@@ -2287,17 +2299,18 @@ class AppletIndicator(Gtk.Application):
         except FileNotFoundError:
             conditions.save()
 
-        # if the scheduler was born alive perform startup tasks now
-        if not periodic.stopped:
-            applet_log.info("MAIN: running startup tasks")
-            sysevent_condition_check('startup')
+        applet_log.info("MAIN: trying to run startup tasks")
+        sysevent_condition_check('startup')
         Gtk.main()
 
-    def quit(self, _):
-        # if the scheduler is alive perform shutdown tasks before leaving
-        if not periodic.stopped:
-            applet_log.info("MAIN: running shutdown tasks")
+    def before_shutdown(self, *args):
+        if not self.leaving:
+            applet_log.info("MAIN: trying to run shutdown tasks")
             sysevent_condition_check('shutdown')
+            self.leaving = True
+
+    def quit(self, _):
+        self.before_shutdown()
         Notify.uninit()
         Gtk.main_quit()
 
@@ -2437,6 +2450,45 @@ class AppletIndicator(Gtk.Application):
 applet = None
 
 
+# signal handler (see http://stackoverflow.com/questions/26388088): this is
+# needed in order to handle the logout event (until it is managed by dbus)
+def init_signal_handler(applet_instance):
+    def signal_action(signum):
+        if signum is signal.SIGHUP:
+            applet_log.info("SIGHANDLER: caught SIGHUP")
+        elif signum is signal.SIGINT:
+            applet_log.info("SIGHANDLER: caught SIGINT")
+        elif signum is signal.SIGTERM:
+            applet_log.info("SIGHANDLER: caught SIGTERM")
+        applet_instance.before_shutdown()
+
+    def idle_handler(*args):
+        applet_log.info("SIGHANDLER: handler activated (system)")
+        GLib.idle_add(signal_action, priority=GLib.PRIORITY_HIGH)
+
+    def handler(*args):
+        applet_log.info("SIGHANDLER: handler activated (desktop)")
+        signal_action(args[0])
+
+    def install_glib_handler(signum):
+        unix_signal_add = None
+        if hasattr(GLib, "unix_signal_add"):
+            unix_signal_add = GLib.unix_signal_add
+        elif hasattr(GLib, "unix_signal_add_full"):
+            unix_signal_add = GLib.unix_signal_add_full
+        if unix_signal_add:
+            applet_log.info("SIGHANDLER: register desktop handler for signal: %r" % signum)
+            unix_signal_add(GLib.PRIORITY_HIGH, signum, handler, signum)
+        else:
+            applet_log.warning("SIGHANDLER: cannot install signal handler")
+
+    SIGS = [getattr(signal, s, None) for s in "SIGINT SIGTERM SIGHUP".split()]
+    for signum in filter(None, SIGS):
+        applet_log.info("SIGHANDLER: register system handler for signal: %r" % signum)
+        signal.signal(signum, idle_handler)
+        GLib.idle_add(install_glib_handler, signum, priority=GLib.PRIORITY_HIGH)
+
+
 # Check whether another instance of the application is running: if so the
 # settings dialog box is shown in order to give the possibility to show the
 # indicator icon if it was hidden. If no other instance is running, capture
@@ -2444,7 +2496,8 @@ applet = None
 def main():
     config_loghandler()
     config_loglevel()
-    signal.signal(signal.SIGINT, signal.SIG_DFL)
+    init_signal_handler(applet)
+    # signal.signal(signal.SIGINT, signal.SIG_DFL)
     preserve_pause = config.get('Scheduler', 'preserve pause')
     if not (preserve_pause and check_pause_file()):
         periodic.start()
@@ -2460,8 +2513,10 @@ def main():
 
 # implement the applet and start
 if __name__ == '__main__':
+    DBusGMainLoop(set_as_default=True)
     create_desktop_file()
     create_autostart_file(False)
+    GObject.threads_init()
     applet = AppletIndicator()
     main()
 
