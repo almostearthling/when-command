@@ -47,6 +47,7 @@ import logging
 import logging.config
 import logging.handlers
 import shutil
+import re
 
 import dbus
 from dbus.mainloop.glib import DBusGMainLoop
@@ -63,7 +64,7 @@ from collections import OrderedDict, deque, namedtuple
 APPLET_NAME = 'when-command'
 APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
-APPLET_VERSION = "0.3.0-beta.1"
+APPLET_VERSION = "0.3.0-beta.2"
 APPLET_ID = "it.jks.WhenCommand"
 
 # logging constants
@@ -75,6 +76,14 @@ LOG_MAX_BACKUPS = 4
 ACTION_OK = 0
 ACTION_CANCEL = -1
 ACTION_DELETE = 9
+
+# validation constants
+VALIDATE_TASK_RE = re.compile(r'^[a-zA-Z0-9][a-zA-Z0-9_-]*$')
+VALIDATE_CONDITION_RE = re.compile(r'^[a-zA-Z0-9][a-zA-Z0-9_-]*$')
+
+# user interface constants
+UI_INTERVALS_MINUTES = [1, 2, 3, 5, 15, 30, 60]
+UI_INTERVALS_HOURS = [1, 2, 3, 4, 6, 8, 12, 24]
 
 # folders
 USER_FOLDER = os.path.expanduser('~')
@@ -1493,8 +1502,8 @@ class TaskDialog(object):
         self.default_box()
         if name in self.stored_tasks:
             task = tasks.get(task_name=name)
-            o('txtVarName').set_text("")
-            o('txtVarValue').set_text("")
+            o('txtVarName').set_text('')
+            o('txtVarValue').set_text('')
             o('txtCommand').set_text(task.command)
             o('txtFolder').set_text(task.startup_dir)
             if task.success_status is not None:
@@ -1537,14 +1546,36 @@ class TaskDialog(object):
             for i in li:
                 m.append(i)
 
+    def change_txtName(self, _):
+        o = self.builder.get_object
+        name = o('txtName').get_text()
+        if VALIDATE_TASK_RE.match(name):
+            o('buttonOK').set_sensitive(True)
+            if name in self.stored_tasks:
+                o('btnDelete').set_sensitive(True)
+            else:
+                o('btnDelete').set_sensitive(False)
+        else:
+            o('buttonOK').set_sensitive(False)
+            o('btnDelete').set_sensitive(False)
+
+    def change_cbCheckWhat(self, _):
+        o = self.builder.get_object
+        if o('cbCheckWhat').get_active() == 0:
+            o('chkExactMatch').set_sensitive(False)
+            o('chkCaseSensitive').set_sensitive(False)
+        else:
+            o('chkExactMatch').set_sensitive(True)
+            o('chkCaseSensitive').set_sensitive(True)
+
     def default_box(self, include_name=False):
         o = self.builder.get_object
         if include_name:
             o('txtName').set_text('')
-        o('txtVarName').set_text("")
-        o('txtVarValue').set_text("")
-        o('txtCommand').set_text("")
-        o('txtFolder').set_text("")
+        o('txtVarName').set_text('')
+        o('txtVarValue').set_text('')
+        o('txtCommand').set_text('')
+        o('txtFolder').set_text('')
         o('chkExactMatch').set_active(False)
         o('chkCaseSensitive').set_active(False)
         o('chkImportEnvironment').set_active(True)
@@ -1563,6 +1594,8 @@ class TaskDialog(object):
             cb_tasks.append_text(x)
         self.dialog.set_keep_above(True)
         self.dialog.present()
+        self.change_txtName(None)
+        self.change_cbCheckWhat(None)
         ret = self.dialog.run()
         self.dialog.hide()
         self.dialog.set_keep_above(False)
@@ -1698,6 +1731,39 @@ class ConditionDialog(object):
         except ValueError as e:
             return None
 
+    def change_txtName(self, _):
+        o = self.builder.get_object
+        name = o('txtName').get_text()
+        if VALIDATE_CONDITION_RE.match(name):
+            o('buttonOK').set_sensitive(True)
+            if name in self.stored_conditions:
+                o('btnDelete').set_sensitive(True)
+            else:
+                o('btnDelete').set_sensitive(False)
+        else:
+            o('buttonOK').set_sensitive(False)
+            o('btnDelete').set_sensitive(False)
+
+    def change_cbCheckWhat(self, _):
+        o = self.builder.get_object
+        if o('cbCheckWhat').get_active() == 0:
+            o('chkExactMatch').set_sensitive(False)
+            o('chkCaseSensitive').set_sensitive(False)
+        else:
+            o('chkExactMatch').set_sensitive(True)
+            o('chkCaseSensitive').set_sensitive(True)
+
+    def change_cbTimeUnit(self, _):
+        o = self.builder.get_object
+        if o('cbTimeUnit').get_active() == 0:
+            l = UI_INTERVALS_HOURS
+        else:
+            l = UI_INTERVALS_MINUTES
+        cb = o('cbInterval')
+        cb.get_model().clear()
+        for x in l:
+            cb.append_text(str(x))
+
     def default_box(self, include_name=False):
         o = self.builder.get_object
         if include_name:
@@ -1723,6 +1789,10 @@ class ConditionDialog(object):
         o('chkCaseSensitive').set_active(False)
         o('chkSuspend').set_active(False)
         o('store_listTasks').clear()
+        cb = o('cbInterval')
+        cb.get_model().clear()
+        for x in UI_INTERVALS_MINUTES:
+            cb.append_text(str(x))
 
     def choose_condition(self, box):
         o = self.builder.get_object
@@ -1841,6 +1911,12 @@ class ConditionDialog(object):
             'canvasOptions_SysEvent',
             'canvasOptions_Empty',
         ]
+        can_disable = [
+            'chkRepeat',
+            'chkSequence',
+            'chkSuspend',
+        ]
+        to_disable = []
         if idx == 0:
             current_widget = 'canvasOptions_Interval'
         elif idx == 1:
@@ -1851,6 +1927,7 @@ class ConditionDialog(object):
             current_widget = 'canvasOptions_IdleTime'
         elif idx == 4:
             current_widget = 'canvasOptions_SysEvent'
+            to_disable = ['chkRepeat']
         else:
             current_widget = 'canvasOptions_Empty'
         for w in widgets:
@@ -1858,6 +1935,11 @@ class ConditionDialog(object):
                 o(w).show()
             else:
                 o(w).hide()
+        for w in can_disable:
+            if w in to_disable:
+                o(w).set_sensitive(False)
+            else:
+                o(w).set_sensitive(True)
 
     def run(self):
         self.default_box()
@@ -1876,6 +1958,8 @@ class ConditionDialog(object):
             cb_tasks.append_text(x)
         self.dialog.set_keep_above(True)
         self.dialog.present()
+        self.change_txtName(None)
+        self.change_cbCheckWhat(None)
         ret = self.dialog.run()
         self.dialog.hide()
         self.dialog.set_keep_above(False)
