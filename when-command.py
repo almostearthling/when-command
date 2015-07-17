@@ -1502,8 +1502,8 @@ class TaskDialog(object):
         self.default_box()
         if name in self.stored_tasks:
             task = tasks.get(task_name=name)
-            o('txtVarName').set_text("")
-            o('txtVarValue').set_text("")
+            o('txtVarName').set_text('')
+            o('txtVarValue').set_text('')
             o('txtCommand').set_text(task.command)
             o('txtFolder').set_text(task.startup_dir)
             if task.success_status is not None:
@@ -1572,10 +1572,10 @@ class TaskDialog(object):
         o = self.builder.get_object
         if include_name:
             o('txtName').set_text('')
-        o('txtVarName').set_text("")
-        o('txtVarValue').set_text("")
-        o('txtCommand').set_text("")
-        o('txtFolder').set_text("")
+        o('txtVarName').set_text('')
+        o('txtVarValue').set_text('')
+        o('txtCommand').set_text('')
+        o('txtFolder').set_text('')
         o('chkExactMatch').set_active(False)
         o('chkCaseSensitive').set_active(False)
         o('chkImportEnvironment').set_active(True)
@@ -1759,10 +1759,10 @@ class ConditionDialog(object):
             l = UI_INTERVALS_HOURS
         else:
             l = UI_INTERVALS_MINUTES
-        m = o('store_listInterval')
-        m.clear()
+        cb = o('cbInterval')
+        cb.get_model().clear()
         for x in l:
-            m.append([str(x)])
+            cb.append_text(str(x))
 
     def default_box(self, include_name=False):
         o = self.builder.get_object
@@ -1789,10 +1789,10 @@ class ConditionDialog(object):
         o('chkCaseSensitive').set_active(False)
         o('chkSuspend').set_active(False)
         o('store_listTasks').clear()
-        m = o('store_listInterval')
-        m.clear()
+        cb = o('cbInterval')
+        cb.get_model().clear()
         for x in UI_INTERVALS_MINUTES:
-            m.append([str(x)])
+            cb.append_text(str(x))
 
     def choose_condition(self, box):
         o = self.builder.get_object

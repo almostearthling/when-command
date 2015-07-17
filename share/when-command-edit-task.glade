@@ -238,6 +238,7 @@
                 <property name="margin_left">15</property>
                 <property name="margin_right">15</property>
                 <property name="margin_bottom">10</property>
+                <property name="spacing">5</property>
                 <child>
                   <object class="GtkEntry" id="txtVarName">
                     <property name="visible">True</property>
