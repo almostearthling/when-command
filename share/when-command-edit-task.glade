@@ -105,6 +105,7 @@
                       <object class="GtkEntry" id="txtName">
                         <property name="can_focus">True</property>
                         <property name="input_purpose">alpha</property>
+                        <signal name="changed" handler="change_txtName" swapped="no"/>
                       </object>
                     </child>
                   </object>

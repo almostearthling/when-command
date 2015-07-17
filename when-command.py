@@ -1544,7 +1544,7 @@ class TaskDialog(object):
 
     def change_txtName(self, _):
         o = self.builder.get_object
-        name = o('txtName')
+        name = o('txtName').get_text()
         if VALIDATE_TASK_RE.match(name):
             o('buttonOK').set_sensitive(True)
             if name in self.stored_tasks:
@@ -1552,8 +1552,8 @@ class TaskDialog(object):
             else:
                 o('btnDelete').set_sensitive(False)
         else:
-            o('buttonOK').set_sensitive(True)
-            o('btnDelete').set_sensitive(True)
+            o('buttonOK').set_sensitive(False)
+            o('btnDelete').set_sensitive(False)
 
     def default_box(self, include_name=False):
         o = self.builder.get_object
@@ -1570,7 +1570,6 @@ class TaskDialog(object):
         o('cbCheckWhat').set_active(0)
         o('txtCheckValue').set_text("0")
         o('store_listEnvVars').clear()
-        self.change_txtName(None)
 
     def run(self):
         o = self.builder.get_object
@@ -1582,6 +1581,7 @@ class TaskDialog(object):
             cb_tasks.append_text(x)
         self.dialog.set_keep_above(True)
         self.dialog.present()
+        self.change_txtName(None)
         ret = self.dialog.run()
         self.dialog.hide()
         self.dialog.set_keep_above(False)
@@ -1719,7 +1719,7 @@ class ConditionDialog(object):
 
     def change_txtName(self, _):
         o = self.builder.get_object
-        name = o('txtName')
+        name = o('txtName').get_text()
         if VALIDATE_CONDITION_RE.match(name):
             o('buttonOK').set_sensitive(True)
             if name in self.stored_conditions:
@@ -1727,8 +1727,8 @@ class ConditionDialog(object):
             else:
                 o('btnDelete').set_sensitive(False)
         else:
-            o('buttonOK').set_sensitive(True)
-            o('btnDelete').set_sensitive(True)
+            o('buttonOK').set_sensitive(False)
+            o('btnDelete').set_sensitive(False)
 
     def default_box(self, include_name=False):
         o = self.builder.get_object
@@ -1755,7 +1755,6 @@ class ConditionDialog(object):
         o('chkCaseSensitive').set_active(False)
         o('chkSuspend').set_active(False)
         o('store_listTasks').clear()
-        self.change_txtName(None)
 
     def choose_condition(self, box):
         o = self.builder.get_object
@@ -1909,6 +1908,7 @@ class ConditionDialog(object):
             cb_tasks.append_text(x)
         self.dialog.set_keep_above(True)
         self.dialog.present()
+        self.change_txtName(None)
         ret = self.dialog.run()
         self.dialog.hide()
         self.dialog.set_keep_above(False)
