@@ -81,6 +81,10 @@ ACTION_DELETE = 9
 VALIDATE_TASK_RE = re.compile(r'^[a-zA-Z0-9][a-zA-Z0-9_-]*$')
 VALIDATE_CONDITION_RE = re.compile(r'^[a-zA-Z0-9][a-zA-Z0-9_-]*$')
 
+# user interface constants
+UI_INTERVALS_MINUTES = [1, 2, 3, 5, 15, 30, 60]
+UI_INTERVALS_HOURS = [1, 2, 3, 4, 6, 8, 12, 24]
+
 # folders
 USER_FOLDER = os.path.expanduser('~')
 USER_DATA_FOLDER = os.path.join(USER_FOLDER, '.local', 'share', APPLET_NAME)
@@ -1749,6 +1753,17 @@ class ConditionDialog(object):
             o('chkExactMatch').set_sensitive(True)
             o('chkCaseSensitive').set_sensitive(True)
 
+    def change_cbTimeUnit(self, _):
+        o = self.builder.get_object
+        if o('cbTimeUnit').get_active() == 0:
+            l = UI_INTERVALS_HOURS
+        else:
+            l = UI_INTERVALS_MINUTES
+        m = o('store_listInterval')
+        m.clear()
+        for x in l:
+            m.append([str(x)])
+
     def default_box(self, include_name=False):
         o = self.builder.get_object
         if include_name:
@@ -1774,6 +1789,10 @@ class ConditionDialog(object):
         o('chkCaseSensitive').set_active(False)
         o('chkSuspend').set_active(False)
         o('store_listTasks').clear()
+        m = o('store_listInterval')
+        m.clear()
+        for x in UI_INTERVALS_MINUTES:
+            m.append([str(x)])
 
     def choose_condition(self, box):
         o = self.builder.get_object
@@ -1892,6 +1911,12 @@ class ConditionDialog(object):
             'canvasOptions_SysEvent',
             'canvasOptions_Empty',
         ]
+        can_disable = [
+            'chkRepeat',
+            'chkSequence',
+            'chkSuspend',
+        ]
+        to_disable = []
         if idx == 0:
             current_widget = 'canvasOptions_Interval'
         elif idx == 1:
@@ -1902,6 +1927,7 @@ class ConditionDialog(object):
             current_widget = 'canvasOptions_IdleTime'
         elif idx == 4:
             current_widget = 'canvasOptions_SysEvent'
+            to_disable = ['chkRepeat']
         else:
             current_widget = 'canvasOptions_Empty'
         for w in widgets:
@@ -1909,6 +1935,11 @@ class ConditionDialog(object):
                 o(w).show()
             else:
                 o(w).hide()
+        for w in can_disable:
+            if w in to_disable:
+                o(w).set_sensitive(False)
+            else:
+                o(w).set_sensitive(True)
 
     def run(self):
         self.default_box()

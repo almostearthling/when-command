@@ -2,6 +2,7 @@
 <!-- Generated with glade 3.16.1 -->
 <interface>
   <requires lib="gtk+" version="3.10"/>
+  <object class="GtkListStore" id="store_listInterval"/>
   <object class="GtkListStore" id="store_listTasks">
     <columns>
       <!-- column-name TaskName -->
@@ -325,12 +326,13 @@
                     <property name="can_focus">False</property>
                     <property name="orientation">vertical</property>
                     <child>
-                      <object class="GtkBox" id="canvasOptions_intvlen">
+                      <object class="GtkGrid" id="gridOptions_intvlen">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="margin_left">15</property>
                         <property name="margin_right">15</property>
-                        <property name="margin_bottom">5</property>
+                        <property name="margin_bottom">10</property>
+                        <property name="row_homogeneous">True</property>
                         <child>
                           <object class="GtkLabel" id="lblInterval">
                             <property name="visible">True</property>
@@ -339,23 +341,31 @@
                             <property name="label" translatable="yes">Interval</property>
                           </object>
                           <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
+                            <property name="left_attach">0</property>
+                            <property name="top_attach">0</property>
+                            <property name="width">1</property>
+                            <property name="height">1</property>
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkEntry" id="txtInterval">
+                          <object class="GtkComboBox" id="cbInterval">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="valign">center</property>
+                            <property name="can_focus">False</property>
                             <property name="hexpand">True</property>
-                            <property name="input_purpose">digits</property>
+                            <property name="model">store_listInterval</property>
+                            <property name="has_entry">True</property>
+                            <child internal-child="entry">
+                              <object class="GtkEntry" id="txtInterval">
+                                <property name="can_focus">False</property>
+                                <property name="hexpand">False</property>
+                              </object>
+                            </child>
                           </object>
                           <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">1</property>
+                            <property name="left_attach">1</property>
+                            <property name="top_attach">0</property>
+                            <property name="width">3</property>
+                            <property name="height">1</property>
                           </packing>
                         </child>
                         <child>
@@ -365,6 +375,7 @@
                             <property name="halign">end</property>
                             <property name="valign">center</property>
                             <property name="margin_left">5</property>
+                            <property name="hexpand">False</property>
                             <property name="active_id">20</property>
                             <items>
                               <item id="10" translatable="yes">Hours</item>
@@ -372,9 +383,10 @@
                             </items>
                           </object>
                           <packing>
-                            <property name="expand">True</property>
-                            <property name="fill">True</property>
-                            <property name="position">2</property>
+                            <property name="left_attach">4</property>
+                            <property name="top_attach">0</property>
+                            <property name="width">1</property>
+                            <property name="height">1</property>
                           </packing>
                         </child>
                       </object>
@@ -452,7 +464,6 @@
                     <property name="can_focus">False</property>
                     <property name="margin_left">15</property>
                     <property name="margin_right">15</property>
-                    <property name="margin_top">5</property>
                     <child>
                       <object class="GtkGrid" id="gridTime">
                         <property name="visible">True</property>
@@ -541,9 +552,83 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="width_chars">12</property>
+                            <property name="shadow_type">none</property>
+                            <property name="input_purpose">digits</property>
                           </object>
                           <packing>
                             <property name="left_attach">0</property>
+                            <property name="top_attach">1</property>
+                            <property name="width">1</property>
+                            <property name="height">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkEntry" id="txtDay">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="valign">center</property>
+                            <property name="width_chars">12</property>
+                            <property name="shadow_type">none</property>
+                            <property name="input_purpose">digits</property>
+                          </object>
+                          <packing>
+                            <property name="left_attach">2</property>
+                            <property name="top_attach">1</property>
+                            <property name="width">1</property>
+                            <property name="height">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkEntry" id="txtHour">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="valign">center</property>
+                            <property name="width_chars">12</property>
+                            <property name="shadow_type">none</property>
+                            <property name="input_purpose">digits</property>
+                          </object>
+                          <packing>
+                            <property name="left_attach">4</property>
+                            <property name="top_attach">1</property>
+                            <property name="width">1</property>
+                            <property name="height">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkEntry" id="txtMinute">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="valign">center</property>
+                            <property name="width_chars">12</property>
+                            <property name="shadow_type">none</property>
+                            <property name="input_purpose">digits</property>
+                          </object>
+                          <packing>
+                            <property name="left_attach">5</property>
+                            <property name="top_attach">1</property>
+                            <property name="width">1</property>
+                            <property name="height">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkComboBoxText" id="cbWeekday">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="valign">center</property>
+                            <property name="vexpand">False</property>
+                            <property name="has_frame">False</property>
+                            <items>
+                              <item id="0" translatable="yes">Monday</item>
+                              <item id="1" translatable="yes">Tuesday</item>
+                              <item id="2" translatable="yes">Wednesday</item>
+                              <item id="3" translatable="yes">Thursday</item>
+                              <item id="4" translatable="yes">Friday</item>
+                              <item id="5" translatable="yes">Saturday</item>
+                              <item id="6" translatable="yes">Sunday</item>
+                            </items>
+                          </object>
+                          <packing>
+                            <property name="left_attach">3</property>
                             <property name="top_attach">1</property>
                             <property name="width">1</property>
                             <property name="height">1</property>
@@ -555,6 +640,7 @@
                             <property name="can_focus">False</property>
                             <property name="valign">center</property>
                             <property name="vexpand">False</property>
+                            <property name="has_frame">False</property>
                             <items>
                               <item translatable="yes">January</item>
                               <item translatable="yes">February</item>
@@ -577,74 +663,9 @@
                             <property name="height">1</property>
                           </packing>
                         </child>
-                        <child>
-                          <object class="GtkComboBoxText" id="cbWeekday">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="valign">center</property>
-                            <property name="vexpand">False</property>
-                            <items>
-                              <item id="0" translatable="yes">Monday</item>
-                              <item id="1" translatable="yes">Tuesday</item>
-                              <item id="2" translatable="yes">Wednesday</item>
-                              <item id="3" translatable="yes">Thursday</item>
-                              <item id="4" translatable="yes">Friday</item>
-                              <item id="5" translatable="yes">Saturday</item>
-                              <item id="6" translatable="yes">Sunday</item>
-                            </items>
-                          </object>
-                          <packing>
-                            <property name="left_attach">3</property>
-                            <property name="top_attach">1</property>
-                            <property name="width">1</property>
-                            <property name="height">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkEntry" id="txtDay">
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="valign">center</property>
-                            <property name="width_chars">12</property>
-                          </object>
-                          <packing>
-                            <property name="left_attach">2</property>
-                            <property name="top_attach">1</property>
-                            <property name="width">1</property>
-                            <property name="height">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkEntry" id="txtHour">
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="valign">center</property>
-                            <property name="width_chars">12</property>
-                          </object>
-                          <packing>
-                            <property name="left_attach">4</property>
-                            <property name="top_attach">1</property>
-                            <property name="width">1</property>
-                            <property name="height">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkEntry" id="txtMinute">
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="valign">center</property>
-                            <property name="width_chars">12</property>
-                          </object>
-                          <packing>
-                            <property name="left_attach">5</property>
-                            <property name="top_attach">1</property>
-                            <property name="width">1</property>
-                            <property name="height">1</property>
-                          </packing>
-                        </child>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
+                        <property name="expand">True</property>
                         <property name="fill">True</property>
                         <property name="position">0</property>
                       </packing>
@@ -723,21 +744,24 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkBox" id="boxAddTask">
+                  <object class="GtkGrid" id="gridAddTask">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="margin_left">15</property>
                     <property name="margin_right">15</property>
                     <property name="margin_bottom">5</property>
+                    <property name="column_homogeneous">True</property>
                     <child>
                       <object class="GtkComboBoxText" id="cbAddTask">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="hexpand">True</property>
                       </object>
                       <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">0</property>
+                        <property name="width">4</property>
+                        <property name="height">1</property>
                       </packing>
                     </child>
                     <child>
@@ -746,14 +770,15 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="margin_left">10</property>
-                        <property name="margin_right">1</property>
+                        <property name="margin_left">5</property>
+                        <property name="hexpand">True</property>
                         <signal name="clicked" handler="click_btnAddTask" swapped="no"/>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">1</property>
+                        <property name="left_attach">4</property>
+                        <property name="top_attach">0</property>
+                        <property name="width">1</property>
+                        <property name="height">1</property>
                       </packing>
                     </child>
                     <child>
@@ -762,12 +787,15 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="margin_left">5</property>
+                        <property name="hexpand">True</property>
                         <signal name="clicked" handler="click_btnRemoveTask" swapped="no"/>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">2</property>
+                        <property name="left_attach">5</property>
+                        <property name="top_attach">0</property>
+                        <property name="width">1</property>
+                        <property name="height">1</property>
                       </packing>
                     </child>
                   </object>
