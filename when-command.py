@@ -47,6 +47,7 @@ import logging
 import logging.config
 import logging.handlers
 import shutil
+import re
 
 import dbus
 from dbus.mainloop.glib import DBusGMainLoop
@@ -63,7 +64,7 @@ from collections import OrderedDict, deque, namedtuple
 APPLET_NAME = 'when-command'
 APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
-APPLET_VERSION = "0.3.0-beta.1"
+APPLET_VERSION = "0.3.0-beta.2"
 APPLET_ID = "it.jks.WhenCommand"
 
 # logging constants
@@ -75,6 +76,10 @@ LOG_MAX_BACKUPS = 4
 ACTION_OK = 0
 ACTION_CANCEL = -1
 ACTION_DELETE = 9
+
+# validation constants
+VALIDATE_TASK_RE = re.compile(r'^[a-zA-Z0-9][a-zA-Z0-9_-]*$')
+VALIDATE_CONDITION_RE = re.compile(r'^[a-zA-Z0-9][a-zA-Z0-9_-]*$')
 
 # folders
 USER_FOLDER = os.path.expanduser('~')
@@ -1537,6 +1542,19 @@ class TaskDialog(object):
             for i in li:
                 m.append(i)
 
+    def change_txtName(self, _):
+        o = self.builder.get_object
+        name = o('txtName')
+        if VALIDATE_TASK_RE.match(name):
+            o('buttonOK').set_sensitive(True)
+            if name in self.stored_tasks:
+                o('btnDelete').set_sensitive(True)
+            else:
+                o('btnDelete').set_sensitive(False)
+        else:
+            o('buttonOK').set_sensitive(True)
+            o('btnDelete').set_sensitive(True)
+
     def default_box(self, include_name=False):
         o = self.builder.get_object
         if include_name:
@@ -1552,6 +1570,7 @@ class TaskDialog(object):
         o('cbCheckWhat').set_active(0)
         o('txtCheckValue').set_text("0")
         o('store_listEnvVars').clear()
+        self.change_txtName(None)
 
     def run(self):
         o = self.builder.get_object
@@ -1698,6 +1717,19 @@ class ConditionDialog(object):
         except ValueError as e:
             return None
 
+    def change_txtName(self, _):
+        o = self.builder.get_object
+        name = o('txtName')
+        if VALIDATE_CONDITION_RE.match(name):
+            o('buttonOK').set_sensitive(True)
+            if name in self.stored_conditions:
+                o('btnDelete').set_sensitive(True)
+            else:
+                o('btnDelete').set_sensitive(False)
+        else:
+            o('buttonOK').set_sensitive(True)
+            o('btnDelete').set_sensitive(True)
+
     def default_box(self, include_name=False):
         o = self.builder.get_object
         if include_name:
@@ -1723,6 +1755,7 @@ class ConditionDialog(object):
         o('chkCaseSensitive').set_active(False)
         o('chkSuspend').set_active(False)
         o('store_listTasks').clear()
+        self.change_txtName(None)
 
     def choose_condition(self, box):
         o = self.builder.get_object
