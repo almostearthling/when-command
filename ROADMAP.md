@@ -86,8 +86,7 @@ List of achievements and expectations for the When applet.
 
 ## 5) To 1.0 *Production* Release
 
-* Fix GTK errors
-* Command line switches
+* Command line switches (and configuration maintenance)
   - Close current instance
   - Restart current instance
   - Start and open settings dialog
@@ -97,19 +96,21 @@ List of achievements and expectations for the When applet.
   - Rewrite configuration and exit
   - Install icons and exit
   - Force indicator icon on
-
-
-## 6) Desirable features
-
+* Regexp match for shell command results (in both tasks and conditions)
 * More system and session event conditions
   - System suspend and/or resume
   - Screen lock
   - Device attach/detach
+  - Join network
+  - More to come
 * File watch conditions
 * Stop task sequence upon failure (or success) of one task
-* Configuration directory maintenance tools
-* Regexp match for shell command results (in both tasks and conditions)
+
+
+## 6) Desirable features
+
 * Package repository
+* Fix GTK warnings (some can't be fixed)
 * Icons as specified in https://developer.gnome.org/icon-theme-spec/
 * Tests and amendments for other Linux flavors and distributions
 
