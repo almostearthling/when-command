@@ -66,6 +66,7 @@ List of achievements and expectations for the When applet.
 * Application `.desktop` entry :ok:
 * Ubuntu/Debian package :ok:
 * Refactoring: instance variables instead of properties and setters :ok:
+* Dialog box design and refactoring :ok:
 
 
 ## 2) To *Working* Alpha Release
@@ -85,18 +86,6 @@ List of achievements and expectations for the When applet.
 
 ## 5) To 1.0 *Production* Release
 
-* Refactor dialog boxes
-  1. Control names
-  2. Static control naming conventions (labels, boxes, spacers, etc.)
-  3. More modern controls, especially for compound values (e.g. Time)
-  4. Numeric values via spin buttons
-* Better dialog box design
-  - Enable/disable controls depending on options in menus and combo boxes
-  - Set default values for unselected controls when choosing condition type
-  - Set default values for unselected controls when choosing event type
-  - Time condition time definition line
-  - Better control shapes and types
-  - Use a more homogeneous design (padding, spacing, fill, etc.)
 * Fix GTK errors
 * Command line switches
   - Close current instance
@@ -110,10 +99,8 @@ List of achievements and expectations for the When applet.
   - Force indicator icon on
 
 
-
 ## 6) Desirable features
 
-* Modal dialog boxes
 * More system and session event conditions
   - System suspend and/or resume
   - Screen lock
@@ -132,3 +119,5 @@ List of achievements and expectations for the When applet.
 * Check code consistency
 * Remove unused functions
 * Obviously bugfix and maintenance
+* UI/UX redesign and evolution
+* Flexibility and use cases
