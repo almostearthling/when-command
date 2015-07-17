@@ -32,7 +32,7 @@ Tasks are basically commands associated with an environment and checks to determ
 
 The environment in which the subprocess is run can either import the current one (at **When** startup time), use its own variables or both.
 
-The selected task (if any) can be deleted clicking the *Delete* button in the dialog box. However the application will refuse to delete a task that is used in a condition: remove the task reference from the condition first. Every task must have an *unique name*, if a task is named as an existing task it will replace the existing one.
+The selected task (if any) can be deleted clicking the *Delete* button in the dialog box. However the application will refuse to delete a task that is used in a condition: remove the task reference from the condition first. Every task must have an *unique name*, if a task is named as an existing task it will replace the existing one. The name *must* begin with an alphanumeric character (letter or digit) followed by alphanumerics, dashes and underscores.
 
 **A note on the "Check for" option:** The applet can either ignore whatever the underlying process returns to the caller by specifying *Nothing* in the *Check for* group, or check
 
@@ -62,7 +62,7 @@ Also, the condition configuration interface allows to decide:
 * the tasks in the task set are executed in the given order, although this makes a difference only when sequential execution is chosen;
 * a condition can be suspended: it will not be checked, but it's retained in the system
 
-The selected condition (if any) can be deleted clicking the *Delete* button in the dialog box. Every condition must have an *unique name*, if a condition is named as an existing one it will replace it.
+The selected condition (if any) can be deleted clicking the *Delete* button in the dialog box. Every condition must have an *unique name*, if a condition is named as an existing one it will replace it. The name *must* begin with an alphanumeric character (letter or digit) followed by alphanumerics, dashes and underscores.
 
 
 ### The History window

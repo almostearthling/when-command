@@ -64,7 +64,7 @@ from collections import OrderedDict, deque, namedtuple
 APPLET_NAME = 'when-command'
 APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
-APPLET_VERSION = "0.3.0-beta.2"
+APPLET_VERSION = "0.4.0-beta.1"
 APPLET_ID = "it.jks.WhenCommand"
 
 # logging constants
