@@ -1555,6 +1555,15 @@ class TaskDialog(object):
             o('buttonOK').set_sensitive(False)
             o('btnDelete').set_sensitive(False)
 
+    def change_cbCheckWhat(self, _):
+        o = self.builder.get_object
+        if o('cbCheckWhat').get_active() == 0:
+            o('chkExactMatch').set_sensitive(False)
+            o('chkCaseSensitive').set_sensitive(False)
+        else:
+            o('chkExactMatch').set_sensitive(True)
+            o('chkCaseSensitive').set_sensitive(True)
+
     def default_box(self, include_name=False):
         o = self.builder.get_object
         if include_name:
@@ -1582,6 +1591,7 @@ class TaskDialog(object):
         self.dialog.set_keep_above(True)
         self.dialog.present()
         self.change_txtName(None)
+        self.change_cbCheckWhat(None)
         ret = self.dialog.run()
         self.dialog.hide()
         self.dialog.set_keep_above(False)
@@ -1729,6 +1739,15 @@ class ConditionDialog(object):
         else:
             o('buttonOK').set_sensitive(False)
             o('btnDelete').set_sensitive(False)
+
+    def change_cbCheckWhat(self, _):
+        o = self.builder.get_object
+        if o('cbCheckWhat').get_active() == 0:
+            o('chkExactMatch').set_sensitive(False)
+            o('chkCaseSensitive').set_sensitive(False)
+        else:
+            o('chkExactMatch').set_sensitive(True)
+            o('chkCaseSensitive').set_sensitive(True)
 
     def default_box(self, include_name=False):
         o = self.builder.get_object
@@ -1909,6 +1928,7 @@ class ConditionDialog(object):
         self.dialog.set_keep_above(True)
         self.dialog.present()
         self.change_txtName(None)
+        self.change_cbCheckWhat(None)
         ret = self.dialog.run()
         self.dialog.hide()
         self.dialog.set_keep_above(False)

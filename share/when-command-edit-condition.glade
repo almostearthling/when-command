@@ -202,6 +202,7 @@
                               <item id="20" translatable="yes">Standard Output</item>
                               <item id="30" translatable="yes">Standard Error</item>
                             </items>
+                            <signal name="changed" handler="change_cbCheckWhat" swapped="no"/>
                           </object>
                           <packing>
                             <property name="expand">False</property>
