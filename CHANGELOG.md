@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.5.0 (beta)
+* More consistent dialog boxes
+* Task and condition naming rules
+
+
 ## Version 0.3.0 (beta)
 * Perform shutdown tasks on logout, shutdown and reboot (Issue #8)
 * Create autostart directory when not present (Issue #15)
