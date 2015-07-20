@@ -46,6 +46,7 @@ import pickle
 import logging
 import logging.config
 import logging.handlers
+import argparse
 import shutil
 import re
 
@@ -452,6 +453,10 @@ class Config(object):
             applet_log.warning("CONFIG: malformed configuration file, using default [%s]" % e)
             self._default()
             self.save()
+
+    def reset(self):
+        self._default()
+        self.save()
 
     def save(self):
         try:
@@ -2599,12 +2604,20 @@ def main():
 
 # implement the applet and start
 if __name__ == '__main__':
-    DBusGMainLoop(set_as_default=True)
-    create_desktop_file()
-    create_autostart_file(False)
-    GObject.threads_init()
-    applet = AppletIndicator()
-    main()
+    if len(sys.argv) == 1:
+        DBusGMainLoop(set_as_default=True)
+        create_desktop_file()
+        create_autostart_file(False)
+        GObject.threads_init()
+        applet = AppletIndicator()
+        main()
+    else:
+        parser = argparse.ArgumentParser()
+        parser.add_argument(
+            '-R', '--reset-config',
+            dest='reset_config', action='store_true',
+            help="reset general configuration to default"
+        )
 
 
 # end.
