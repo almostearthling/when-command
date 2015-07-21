@@ -51,6 +51,7 @@ import shutil
 import re
 
 import dbus
+import dbus.service
 from dbus.mainloop.glib import DBusGMainLoop
 
 from concurrent.futures import ThreadPoolExecutor
@@ -65,8 +66,10 @@ from collections import OrderedDict, deque, namedtuple
 APPLET_NAME = 'when-command'
 APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
-APPLET_VERSION = "0.4.0-beta.1"
+APPLET_VERSION = "0.4.0-beta.2"
 APPLET_ID = "it.jks.WhenCommand"
+APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
+APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -96,6 +99,12 @@ USER_LOG_FOLDER = os.path.join(USER_DATA_FOLDER, 'log')
 USER_LOG_FILE = os.path.join(USER_LOG_FOLDER, "%s.log" % APPLET_NAME)
 USER_CONFIG_FILE = os.path.join(USER_CONFIG_FOLDER, "%s.conf" % APPLET_NAME)
 USER_PAUSE_FILE = os.path.join(USER_CONFIG_FOLDER, "%s.pause" % APPLET_NAME)
+
+
+#############################################################################
+# this will be set up in the main function to avoid polluting the process
+# if another instance of the application is already running
+applet = None
 
 
 # verify that the user folders are present, otherwise create them
@@ -363,6 +372,28 @@ def config_loghandler(max_size=None, max_backups=None):
 applet_lock = threading.Lock()
 
 
+#############################################################################
+# the DBus service is needed for the running applet to receive commands
+class AppletDBusService(dbus.service.Object):
+    def __init__(self):
+        bus_name = dbus.service.BusName(APPLET_BUS_NAME, bus=dbus.SessionBus())
+        dbus.service.Object.__init__(self, bus_name, APPLET_BUS_PATH)
+
+    @dbus.service.method(APPLET_BUS_NAME)
+    def kill_instance(self):
+        self.remove_from_connection()
+        Gtk.main_quit()
+
+    @dbus.service.method(APPLET_BUS_NAME)
+    def quit_instance(self):
+        self.remove_from_connection()
+        applet.quit(None)
+
+
+#############################################################################
+# Core classes
+
+# Main configuration handler
 class Config(object):
     _config_file = None
     _config_parser = None
@@ -2338,23 +2369,25 @@ class AppletIndicator(Gtk.Application):
         Gtk.Application.__init__(self,
                                  application_id=APPLET_ID,
                                  flags=Gio.ApplicationFlags.FLAGS_NONE)
+        self.register(None)
         self.connect("activate", self.applet_activate)
 
         # The system and session bus signals give many possibilities for events
         self.system_bus = dbus.SystemBus()
+        self.session_bus = AppletDBusService()
         self.login_mgr = dbus.Interface(
             self.system_bus.get_object('org.freedesktop.login1', '/org/freedesktop/login1'),
             'org.freedesktop.login1.Manager')
         self.login_mgr.connect_to_signal('PrepareForShutdown', self.before_shutdown)
 
     def applet_activate(self, applet_instance):
-        if self.running:
-            applet_log.warning("MAIN: already running: show settings and quit")
-            self.dlgsettings(None)
-            self.quit(None)
-        else:
-            self.running = True
-            self.main()
+        # if self.running:
+        #     applet_log.warning("MAIN: already running: show settings and quit")
+        #     self.dlgsettings(None)
+        #     self.quit(None)
+        # else:
+        self.running = True
+        self.main()
 
     def main(self):
         # GUI management
@@ -2535,12 +2568,6 @@ class AppletIndicator(Gtk.Application):
         return menu
 
 
-#############################################################################
-# this will be set up in the main loop to avoid polluting the process
-# if another instance of the application is already running
-applet = None
-
-
 # signal handler (see http://stackoverflow.com/questions/26388088): this is
 # needed in order to handle the logout event (until it is managed by dbus)
 def init_signal_handler(applet_instance):
@@ -2580,10 +2607,7 @@ def init_signal_handler(applet_instance):
         GLib.idle_add(install_glib_handler, signum, priority=GLib.PRIORITY_HIGH)
 
 
-# Check whether another instance of the application is running: if so the
-# settings dialog box is shown in order to give the possibility to show the
-# indicator icon if it was hidden. If no other instance is running, capture
-# the signals, configure the logger, start the clock and run the applet.
+# Configure services and start the application
 def main():
     config_loghandler()
     config_loglevel()
@@ -2597,20 +2621,50 @@ def main():
         unlink_pause_file()
     else:
         periodic.stop()
+    # If we have come here, the command line had no arguments so we clear it
     applet.run([])
     if not periodic.stopped:
         periodic.stop()
 
 
+def install_icons(overwrite=True):
+    create_desktop_file(overwrite=overwrite)
+    create_autostart_file(overwrite=overwrite)
+
+
+def start():
+    create_desktop_file(False)
+    create_autostart_file(False)
+    main()
+
+
+def kill_existing(verbose=False, shutdown=False):
+    if applet.get_is_remote():
+        if verbose:
+            sys.stderr.write('an existing instance will be shut down... ')
+        bus = dbus.SessionBus()
+        interface = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
+        if shutdown:
+            interface.quit_instance()
+        else:
+            interface.kill_instance()
+    if verbose:
+        sys.stderr.write('done\n')
+    else:
+        if verbose:
+            sys.stderr.write('no existing instance found\n')
+
+
 # implement the applet and start
 if __name__ == '__main__':
+    DBusGMainLoop(set_as_default=True)
+    GObject.threads_init()
+    applet = AppletIndicator()
     if len(sys.argv) == 1:
-        DBusGMainLoop(set_as_default=True)
-        create_desktop_file()
-        create_autostart_file(False)
-        GObject.threads_init()
-        applet = AppletIndicator()
-        main()
+        if applet.get_is_remote():
+            applet_log.critical("MAIN: another instance is present: leaving")
+            sys.exit(2)
+        start()
     else:
         parser = argparse.ArgumentParser()
         parser.add_argument(
@@ -2618,6 +2672,73 @@ if __name__ == '__main__':
             dest='reset_config', action='store_true',
             help="reset general configuration to default"
         )
+        parser.add_argument(
+            '-S', '--show-settings',
+            dest='show_settings', action='store_true',
+            help="show settings dialog box"
+        )
+        parser.add_argument(
+            '--kill',
+            dest='kill', action='store_true',
+            help="kill an existing istance if present"
+        )
+        parser.add_argument(
+            '--shutdown',
+            dest='shutdown', action='store_true',
+            help="perform shutdown tasks and close an existing istance"
+        )
+        parser.add_argument(
+            '-r', '--restart',
+            dest='restart', action='store_true',
+            help="restart an existing istance or start from scratch"
+        )
+        parser.add_argument(
+            '-I', '--show-icon',
+            dest='show_icon', action='store_true',
+            help="show icon for an existing instance"
+        )
+        parser.add_argument(
+            '-Q', '--query',
+            dest='query', action='store_true',
+            help="query for an existing instance"
+        )
+        parser.add_argument(
+            '--install',
+            dest='install', action='store_true',
+            help="install application icons and autostart, and exit"
+        )
+        parser.add_argument(
+            '--export',
+            dest='export', metavar='FILE', nargs='?',
+            help="save tasks and conditions to a portable format"
+        )
+        parser.add_argument(
+            '--import',
+            dest='import', metavar='FILE', nargs='?',
+            help="clear tasks and conditions and import from saved file"
+        )
+        parser.add_argument(
+            '--clear',
+            dest='clear', action='store_true',
+            help="clear current tasks and conditions"
+        )
+        parser.add_argument(
+            '-V', '--version',
+            dest='version', action='store_true',
+            help="show applet version and exit"
+        )
+        parser.add_argument(
+            '-v', '--verbose',
+            dest='verbose', action='store_true',
+            help="show verbose output for some options"
+        )
+
+        args = parser.parse_args()
+        # ...
+        if args.shutdown:
+            kill_existing(verbose=args.verbose, shutdown=True)
+        elif args.kill:
+            kill_existing(verbose=args.verbose, shutdown=False)
 
 
 # end.
