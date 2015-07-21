@@ -127,7 +127,7 @@ log size = 1048576
 log backups = 4
 ```
 
-Manual configuration is particularly useful to bring back the program icon once the user decided to hide it (losing access to the menu: I was doubtful about providing the option, then just decided to implement it and provide a safety net anyway), by setting the `show icon` entry to `true`. Another way to force access to the *Settings* dialog box when the icon is hidden is to explicitly invoke the applet (either from the command line, or the Gnome shell, or *Dash* on Ubuntu) when an instance is already running. However, in this case, *after the dialog box is closed, the running instance will shut down and will have to be restarted*.
+Manual configuration is particularly useful to bring back the program icon once the user decided to hide it (losing access to the menu: I was doubtful about providing the option, then just decided to implement it and provide a safety net anyway), by setting the `show icon` entry to `true`. Another way to force access to the *Settings* dialog box when the icon is hidden is to invoke the applet from the command line using the `--show-settings` (or `-S`) switch when an instance is running.
 
 
 ### Installation requirements and Directory structure

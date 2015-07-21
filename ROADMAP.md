@@ -87,7 +87,7 @@ List of achievements and expectations for the When applet.
 ## 5) To 1.0 *Production* Release
 
 * Command line switches (and configuration maintenance)
-  - Close current instance ss
+  - Close current instance :ok:
   - Restart current instance ss
   - Start and open settings dialog ss
   - Clear/Rebuild configuration directory
