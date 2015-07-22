@@ -3,6 +3,16 @@
 ## Version 0.5.0 (beta)
 * More consistent dialog boxes
 * Task and condition naming rules
+* Command line options for
+  - configuration management
+  - accessing dialog boxes
+  - applet information
+  - applet control
+* Import and export static data across incompatible versions
+
+### Note about compatibility breaks
+
+This release introduces a way to save static data (tasks and conditions) in a portable format that is not subject to significant changes across versions: this should solve the concern about compatibility breaks when the core structures of the program are modified in an incompatible way.
 
 
 ## Version 0.3.0 (beta)
