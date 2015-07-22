@@ -88,14 +88,14 @@ List of achievements and expectations for the When applet.
 
 * Command line switches (and configuration maintenance)
   - Close current instance :ok:
-  - Restart current instance ss
-  - Start and open settings dialog ss
-  - Clear/Rebuild configuration directory
-  - Clear/Rebuild data directory
-  - Rewrite configuration ss
-  - Rewrite configuration and exit (via 2 switches)
-  - Install icons and exit ss
+  - Open settings dialog :ok:
+  - Clear/Rebuild configuration directory :ok:
+  - Rewrite configuration :ok:
+  - Rewrite configuration and exit (via 2 switches) :ok:
+  - Install icons :ok:
   - Force indicator icon on ss
+  - export tasks and conditions ss
+  - import tasks and conditions ss
 * Regexp match for shell command results (in both tasks and conditions)
 * More system and session event conditions
   - System suspend and/or resume

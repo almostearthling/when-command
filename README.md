@@ -130,6 +130,30 @@ log backups = 4
 Manual configuration is particularly useful to bring back the program icon once the user decided to hide it (losing access to the menu: I was doubtful about providing the option, then just decided to implement it and provide a safety net anyway), by setting the `show icon` entry to `true`. Another way to force access to the *Settings* dialog box when the icon is hidden is to invoke the applet from the command line using the `--show-settings` (or `-S`) switch when an instance is running.
 
 
+### Command line options
+
+By default, when the applet is invoked with no arguments, it just starts an instance showing the icon in the top panel (if configured to do so). However there are some command line options that allow for some operations, either on a running instance or on the current configuration. Some are especially useful to recover when something has gone the wrong way -- such as the `-S` switch mentioned above, or the `-I` (or `--show-icon`) switch, to recover from an unwantedly hidden icon. The available options are:
+
+* `-S` or `--show-settings`: show the settings dialog box of an existing instance, it requires in fact that an instance is running, which may be queried using the `--query` switch explained below
+* `-R` or `--reset-config`: reset applet configuration to default, requires the applet to be not running or to be shut down with an appropriate switch
+* `-I` or `--show-icon`: show applet icon at the next startup
+* `-T` or `--install`: install or reinstall application icon and autostart icon, requires applet to be not running or to be shut down with an appropriate switch
+* `-C` or `--clear`: clear current tasks and conditions, requires applet to be not running or to be shut down with an appropriate switch
+* `-Q` or `--query`: query for an existing instance (returns a zero exit status if an instance is running, nonzero otherwise, and prints an human-readable message if the `--verbose` switch is also specified)
+* `--shutdown`: close a running instance as if *Quit* was selected from the menu, that is performing all shutdown tasks first
+* `--kill`: close a running instance abruptly, no shutdown tasks are performed
+* `--export` *[filename]*: save tasks and conditions to a portable format, if *filename* is not specified these items are saved in a default file in the `~/.config/when-command` directory
+* `--import` *[filename]*: clear tasks and conditions and import them from a previously saved file, if *filename* is not specified the applet tries to import these items from the default file in the `~/.config/when-command` directory.
+
+Some usual switches are also available:
+
+* `-h` or `--help`: show a brief help message and exit
+* `-V` or `--version`: show applet version, if `--verbose` is specified it also shows the *About Box* of a running instance, if there is one
+* `-v` or `--verbose`: show output for some options; normally the applet would not display any output to the terminal unless `-v` is specified, the only exception being `--version` that prints out the version string anyway.
+
+Please note that whenever a command line option is given, the applet will not "stay resident" if there is no previously running instance.
+
+
 ### Installation requirements and Directory structure
 
 For the applet to function and before unpacking it to the destination directory, make sure that *Python 3.x*,  *PyGObject* for *Python 3.x* and the `xprintidle` utility are installed. For example, not all of these are installed by default on Ubuntu: in this case use the following commands.

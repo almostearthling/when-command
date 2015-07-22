@@ -66,7 +66,7 @@ from collections import OrderedDict, deque, namedtuple
 APPLET_NAME = 'when-command'
 APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
-APPLET_VERSION = "0.4.0-beta.2"
+APPLET_VERSION = "0.4.1-beta.1"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -388,6 +388,23 @@ class AppletDBusService(dbus.service.Object):
     def quit_instance(self):
         self.remove_from_connection()
         applet.quit(None)
+
+    @dbus.service.method(APPLET_BUS_NAME)
+    def show_dialog(self, dlgname):
+        if dlgname == 'settings':
+            applet.dlgsettings(None)
+        elif dlgname == 'about':
+            applet.dlgabout(None)
+        elif dlgname == 'task':
+            applet.dlgtask(None)
+        elif dlgname == 'condition':
+            applet.dlgcondition(None)
+        elif dlgname == 'history':
+            applet.dlghistory(None)
+
+    @dbus.service.method(APPLET_BUS_NAME)
+    def show_icon(self, show=True):
+        applet.hide_icon(not show)
 
 
 #############################################################################
@@ -2627,6 +2644,11 @@ def main():
         periodic.stop()
 
 
+def oerr(s, verbose=True):
+    if verbose:
+        sys.stderr.write("%s: %s\n" % (APPLET_NAME, s))
+
+
 def install_icons(overwrite=True):
     create_desktop_file(overwrite=overwrite)
     create_autostart_file(overwrite=overwrite)
@@ -2639,48 +2661,101 @@ def start():
 
 
 def kill_existing(verbose=False, shutdown=False):
-    if applet.get_is_remote():
-        if verbose:
-            sys.stderr.write('an existing instance will be shut down... ')
+    oerr("an existing instance will be %s" % 'shut down' if shutdown else 'killed', verbose)
+    bus = dbus.SessionBus()
+    interface = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
+    if shutdown:
+        interface.quit_instance()
+    else:
+        interface.kill_instance()
+    oerr("instance shutdown finished", verbose)
+
+
+def show_settings(verbose=False):
+    oerr("showing settings of currently running instance", verbose)
+    bus = dbus.SessionBus()
+    interface = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
+    interface.show_dialog('settings')
+
+
+def show_box(box='about'):
+    bus = dbus.SessionBus()
+    interface = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
+    interface.show_dialog(box)
+
+
+def show_icon(show=True, running=True):
+    if running:
         bus = dbus.SessionBus()
         interface = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
-        if shutdown:
-            interface.quit_instance()
-        else:
-            interface.kill_instance()
-    if verbose:
-        sys.stderr.write('done\n')
-    else:
-        if verbose:
-            sys.stderr.write('no existing instance found\n')
+        interface.show_icon(show)
+    config.set('General', 'show icon', show)
+    config.save()
 
 
-# implement the applet and start
+def clear_tasks_conditions(verbose=False):
+    oerr("removing all tasks and conditions", verbose)
+    l = list(conditions.names)
+    for x in l:
+        conditions.remove(cond_name=x)
+    conditions.save()
+    file_name = os.path.join(USER_CONFIG_FOLDER, 'condition.list')
+    try:
+        os.unlink(file_name)
+    except OSError:
+        oerr("could not remove condition list file", verbose)
+    l = list(tasks.names)
+    for x in l:
+        tasks.remove(task_name=x)
+    tasks.save()
+    file_name = os.path.join(USER_CONFIG_FOLDER, 'task.list')
+    try:
+        os.unlink(file_name)
+    except OSError:
+        oerr("could not remove task list file", verbose)
+
+
+# Build the applet and start
 if __name__ == '__main__':
     DBusGMainLoop(set_as_default=True)
     GObject.threads_init()
     applet = AppletIndicator()
     if len(sys.argv) == 1:
         if applet.get_is_remote():
-            applet_log.critical("MAIN: another instance is present: leaving")
+            oerr("another instance is present: leaving")
             sys.exit(2)
         start()
     else:
         parser = argparse.ArgumentParser()
         parser.add_argument(
-            '-R', '--reset-config',
-            dest='reset_config', action='store_true',
-            help="reset general configuration to default"
+            '-V', '--version',
+            dest='version', action='store_true',
+            help="show applet version"
         )
         parser.add_argument(
             '-S', '--show-settings',
             dest='show_settings', action='store_true',
-            help="show settings dialog box"
+            help="show settings dialog box (when running)"
         )
         parser.add_argument(
-            '--kill',
-            dest='kill', action='store_true',
-            help="kill an existing istance if present"
+            '-R', '--reset-config',
+            dest='reset_config', action='store_true',
+            help="reset general configuration to default (when shut down)"
+        )
+        parser.add_argument(
+            '-I', '--show-icon',
+            dest='show_icon', action='store_true',
+            help="show applet icon (requires restart)"
+        )
+        parser.add_argument(
+            '-C', '--clear',
+            dest='clear', action='store_true',
+            help="clear all tasks and conditions (when shut down)"
+        )
+        parser.add_argument(
+            '-Q', '--query',
+            dest='query', action='store_true',
+            help="query for a running instance"
         )
         parser.add_argument(
             '--shutdown',
@@ -2688,22 +2763,12 @@ if __name__ == '__main__':
             help="perform shutdown tasks and close an existing istance"
         )
         parser.add_argument(
-            '-r', '--restart',
-            dest='restart', action='store_true',
-            help="restart an existing istance or start from scratch"
+            '--kill',
+            dest='kill', action='store_true',
+            help="kill an existing istance (when running)"
         )
         parser.add_argument(
-            '-I', '--show-icon',
-            dest='show_icon', action='store_true',
-            help="show icon for an existing instance"
-        )
-        parser.add_argument(
-            '-Q', '--query',
-            dest='query', action='store_true',
-            help="query for an existing instance"
-        )
-        parser.add_argument(
-            '--install',
+            '-T', '--install',
             dest='install', action='store_true',
             help="install application icons and autostart, and exit"
         )
@@ -2718,27 +2783,74 @@ if __name__ == '__main__':
             help="clear tasks and conditions and import from saved file"
         )
         parser.add_argument(
-            '--clear',
-            dest='clear', action='store_true',
-            help="clear current tasks and conditions"
-        )
-        parser.add_argument(
-            '-V', '--version',
-            dest='version', action='store_true',
-            help="show applet version and exit"
-        )
-        parser.add_argument(
             '-v', '--verbose',
             dest='verbose', action='store_true',
             help="show verbose output for some options"
         )
 
         args = parser.parse_args()
+        running = applet.get_is_remote()
+        verbose = args.verbose
         # ...
+        if args.version:
+            print("%s: %s, version %s" % (APPLET_NAME, APPLET_FULLNAME, APPLET_VERSION))
+            if verbose and running:
+                show_box('about')
+
+        if args.show_icon:
+            show_icon(True, running)
+
+        if args.show_settings:
+            if not running:
+                oerr("could not find a running instance, please start it first", verbose)
+                sys.exit(2)
+            else:
+                show_settings(verbose)
         if args.shutdown:
-            kill_existing(verbose=args.verbose, shutdown=True)
+            if running:
+                kill_existing(verbose=verbose, shutdown=True)
+                running = False
+            else:
+                oerr("could not find a running instance", verbose)
         elif args.kill:
-            kill_existing(verbose=args.verbose, shutdown=False)
+            if running:
+                kill_existing(verbose=verbose, shutdown=False)
+                running = False
+            else:
+                oerr("could not find a running instance", verbose)
+
+        if args.reset_config:
+            if running:
+                oerr("cannot reset configuration, please close instance first", verbose)
+                sys.exit(2)
+            else:
+                config.reset()
+                unlink_pause_file()
+                oerr("configuration has been reset", verbose)
+
+        if args.clear:
+            if running:
+                oerr("cannot clear items, please close instance first", verbose)
+                sys.exit(2)
+            else:
+                clear_tasks_conditions(verbose)
+                oerr("tasks and conditions deleted", verbose)
+
+        if args.install:
+            if running:
+                oerr("cannot install, please close instance first", verbose)
+                sys.exit(2)
+            else:
+                install_icons(True)
+                oerr("configuration has been reset", verbose)
+
+        if args.query:
+            if running:
+                oerr("found a running instance", verbose)
+                sys.exit(0)
+            else:
+                oerr("no instance could be found", verbose)
+                sys.exit(1)
 
 
 # end.
