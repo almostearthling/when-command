@@ -67,7 +67,9 @@ from collections import OrderedDict, deque, namedtuple
 APPLET_NAME = 'when-command'
 APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
-APPLET_VERSION = "0.4.1-beta.2"
+APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
+APPLET_URL = "http://almostearthling.github.io/when-command/"
+APPLET_VERSION = "0.4.1-beta.3"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -216,6 +218,30 @@ resources.LISTCOL_HISTORY_SUCCESS = "Result"
 resources.LISTCOL_HISTORY_REASON = "Reason"
 resources.LISTCOL_HISTORY_ROWID = "Row ID"
 
+resources.COMMAND_LINE_HELP_VERSION = "show applet version"
+resources.COMMAND_LINE_HELP_SHOW_SETTINGS = "show settings dialog box for the running instance [R]"
+resources.COMMAND_LINE_HELP_RESET_CONFIG = "reset general configuration to default [S]"
+resources.COMMAND_LINE_HELP_SHOW_ICON = "show applet icon [N]"
+resources.COMMAND_LINE_HELP_CLEAR = "clear all tasks and conditions [S]"
+resources.COMMAND_LINE_HELP_INSTALL = "install application icons and autostart [S]"
+resources.COMMAND_LINE_HELP_QUERY = "query for a running instance"
+resources.COMMAND_LINE_HELP_SHUTDOWN = "run shutdown tasks and close an existing istance [R]"
+resources.COMMAND_LINE_HELP_KILL = "kill an existing istance [R]"
+resources.COMMAND_LINE_HELP_EXPORT = "save tasks and conditions to a portable format"
+resources.COMMAND_LINE_HELP_IMPORT = "import tasks and conditions from saved file [S]"
+resources.COMMAND_LINE_HELP_VERBOSE = "show verbose output for some options"
+resources.COMMAND_LINE_PREAMBLE = """\
+%s: %s - %s /
+When is a configurable user task scheduler for Ubuntu.
+The command line interface can be used to interact with running instances of
+When or to perform maintenance tasks. Use the --verbose option to read output
+from the command, as most operations will show no output by default.
+""" % (APPLET_NAME, APPLET_FULLNAME, APPLET_COPYRIGHT)
+resources.COMMAND_LINE_EPILOG = """\
+Note: options marked with [R] require an instance running in the background,
+with [S] require that no instance is running and with [N] have only effect
+after restart. Go to %s for more information.
+""" % APPLET_URL
 
 # constants for desktop entry and autostart entry
 APP_ENTRY_DESKTOP = """\
@@ -1148,6 +1174,7 @@ def dict_to_Task(d):
     t.case_sensitive = d['case_sensitive']
     t.command = d['command']
     t.startup_dir = d['startup_dir']
+    # TODO: if there are more parameters, use d.get('key', default_val)
     return t
 
 
@@ -1331,6 +1358,7 @@ def Condition_to_dict(c):
 def dict_to_Condition(d, c=None):
     if d['type'] != 'condition':
         raise ValueError("incorrect dictionary type")
+    # this will raise an error
     if c is None:
         c = Condition()
     c.cond_id = d['cond_id']
@@ -1339,6 +1367,7 @@ def dict_to_Condition(d, c=None):
     c.repeat = d['repeat']
     c.exec_sequence = d['exec_sequence']
     c.suspended = d['suspended']
+    # TODO: if there are more parameters, use d.get('key', default_val)
     return c
 
 
@@ -1371,6 +1400,7 @@ def dict_to_IntervalBasedCondition(d):
         raise ValueError("incorrect dictionary type")
     name = d['cond_name']
     interval = d['interval']
+    # TODO: if there are more parameters, use d.get('key', default_val)
     c = IntervalBasedCondition(name, interval)
     c = dict_to_Condition(d, c)
     return c
@@ -1429,6 +1459,8 @@ def dict_to_TimeBasedCondition(d):
     if d['type'] != 'condition' or d['subtype'] != 'TimeBasedCondition':
         raise ValueError("incorrect dictionary type")
     name = d['cond_name']
+    # we can use d for timedict because the needed keys (intentionally) match
+    # TODO: if there are more parameters, use d.get('key', default_val)
     c = TimeBasedCondition(name, d)
     c = dict_to_Condition(d, c)
     return c
@@ -1542,6 +1574,7 @@ def dict_to_CommandBasedCondition(d):
     status = d['expected_status']
     stdout = d['expected_stdout']
     stderr = d['expected_stderr']
+    # TODO: if there are more parameters, use d.get('key', default_val)
     c = CommandBasedCondition(name, command, status, stdout, stderr)
     c = dict_to_Condition(d, c)
     return c
@@ -1583,6 +1616,7 @@ def dict_to_IdleTimeBasedCondition(d):
         raise ValueError("incorrect dictionary type")
     name = d['cond_name']
     idle_secs = d['idle_secs']
+    # TODO: if there are more parameters, use d.get('key', default_val)
     c = IdleTimeBasedCondition(name, idle_secs)
     c = dict_to_Condition(d, c)
     return c
@@ -1621,6 +1655,7 @@ def dict_to_EventBasedCondition(d):
     name = d['cond_name']
     event = d['event']
     no_skip = d['no_skip']
+    # TODO: if there are more parameters, use d.get('key', default_val)
     c = EventBasedCondition(name, event, no_skip)
     c = dict_to_Condition(d, c)
     return c
@@ -2987,66 +3022,70 @@ if __name__ == '__main__':
             sys.exit(2)
         start()
     else:
-        parser = argparse.ArgumentParser()
-        parser.add_argument(
-            '-V', '--version',
-            dest='version', action='store_true',
-            help="show applet version"
-        )
-        parser.add_argument(
-            '-S', '--show-settings',
-            dest='show_settings', action='store_true',
-            help="show settings dialog box (when running)"
-        )
-        parser.add_argument(
-            '-R', '--reset-config',
-            dest='reset_config', action='store_true',
-            help="reset general configuration to default (when shut down)"
-        )
-        parser.add_argument(
-            '-I', '--show-icon',
-            dest='show_icon', action='store_true',
-            help="show applet icon (requires restart)"
-        )
-        parser.add_argument(
-            '-C', '--clear',
-            dest='clear', action='store_true',
-            help="clear all tasks and conditions (when shut down)"
-        )
-        parser.add_argument(
-            '-Q', '--query',
-            dest='query', action='store_true',
-            help="query for a running instance"
-        )
-        parser.add_argument(
-            '--shutdown',
-            dest='shutdown', action='store_true',
-            help="perform shutdown tasks and close an existing istance"
-        )
-        parser.add_argument(
-            '--kill',
-            dest='kill', action='store_true',
-            help="kill an existing istance (when running)"
-        )
-        parser.add_argument(
-            '-T', '--install',
-            dest='install', action='store_true',
-            help="install application icons and autostart, and exit"
-        )
-        parser.add_argument(
-            '--export',
-            dest='export_items', metavar='FILE', nargs='?', const='*',
-            help="save tasks and conditions to a portable format"
-        )
-        parser.add_argument(
-            '--import',
-            dest='import_items', metavar='FILE', nargs='?', const='*',
-            help="clear tasks and conditions and import from saved file"
+        parser = argparse.ArgumentParser(
+            prog=APPLET_NAME,
+            description=resources.COMMAND_LINE_PREAMBLE,
+            epilog=resources.COMMAND_LINE_EPILOG,
         )
         parser.add_argument(
             '-v', '--verbose',
             dest='verbose', action='store_true',
-            help="show verbose output for some options"
+            help=resources.COMMAND_LINE_HELP_VERBOSE
+        )
+        parser.add_argument(
+            '-V', '--version',
+            dest='version', action='store_true',
+            help=resources.COMMAND_LINE_HELP_VERSION
+        )
+        parser.add_argument(
+            '-S', '--show-settings',
+            dest='show_settings', action='store_true',
+            help=resources.COMMAND_LINE_HELP_SHOW_SETTINGS
+        )
+        parser.add_argument(
+            '-R', '--reset-config',
+            dest='reset_config', action='store_true',
+            help=resources.COMMAND_LINE_HELP_RESET_CONFIG
+        )
+        parser.add_argument(
+            '-I', '--show-icon',
+            dest='show_icon', action='store_true',
+            help=resources.COMMAND_LINE_HELP_SHOW_ICON
+        )
+        parser.add_argument(
+            '-C', '--clear',
+            dest='clear', action='store_true',
+            help=resources.COMMAND_LINE_HELP_CLEAR
+        )
+        parser.add_argument(
+            '-T', '--install',
+            dest='install', action='store_true',
+            help=resources.COMMAND_LINE_HELP_INSTALL
+        )
+        parser.add_argument(
+            '-Q', '--query',
+            dest='query', action='store_true',
+            help=resources.COMMAND_LINE_HELP_QUERY
+        )
+        parser.add_argument(
+            '--shutdown',
+            dest='shutdown', action='store_true',
+            help=resources.COMMAND_LINE_HELP_SHUTDOWN
+        )
+        parser.add_argument(
+            '--kill',
+            dest='kill', action='store_true',
+            help=resources.COMMAND_LINE_HELP_KILL
+        )
+        parser.add_argument(
+            '--export',
+            dest='export_items', metavar='FILE', nargs='?', const='*',
+            help=resources.COMMAND_LINE_HELP_EXPORT
+        )
+        parser.add_argument(
+            '--import',
+            dest='import_items', metavar='FILE', nargs='?', const='*',
+            help=resources.COMMAND_LINE_HELP_IMPORT
         )
 
         args = parser.parse_args()
