@@ -67,6 +67,16 @@ List of achievements and expectations for the When applet.
 * Ubuntu/Debian package :ok:
 * Refactoring: instance variables instead of properties and setters :ok:
 * Dialog box design and refactoring :ok:
+* Command line switches (and configuration maintenance) :+1:
+  - Close current instance :ok:
+  - Open settings dialog :ok:
+  - Clear/Rebuild configuration directory :ok:
+  - Rewrite configuration :ok:
+  - Rewrite configuration and exit (via 2 switches) :ok:
+  - Install icons :ok:
+  - Force indicator icon on :ok:
+  - export tasks and conditions :ok:
+  - import tasks and conditions :ok:
 
 
 ## 2) To *Working* Alpha Release
@@ -86,16 +96,6 @@ List of achievements and expectations for the When applet.
 
 ## 5) To 1.0 *Production* Release
 
-* Command line switches (and configuration maintenance)
-  - Close current instance :ok:
-  - Open settings dialog :ok:
-  - Clear/Rebuild configuration directory :ok:
-  - Rewrite configuration :ok:
-  - Rewrite configuration and exit (via 2 switches) :ok:
-  - Install icons :ok:
-  - Force indicator icon on ss
-  - export tasks and conditions ss
-  - import tasks and conditions ss
 * Regexp match for shell command results (in both tasks and conditions)
 * More system and session event conditions
   - System suspend and/or resume

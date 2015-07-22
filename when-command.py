@@ -43,6 +43,7 @@ import subprocess
 import threading
 import configparser
 import pickle
+import json
 import logging
 import logging.config
 import logging.handlers
@@ -66,7 +67,7 @@ from collections import OrderedDict, deque, namedtuple
 APPLET_NAME = 'when-command'
 APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
-APPLET_VERSION = "0.4.1-beta.1"
+APPLET_VERSION = "0.4.1-beta.2"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -1108,6 +1109,48 @@ class Task(object):
             return success
 
 
+# these functions convert a Task instance to a dictionary and back
+def Task_to_dict(t):
+    d = {}
+    d['type'] = 'task'
+    d['task_id'] = t.task_id
+    d['task_name'] = t.task_name
+    d['environment_vars'] = t.environment_vars
+    d['include_env'] = t.include_env
+    d['success_stdout'] = t.success_stdout
+    d['success_stderr'] = t.success_stderr
+    d['success_status'] = t.success_status
+    d['failure_stdout'] = t.failure_stdout
+    d['failure_stderr'] = t.failure_stderr
+    d['failure_status'] = t.failure_status
+    d['match_exact'] = t.match_exact
+    d['case_sensitive'] = t.case_sensitive
+    d['command'] = t.command
+    d['startup_dir'] = t.startup_dir
+    return d
+
+
+def dict_to_Task(d):
+    if d['type'] != 'task':
+        raise ValueError("incorrect dictionary type")
+    t = Task()
+    t.task_id = d['task_id']
+    t.task_name = d['task_name']
+    t.environment_vars = d['environment_vars']
+    t.include_env = d['include_env']
+    t.success_stdout = d['success_stdout']
+    t.success_stderr = d['success_stderr']
+    t.success_status = d['success_status']
+    t.failure_stdout = d['failure_stdout']
+    t.failure_stderr = d['failure_stderr']
+    t.failure_status = d['failure_status']
+    t.match_exact = d['match_exact']
+    t.case_sensitive = d['case_sensitive']
+    t.command = d['command']
+    t.startup_dir = d['startup_dir']
+    return t
+
+
 #############################################################################
 # The main condition class, with test verification functions: conditions are
 # scanned at each clock tick in parallel, and if a condition finds that the
@@ -1143,8 +1186,8 @@ class Condition(object):
         self._logger.critical("COND: %s [%s]: %s" % (self.cond_name, self.cond_id, msg))
 
     def __init__(self, name=None, repeat=True, exec_sequence=True):
-        self.cond_name = None
         self.cond_id = None
+        self.cond_name = name
         self.last_tested = None
         self.last_succeeded = None
         self.skip_seconds = config.get('Scheduler', 'skip seconds')
@@ -1153,7 +1196,6 @@ class Condition(object):
         self.repeat = True
         self.exec_sequence = True
         self.suspended = False
-        self.cond_name = name
         self._has_succeeded = False
         if self.__class__.__name__ == 'Condition':
             raise NotImplementedError("abstract class")
@@ -1272,6 +1314,34 @@ class Condition(object):
                     e.map(lambda task: task.run(self.cond_name), localtasks)
 
 
+# convert a condition to a dictionary and back
+def Condition_to_dict(c):
+    d = {}
+    d['type'] = 'condition'
+    d['subtype'] = None
+    d['cond_id'] = c.cond_id
+    d['cond_name'] = c.cond_name
+    d['task_names'] = c.task_names
+    d['repeat'] = c.repeat
+    d['exec_sequence'] = c.exec_sequence
+    d['suspended'] = c.suspended
+    return d
+
+
+def dict_to_Condition(d, c=None):
+    if d['type'] != 'condition':
+        raise ValueError("incorrect dictionary type")
+    if c is None:
+        c = Condition()
+    c.cond_id = d['cond_id']
+    c.cond_name = d['cond_name']
+    c.task_names = d['task_names']
+    c.repeat = d['repeat']
+    c.exec_sequence = d['exec_sequence']
+    c.suspended = d['suspended']
+    return c
+
+
 class IntervalBasedCondition(Condition):
 
     def _check_condition(self):
@@ -1287,6 +1357,23 @@ class IntervalBasedCondition(Condition):
         self.interval = interval
         self.checked = time.time()
         Condition.__init__(self, name, repeat, exec_sequence)
+
+
+def IntervalBasedCondition_to_dict(c):
+    d = Condition_to_dict(c)
+    d['subtype'] = 'IntervalBasedCondition'
+    d['interval'] = c.interval
+    return d
+
+
+def dict_to_IntervalBasedCondition(d):
+    if d['type'] != 'condition' or d['subtype'] != 'IntervalBasedCondition':
+        raise ValueError("incorrect dictionary type")
+    name = d['cond_name']
+    interval = d['interval']
+    c = IntervalBasedCondition(name, interval)
+    c = dict_to_Condition(d, c)
+    return c
 
 
 class TimeBasedCondition(Condition):
@@ -1324,6 +1411,27 @@ class TimeBasedCondition(Condition):
         self.weekday = None if 'weekday' not in timedict.keys() else timedict['weekday']
         self.tick_seconds = config.get('Scheduler', 'tick seconds')
         Condition.__init__(self, name, repeat, exec_sequence)
+
+
+def TimeBasedCondition_to_dict(c):
+    d = Condition_to_dict(c)
+    d['subtype'] = 'TimeBasedCondition'
+    d['year'] = c.year
+    d['month'] = c.month
+    d['day'] = c.day
+    d['hour'] = c.hour
+    d['minute'] = c.minute
+    d['weekday'] = c.weekday
+    return d
+
+
+def dict_to_TimeBasedCondition(d):
+    if d['type'] != 'condition' or d['subtype'] != 'TimeBasedCondition':
+        raise ValueError("incorrect dictionary type")
+    name = d['cond_name']
+    c = TimeBasedCondition(name, d)
+    c = dict_to_Condition(d, c)
+    return c
 
 
 class CommandBasedCondition(Condition):
@@ -1414,6 +1522,31 @@ class CommandBasedCondition(Condition):
         Condition.__init__(self, name, repeat, exec_sequence)
 
 
+def CommandBasedCondition_to_dict(c):
+    d = Condition_to_dict(c)
+    d['subtype'] = 'CommandBasedCondition'
+    d['match_exact'] = c.match_exact
+    d['case_sensitive'] = c.case_sensitive
+    d['command'] = c.command
+    d['expected_status'] = c.expected_status
+    d['expected_stdout'] = c.expected_stdout
+    d['expected_stderr'] = c.expected_stderr
+    return d
+
+
+def dict_to_CommandBasedCondition(d):
+    if d['type'] != 'condition' or d['subtype'] != 'CommandBasedCondition':
+        raise ValueError("incorrect dictionary type")
+    name = d['cond_name']
+    command = d['command']
+    status = d['expected_status']
+    stdout = d['expected_stdout']
+    stderr = d['expected_stderr']
+    c = CommandBasedCondition(name, command, status, stdout, stderr)
+    c = dict_to_Condition(d, c)
+    return c
+
+
 # as a bonus, and provided that the xprintidle command is present, the idle
 # time condition is implemented as a special case of the command condition
 class IdleTimeBasedCondition(CommandBasedCondition):
@@ -1438,6 +1571,23 @@ class IdleTimeBasedCondition(CommandBasedCondition):
         CommandBasedCondition.__init__(self, name, command, status=0, repeat=repeat, exec_sequence=exec_sequence)
 
 
+def IdleTimeBasedCondition_to_dict(c):
+    d = Condition_to_dict(c)
+    d['subtype'] = 'IdleTimeBasedCondition'
+    d['idle_secs'] = c.idle_secs
+    return d
+
+
+def dict_to_IdleTimeBasedCondition(d):
+    if d['type'] != 'condition' or d['subtype'] != 'IdleTimeBasedCondition':
+        raise ValueError("incorrect dictionary type")
+    name = d['cond_name']
+    idle_secs = d['idle_secs']
+    c = IdleTimeBasedCondition(name, idle_secs)
+    c = dict_to_Condition(d, c)
+    return c
+
+
 # For now the system event based conditions for startup and shutdown assume
 # that startup is when the applet is launched and shutdown is when the applet
 # is closed: consider the idea of renaming both conditions and events
@@ -1455,6 +1605,25 @@ class EventBasedCondition(Condition):
         Condition.__init__(self, name, repeat, exec_sequence)
         if no_skip:
             self.skip_seconds = 0
+
+
+def EventBasedCondition_to_dict(c):
+    d = Condition_to_dict(c)
+    d['subtype'] = 'EventBasedCondition'
+    d['event'] = c.event
+    d['no_skip'] = bool(c.skip_seconds == 0)
+    return d
+
+
+def dict_to_EventBasedCondition(d):
+    if d['type'] != 'condition' or d['subtype'] != 'EventBasedCondition':
+        raise ValueError("incorrect dictionary type")
+    name = d['cond_name']
+    event = d['event']
+    no_skip = d['no_skip']
+    c = EventBasedCondition(name, event, no_skip)
+    c = dict_to_Condition(d, c)
+    return c
 
 
 #############################################################################
@@ -2695,6 +2864,14 @@ def show_icon(show=True, running=True):
 
 def clear_tasks_conditions(verbose=False):
     oerr("removing all tasks and conditions", verbose)
+    try:
+        tasks.load()
+    except FileNotFoundError:
+        tasks.save()
+    try:
+        conditions.load()
+    except FileNotFoundError:
+        conditions.save()
     l = list(conditions.names)
     for x in l:
         conditions.remove(cond_name=x)
@@ -2713,6 +2890,90 @@ def clear_tasks_conditions(verbose=False):
         os.unlink(file_name)
     except OSError:
         oerr("could not remove task list file", verbose)
+
+
+def export_tasks_conditions(filename=None, verbose=False):
+    task_dict_list = []
+    condition_dict_list = []
+    try:
+        tasks.load()
+    except FileNotFoundError:
+        tasks.save()
+    try:
+        conditions.load()
+    except FileNotFoundError:
+        conditions.save()
+    for name in tasks.names:
+        t = tasks.get(task_name=name)
+        d = Task_to_dict(t)
+        task_dict_list.append(d)
+    for name in conditions.names:
+        c = conditions.get(cond_name=name)
+        condtype = type(c)
+        if condtype == EventBasedCondition:
+            d = EventBasedCondition_to_dict(c)
+        elif condtype == IdleTimeBasedCondition:
+            d = IdleTimeBasedCondition_to_dict(c)
+        elif condtype == CommandBasedCondition:
+            d = CommandBasedCondition_to_dict(c)
+        elif condtype == TimeBasedCondition:
+            d = TimeBasedCondition_to_dict(c)
+        elif condtype == IntervalBasedCondition:
+            d = IntervalBasedCondition_to_dict(c)
+        # TODO: add further condition type converters here
+        else:
+            d = Condition_to_dict(c)
+        condition_dict_list.append(d)
+    oerr("exporting %s tasks and %s conditions" % (
+        len(task_dict_list), len(condition_dict_list)), verbose)
+    json_dic = {
+        'tasks': task_dict_list,
+        'conditions': condition_dict_list,
+    }
+    if not filename:
+        filename = os.path.join(USER_CONFIG_FOLDER, '%s.dump' % APPLET_NAME)
+    with open(filename, 'w') as f:
+        json.dump(json_dic, f, indent=2)
+    oerr("items exported to file %s" % filename, verbose)
+
+
+def import_tasks_conditions(filename=None, verbose=False):
+    if not filename:
+        filename = os.path.join(USER_CONFIG_FOLDER, '%s.dump' % APPLET_NAME)
+    oerr("importing items from file %s" % filename, verbose)
+    try:
+        with open(filename, 'r') as f:
+            json_dic = json.load(f)
+    except:
+        oerr("could not import from dump file")
+        sys.exit(2)
+    clear_tasks_conditions(verbose)
+    for task_dic in json_dic['tasks']:
+        task = dict_to_Task(task_dic)
+        tasks.add(task)
+    for condition_dic in json_dic['conditions']:
+        condition = None
+        condtype = condition_dic['subtype']
+        if condtype == 'IntervalBasedCondition':
+            condition = dict_to_IntervalBasedCondition(condition_dic)
+        elif condtype == 'TimeBasedCondition':
+            condition = dict_to_TimeBasedCondition(condition_dic)
+        elif condtype == 'CommandBasedCondition':
+            condition = dict_to_CommandBasedCondition(condition_dic)
+        elif condtype == 'IdleTimeBasedCondition':
+            condition = dict_to_IdleTimeBasedCondition(condition_dic)
+        elif condtype == 'EventBasedCondition':
+            condition = dict_to_EventBasedCondition(condition_dic)
+        # TODO: add further condition loaders here
+        else:
+            condition = dict_to_Condition(condition_dic)
+        if condition:
+            conditions.add(condition)
+    oerr("loaded %s tasks and %s conditions" % (
+        len(json_dic['tasks']), len(json_dic['conditions'])), verbose)
+    tasks.save()
+    conditions.save()
+    oerr("tasks and conditions successfully imported")
 
 
 # Build the applet and start
@@ -2774,12 +3035,12 @@ if __name__ == '__main__':
         )
         parser.add_argument(
             '--export',
-            dest='export', metavar='FILE', nargs='?',
+            dest='export_items', metavar='FILE', nargs='?', const='*',
             help="save tasks and conditions to a portable format"
         )
         parser.add_argument(
             '--import',
-            dest='import', metavar='FILE', nargs='?',
+            dest='import_items', metavar='FILE', nargs='?', const='*',
             help="clear tasks and conditions and import from saved file"
         )
         parser.add_argument(
@@ -2806,26 +3067,47 @@ if __name__ == '__main__':
                 sys.exit(2)
             else:
                 show_settings(verbose)
+
+        if args.export_items:
+            if args.export_items == '*':
+                filename = None
+            else:
+                filename = args.export_items
+            try:
+                export_tasks_conditions(filename, verbose)
+            except Exception as e:
+                applet_log.critical("MAIN: exception %s occurred while performing 'export'" % e)
+                oerr("an error occurred while trying to export items", verbose)
+                sys.exit(2)
+            oerr("tasks and conditions successfully exported", verbose)
+
         if args.shutdown:
             if running:
                 kill_existing(verbose=verbose, shutdown=True)
                 running = False
             else:
                 oerr("could not find a running instance", verbose)
+                sys.exit(1)
         elif args.kill:
             if running:
                 kill_existing(verbose=verbose, shutdown=False)
                 running = False
             else:
                 oerr("could not find a running instance", verbose)
+                sys.exit(1)
 
         if args.reset_config:
             if running:
                 oerr("cannot reset configuration, please close instance first", verbose)
                 sys.exit(2)
             else:
-                config.reset()
-                unlink_pause_file()
+                try:
+                    config.reset()
+                    unlink_pause_file()
+                except Exception as e:
+                    applet_log.critical("MAIN: exception %s occurred while performing 'reset-config'" % e)
+                    oerr("an error occurred while trying to reset configuration", verbose)
+                    sys.exit(2)
                 oerr("configuration has been reset", verbose)
 
         if args.clear:
@@ -2833,15 +3115,41 @@ if __name__ == '__main__':
                 oerr("cannot clear items, please close instance first", verbose)
                 sys.exit(2)
             else:
-                clear_tasks_conditions(verbose)
+                try:
+                    clear_tasks_conditions(verbose)
+                except Exception as e:
+                    applet_log.critical("MAIN: exception %s occurred while performing 'clear'" % e)
+                    oerr("an error occurred while trying to delete items", verbose)
+                    sys.exit(2)
                 oerr("tasks and conditions deleted", verbose)
+
+        if args.import_items:
+            if running:
+                oerr("cannot import items, please close instance first", verbose)
+                sys.exit(2)
+            else:
+                if args.import_items == '*':
+                    filename = None
+                else:
+                    filename = args.import_items
+                try:
+                    import_tasks_conditions(filename, verbose)
+                except Exception as e:
+                    applet_log.critical("MAIN: exception %s occurred while performing 'import'" % e)
+                    oerr("an error occurred while trying to import items", verbose)
+                    sys.exit(2)
 
         if args.install:
             if running:
                 oerr("cannot install, please close instance first", verbose)
                 sys.exit(2)
             else:
-                install_icons(True)
+                try:
+                    install_icons(True)
+                except Exception as e:
+                    applet_log.critical("MAIN: exception %s occurred while performing 'install'" % e)
+                    oerr("an error occurred while trying to install icons", verbose)
+                    sys.exit(2)
                 oerr("configuration has been reset", verbose)
 
         if args.query:
