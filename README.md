@@ -168,20 +168,20 @@ For the applet to function and before unpacking it to the destination directory,
 ~$ sudo tar xzf /path/to/when-command.tar.gz
 ```
 
-The instructions given in the following section will complete the installation for the current user. The applet icon will display at every login.
+If the Debian/Ubuntu package is available for the desired release, the last step can be replaced by `sudo dpkg --install when-command-VERSION_INFO.deb` where `VERSION_INFO` should be replaced by the version suffix of the downloaded package: this will install the applet in `/opt/when-command`. The instructions given in the following section will complete the installation for the current user. The applet icon will be activated at every login.
 
 The **When** utility will try to recognize the way it has been set up the first time it's invoked. Since there is no application icon, it has to be invoked from the command line. Assuming that it has been unarchived in `/opt` (possibly in the `/opt/when-command` directory), it's advisable to run it for the first time using the command
 
  ```
- ~$ python3 /opt/when-command/when-command.py
+ ~$ python3 /opt/when-command/when-command.py --install
  ```
 
-and it will create all the needed directory structure in the user folder, and notably:
+(or just `/opt/when-command/when-command --install` if the package distribution was used) so that it can create the desktop entry and icon (available in *Dash*), an active autostart entry as well as all the needed directory structure in the user folder, and notably:
 
 * `~/.config/when-command` where it will store all configuration
 * `~/.local/share/when-command` where it stores resources and logs (in the `log` subdirectory)
 
-In the first run the utility also installs launchers and icons for the user, so that it can be launched using the Gnome shell or Ubuntu *Dash*. Also, the applet can be configured to start up at login by checking the *Autostart* box in the *Settings* dialog: an entry will be created in the *Startup Applications* for **When**. If the box is unchecked the autostart feature is inhibited.
+Please note that the full path to the command has to be used on the first run: in this way **When** can recognize the installation type and set up the icons and shortcuts properly.
 
 
 ## Developer notes and resources
