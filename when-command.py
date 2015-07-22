@@ -118,6 +118,8 @@ def verify_user_folders():
         os.mkdir(USER_LOG_FOLDER)
     if not os.path.exists(USER_CONFIG_FOLDER):
         os.mkdir(USER_CONFIG_FOLDER)
+    if not os.path.exists(USER_LAUNCHER_FOLDER):
+        os.mkdir(USER_LAUNCHER_FOLDER)
     if not os.path.exists(USER_AUTOSTART_FOLDER):
         os.mkdir(USER_AUTOSTART_FOLDER)
 
