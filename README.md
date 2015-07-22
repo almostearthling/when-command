@@ -142,7 +142,7 @@ By default, when the applet is invoked with no arguments, it just starts an inst
 * `-Q` or `--query`: query for an existing instance (returns a zero exit status if an instance is running, nonzero otherwise, and prints an human-readable message if the `--verbose` switch is also specified)
 * `--shutdown`: close a running instance performing shutdown tasks first
 * `--kill`: close a running instance abruptly, no shutdown tasks are run
-* `--export` *[filename]*: save tasks and conditions to a portable format, if *filename* is not specified these items are saved in a default file in the `~/.config/when-command` directory
+* `--export` *[filename]*: save tasks and conditions to a portable format, if *filename* is not specified these items are saved in a default file in the `~/.config/when-command` directory; this will especially be useful in cases where the compatibility of the "running" versions of tasks and conditions (which are a binary format) could be broken across releases
 * `--import` *[filename]*: clear tasks and conditions and import them from a previously saved file, if *filename* is not specified the applet tries to import these items from the default file in the `~/.config/when-command` directory; the applet has to be shut down before attempting to import tasks and conditions.
 
 Some trivial switches are also available:
@@ -210,9 +210,9 @@ A more general discussion about contribution can be found [here](https://help.gi
 
 ### Breaking the compatibility
 
-As long as the software can be considered in its *pre-release* state, breaking the backwards-compatibility is allowed although undesirable. **When** has actually been released as *beta* software, since it has been tested for a while and with a suite that covered all the cases it can handle. Probably there are still bugs and they will have to be corrected. Unfortunately these bugs could also pop up in the two main classes that build the core of the applet, and the "form" of these classes could affect the way the stateful part of the program data (namely, *Tasks* and *Conditions*) is stored to disk: when it comes to bugs, until **When** enters a *production* state (which will be the 1.0.0 release, as per the [Semantic Versioning](https://github.com/mojombo/semver/blob/master/semver.md) specification), compatibility break will be preferred to bug persistence. In all other cases I'll grant special attention to the possibility to install newer versions of the software without having to redefine all rules.
+As long as the software can be considered in its *pre-release* state, breaking the backwards-compatibility is allowed although undesirable. **When** has actually been released as *beta* software, since it has been tested for a while and with a suite that covered all the cases it can handle. Probably there are still bugs and they will have to be corrected. Unfortunately these bugs could also pop up in the two main classes that build the core of the applet, and the "form" of these classes could affect the way the stateful part of the program data (namely, *Tasks* and *Conditions*) is stored to disk: when it comes to bugs, until **When** enters a *production* state (which will be the 1.0.0 release, as per the [Semantic Versioning](https://github.com/mojombo/semver/blob/master/semver.md) specification), compatibility break will be preferred to bug persistence or bad design. Also considering that starting with release *0.5.0-beta.1* a mechanism is provided to save persistent data to a portable format that would remain valid across releases (via the `--import` and `--export` command line switches); it's advisable, while **When** is still in its early development stage, to perform an export whenever the configuration changes, in order to be able to recover if the applet is unable to start due to compatibility mismatch. All users that access **When** on the host system should take care to export their data periodically, so that when the administrator updates the package they could recover in the same way.
 
-However, there have been some changes that actually broke the backwards compatibility: explicit variables were instead of properties and setters/getters in the main classes, to improve readability and clarity of code. *Tasks* and *Conditions* (and other configuration parts) created with the 0.1.x releases are not compatible with the ones that are created with version 0.2.x (and further). Until another way of saving tasks and conditions is found, or at least to dump/restore them in a portable form, no other compatibility breaks should occur.
+There have been some changes that actually broke the backwards compatibility, without the possibility to recover: explicit variables are now used instead of properties and setters/getters in the main classes, to improve readability and clarity of code. *Tasks* and *Conditions* (and other configuration parts) created with the 0.1.x releases are not compatible with the ones that are created with version 0.2.x (and further). Releases *0.2.0* through *0.5.0-beta.1* are compatible with each other.
 
 
 ### Resources
@@ -224,6 +224,7 @@ This software is designed to run mainly on Ubuntu, so the chosen framework is *P
 * [PyGTK 2.x Documentation](https://developer.gnome.org/pygtk/stable/)
 * [PyGObject Documentation](https://developer.gnome.org/pygobject/stable/)
 * [GTK 3.0 Documentation](http://lazka.github.io/pgi-docs/Gtk-3.0/index.html)
+* [DBus Documentation](http://www.freedesktop.org/wiki/Software/dbus/)
 
 The top panel icons and the emblems used in the application were selected within Google's [Material Design](https://materialdesignicons.com/) icon collection.
 
