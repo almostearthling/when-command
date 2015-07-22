@@ -127,7 +127,31 @@ log size = 1048576
 log backups = 4
 ```
 
-Manual configuration is particularly useful to bring back the program icon once the user decided to hide it (losing access to the menu: I was doubtful about providing the option, then just decided to implement it and provide a safety net anyway), by setting the `show icon` entry to `true`. Another way to force access to the *Settings* dialog box when the icon is hidden is to explicitly invoke the applet (either from the command line, or the Gnome shell, or *Dash* on Ubuntu) when an instance is already running. However, in this case, *after the dialog box is closed, the running instance will shut down and will have to be restarted*.
+Manual configuration is particularly useful to bring back the program icon once the user decided to hide it (losing access to the menu: I was doubtful about providing the option, then just decided to implement it and provide a safety net anyway), by setting the `show icon` entry to `true`. Another way to force access to the *Settings* dialog box when the icon is hidden is to invoke the applet from the command line using the `--show-settings` (or `-S`) switch when an instance is running.
+
+
+### Command line options
+
+By default, when the applet is invoked with no arguments, it just starts an instance showing the icon in the top panel (if configured to do so). However there are some command line options that allow for some operations, either on a running instance or on the current configuration. Some are especially useful to recover when something has gone the wrong way -- such as the `-S` switch mentioned above, or the `-I` (or `--show-icon`) switch, to recover from an unwantedly hidden icon. The available options are:
+
+* `-S` or `--show-settings`: show the settings dialog box of an existing instance, it requires a running instance, which may be queried using the `--query` switch explained below
+* `-R` or `--reset-config`: reset applet configuration to default, requires the applet to be shut down with an appropriate switch
+* `-I` or `--show-icon`: show applet icon, the icon will be shown at the next startup
+* `-T` or `--install`: install or reinstall application icon and autostart icon, requires applet to be shut down with an appropriate switch
+* `-C` or `--clear`: clear current tasks and conditions, requires applet to be shut down with an appropriate switch
+* `-Q` or `--query`: query for an existing instance (returns a zero exit status if an instance is running, nonzero otherwise, and prints an human-readable message if the `--verbose` switch is also specified)
+* `--shutdown`: close a running instance performing shutdown tasks first
+* `--kill`: close a running instance abruptly, no shutdown tasks are run
+* `--export` *[filename]*: save tasks and conditions to a portable format, if *filename* is not specified these items are saved in a default file in the `~/.config/when-command` directory; this will especially be useful in cases where the compatibility of the "running" versions of tasks and conditions (which are a binary format) could be broken across releases
+* `--import` *[filename]*: clear tasks and conditions and import them from a previously saved file, if *filename* is not specified the applet tries to import these items from the default file in the `~/.config/when-command` directory; the applet has to be shut down before attempting to import tasks and conditions.
+
+Some trivial switches are also available:
+
+* `-h` or `--help`: show a brief help message and exit
+* `-V` or `--version`: show applet version, if `--verbose` is specified it also shows the *About Box* of a running instance, if there is one
+* `-v` or `--verbose`: show output for some options; normally the applet would not display any output to the terminal unless `-v` is specified, the only exception being `--version` that prints out the version string anyway.
+
+Please note that whenever a command line option is given, the applet will not "stay resident" if there is no previously running instance. On the other side, if the user invokes the applet when already running, the new instance will bail out with an error.
 
 
 ### Installation requirements and Directory structure
@@ -186,9 +210,9 @@ A more general discussion about contribution can be found [here](https://help.gi
 
 ### Breaking the compatibility
 
-As long as the software can be considered in its *pre-release* state, breaking the backwards-compatibility is allowed although undesirable. **When** has actually been released as *beta* software, since it has been tested for a while and with a suite that covered all the cases it can handle. Probably there are still bugs and they will have to be corrected. Unfortunately these bugs could also pop up in the two main classes that build the core of the applet, and the "form" of these classes could affect the way the stateful part of the program data (namely, *Tasks* and *Conditions*) is stored to disk: when it comes to bugs, until **When** enters a *production* state (which will be the 1.0.0 release, as per the [Semantic Versioning](https://github.com/mojombo/semver/blob/master/semver.md) specification), compatibility break will be preferred to bug persistence. In all other cases I'll grant special attention to the possibility to install newer versions of the software without having to redefine all rules.
+As long as the software can be considered in its *pre-release* state, breaking the backwards-compatibility is allowed although undesirable. **When** has actually been released as *beta* software, since it has been tested for a while and with a suite that covered all the cases it can handle. Probably there are still bugs and they will have to be corrected. Unfortunately these bugs could also pop up in the two main classes that build the core of the applet, and the "form" of these classes could affect the way the stateful part of the program data (namely, *Tasks* and *Conditions*) is stored to disk: when it comes to bugs, until **When** enters a *production* state (which will be the 1.0.0 release, as per the [Semantic Versioning](https://github.com/mojombo/semver/blob/master/semver.md) specification), compatibility break will be preferred to bug persistence or bad design. Also considering that starting with release *0.5.0-beta.1* a mechanism is provided to save persistent data to a portable format that would remain valid across releases (via the `--import` and `--export` command line switches); it's advisable, while **When** is still in its early development stage, to perform an export whenever the configuration changes, in order to be able to recover if the applet is unable to start due to compatibility mismatch. All users that access **When** on the host system should take care to export their data periodically, so that when the administrator updates the package they could recover in the same way.
 
-However, there have been some changes that actually broke the backwards compatibility: explicit variables were instead of properties and setters/getters in the main classes, to improve readability and clarity of code. *Tasks* and *Conditions* (and other configuration parts) created with the 0.1.x releases are not compatible with the ones that are created with version 0.2.x (and further). Until another way of saving tasks and conditions is found, or at least to dump/restore them in a portable form, no other compatibility breaks should occur.
+There have been some changes that actually broke the backwards compatibility, without the possibility to recover: explicit variables are now used instead of properties and setters/getters in the main classes, to improve readability and clarity of code. *Tasks* and *Conditions* (and other configuration parts) created with the 0.1.x releases are not compatible with the ones that are created with version 0.2.x (and further). Releases *0.2.0* through *0.5.0-beta.1* are compatible with each other.
 
 
 ### Resources
@@ -200,6 +224,7 @@ This software is designed to run mainly on Ubuntu, so the chosen framework is *P
 * [PyGTK 2.x Documentation](https://developer.gnome.org/pygtk/stable/)
 * [PyGObject Documentation](https://developer.gnome.org/pygobject/stable/)
 * [GTK 3.0 Documentation](http://lazka.github.io/pgi-docs/Gtk-3.0/index.html)
+* [DBus Documentation](http://www.freedesktop.org/wiki/Software/dbus/)
 
 The top panel icons and the emblems used in the application were selected within Google's [Material Design](https://materialdesignicons.com/) icon collection.
 

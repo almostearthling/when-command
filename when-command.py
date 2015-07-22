@@ -43,13 +43,16 @@ import subprocess
 import threading
 import configparser
 import pickle
+import json
 import logging
 import logging.config
 import logging.handlers
+import argparse
 import shutil
 import re
 
 import dbus
+import dbus.service
 from dbus.mainloop.glib import DBusGMainLoop
 
 from concurrent.futures import ThreadPoolExecutor
@@ -64,8 +67,12 @@ from collections import OrderedDict, deque, namedtuple
 APPLET_NAME = 'when-command'
 APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
-APPLET_VERSION = "0.4.0-beta.1"
+APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
+APPLET_URL = "http://almostearthling.github.io/when-command/"
+APPLET_VERSION = "0.4.1-beta.3"
 APPLET_ID = "it.jks.WhenCommand"
+APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
+APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -95,6 +102,12 @@ USER_LOG_FOLDER = os.path.join(USER_DATA_FOLDER, 'log')
 USER_LOG_FILE = os.path.join(USER_LOG_FOLDER, "%s.log" % APPLET_NAME)
 USER_CONFIG_FILE = os.path.join(USER_CONFIG_FOLDER, "%s.conf" % APPLET_NAME)
 USER_PAUSE_FILE = os.path.join(USER_CONFIG_FOLDER, "%s.pause" % APPLET_NAME)
+
+
+#############################################################################
+# this will be set up in the main function to avoid polluting the process
+# if another instance of the application is already running
+applet = None
 
 
 # verify that the user folders are present, otherwise create them
@@ -205,6 +218,30 @@ resources.LISTCOL_HISTORY_SUCCESS = "Result"
 resources.LISTCOL_HISTORY_REASON = "Reason"
 resources.LISTCOL_HISTORY_ROWID = "Row ID"
 
+resources.COMMAND_LINE_HELP_VERSION = "show applet version"
+resources.COMMAND_LINE_HELP_SHOW_SETTINGS = "show settings dialog box for the running instance [R]"
+resources.COMMAND_LINE_HELP_RESET_CONFIG = "reset general configuration to default [S]"
+resources.COMMAND_LINE_HELP_SHOW_ICON = "show applet icon [N]"
+resources.COMMAND_LINE_HELP_CLEAR = "clear all tasks and conditions [S]"
+resources.COMMAND_LINE_HELP_INSTALL = "install application icons and autostart [S]"
+resources.COMMAND_LINE_HELP_QUERY = "query for a running instance"
+resources.COMMAND_LINE_HELP_SHUTDOWN = "run shutdown tasks and close an existing istance [R]"
+resources.COMMAND_LINE_HELP_KILL = "kill an existing istance [R]"
+resources.COMMAND_LINE_HELP_EXPORT = "save tasks and conditions to a portable format"
+resources.COMMAND_LINE_HELP_IMPORT = "import tasks and conditions from saved file [S]"
+resources.COMMAND_LINE_HELP_VERBOSE = "show verbose output for some options"
+resources.COMMAND_LINE_PREAMBLE = """\
+%s: %s - %s /
+When is a configurable user task scheduler for Ubuntu.
+The command line interface can be used to interact with running instances of
+When or to perform maintenance tasks. Use the --verbose option to read output
+from the command, as most operations will show no output by default.
+""" % (APPLET_NAME, APPLET_FULLNAME, APPLET_COPYRIGHT)
+resources.COMMAND_LINE_EPILOG = """\
+Note: options marked with [R] require an instance running in the background,
+with [S] require that no instance is running and with [N] have only effect
+after restart. Go to %s for more information.
+""" % APPLET_URL
 
 # constants for desktop entry and autostart entry
 APP_ENTRY_DESKTOP = """\
@@ -362,6 +399,45 @@ def config_loghandler(max_size=None, max_backups=None):
 applet_lock = threading.Lock()
 
 
+#############################################################################
+# the DBus service is needed for the running applet to receive commands
+class AppletDBusService(dbus.service.Object):
+    def __init__(self):
+        bus_name = dbus.service.BusName(APPLET_BUS_NAME, bus=dbus.SessionBus())
+        dbus.service.Object.__init__(self, bus_name, APPLET_BUS_PATH)
+
+    @dbus.service.method(APPLET_BUS_NAME)
+    def kill_instance(self):
+        self.remove_from_connection()
+        Gtk.main_quit()
+
+    @dbus.service.method(APPLET_BUS_NAME)
+    def quit_instance(self):
+        self.remove_from_connection()
+        applet.quit(None)
+
+    @dbus.service.method(APPLET_BUS_NAME)
+    def show_dialog(self, dlgname):
+        if dlgname == 'settings':
+            applet.dlgsettings(None)
+        elif dlgname == 'about':
+            applet.dlgabout(None)
+        elif dlgname == 'task':
+            applet.dlgtask(None)
+        elif dlgname == 'condition':
+            applet.dlgcondition(None)
+        elif dlgname == 'history':
+            applet.dlghistory(None)
+
+    @dbus.service.method(APPLET_BUS_NAME)
+    def show_icon(self, show=True):
+        applet.hide_icon(not show)
+
+
+#############################################################################
+# Core classes
+
+# Main configuration handler
 class Config(object):
     _config_file = None
     _config_parser = None
@@ -452,6 +528,10 @@ class Config(object):
             applet_log.warning("CONFIG: malformed configuration file, using default [%s]" % e)
             self._default()
             self.save()
+
+    def reset(self):
+        self._default()
+        self.save()
 
     def save(self):
         try:
@@ -1055,6 +1135,49 @@ class Task(object):
             return success
 
 
+# these functions convert a Task instance to a dictionary and back
+def Task_to_dict(t):
+    d = {}
+    d['type'] = 'task'
+    d['task_id'] = t.task_id
+    d['task_name'] = t.task_name
+    d['environment_vars'] = t.environment_vars
+    d['include_env'] = t.include_env
+    d['success_stdout'] = t.success_stdout
+    d['success_stderr'] = t.success_stderr
+    d['success_status'] = t.success_status
+    d['failure_stdout'] = t.failure_stdout
+    d['failure_stderr'] = t.failure_stderr
+    d['failure_status'] = t.failure_status
+    d['match_exact'] = t.match_exact
+    d['case_sensitive'] = t.case_sensitive
+    d['command'] = t.command
+    d['startup_dir'] = t.startup_dir
+    return d
+
+
+def dict_to_Task(d):
+    if d['type'] != 'task':
+        raise ValueError("incorrect dictionary type")
+    t = Task()
+    t.task_id = d['task_id']
+    t.task_name = d['task_name']
+    t.environment_vars = d['environment_vars']
+    t.include_env = d['include_env']
+    t.success_stdout = d['success_stdout']
+    t.success_stderr = d['success_stderr']
+    t.success_status = d['success_status']
+    t.failure_stdout = d['failure_stdout']
+    t.failure_stderr = d['failure_stderr']
+    t.failure_status = d['failure_status']
+    t.match_exact = d['match_exact']
+    t.case_sensitive = d['case_sensitive']
+    t.command = d['command']
+    t.startup_dir = d['startup_dir']
+    # TODO: if there are more parameters, use d.get('key', default_val)
+    return t
+
+
 #############################################################################
 # The main condition class, with test verification functions: conditions are
 # scanned at each clock tick in parallel, and if a condition finds that the
@@ -1090,8 +1213,8 @@ class Condition(object):
         self._logger.critical("COND: %s [%s]: %s" % (self.cond_name, self.cond_id, msg))
 
     def __init__(self, name=None, repeat=True, exec_sequence=True):
-        self.cond_name = None
         self.cond_id = None
+        self.cond_name = name
         self.last_tested = None
         self.last_succeeded = None
         self.skip_seconds = config.get('Scheduler', 'skip seconds')
@@ -1100,7 +1223,6 @@ class Condition(object):
         self.repeat = True
         self.exec_sequence = True
         self.suspended = False
-        self.cond_name = name
         self._has_succeeded = False
         if self.__class__.__name__ == 'Condition':
             raise NotImplementedError("abstract class")
@@ -1219,6 +1341,36 @@ class Condition(object):
                     e.map(lambda task: task.run(self.cond_name), localtasks)
 
 
+# convert a condition to a dictionary and back
+def Condition_to_dict(c):
+    d = {}
+    d['type'] = 'condition'
+    d['subtype'] = None
+    d['cond_id'] = c.cond_id
+    d['cond_name'] = c.cond_name
+    d['task_names'] = c.task_names
+    d['repeat'] = c.repeat
+    d['exec_sequence'] = c.exec_sequence
+    d['suspended'] = c.suspended
+    return d
+
+
+def dict_to_Condition(d, c=None):
+    if d['type'] != 'condition':
+        raise ValueError("incorrect dictionary type")
+    # this will raise an error
+    if c is None:
+        c = Condition()
+    c.cond_id = d['cond_id']
+    c.cond_name = d['cond_name']
+    c.task_names = d['task_names']
+    c.repeat = d['repeat']
+    c.exec_sequence = d['exec_sequence']
+    c.suspended = d['suspended']
+    # TODO: if there are more parameters, use d.get('key', default_val)
+    return c
+
+
 class IntervalBasedCondition(Condition):
 
     def _check_condition(self):
@@ -1234,6 +1386,24 @@ class IntervalBasedCondition(Condition):
         self.interval = interval
         self.checked = time.time()
         Condition.__init__(self, name, repeat, exec_sequence)
+
+
+def IntervalBasedCondition_to_dict(c):
+    d = Condition_to_dict(c)
+    d['subtype'] = 'IntervalBasedCondition'
+    d['interval'] = c.interval
+    return d
+
+
+def dict_to_IntervalBasedCondition(d):
+    if d['type'] != 'condition' or d['subtype'] != 'IntervalBasedCondition':
+        raise ValueError("incorrect dictionary type")
+    name = d['cond_name']
+    interval = d['interval']
+    # TODO: if there are more parameters, use d.get('key', default_val)
+    c = IntervalBasedCondition(name, interval)
+    c = dict_to_Condition(d, c)
+    return c
 
 
 class TimeBasedCondition(Condition):
@@ -1271,6 +1441,29 @@ class TimeBasedCondition(Condition):
         self.weekday = None if 'weekday' not in timedict.keys() else timedict['weekday']
         self.tick_seconds = config.get('Scheduler', 'tick seconds')
         Condition.__init__(self, name, repeat, exec_sequence)
+
+
+def TimeBasedCondition_to_dict(c):
+    d = Condition_to_dict(c)
+    d['subtype'] = 'TimeBasedCondition'
+    d['year'] = c.year
+    d['month'] = c.month
+    d['day'] = c.day
+    d['hour'] = c.hour
+    d['minute'] = c.minute
+    d['weekday'] = c.weekday
+    return d
+
+
+def dict_to_TimeBasedCondition(d):
+    if d['type'] != 'condition' or d['subtype'] != 'TimeBasedCondition':
+        raise ValueError("incorrect dictionary type")
+    name = d['cond_name']
+    # we can use d for timedict because the needed keys (intentionally) match
+    # TODO: if there are more parameters, use d.get('key', default_val)
+    c = TimeBasedCondition(name, d)
+    c = dict_to_Condition(d, c)
+    return c
 
 
 class CommandBasedCondition(Condition):
@@ -1361,6 +1554,32 @@ class CommandBasedCondition(Condition):
         Condition.__init__(self, name, repeat, exec_sequence)
 
 
+def CommandBasedCondition_to_dict(c):
+    d = Condition_to_dict(c)
+    d['subtype'] = 'CommandBasedCondition'
+    d['match_exact'] = c.match_exact
+    d['case_sensitive'] = c.case_sensitive
+    d['command'] = c.command
+    d['expected_status'] = c.expected_status
+    d['expected_stdout'] = c.expected_stdout
+    d['expected_stderr'] = c.expected_stderr
+    return d
+
+
+def dict_to_CommandBasedCondition(d):
+    if d['type'] != 'condition' or d['subtype'] != 'CommandBasedCondition':
+        raise ValueError("incorrect dictionary type")
+    name = d['cond_name']
+    command = d['command']
+    status = d['expected_status']
+    stdout = d['expected_stdout']
+    stderr = d['expected_stderr']
+    # TODO: if there are more parameters, use d.get('key', default_val)
+    c = CommandBasedCondition(name, command, status, stdout, stderr)
+    c = dict_to_Condition(d, c)
+    return c
+
+
 # as a bonus, and provided that the xprintidle command is present, the idle
 # time condition is implemented as a special case of the command condition
 class IdleTimeBasedCondition(CommandBasedCondition):
@@ -1385,6 +1604,24 @@ class IdleTimeBasedCondition(CommandBasedCondition):
         CommandBasedCondition.__init__(self, name, command, status=0, repeat=repeat, exec_sequence=exec_sequence)
 
 
+def IdleTimeBasedCondition_to_dict(c):
+    d = Condition_to_dict(c)
+    d['subtype'] = 'IdleTimeBasedCondition'
+    d['idle_secs'] = c.idle_secs
+    return d
+
+
+def dict_to_IdleTimeBasedCondition(d):
+    if d['type'] != 'condition' or d['subtype'] != 'IdleTimeBasedCondition':
+        raise ValueError("incorrect dictionary type")
+    name = d['cond_name']
+    idle_secs = d['idle_secs']
+    # TODO: if there are more parameters, use d.get('key', default_val)
+    c = IdleTimeBasedCondition(name, idle_secs)
+    c = dict_to_Condition(d, c)
+    return c
+
+
 # For now the system event based conditions for startup and shutdown assume
 # that startup is when the applet is launched and shutdown is when the applet
 # is closed: consider the idea of renaming both conditions and events
@@ -1402,6 +1639,26 @@ class EventBasedCondition(Condition):
         Condition.__init__(self, name, repeat, exec_sequence)
         if no_skip:
             self.skip_seconds = 0
+
+
+def EventBasedCondition_to_dict(c):
+    d = Condition_to_dict(c)
+    d['subtype'] = 'EventBasedCondition'
+    d['event'] = c.event
+    d['no_skip'] = bool(c.skip_seconds == 0)
+    return d
+
+
+def dict_to_EventBasedCondition(d):
+    if d['type'] != 'condition' or d['subtype'] != 'EventBasedCondition':
+        raise ValueError("incorrect dictionary type")
+    name = d['cond_name']
+    event = d['event']
+    no_skip = d['no_skip']
+    # TODO: if there are more parameters, use d.get('key', default_val)
+    c = EventBasedCondition(name, event, no_skip)
+    c = dict_to_Condition(d, c)
+    return c
 
 
 #############################################################################
@@ -2333,23 +2590,25 @@ class AppletIndicator(Gtk.Application):
         Gtk.Application.__init__(self,
                                  application_id=APPLET_ID,
                                  flags=Gio.ApplicationFlags.FLAGS_NONE)
+        self.register(None)
         self.connect("activate", self.applet_activate)
 
         # The system and session bus signals give many possibilities for events
         self.system_bus = dbus.SystemBus()
+        self.session_bus = AppletDBusService()
         self.login_mgr = dbus.Interface(
             self.system_bus.get_object('org.freedesktop.login1', '/org/freedesktop/login1'),
             'org.freedesktop.login1.Manager')
         self.login_mgr.connect_to_signal('PrepareForShutdown', self.before_shutdown)
 
     def applet_activate(self, applet_instance):
-        if self.running:
-            applet_log.warning("MAIN: already running: show settings and quit")
-            self.dlgsettings(None)
-            self.quit(None)
-        else:
-            self.running = True
-            self.main()
+        # if self.running:
+        #     applet_log.warning("MAIN: already running: show settings and quit")
+        #     self.dlgsettings(None)
+        #     self.quit(None)
+        # else:
+        self.running = True
+        self.main()
 
     def main(self):
         # GUI management
@@ -2530,12 +2789,6 @@ class AppletIndicator(Gtk.Application):
         return menu
 
 
-#############################################################################
-# this will be set up in the main loop to avoid polluting the process
-# if another instance of the application is already running
-applet = None
-
-
 # signal handler (see http://stackoverflow.com/questions/26388088): this is
 # needed in order to handle the logout event (until it is managed by dbus)
 def init_signal_handler(applet_instance):
@@ -2575,10 +2828,7 @@ def init_signal_handler(applet_instance):
         GLib.idle_add(install_glib_handler, signum, priority=GLib.PRIORITY_HIGH)
 
 
-# Check whether another instance of the application is running: if so the
-# settings dialog box is shown in order to give the possibility to show the
-# indicator icon if it was hidden. If no other instance is running, capture
-# the signals, configure the logger, start the clock and run the applet.
+# Configure services and start the application
 def main():
     config_loghandler()
     config_loglevel()
@@ -2592,19 +2842,362 @@ def main():
         unlink_pause_file()
     else:
         periodic.stop()
+    # If we have come here, the command line had no arguments so we clear it
     applet.run([])
     if not periodic.stopped:
         periodic.stop()
 
 
-# implement the applet and start
+def oerr(s, verbose=True):
+    if verbose:
+        sys.stderr.write("%s: %s\n" % (APPLET_NAME, s))
+
+
+def install_icons(overwrite=True):
+    create_desktop_file(overwrite=overwrite)
+    create_autostart_file(overwrite=overwrite)
+
+
+def start():
+    create_desktop_file(False)
+    create_autostart_file(False)
+    main()
+
+
+def kill_existing(verbose=False, shutdown=False):
+    oerr("an existing instance will be %s" % 'shut down' if shutdown else 'killed', verbose)
+    bus = dbus.SessionBus()
+    interface = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
+    if shutdown:
+        interface.quit_instance()
+    else:
+        interface.kill_instance()
+    oerr("instance shutdown finished", verbose)
+
+
+def show_settings(verbose=False):
+    oerr("showing settings of currently running instance", verbose)
+    bus = dbus.SessionBus()
+    interface = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
+    interface.show_dialog('settings')
+
+
+def show_box(box='about'):
+    bus = dbus.SessionBus()
+    interface = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
+    interface.show_dialog(box)
+
+
+def show_icon(show=True, running=True):
+    if running:
+        bus = dbus.SessionBus()
+        interface = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
+        interface.show_icon(show)
+    config.set('General', 'show icon', show)
+    config.save()
+
+
+def clear_tasks_conditions(verbose=False):
+    oerr("removing all tasks and conditions", verbose)
+    try:
+        tasks.load()
+    except FileNotFoundError:
+        tasks.save()
+    try:
+        conditions.load()
+    except FileNotFoundError:
+        conditions.save()
+    l = list(conditions.names)
+    for x in l:
+        conditions.remove(cond_name=x)
+    conditions.save()
+    file_name = os.path.join(USER_CONFIG_FOLDER, 'condition.list')
+    try:
+        os.unlink(file_name)
+    except OSError:
+        oerr("could not remove condition list file", verbose)
+    l = list(tasks.names)
+    for x in l:
+        tasks.remove(task_name=x)
+    tasks.save()
+    file_name = os.path.join(USER_CONFIG_FOLDER, 'task.list')
+    try:
+        os.unlink(file_name)
+    except OSError:
+        oerr("could not remove task list file", verbose)
+
+
+def export_tasks_conditions(filename=None, verbose=False):
+    task_dict_list = []
+    condition_dict_list = []
+    try:
+        tasks.load()
+    except FileNotFoundError:
+        tasks.save()
+    try:
+        conditions.load()
+    except FileNotFoundError:
+        conditions.save()
+    for name in tasks.names:
+        t = tasks.get(task_name=name)
+        d = Task_to_dict(t)
+        task_dict_list.append(d)
+    for name in conditions.names:
+        c = conditions.get(cond_name=name)
+        condtype = type(c)
+        if condtype == EventBasedCondition:
+            d = EventBasedCondition_to_dict(c)
+        elif condtype == IdleTimeBasedCondition:
+            d = IdleTimeBasedCondition_to_dict(c)
+        elif condtype == CommandBasedCondition:
+            d = CommandBasedCondition_to_dict(c)
+        elif condtype == TimeBasedCondition:
+            d = TimeBasedCondition_to_dict(c)
+        elif condtype == IntervalBasedCondition:
+            d = IntervalBasedCondition_to_dict(c)
+        # TODO: add further condition type converters here
+        else:
+            d = Condition_to_dict(c)
+        condition_dict_list.append(d)
+    oerr("exporting %s tasks and %s conditions" % (
+        len(task_dict_list), len(condition_dict_list)), verbose)
+    json_dic = {
+        'tasks': task_dict_list,
+        'conditions': condition_dict_list,
+    }
+    if not filename:
+        filename = os.path.join(USER_CONFIG_FOLDER, '%s.dump' % APPLET_NAME)
+    with open(filename, 'w') as f:
+        json.dump(json_dic, f, indent=2)
+    oerr("items exported to file %s" % filename, verbose)
+
+
+def import_tasks_conditions(filename=None, verbose=False):
+    if not filename:
+        filename = os.path.join(USER_CONFIG_FOLDER, '%s.dump' % APPLET_NAME)
+    oerr("importing items from file %s" % filename, verbose)
+    try:
+        with open(filename, 'r') as f:
+            json_dic = json.load(f)
+    except:
+        oerr("could not import from dump file")
+        sys.exit(2)
+    clear_tasks_conditions(verbose)
+    for task_dic in json_dic['tasks']:
+        task = dict_to_Task(task_dic)
+        tasks.add(task)
+    for condition_dic in json_dic['conditions']:
+        condition = None
+        condtype = condition_dic['subtype']
+        if condtype == 'IntervalBasedCondition':
+            condition = dict_to_IntervalBasedCondition(condition_dic)
+        elif condtype == 'TimeBasedCondition':
+            condition = dict_to_TimeBasedCondition(condition_dic)
+        elif condtype == 'CommandBasedCondition':
+            condition = dict_to_CommandBasedCondition(condition_dic)
+        elif condtype == 'IdleTimeBasedCondition':
+            condition = dict_to_IdleTimeBasedCondition(condition_dic)
+        elif condtype == 'EventBasedCondition':
+            condition = dict_to_EventBasedCondition(condition_dic)
+        # TODO: add further condition loaders here
+        else:
+            condition = dict_to_Condition(condition_dic)
+        if condition:
+            conditions.add(condition)
+    oerr("loaded %s tasks and %s conditions" % (
+        len(json_dic['tasks']), len(json_dic['conditions'])), verbose)
+    tasks.save()
+    conditions.save()
+    oerr("tasks and conditions successfully imported")
+
+
+# Build the applet and start
 if __name__ == '__main__':
     DBusGMainLoop(set_as_default=True)
-    create_desktop_file()
-    create_autostart_file(False)
     GObject.threads_init()
     applet = AppletIndicator()
-    main()
+    if len(sys.argv) == 1:
+        if applet.get_is_remote():
+            oerr("another instance is present: leaving")
+            sys.exit(2)
+        start()
+    else:
+        parser = argparse.ArgumentParser(
+            prog=APPLET_NAME,
+            description=resources.COMMAND_LINE_PREAMBLE,
+            epilog=resources.COMMAND_LINE_EPILOG,
+        )
+        parser.add_argument(
+            '-v', '--verbose',
+            dest='verbose', action='store_true',
+            help=resources.COMMAND_LINE_HELP_VERBOSE
+        )
+        parser.add_argument(
+            '-V', '--version',
+            dest='version', action='store_true',
+            help=resources.COMMAND_LINE_HELP_VERSION
+        )
+        parser.add_argument(
+            '-S', '--show-settings',
+            dest='show_settings', action='store_true',
+            help=resources.COMMAND_LINE_HELP_SHOW_SETTINGS
+        )
+        parser.add_argument(
+            '-R', '--reset-config',
+            dest='reset_config', action='store_true',
+            help=resources.COMMAND_LINE_HELP_RESET_CONFIG
+        )
+        parser.add_argument(
+            '-I', '--show-icon',
+            dest='show_icon', action='store_true',
+            help=resources.COMMAND_LINE_HELP_SHOW_ICON
+        )
+        parser.add_argument(
+            '-C', '--clear',
+            dest='clear', action='store_true',
+            help=resources.COMMAND_LINE_HELP_CLEAR
+        )
+        parser.add_argument(
+            '-T', '--install',
+            dest='install', action='store_true',
+            help=resources.COMMAND_LINE_HELP_INSTALL
+        )
+        parser.add_argument(
+            '-Q', '--query',
+            dest='query', action='store_true',
+            help=resources.COMMAND_LINE_HELP_QUERY
+        )
+        parser.add_argument(
+            '--shutdown',
+            dest='shutdown', action='store_true',
+            help=resources.COMMAND_LINE_HELP_SHUTDOWN
+        )
+        parser.add_argument(
+            '--kill',
+            dest='kill', action='store_true',
+            help=resources.COMMAND_LINE_HELP_KILL
+        )
+        parser.add_argument(
+            '--export',
+            dest='export_items', metavar='FILE', nargs='?', const='*',
+            help=resources.COMMAND_LINE_HELP_EXPORT
+        )
+        parser.add_argument(
+            '--import',
+            dest='import_items', metavar='FILE', nargs='?', const='*',
+            help=resources.COMMAND_LINE_HELP_IMPORT
+        )
+
+        args = parser.parse_args()
+        running = applet.get_is_remote()
+        verbose = args.verbose
+        # ...
+        if args.version:
+            print("%s: %s, version %s" % (APPLET_NAME, APPLET_FULLNAME, APPLET_VERSION))
+            if verbose and running:
+                show_box('about')
+
+        if args.show_icon:
+            show_icon(True, running)
+
+        if args.show_settings:
+            if not running:
+                oerr("could not find a running instance, please start it first", verbose)
+                sys.exit(2)
+            else:
+                show_settings(verbose)
+
+        if args.export_items:
+            if args.export_items == '*':
+                filename = None
+            else:
+                filename = args.export_items
+            try:
+                export_tasks_conditions(filename, verbose)
+            except Exception as e:
+                applet_log.critical("MAIN: exception %s occurred while performing 'export'" % e)
+                oerr("an error occurred while trying to export items", verbose)
+                sys.exit(2)
+            oerr("tasks and conditions successfully exported", verbose)
+
+        if args.shutdown:
+            if running:
+                kill_existing(verbose=verbose, shutdown=True)
+                running = False
+            else:
+                oerr("could not find a running instance", verbose)
+                sys.exit(1)
+        elif args.kill:
+            if running:
+                kill_existing(verbose=verbose, shutdown=False)
+                running = False
+            else:
+                oerr("could not find a running instance", verbose)
+                sys.exit(1)
+
+        if args.reset_config:
+            if running:
+                oerr("cannot reset configuration, please close instance first", verbose)
+                sys.exit(2)
+            else:
+                try:
+                    config.reset()
+                    unlink_pause_file()
+                except Exception as e:
+                    applet_log.critical("MAIN: exception %s occurred while performing 'reset-config'" % e)
+                    oerr("an error occurred while trying to reset configuration", verbose)
+                    sys.exit(2)
+                oerr("configuration has been reset", verbose)
+
+        if args.clear:
+            if running:
+                oerr("cannot clear items, please close instance first", verbose)
+                sys.exit(2)
+            else:
+                try:
+                    clear_tasks_conditions(verbose)
+                except Exception as e:
+                    applet_log.critical("MAIN: exception %s occurred while performing 'clear'" % e)
+                    oerr("an error occurred while trying to delete items", verbose)
+                    sys.exit(2)
+                oerr("tasks and conditions deleted", verbose)
+
+        if args.import_items:
+            if running:
+                oerr("cannot import items, please close instance first", verbose)
+                sys.exit(2)
+            else:
+                if args.import_items == '*':
+                    filename = None
+                else:
+                    filename = args.import_items
+                try:
+                    import_tasks_conditions(filename, verbose)
+                except Exception as e:
+                    applet_log.critical("MAIN: exception %s occurred while performing 'import'" % e)
+                    oerr("an error occurred while trying to import items", verbose)
+                    sys.exit(2)
+
+        if args.install:
+            if running:
+                oerr("cannot install, please close instance first", verbose)
+                sys.exit(2)
+            else:
+                try:
+                    install_icons(True)
+                except Exception as e:
+                    applet_log.critical("MAIN: exception %s occurred while performing 'install'" % e)
+                    oerr("an error occurred while trying to install icons", verbose)
+                    sys.exit(2)
+                oerr("configuration has been reset", verbose)
+
+        if args.query:
+            if running:
+                oerr("found a running instance", verbose)
+                sys.exit(0)
+            else:
+                oerr("no instance could be found", verbose)
+                sys.exit(1)
 
 
 # end.
