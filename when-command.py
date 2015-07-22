@@ -69,7 +69,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.4.1-beta.5"
+APPLET_VERSION = "0.4.1-beta.6"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -2595,7 +2595,12 @@ class AppletIndicator(Gtk.Application):
         Gtk.Application.__init__(self,
                                  application_id=APPLET_ID,
                                  flags=Gio.ApplicationFlags.FLAGS_NONE)
-        self.register(None)
+        try:
+            self.register(None)
+        except Exception as e:
+            applet_log.critical("MAIN: exception %s registering application" % e)
+            sys.exit(2)
+
         self.connect("activate", self.applet_activate)
 
         # The system and session bus signals give many possibilities for events
