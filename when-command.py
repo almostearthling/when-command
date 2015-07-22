@@ -69,7 +69,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.4.1-beta.3"
+APPLET_VERSION = "0.4.1-beta.4"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -220,6 +220,9 @@ resources.LISTCOL_HISTORY_ROWID = "Row ID"
 
 resources.COMMAND_LINE_HELP_VERSION = "show applet version"
 resources.COMMAND_LINE_HELP_SHOW_SETTINGS = "show settings dialog box for the running instance [R]"
+resources.COMMAND_LINE_HELP_SHOW_HISTORY = "show history dialog box for the running instance [R]"
+resources.COMMAND_LINE_HELP_SHOW_TASKS = "show tasks dialog box for the running instance [R]"
+resources.COMMAND_LINE_HELP_SHOW_CONDITIONS = "show conditions dialog box for the running instance [R]"
 resources.COMMAND_LINE_HELP_RESET_CONFIG = "reset general configuration to default [S]"
 resources.COMMAND_LINE_HELP_SHOW_ICON = "show applet icon [N]"
 resources.COMMAND_LINE_HELP_CLEAR = "clear all tasks and conditions [S]"
@@ -2865,7 +2868,7 @@ def start():
 
 
 def kill_existing(verbose=False, shutdown=False):
-    oerr("an existing instance will be %s" % 'shut down' if shutdown else 'killed', verbose)
+    oerr("an existing instance will be %s" % ('shut down' if shutdown else 'killed'), verbose)
     bus = dbus.SessionBus()
     interface = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
     if shutdown:
@@ -2875,14 +2878,8 @@ def kill_existing(verbose=False, shutdown=False):
     oerr("instance shutdown finished", verbose)
 
 
-def show_settings(verbose=False):
-    oerr("showing settings of currently running instance", verbose)
-    bus = dbus.SessionBus()
-    interface = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
-    interface.show_dialog('settings')
-
-
-def show_box(box='about'):
+def show_box(box='about', verbose=False):
+    oerr("showing %s box of currently running instance" % box, verbose)
     bus = dbus.SessionBus()
     interface = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
     interface.show_dialog(box)
@@ -3038,9 +3035,24 @@ if __name__ == '__main__':
             help=resources.COMMAND_LINE_HELP_VERSION
         )
         parser.add_argument(
-            '-S', '--show-settings',
+            '-s', '--show-settings',
             dest='show_settings', action='store_true',
             help=resources.COMMAND_LINE_HELP_SHOW_SETTINGS
+        )
+        parser.add_argument(
+            '-l', '--show-history',
+            dest='show_history', action='store_true',
+            help=resources.COMMAND_LINE_HELP_SHOW_HISTORY
+        )
+        parser.add_argument(
+            '-t', '--show-tasks',
+            dest='show_tasks', action='store_true',
+            help=resources.COMMAND_LINE_HELP_SHOW_TASKS
+        )
+        parser.add_argument(
+            '-c', '--show-conditions',
+            dest='show_conditions', action='store_true',
+            help=resources.COMMAND_LINE_HELP_SHOW_CONDITIONS
         )
         parser.add_argument(
             '-R', '--reset-config',
@@ -3095,7 +3107,7 @@ if __name__ == '__main__':
         if args.version:
             print("%s: %s, version %s" % (APPLET_NAME, APPLET_FULLNAME, APPLET_VERSION))
             if verbose and running:
-                show_box('about')
+                show_box('about', False)
 
         if args.show_icon:
             show_icon(True, running)
@@ -3105,7 +3117,25 @@ if __name__ == '__main__':
                 oerr("could not find a running instance, please start it first", verbose)
                 sys.exit(2)
             else:
-                show_settings(verbose)
+                show_box('settings', verbose)
+        elif args.show_history:
+            if not running:
+                oerr("could not find a running instance, please start it first", verbose)
+                sys.exit(2)
+            else:
+                show_box('history', verbose)
+        elif args.show_tasks:
+            if not running:
+                oerr("could not find a running instance, please start it first", verbose)
+                sys.exit(2)
+            else:
+                show_box('task', verbose)
+        elif args.show_conditions:
+            if not running:
+                oerr("could not find a running instance, please start it first", verbose)
+                sys.exit(2)
+            else:
+                show_box('condition', verbose)
 
         if args.export_items:
             if args.export_items == '*':
