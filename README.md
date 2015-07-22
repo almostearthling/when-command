@@ -134,7 +134,10 @@ Manual configuration is particularly useful to bring back the program icon once 
 
 By default, when the applet is invoked with no arguments, it just starts an instance showing the icon in the top panel (if configured to do so). However there are some command line options that allow for some operations, either on a running instance or on the current configuration. Some are especially useful to recover when something has gone the wrong way -- such as the `-S` switch mentioned above, or the `-I` (or `--show-icon`) switch, to recover from an unwantedly hidden icon. The available options are:
 
-* `-S` or `--show-settings`: show the settings dialog box of an existing instance, it requires a running instance, which may be queried using the `--query` switch explained below
+* `-s` or `--show-settings`: show the settings dialog box of an existing instance, it requires a running instance, which may be queried using the `--query` switch explained below
+* `-l` or `--show-history`: show the history dialog box of an existing instance
+* `-t` or `--show-tasks`: show the task dialog box of an existing instance
+* `-c` or `--show-conditions`: show the condition dialog box of an existing instance
 * `-R` or `--reset-config`: reset applet configuration to default, requires the applet to be shut down with an appropriate switch
 * `-I` or `--show-icon`: show applet icon, the icon will be shown at the next startup
 * `-T` or `--install`: install or reinstall application icon and autostart icon, requires applet to be shut down with an appropriate switch
