@@ -69,7 +69,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.5.0-beta.1"
+APPLET_VERSION = "0.5.0-beta.2"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -1391,6 +1391,7 @@ class IntervalBasedCondition(Condition):
         self.interval = interval
         self.checked = time.time()
         Condition.__init__(self, name, repeat, exec_sequence)
+        self.skip_seconds = 0
 
 
 def IntervalBasedCondition_to_dict(c):
@@ -1446,6 +1447,7 @@ class TimeBasedCondition(Condition):
         self.weekday = None if 'weekday' not in timedict.keys() else timedict['weekday']
         self.tick_seconds = config.get('Scheduler', 'tick seconds')
         Condition.__init__(self, name, repeat, exec_sequence)
+        self.skip_seconds = 0
 
 
 def TimeBasedCondition_to_dict(c):
