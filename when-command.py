@@ -1430,8 +1430,9 @@ class TimeBasedCondition(Condition):
             now[8],
         )
         test_time = time.mktime(test_tuple)
-        self._debug("checking %.3f - %.3f (=%.3f) in [0-%s]" % (cur_time, test_time, cur_time - test_time, self.skip_seconds))
-        if 0 < cur_time - test_time <= self.skip_seconds:
+        span = max(self.tick_seconds, self.skip_seconds)
+        self._debug("checking %.3f - %.3f (=%.3f) in [0-%s]" % (cur_time, test_time, cur_time - test_time, span))
+        if 0 < cur_time - test_time <= span:
             return True
         else:
             return False
