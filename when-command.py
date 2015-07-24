@@ -1928,9 +1928,11 @@ class TaskDialog(object):
         if o('cbCheckWhat').get_active() == 0:
             o('chkExactMatch').set_sensitive(False)
             o('chkCaseSensitive').set_sensitive(False)
+            o('chkRegExp').set_sensitive(False)
         else:
             o('chkExactMatch').set_sensitive(True)
             o('chkCaseSensitive').set_sensitive(True)
+            o('chkRegExp').set_sensitive(True)
 
     def default_box(self, include_name=False):
         o = self.builder.get_object
@@ -1942,6 +1944,7 @@ class TaskDialog(object):
         o('txtFolder').set_text('')
         o('chkExactMatch').set_active(False)
         o('chkCaseSensitive').set_active(False)
+        o('chkRegExp').set_active(False)
         o('chkImportEnvironment').set_active(True)
         o('rdSuccess').set_active(True)
         o('cbCheckWhat').set_active(0)
@@ -2008,6 +2011,7 @@ class TaskDialog(object):
             for row in m:
                 task.set_env(row[0], row[1])
             task.match_exact = o('chkExactMatch').get_active()
+            task.match_regexp = o('chkRegExp').get_active()
             task.case_sensitive = o('chkCaseSensitive').get_active()
             task.include_env = o('chkImportEnvironment').get_active()
             task.dump()
@@ -2151,6 +2155,7 @@ class ConditionDialog(object):
         o('chkSequence').set_active(True)
         o('chkExactMatch').set_active(False)
         o('chkCaseSensitive').set_active(False)
+        o('chkRegExp').set_active(False)
         o('chkSuspend').set_active(False)
         o('store_listTasks').clear()
         cb = o('cbInterval')
@@ -2190,6 +2195,7 @@ class ConditionDialog(object):
                 o('txtCommand').set_text(cond.command)
                 o('chkExactMatch').set_active(cond.match_exact)
                 o('chkCaseSensitive').set_active(cond.case_sensitive)
+                o('chkRegExp').set_active(cond.match_regexp)
                 if cond.expected_status is not None:
                     o('cbCheckWhat').set_active(0)
                     o('txtCheckValue').set_text(str(cond.expected_status))
@@ -2377,6 +2383,7 @@ class ConditionDialog(object):
                 c = CommandBasedCondition(name, command, status, stdout, stderr, repeat, sequence)
                 c.command_properties(match_exact=o('chkExactMatch').get_active())
                 c.command_properties(case_sensitive=o('chkCaseSensitive').get_active())
+                c.command_properties(ath_regexp=o('chkRegExp').get_active())
             elif idx == 3:
                 idle_secs = int(o('txtIdleMins').get_text()) * 60
                 c = IdleTimeBasedCondition(name, idle_secs, repeat, sequence)

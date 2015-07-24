@@ -7,7 +7,7 @@
     <property name="title" translatable="yes">Settings</property>
     <property name="modal">True</property>
     <property name="default_width">720</property>
-    <property name="default_height">580</property>
+    <property name="default_height">640</property>
     <property name="icon_name">applications-system</property>
     <property name="type_hint">dialog</property>
     <property name="has_resize_grip">False</property>
