@@ -1,6 +1,6 @@
 # When (*when-command*)
 
-**When** is a configurable user task scheduler, designed to work during an X/Gnome session. It interacts with the user through a GUI, where the user can define tasks and conditions, as well as relations of causality that bind conditions to task. When a condition is bound to a task, it is said to trigger a task.
+**When** is a configurable user task scheduler, designed to work during an X/Gnome session. It interacts with the user through a GUI, where the user can define tasks and conditions, as well as relationships of causality that bind conditions to task. When a condition is bound to a task, it is said to trigger a task.
 
 ![Screenshot](http://almostearthling.github.io/when-command/images/screenshot.png)
 
