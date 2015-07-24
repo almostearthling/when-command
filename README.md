@@ -28,7 +28,7 @@ Where the *Task* and *Condition* editing boxes, the *Settings* dialog and the *T
 
 ### Tasks
 
-Tasks are basically commands associated with an environment and checks to determine whether the execution was successful or not. The interface lets the user configure some basic parameters (such as the startup directory and the *environment*) as well as what to test after execution (*exit code*, *stdout* or *stderr*). The user can choose to look for the specified text within the output and error streams (when *Exact Match* is unchecked) and to perform a case sensitive test.
+Tasks are basically commands associated with an environment and checks to determine whether the execution was successful or not. The interface lets the user configure some basic parameters (such as the startup directory and the *environment*) as well as what to test after execution (*exit code*, *stdout* or *stderr*). The user can choose to look for the specified text within the output and error streams (when *Exact Match* is unchecked) and to perform a case sensitive test, or to match a regular expression. In case a regular expression is chosen, the applet will try to match the beginning of *stdout* or *stderr* against the given pattern, unless *Exact Match* is chosen in which case the test is performed against the entire output. Regular expression match can be case insensitive as well.
 
 The environment in which the subprocess is run can either import the current one (at **When** startup time), use its own variables or both.
 
