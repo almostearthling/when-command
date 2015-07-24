@@ -1,5 +1,19 @@
 # Changelog
 
+## Version 0.6.0 (beta)
+* Match regular expressions in command output for tasks and command based conditions
+
+### Compatibility break
+
+This release breaks compatibility with previous version regarding the binary format of static data (tasks and conditions), as it introduces new parameters in both tasks and command based conditions. **A dump and restore of static data is required for *When* to work correctly.**
+
+* Before upgrade: `/opt/when-command/when-command --export --shutdown`
+* Upgrade: `sudo dpkg --install when-command-0.6.0-beta.1.deb` (or your preferred upgrade method)
+* After upgrade: `/opt/when-command/when-command --import`
+
+Then you can start the applet from *Dash* or at the next startup.
+
+
 ## Version 0.5.0 (beta)
 * More consistent dialog boxes
 * Task and condition naming rules

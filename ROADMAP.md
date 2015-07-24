@@ -77,6 +77,7 @@ List of achievements and expectations for the When applet.
   - Force indicator icon on :ok:
   - export tasks and conditions :ok:
   - import tasks and conditions :ok:
+* Regexp match for shell command results (in both tasks and conditions) :ok:
 
 
 ## 2) To *Working* Alpha Release
@@ -96,7 +97,6 @@ List of achievements and expectations for the When applet.
 
 ## 5) To 1.0 *Production* Release
 
-* Regexp match for shell command results (in both tasks and conditions)
 * More system and session event conditions
   - System suspend and/or resume
   - Screen lock
