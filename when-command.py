@@ -1223,6 +1223,7 @@ def Task_to_dict(t):
     d['case_sensitive'] = t.case_sensitive
     d['command'] = t.command
     d['startup_dir'] = t.startup_dir
+    d['match_regexp'] = t.match_regexp
     return d
 
 
@@ -1245,6 +1246,7 @@ def dict_to_Task(d):
     t.command = d['command']
     t.startup_dir = d['startup_dir']
     # TODO: if there are more parameters, use d.get('key', default_val)
+    t.match_regexp = d.get('match_regexp', False)
     return t
 
 
