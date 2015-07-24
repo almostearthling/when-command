@@ -897,6 +897,7 @@ class Task(object):
         self.failure_stderr = None
         self.failure_status = None
         self.match_exact = False
+        self.match_regexp = False
         self.case_sensitive = False
         self.command = ""
         self.startup_dir = None
@@ -1013,97 +1014,161 @@ class Task(object):
                         self._process_failed = True
                         failure_reason = 'status'
                 elif self.failure_stdout is not None:
-                    if self.case_sensitive:
+                    if self.match_regexp:
+                        if self.case_sensitive:
+                            flags = re.IGNORECASE
+                        else:
+                            flags = 0
                         if self.match_exact:
-                            if self._process_stdout == self.failure_stdout:
-                                self._warning("task failed (stdout check)")
+                            if re.match("^%s$" % self.failure_stdout, self._process_stdout, flags=0) is not None:
+                                self._warning("task failed (stdout regexp%s check)" % " nocase" if flags else "")
                                 self._process_failed = True
                                 failure_reason = 'stdout'
                         else:
-                            if self.failure_stdout in self._process_stdout:
-                                self._warning("task failed (stdout check)")
+                            if re.match(self.failure_stdout, self._process_stdout, flags=0) is not None:
+                                self._warning("task failed (stdout regexp%s check)" % " nocase" if flags else "")
                                 self._process_failed = True
                                 failure_reason = 'stdout'
                     else:
-                        if self.match_exact:
-                            if self._process_stdout.upper() == self.failure_stdout.upper():
-                                self._warning("task failed (stdout check, case insensitive)")
-                                self._process_failed = True
-                                failure_reason = 'stdout'
+                        if self.case_sensitive:
+                            if self.match_exact:
+                                if self._process_stdout == self.failure_stdout:
+                                    self._warning("task failed (stdout check)")
+                                    self._process_failed = True
+                                    failure_reason = 'stdout'
+                            else:
+                                if self.failure_stdout in self._process_stdout:
+                                    self._warning("task failed (stdout check)")
+                                    self._process_failed = True
+                                    failure_reason = 'stdout'
                         else:
-                            if self.failure_stdout.upper() in self._process_stdout.upper():
-                                self._warning("task failed (stdout check, case insensitive)")
-                                self._process_failed = True
-                                failure_reason = 'stdout'
+                            if self.match_exact:
+                                if self._process_stdout.upper() == self.failure_stdout.upper():
+                                    self._warning("task failed (stdout check, case insensitive)")
+                                    self._process_failed = True
+                                    failure_reason = 'stdout'
+                            else:
+                                if self.failure_stdout.upper() in self._process_stdout.upper():
+                                    self._warning("task failed (stdout check, case insensitive)")
+                                    self._process_failed = True
+                                    failure_reason = 'stdout'
                 elif self.failure_stderr is not None:
-                    if self.case_sensitive:
+                    if self.match_regexp:
+                        if self.case_sensitive:
+                            flags = re.IGNORECASE
+                        else:
+                            flags = 0
                         if self.match_exact:
-                            if self._process_stderr == self.failure_stderr:
-                                self._warning("task failed (stderr check)")
+                            if re.match("^%s$" % self.failure_stderr, self._process_stderr, flags=0) is not None:
+                                self._warning("task failed (stderr regexp%s check)" % " nocase" if flags else "")
                                 self._process_failed = True
                                 failure_reason = 'stderr'
                         else:
-                            if self.failure_stderr in self._process_stderr:
-                                self._warning("task failed (stderr check)")
+                            if re.match(self.failure_stderr, self._process_stderr, flags=0) is not None:
+                                self._warning("task failed (stderr regexp%s check)" % " nocase" if flags else "")
                                 self._process_failed = True
                                 failure_reason = 'stderr'
                     else:
-                        if self.match_exact:
-                            if self._process_stderr.upper() == self.failure_stderr.upper():
-                                self._warning("task failed (stderr check, case insensitive)")
-                                self._process_failed = True
-                                failure_reason = 'stderr'
+                        if self.case_sensitive:
+                            if self.match_exact:
+                                if self._process_stderr == self.failure_stderr:
+                                    self._warning("task failed (stderr check)")
+                                    self._process_failed = True
+                                    failure_reason = 'stderr'
+                            else:
+                                if self.failure_stderr in self._process_stderr:
+                                    self._warning("task failed (stderr check)")
+                                    self._process_failed = True
+                                    failure_reason = 'stderr'
                         else:
-                            if self.failure_stderr.upper() in self._process_stderr.upper():
-                                self._warning("task failed (stderr check, case insensitive)")
-                                self._process_failed = True
-                                failure_reason = 'stderr'
+                            if self.match_exact:
+                                if self._process_stderr.upper() == self.failure_stderr.upper():
+                                    self._warning("task failed (stderr check, case insensitive)")
+                                    self._process_failed = True
+                                    failure_reason = 'stderr'
+                            else:
+                                if self.failure_stderr.upper() in self._process_stderr.upper():
+                                    self._warning("task failed (stderr check, case insensitive)")
+                                    self._process_failed = True
+                                    failure_reason = 'stderr'
                 elif self.success_stdout is not None:
-                    if self.case_sensitive:
+                    if self.match_regexp:
+                        if self.case_sensitive:
+                            flags = re.IGNORECASE
+                        else:
+                            flags = 0
                         if self.match_exact:
-                            if self._process_stdout != self.success_stdout:
-                                self._warning("task failed (stdout check)")
+                            if re.match("^%s$" % self.success_stdout, self._process_stdout, flags=0) is None:
+                                self._warning("task failed (stdout regexp%s check)" % " nocase" if flags else "")
                                 self._process_failed = True
                                 failure_reason = 'stdout'
                         else:
-                            if self.success_stdout not in self._process_stdout:
-                                self._warning("task failed (stdout check, case insensitive)")
+                            if re.match(self.success_stdout, self._process_stdout, flags=0) is None:
+                                self._warning("task failed (stdout regexp%s check)" % " nocase" if flags else "")
                                 self._process_failed = True
                                 failure_reason = 'stdout'
                     else:
-                        if self.match_exact:
-                            if self._process_stdout.upper() != self.success_stdout.upper():
-                                self._warning("task failed (stdout check)")
-                                self._process_failed = True
-                                failure_reason = 'stdout'
+                        if self.case_sensitive:
+                            if self.match_exact:
+                                if self._process_stdout != self.success_stdout:
+                                    self._warning("task failed (stdout check)")
+                                    self._process_failed = True
+                                    failure_reason = 'stdout'
+                            else:
+                                if self.success_stdout not in self._process_stdout:
+                                    self._warning("task failed (stdout check, case insensitive)")
+                                    self._process_failed = True
+                                    failure_reason = 'stdout'
                         else:
-                            if not self.success_stdout.upper() in self._process_stdout.upper():
-                                self._warning("task failed (stdout check, case insensitive)")
-                                self._process_failed = True
-                                failure_reason = 'stdout'
+                            if self.match_exact:
+                                if self._process_stdout.upper() != self.success_stdout.upper():
+                                    self._warning("task failed (stdout check)")
+                                    self._process_failed = True
+                                    failure_reason = 'stdout'
+                            else:
+                                if not self.success_stdout.upper() in self._process_stdout.upper():
+                                    self._warning("task failed (stdout check, case insensitive)")
+                                    self._process_failed = True
+                                    failure_reason = 'stdout'
                 elif self.success_stderr is not None:
-                    if self.case_sensitive:
+                    if self.match_regexp:
+                        if self.case_sensitive:
+                            flags = re.IGNORECASE
+                        else:
+                            flags = 0
                         if self.match_exact:
-                            if self._process_stderr != self.success_stderr:
-                                self._warning("task failed (stderr check)")
+                            if re.match("^%s$" % self.success_stderr, self._process_stderr, flags=0) is None:
+                                self._warning("task failed (stderr regexp%s check)" % " nocase" if flags else "")
                                 self._process_failed = True
                                 failure_reason = 'stderr'
                         else:
-                            if self.success_stderr not in self._process_stderr:
-                                self._warning("task failed (stderr check)")
+                            if re.match(self.success_stderr, self._process_stderr, flags=0) is None:
+                                self._warning("task failed (stderr regexp%s check)" % " nocase" if flags else "")
                                 self._process_failed = True
                                 failure_reason = 'stderr'
                     else:
-                        if self.match_exact:
-                            if self._process_stderr.upper() != self.success_stderr.upper():
-                                self._warning("task failed (stderr check, case insensitive)")
-                                self._process_failed = True
-                                failure_reason = 'stderr'
+                        if self.case_sensitive:
+                            if self.match_exact:
+                                if self._process_stderr != self.success_stderr:
+                                    self._warning("task failed (stderr check)")
+                                    self._process_failed = True
+                                    failure_reason = 'stderr'
+                            else:
+                                if self.success_stderr not in self._process_stderr:
+                                    self._warning("task failed (stderr check)")
+                                    self._process_failed = True
+                                    failure_reason = 'stderr'
                         else:
-                            if self.success_stderr.upper() not in self._process_stderr.upper():
-                                self._warning("task failed (stderr check, case insensitive)")
-                                self._process_failed = True
-                                failure_reason = 'stderr'
+                            if self.match_exact:
+                                if self._process_stderr.upper() != self.success_stderr.upper():
+                                    self._warning("task failed (stderr check, case insensitive)")
+                                    self._process_failed = True
+                                    failure_reason = 'stderr'
+                            else:
+                                if self.success_stderr.upper() not in self._process_stderr.upper():
+                                    self._warning("task failed (stderr check, case insensitive)")
+                                    self._process_failed = True
+                                    failure_reason = 'stderr'
         except RuntimeError as e:
             self._warning("task failed, runtime error: %s" % e)
             failure_reason = 'overlap'
@@ -1494,32 +1559,54 @@ class CommandBasedCondition(Condition):
                     self._info("checking condition command output")
                     expected = self.expected_stdout
                     returned = stdout.decode().strip()
-                    if self.case_sensitive:
-                        expected = expected.upper()
-                        returned = returned.upper()
-                    if self.match_exact:
-                        self._debug("test: '%s' == '%s'" % (expected, returned))
-                        if expected == returned:
+                    if self.match_regexp:
+                        if self.match_exact:
+                            expected = "^%s$" % expected
+                        if self.case_sensitive:
+                            flags = re.IGNORECASE
+                        else:
+                            flags = 0
+                        self._debug("test: '%s' ~ '%s'%s" % (returned, expected, ' (I)' if flags else ''))
+                        if re.match(expected, returned, flags) is not None:
                             return True
                     else:
-                        self._debug("test: '%s' in '%s'" % (expected, returned))
-                        if expected in returned:
-                            return True
+                        if self.case_sensitive:
+                            expected = expected.upper()
+                            returned = returned.upper()
+                        if self.match_exact:
+                            self._debug("test: '%s' == '%s'" % (expected, returned))
+                            if expected == returned:
+                                return True
+                        else:
+                            self._debug("test: '%s' in '%s'" % (expected, returned))
+                            if expected in returned:
+                                return True
                 elif self.expected_stderr:
                     self._info("checking condition command error output")
                     expected = self.expected_stderr
                     returned = stderr.decode().strip()
-                    if self.case_sensitive:
-                        expected = expected.upper()
-                        returned = returned.upper()
-                    if self.match_exact:
-                        self._debug("test: '%s' == '%s'" % (expected, returned))
-                        if expected == returned:
+                    if self.match_regexp:
+                        if self.match_exact:
+                            expected = "^%s$" % expected
+                        if self.case_sensitive:
+                            flags = re.IGNORECASE
+                        else:
+                            flags = 0
+                        self._debug("test: '%s' ~ '%s'%s" % (returned, expected, ' (I)' if flags else ''))
+                        if re.match(expected, returned, flags) is not None:
                             return True
                     else:
-                        self._debug("test: '%s' in '%s'" % (expected, returned))
-                        if expected in returned:
-                            return True
+                        if self.case_sensitive:
+                            expected = expected.upper()
+                            returned = returned.upper()
+                        if self.match_exact:
+                            self._debug("test: '%s' == '%s'" % (expected, returned))
+                            if expected == returned:
+                                return True
+                        else:
+                            self._debug("test: '%s' in '%s'" % (expected, returned))
+                            if expected in returned:
+                                return True
                 self._debug("test failed")
                 return False
         except OSError as e:
@@ -1541,9 +1628,12 @@ class CommandBasedCondition(Condition):
                 self.match_exact = bool(kwargs[k])
             elif k == 'case_sensitive':
                 self.case_sensitive = bool(kwargs[k])
+            elif k == 'match_regexp':
+                self.match_regexp = bool(kwargs[k])
 
     def __init__(self, name, command, status=None, stdout=None, stderr=None, repeat=True, exec_sequence=True):
         self.match_exact = False
+        self.match_regexp = False
         self.case_sensitive = False
         check_count = 0
         if status is not None:
@@ -1566,6 +1656,7 @@ def CommandBasedCondition_to_dict(c):
     d = Condition_to_dict(c)
     d['subtype'] = 'CommandBasedCondition'
     d['match_exact'] = c.match_exact
+    d['match_regexp'] = c.match_regexp
     d['case_sensitive'] = c.case_sensitive
     d['command'] = c.command
     d['expected_status'] = c.expected_status
@@ -1582,8 +1673,14 @@ def dict_to_CommandBasedCondition(d):
     status = d['expected_status']
     stdout = d['expected_stdout']
     stderr = d['expected_stderr']
+    match_exact = d['match_exact']
+    case_sensitive = d['case_sensitive']
     # TODO: if there are more parameters, use d.get('key', default_val)
+    match_regexp = d.get('match_regexp', False)
     c = CommandBasedCondition(name, command, status, stdout, stderr)
+    c.match_exact = match_exact
+    c.match_regexp = match_regexp
+    c.case_sensitive = case_sensitive
     c = dict_to_Condition(d, c)
     return c
 
