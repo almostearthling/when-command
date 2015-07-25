@@ -69,7 +69,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.5.2-beta.1"
+APPLET_VERSION = "0.5.2-beta.2"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -1020,12 +1020,12 @@ class Task(object):
                         else:
                             flags = re.IGNORECASE
                         if self.match_exact:
-                            if re.match("^%s$" % self.failure_stdout, self._process_stdout, flags=0) is not None:
+                            if re.match(self.failure_stdout, self._process_stdout, flags=0) is not None:
                                 self._warning("task failed (stdout regexp%s check)" % " nocase" if flags else "")
                                 self._process_failed = True
                                 failure_reason = 'stdout'
                         else:
-                            if re.match(self.failure_stdout, self._process_stdout, flags=0) is not None:
+                            if re.search(self.failure_stdout, self._process_stdout, flags=0) is not None:
                                 self._warning("task failed (stdout regexp%s check)" % " nocase" if flags else "")
                                 self._process_failed = True
                                 failure_reason = 'stdout'
@@ -1059,12 +1059,12 @@ class Task(object):
                         else:
                             flags = re.IGNORECASE
                         if self.match_exact:
-                            if re.match("^%s$" % self.failure_stderr, self._process_stderr, flags=0) is not None:
+                            if re.match(self.failure_stderr, self._process_stderr, flags=0) is not None:
                                 self._warning("task failed (stderr regexp%s check)" % " nocase" if flags else "")
                                 self._process_failed = True
                                 failure_reason = 'stderr'
                         else:
-                            if re.match(self.failure_stderr, self._process_stderr, flags=0) is not None:
+                            if re.search(self.failure_stderr, self._process_stderr, flags=0) is not None:
                                 self._warning("task failed (stderr regexp%s check)" % " nocase" if flags else "")
                                 self._process_failed = True
                                 failure_reason = 'stderr'
@@ -1098,12 +1098,12 @@ class Task(object):
                         else:
                             flags = re.IGNORECASE
                         if self.match_exact:
-                            if re.match("^%s$" % self.success_stdout, self._process_stdout, flags=0) is None:
+                            if re.match(self.success_stdout, self._process_stdout, flags=0) is None:
                                 self._warning("task failed (stdout regexp%s check)" % " nocase" if flags else "")
                                 self._process_failed = True
                                 failure_reason = 'stdout'
                         else:
-                            if re.match(self.success_stdout, self._process_stdout, flags=0) is None:
+                            if re.search(self.success_stdout, self._process_stdout, flags=0) is None:
                                 self._warning("task failed (stdout regexp%s check)" % " nocase" if flags else "")
                                 self._process_failed = True
                                 failure_reason = 'stdout'
@@ -1137,12 +1137,12 @@ class Task(object):
                         else:
                             flags = re.IGNORECASE
                         if self.match_exact:
-                            if re.match("^%s$" % self.success_stderr, self._process_stderr, flags=0) is None:
+                            if re.match(self.success_stderr, self._process_stderr, flags=0) is None:
                                 self._warning("task failed (stderr regexp%s check)" % " nocase" if flags else "")
                                 self._process_failed = True
                                 failure_reason = 'stderr'
                         else:
-                            if re.match(self.success_stderr, self._process_stderr, flags=0) is None:
+                            if re.search(self.success_stderr, self._process_stderr, flags=0) is None:
                                 self._warning("task failed (stderr regexp%s check)" % " nocase" if flags else "")
                                 self._process_failed = True
                                 failure_reason = 'stderr'
@@ -1562,15 +1562,20 @@ class CommandBasedCondition(Condition):
                     expected = self.expected_stdout
                     returned = stdout.decode().strip()
                     if self.match_regexp:
-                        if self.match_exact:
-                            expected = "^%s$" % expected
                         if self.case_sensitive:
                             flags = re.IGNORECASE
                         else:
                             flags = 0
                         self._debug("test: '%s' ~ '%s'%s" % (returned, expected, ' (I)' if flags else ''))
-                        if re.match(expected, returned, flags) is not None:
-                            return True
+                        try:
+                            if self.match_exact:
+                                if re.match(expected, returned, flags) is not None:
+                                    return True
+                            else:
+                                if re.search(expected, returned, flags) is not None:
+                                    return True
+                        except:
+                            self._warning("invalid regular expression (skipped)")
                     else:
                         if self.case_sensitive:
                             expected = expected.upper()
@@ -1588,15 +1593,20 @@ class CommandBasedCondition(Condition):
                     expected = self.expected_stderr
                     returned = stderr.decode().strip()
                     if self.match_regexp:
-                        if self.match_exact:
-                            expected = "^%s$" % expected
                         if self.case_sensitive:
                             flags = 0
                         else:
                             flags = re.IGNORECASE
                         self._debug("test: '%s' ~ '%s'%s" % (returned, expected, ' (I)' if flags else ''))
-                        if re.match(expected, returned, flags) is not None:
-                            return True
+                        try:
+                            if self.match_exact:
+                                if re.match(expected, returned, flags) is not None:
+                                    return True
+                            else:
+                                if re.search(expected, returned, flags) is not None:
+                                    return True
+                        except:
+                            self._warning("invalid regular expression (skipped)")
                     else:
                         if not self.case_sensitive:
                             expected = expected.upper()
