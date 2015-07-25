@@ -69,7 +69,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.5.2-beta.4"
+APPLET_VERSION = "0.5.2-beta.5"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -1908,6 +1908,7 @@ class TaskDialog(object):
                 o('rdNoCheck').set_active(True)
                 o('txtCheckValue').set_text("0")
             o('chkExactMatch').set_active(task.match_exact)
+            o('chkRegExp').set_active(task.match_regexp)
             o('chkCaseSensitive').set_active(task.case_sensitive)
             o('chkImportEnvironment').set_active(task.include_env)
             m = o('store_listEnvVars')
