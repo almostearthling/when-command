@@ -69,7 +69,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.5.2-beta.3"
+APPLET_VERSION = "0.5.2-beta.4"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -1577,7 +1577,7 @@ class CommandBasedCondition(Condition):
                         except:
                             self._warning("invalid regular expression (skipped)")
                     else:
-                        if self.case_sensitive:
+                        if not self.case_sensitive:
                             expected = expected.upper()
                             returned = returned.upper()
                         if self.match_exact:
