@@ -69,7 +69,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.5.2-beta.5"
+APPLET_VERSION = "0.5.3-beta.1"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -1294,6 +1294,8 @@ class Condition(object):
         self.task_names = []
         self.repeat = True
         self.exec_sequence = True
+        self.break_failure = False
+        self.break_success = False
         self.suspended = False
         self._has_succeeded = False
         if self.__class__.__name__ == 'Condition':
@@ -1395,7 +1397,13 @@ class Condition(object):
                     task = tasks.get(task_name=task_name)
                     if task:
                         self._info("sequential run of task %s" % task_name)
-                        task.run(self.cond_name)
+                        outcome = task.run(self.cond_name)
+                        if outcome and self.break_success:
+                            self._info("breaking on task %s success" % task_name)
+                            break
+                        elif not outcome and self.break_failure:
+                            self._info("breaking on task %s failure" % task_name)
+                            break
                     else:
                         self._warning("task not found: %s" % task_name)
             else:
@@ -1424,6 +1432,8 @@ def Condition_to_dict(c):
     d['repeat'] = c.repeat
     d['exec_sequence'] = c.exec_sequence
     d['suspended'] = c.suspended
+    d['break_failure'] = c.break_failure
+    d['break_success'] = c.break_success
     return d
 
 
@@ -1440,6 +1450,8 @@ def dict_to_Condition(d, c=None):
     c.exec_sequence = d['exec_sequence']
     c.suspended = d['suspended']
     # TODO: if there are more parameters, use d.get('key', default_val)
+    c.break_failure = d.get('break_failure', False)
+    c.break_success = d.get('break_success', False)
     return c
 
 
@@ -2166,6 +2178,7 @@ class ConditionDialog(object):
         o('cbCheckWhat').set_active(0)
         o('chkRepeat').set_active(True)
         o('chkSequence').set_active(True)
+        o('cbBreakSequence').set_active(0)
         o('chkExactMatch').set_active(False)
         o('chkCaseSensitive').set_active(False)
         o('chkRegExp').set_active(False)
@@ -2237,6 +2250,13 @@ class ConditionDialog(object):
             o('chkRepeat').set_active(cond.repeat)
             o('chkSequence').set_active(cond.exec_sequence)
             o('chkSuspend').set_active(cond.suspended)
+            if cond.break_failure:
+                o('cbBreakSequence').set_active(1)
+            elif cond.break_success:
+                o('cbBreakSequence').set_active(2)
+            else:
+                o('cbBreakSequence').set_active(0)
+            o('cbBreakSequence').set_sensitive(cond.exec_sequence)
             m = o('store_listTasks')
             for x in cond.task_names:
                 m.append([x])
@@ -2283,6 +2303,10 @@ class ConditionDialog(object):
                 else:
                     idx += 1
 
+    def click_chkSequence(self, _):
+        o = self.builder.get_object
+        o('cbBreakSequence').set_sensitive(o('chkSequence').get_active())
+
     def update_box_type(self, _):
         o = self.builder.get_object
         idx = o('cbType').get_active()
@@ -2297,6 +2321,7 @@ class ConditionDialog(object):
         can_disable = [
             'chkRepeat',
             'chkSequence',
+            'cbBreakSequence',
             'chkSuspend',
         ]
         to_disable = []
@@ -2351,6 +2376,13 @@ class ConditionDialog(object):
             repeat = o('chkRepeat').get_active()
             sequence = o('chkSequence').get_active()
             suspend = o('chkSuspend').get_active()
+            break_sequence = o('cbBreakSequence').get_active()
+            break_success = False
+            break_failure = False
+            if break_sequence == 1:
+                break_failure = True
+            elif break_sequence == 2:
+                break_success = True
             task_names = []
             m = o('store_listTasks')
             for row in m:
@@ -2363,6 +2395,8 @@ class ConditionDialog(object):
                 else:
                     interval = v * 60
                 c = IntervalBasedCondition(name, interval, repeat, sequence)
+                c.break_failure = break_failure
+                c.break_success = break_success
             elif idx == 1:
                 now = time.localtime()
                 current_year = now.tm_year
@@ -2375,6 +2409,8 @@ class ConditionDialog(object):
                     'minute': self.validate_int(o('txtMinute').get_text(), min_value=0, max_value=59),
                 }
                 c = TimeBasedCondition(name, timedict, repeat, sequence)
+                c.break_failure = break_failure
+                c.break_success = break_success
             elif idx == 2:
                 command = o('txtCommand').get_text()
                 status, stdout, stderr = None, None, None
@@ -2394,6 +2430,8 @@ class ConditionDialog(object):
                 elif chk == 2:
                     stderr = str(o('txtCheckValue').get_text())
                 c = CommandBasedCondition(name, command, status, stdout, stderr, repeat, sequence)
+                c.break_failure = break_failure
+                c.break_success = break_success
                 c.match_exact = o('chkExactMatch').get_active()
                 c.case_sensitive = o('chkCaseSensitive').get_active()
                 c.match_regexp = o('chkRegExp').get_active()
@@ -2403,11 +2441,15 @@ class ConditionDialog(object):
             elif idx == 3:
                 idle_secs = int(o('txtIdleMins').get_text()) * 60
                 c = IdleTimeBasedCondition(name, idle_secs, repeat, sequence)
-                current_widget = 'canvasOptions_IdleTime'
+                c.break_failure = break_failure
+                c.break_success = break_success
+                # current_widget = 'canvasOptions_IdleTime'
             elif idx == 4:
                 event_type = ('startup', 'shutdown')[
                     o('cbSysEvent').get_active()]
                 c = EventBasedCondition(name, event_type, True, repeat, sequence)
+                c.break_failure = break_failure
+                c.break_success = break_success
             for x in task_names:
                 if tasks.get(task_name=x):
                     c.add_task(x)

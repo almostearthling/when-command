@@ -78,6 +78,7 @@ List of achievements and expectations for the When applet.
   - export tasks and conditions :ok:
   - import tasks and conditions :ok:
 * Regexp match for shell command results (in both tasks and conditions) :ok:
+* Stop task sequence upon failure (or success) of one task :ok:
 
 
 ## 2) To *Working* Alpha Release
@@ -104,7 +105,6 @@ List of achievements and expectations for the When applet.
   - Join network
   - More to come
 * File watch conditions
-* Stop task sequence upon failure (or success) of one task
 
 
 ## 6) Desirable features

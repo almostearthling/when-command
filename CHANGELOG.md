@@ -2,6 +2,7 @@
 
 ## Version 0.6.0 (beta)
 * Match regular expressions in command output for tasks and command based conditions
+* Stop task sequence on task outcome
 
 ### Compatibility break
 
@@ -11,7 +12,7 @@ This release breaks compatibility with previous version regarding the binary for
 * Upgrade: `sudo dpkg --install when-command-0.6.0-beta.1.deb` (or your preferred upgrade method)
 * After upgrade: `/opt/when-command/when-command --import`
 
-Then you can start the applet from *Dash* or at the next startup. This should be done for all accounts that use *When* on the system.
+Then you can start the applet from *Dash* or at the next login. This should be done for all accounts that use *When* on the system.
 
 
 ## Version 0.5.0 (beta)
