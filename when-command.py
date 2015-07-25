@@ -2385,7 +2385,7 @@ class ConditionDialog(object):
                 c = CommandBasedCondition(name, command, status, stdout, stderr, repeat, sequence)
                 c.command_properties(match_exact=o('chkExactMatch').get_active())
                 c.command_properties(case_sensitive=o('chkCaseSensitive').get_active())
-                c.command_properties(ath_regexp=o('chkRegExp').get_active())
+                c.command_properties(match_regexp=o('chkRegExp').get_active())
             elif idx == 3:
                 idle_secs = int(o('txtIdleMins').get_text()) * 60
                 c = IdleTimeBasedCondition(name, idle_secs, repeat, sequence)
