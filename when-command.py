@@ -69,7 +69,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.5.1-beta.1"
+APPLET_VERSION = "0.5.1-beta.2"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -2117,9 +2117,11 @@ class ConditionDialog(object):
         if o('cbCheckWhat').get_active() == 0:
             o('chkExactMatch').set_sensitive(False)
             o('chkCaseSensitive').set_sensitive(False)
+            o('chkRegExp').set_sensitive(False)
         else:
             o('chkExactMatch').set_sensitive(True)
             o('chkCaseSensitive').set_sensitive(True)
+            o('chkRegExp').set_sensitive(True)
 
     def change_cbTimeUnit(self, _):
         o = self.builder.get_object
