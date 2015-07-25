@@ -69,7 +69,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.5.3-beta.1"
+APPLET_VERSION = "0.5.3-beta.2"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -1646,15 +1646,6 @@ class CommandBasedCondition(Condition):
             self._error("condition failed (unexpected error: %s)" % e)
             return False
 
-    # def command_properties(self, **kwargs):
-    #     for k in kwargs.keys():
-    #         if k == 'match_exact':
-    #             self.match_exact = bool(kwargs[k])
-    #         elif k == 'case_sensitive':
-    #             self.case_sensitive = bool(kwargs[k])
-    #         elif k == 'match_regexp':
-    #             self.match_regexp = bool(kwargs[k])
-
     def __init__(self, name, command, status=None, stdout=None, stderr=None, repeat=True, exec_sequence=True):
         self.match_exact = False
         self.match_regexp = False
@@ -2435,15 +2426,11 @@ class ConditionDialog(object):
                 c.match_exact = o('chkExactMatch').get_active()
                 c.case_sensitive = o('chkCaseSensitive').get_active()
                 c.match_regexp = o('chkRegExp').get_active()
-                # c.command_properties(match_exact=o('chkExactMatch').get_active())
-                # c.command_properties(case_sensitive=o('chkCaseSensitive').get_active())
-                # c.command_properties(match_regexp=o('chkRegExp').get_active())
             elif idx == 3:
                 idle_secs = int(o('txtIdleMins').get_text()) * 60
                 c = IdleTimeBasedCondition(name, idle_secs, repeat, sequence)
                 c.break_failure = break_failure
                 c.break_success = break_success
-                # current_widget = 'canvasOptions_IdleTime'
             elif idx == 4:
                 event_type = ('startup', 'shutdown')[
                     o('cbSysEvent').get_active()]
