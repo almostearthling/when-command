@@ -1016,9 +1016,9 @@ class Task(object):
                 elif self.failure_stdout is not None:
                     if self.match_regexp:
                         if self.case_sensitive:
-                            flags = re.IGNORECASE
-                        else:
                             flags = 0
+                        else:
+                            flags = re.IGNORECASE
                         if self.match_exact:
                             if re.match("^%s$" % self.failure_stdout, self._process_stdout, flags=0) is not None:
                                 self._warning("task failed (stdout regexp%s check)" % " nocase" if flags else "")
@@ -1055,9 +1055,9 @@ class Task(object):
                 elif self.failure_stderr is not None:
                     if self.match_regexp:
                         if self.case_sensitive:
-                            flags = re.IGNORECASE
-                        else:
                             flags = 0
+                        else:
+                            flags = re.IGNORECASE
                         if self.match_exact:
                             if re.match("^%s$" % self.failure_stderr, self._process_stderr, flags=0) is not None:
                                 self._warning("task failed (stderr regexp%s check)" % " nocase" if flags else "")
@@ -1094,9 +1094,9 @@ class Task(object):
                 elif self.success_stdout is not None:
                     if self.match_regexp:
                         if self.case_sensitive:
-                            flags = re.IGNORECASE
-                        else:
                             flags = 0
+                        else:
+                            flags = re.IGNORECASE
                         if self.match_exact:
                             if re.match("^%s$" % self.success_stdout, self._process_stdout, flags=0) is None:
                                 self._warning("task failed (stdout regexp%s check)" % " nocase" if flags else "")
@@ -1133,9 +1133,9 @@ class Task(object):
                 elif self.success_stderr is not None:
                     if self.match_regexp:
                         if self.case_sensitive:
-                            flags = re.IGNORECASE
-                        else:
                             flags = 0
+                        else:
+                            flags = re.IGNORECASE
                         if self.match_exact:
                             if re.match("^%s$" % self.success_stderr, self._process_stderr, flags=0) is None:
                                 self._warning("task failed (stderr regexp%s check)" % " nocase" if flags else "")
@@ -1591,14 +1591,14 @@ class CommandBasedCondition(Condition):
                         if self.match_exact:
                             expected = "^%s$" % expected
                         if self.case_sensitive:
-                            flags = re.IGNORECASE
-                        else:
                             flags = 0
+                        else:
+                            flags = re.IGNORECASE
                         self._debug("test: '%s' ~ '%s'%s" % (returned, expected, ' (I)' if flags else ''))
                         if re.match(expected, returned, flags) is not None:
                             return True
                     else:
-                        if self.case_sensitive:
+                        if not self.case_sensitive:
                             expected = expected.upper()
                             returned = returned.upper()
                         if self.match_exact:
