@@ -26,14 +26,6 @@
 # * program internal strings use single quotes
 # * log messages mostly sport a prefix to determine what part generated them
 # * log messages containing the NTBS strings are *never to be seen*
-# * commented functions are due to be removed soon
-# * classes don't expose variables directly, but will after some debugging
-
-from gi.repository import GLib, Gtk, Gio
-from gi.repository import GObject
-from gi.repository import AppIndicator3 as AppIndicator
-from gi.repository import Notify
-from gi.repository import Pango
 
 import os
 import sys
@@ -50,6 +42,13 @@ import logging.handlers
 import argparse
 import shutil
 import re
+
+from gi.repository import GLib, Gio
+from gi.repository import GObject
+from gi.repository import Gtk
+from gi.repository import AppIndicator3 as AppIndicator
+from gi.repository import Notify
+from gi.repository import Pango
 
 import dbus
 import dbus.service
@@ -69,7 +68,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.5.4-beta.1"
+APPLET_VERSION = "0.5.4-beta.3"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -103,6 +102,8 @@ USER_LOG_FILE = os.path.join(USER_LOG_FOLDER, "%s.log" % APPLET_NAME)
 USER_CONFIG_FILE = os.path.join(USER_CONFIG_FOLDER, "%s.conf" % APPLET_NAME)
 USER_PAUSE_FILE = os.path.join(USER_CONFIG_FOLDER, "%s.pause" % APPLET_NAME)
 
+GRAPHIC_ENVIRONMENT = 'DISPLAY' in os.environ.keys()
+
 
 #############################################################################
 # global variables referenced through the code (this should be redundant)
@@ -126,15 +127,15 @@ history = None
 # verify that the user folders are present, otherwise create them
 def verify_user_folders():
     if not os.path.exists(USER_DATA_FOLDER):
-        os.mkdir(USER_DATA_FOLDER)
+        os.makedirs(USER_DATA_FOLDER, exist_ok=True)
     if not os.path.exists(USER_LOG_FOLDER):
-        os.mkdir(USER_LOG_FOLDER)
+        os.makedirs(USER_LOG_FOLDER, exist_ok=True)
     if not os.path.exists(USER_CONFIG_FOLDER):
-        os.mkdir(USER_CONFIG_FOLDER)
+        os.makedirs(USER_CONFIG_FOLDER, exist_ok=True)
     if not os.path.exists(USER_LAUNCHER_FOLDER):
-        os.mkdir(USER_LAUNCHER_FOLDER)
+        os.makedirs(USER_LAUNCHER_FOLDER, exist_ok=True)
     if not os.path.exists(USER_AUTOSTART_FOLDER):
-        os.mkdir(USER_AUTOSTART_FOLDER)
+        os.makedirs(USER_AUTOSTART_FOLDER, exist_ok=True)
 
 
 #############################################################################
@@ -3148,9 +3149,8 @@ def import_tasks_conditions(filename=None, verbose=False):
 
 # Build the applet and start
 if __name__ == '__main__':
-    graphic_env = 'DISPLAY' in os.environ.keys()
 
-    if graphic_env:
+    if GRAPHIC_ENVIRONMENT:
         DBusGMainLoop(set_as_default=True)
         GObject.threads_init()
 
@@ -3161,7 +3161,7 @@ if __name__ == '__main__':
     conditions = Conditions()
 
     # initialize global variables that require graphic environment
-    if graphic_env:
+    if GRAPHIC_ENVIRONMENT:
         applet = AppletIndicator()
         history = HistoryQueue()
         periodic = Periodic(
@@ -3171,7 +3171,7 @@ if __name__ == '__main__':
         )
 
     if len(sys.argv) == 1:
-        if not graphic_env:
+        if not GRAPHIC_ENVIRONMENT:
             oerr("this program requires a graphical session")
             sys.exit(2)
         if applet.get_is_remote():
@@ -3264,7 +3264,7 @@ if __name__ == '__main__':
         verbose = args.verbose
 
         running = False
-        if graphic_env:
+        if GRAPHIC_ENVIRONMENT:
             running = applet.get_is_remote()
 
         if args.version:
