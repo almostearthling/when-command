@@ -69,7 +69,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.5.3-beta.2"
+APPLET_VERSION = "0.5.4-beta.1"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -105,9 +105,22 @@ USER_PAUSE_FILE = os.path.join(USER_CONFIG_FOLDER, "%s.pause" % APPLET_NAME)
 
 
 #############################################################################
-# this will be set up in the main function to avoid polluting the process
-# if another instance of the application is already running
+# global variables referenced through the code (this should be redundant)
 applet = None
+applet_lock = threading.Lock()
+current_system_event = None
+
+applet_log_handler = logging.NullHandler()
+applet_log_formatter = logging.Formatter(fmt=LOG_FORMAT, datefmt="%Y-%m-%d %H:%M:%S")
+applet_log_handler.setFormatter(applet_log_formatter)
+applet_log = logging.getLogger(APPLET_NAME)
+applet_log.addHandler(applet_log_handler)
+
+config = None
+periodic = None
+tasks = None
+conditions = None
+history = None
 
 
 # verify that the user folders are present, otherwise create them
@@ -122,8 +135,6 @@ def verify_user_folders():
         os.mkdir(USER_LAUNCHER_FOLDER)
     if not os.path.exists(USER_AUTOSTART_FOLDER):
         os.mkdir(USER_AUTOSTART_FOLDER)
-
-verify_user_folders()
 
 
 #############################################################################
@@ -189,6 +200,7 @@ DIALOG_ABOUT = load_applet_dialog('when-command-about')
 # resource strings (consider making a module out of them)
 class Resources(object):
     pass
+
 resources = Resources()
 resources.DLG_CONFIRM_DELETE_TASK = "Are you sure you want to delete task %s?"
 resources.DLG_CONFIRM_DELETE_CONDITION = "Are you sure you want to delete condition %s?"
@@ -356,14 +368,6 @@ def unlink_pause_file():
         return False
 
 
-# logger
-applet_log_handler = logging.NullHandler()
-applet_log_formatter = logging.Formatter(fmt=LOG_FORMAT, datefmt="%Y-%m-%d %H:%M:%S")
-applet_log_handler.setFormatter(applet_log_formatter)
-applet_log = logging.getLogger(APPLET_NAME)
-applet_log.addHandler(applet_log_handler)
-
-
 def config_loglevel(level=None):
     if level is None:
         try:
@@ -398,10 +402,6 @@ def config_loghandler(max_size=None, max_backups=None):
     applet_log.removeHandler(applet_log_handler)
     applet_log_handler = handler
     applet_log.addHandler(applet_log_handler)
-
-
-# critical section
-applet_lock = threading.Lock()
 
 
 #############################################################################
@@ -545,8 +545,6 @@ class Config(object):
         except IOError as e:
             applet_log.error("CONFIG: cannot write file %s [%s]" % (_config_file, e))
 
-config = Config()
-
 
 # scheduler logic, see http://stackoverflow.com/a/18906292 for details
 class Periodic(object):
@@ -598,14 +596,6 @@ class Periodic(object):
 def periodic_condition_check():
     with ThreadPoolExecutor(config.get('Concurrency', 'max threads')) as e:
         e.map(lambda c: c.tick(), conditions)
-
-
-# the module level scheduler
-periodic = Periodic(config.get('Scheduler', 'tick seconds'), periodic_condition_check, autostart=False)
-
-
-# utilities to check for system events
-current_system_event = None
 
 
 # check among the system event conditions setting the global system event
@@ -710,8 +700,6 @@ class Tasks(object):
             except IndexError as e:
                 return None
 
-tasks = Tasks()
-
 
 class Conditions(object):
     _list = []
@@ -792,8 +780,6 @@ class Conditions(object):
             except IndexError as e:
                 return None
 
-conditions = Conditions()
-
 
 # data for the history queue (which is actually a resizable bounded deque)
 historyitem = namedtuple('historyitem', ['item_id', 'startup_time', 'run_time',
@@ -856,8 +842,6 @@ class HistoryQueue(object):
             rv = deque(self._queue, max_items)
         self._lock.release()
         return list(rv)
-
-history = HistoryQueue()
 
 
 #############################################################################
@@ -2737,14 +2721,6 @@ class AboutDialog(object):
 # program startup
 class AppletIndicator(Gtk.Application):
 
-    dialog_add_task = TaskDialog()
-    dialog_add_condition = ConditionDialog()
-    dialog_about = AboutDialog()
-    dialog_settings = SettingsDialog()
-    dialog_history = HistoryDialog()
-    running = False
-    leaving = False
-
     def __init__(self):
         Gtk.Application.__init__(self,
                                  application_id=APPLET_ID,
@@ -2757,6 +2733,13 @@ class AppletIndicator(Gtk.Application):
 
         self.connect("activate", self.applet_activate)
 
+        self.leaving = False
+        self.dialog_add_task = TaskDialog()
+        self.dialog_add_condition = ConditionDialog()
+        self.dialog_about = AboutDialog()
+        self.dialog_settings = SettingsDialog()
+        self.dialog_history = HistoryDialog()
+
         # The system and session bus signals give many possibilities for events
         self.system_bus = dbus.SystemBus()
         self.session_bus = AppletDBusService()
@@ -2766,12 +2749,6 @@ class AppletIndicator(Gtk.Application):
         self.login_mgr.connect_to_signal('PrepareForShutdown', self.before_shutdown)
 
     def applet_activate(self, applet_instance):
-        # if self.running:
-        #     applet_log.warning("MAIN: already running: show settings and quit")
-        #     self.dlgsettings(None)
-        #     self.quit(None)
-        # else:
-        self.running = True
         self.main()
 
     def main(self):
@@ -3171,10 +3148,32 @@ def import_tasks_conditions(filename=None, verbose=False):
 
 # Build the applet and start
 if __name__ == '__main__':
-    DBusGMainLoop(set_as_default=True)
-    GObject.threads_init()
-    applet = AppletIndicator()
+    graphic_env = 'DISPLAY' in os.environ.keys()
+
+    if graphic_env:
+        DBusGMainLoop(set_as_default=True)
+        GObject.threads_init()
+
+    # check user folders and configure applet
+    verify_user_folders()
+    config = Config()
+    tasks = Tasks()
+    conditions = Conditions()
+
+    # initialize global variables that require graphic environment
+    if graphic_env:
+        applet = AppletIndicator()
+        history = HistoryQueue()
+        periodic = Periodic(
+            config.get('Scheduler', 'tick seconds'),
+            periodic_condition_check,
+            autostart=False,
+        )
+
     if len(sys.argv) == 1:
+        if not graphic_env:
+            oerr("this program requires a graphical session")
+            sys.exit(2)
         if applet.get_is_remote():
             oerr("another instance is present: leaving")
             sys.exit(2)
@@ -3262,9 +3261,12 @@ if __name__ == '__main__':
         )
 
         args = parser.parse_args()
-        running = applet.get_is_remote()
         verbose = args.verbose
-        # ...
+
+        running = False
+        if graphic_env:
+            running = applet.get_is_remote()
+
         if args.version:
             print("%s: %s, version %s" % (APPLET_NAME, APPLET_FULLNAME, APPLET_VERSION))
             if verbose and running:

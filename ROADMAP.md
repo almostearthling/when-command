@@ -105,6 +105,7 @@ List of achievements and expectations for the When applet.
   - Join network
   - More to come
 * File watch conditions
+* Move initialization calls (not variables) to the `if __name__ == "__main__"` block
 
 
 ## 6) Desirable features
