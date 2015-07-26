@@ -3,6 +3,8 @@
 ## Version 0.6.0 (beta)
 * Match regular expressions in command output for tasks and command based conditions
 * Stop task sequence on task outcome
+* Major bug fixes
+* Refactoring for better integration with host environment
 
 ### Compatibility break
 
