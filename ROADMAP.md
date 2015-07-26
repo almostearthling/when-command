@@ -66,6 +66,7 @@ List of achievements and expectations for the When applet.
 * Application `.desktop` entry :ok:
 * Ubuntu/Debian package :ok:
 * Refactoring: instance variables instead of properties and setters :ok:
+* Move initialization calls (not variables) to the `if __name__ == "__main__"` block
 * Dialog box design and refactoring :ok:
 * Command line switches (and configuration maintenance) :+1:
   - Close current instance :ok:
@@ -105,7 +106,6 @@ List of achievements and expectations for the When applet.
   - Join network
   - More to come
 * File watch conditions
-* Move initialization calls (not variables) to the `if __name__ == "__main__"` block
 
 
 ## 6) Desirable features
