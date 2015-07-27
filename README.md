@@ -174,7 +174,10 @@ If the Debian/Ubuntu package is available for the desired release, the unzip/ext
 The **When** utility will try to recognize the way it has been set up the first time it's invoked. Since there is no application icon, it has to be invoked from the command line. Assuming that it has been unarchived in `/opt` (possibly in the `/opt/when-command` directory), it's advisable to run it for the first time using the command
 
  ```
- ~$ python3 /opt/when-command/when-command.py --install` if the package distribution was used) so that it can create the desktop entry and icon (available in *Dash*), an active autostart entry as well as all the needed directory structure in the user folder, and notably:
+ ~$ python3 /opt/when-command/when-command.py --install
+ ```
+
+ if the package distribution was used) so that it can create the desktop entry and icon (available in *Dash*), an active autostart entry as well as all the needed directory structure in the user folder, and notably:
 
 * `~/.config/when-command` where it will store all configuration
 * `~/.local/share/when-command` where it stores resources and logs (in the `log` subdirectory)
