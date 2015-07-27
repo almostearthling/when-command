@@ -1,17 +1,17 @@
 # When (*when-command*)
 
-**When** is a configurable user task scheduler, designed to work during an X/Gnome session. It interacts with the user through a GUI, where the user can define tasks and conditions, as well as relationships of causality that bind conditions to task. When a condition is bound to a task, it is said to trigger a task.
+**When** is a configurable user task scheduler, designed to work in an X/Gnome session. It interacts with the user through a GUI, where the user can define tasks and conditions, as well as relationships of causality that bind conditions to tasks. When a condition is bound to a task, it is said to trigger a task.
 
 ![Screenshot](http://almostearthling.github.io/when-command/images/screenshot.png)
 
-The purpose of this small utility is to provide an user, possibly without administrative credentials, the ability to define conditions that do not only depend on time, but also on a particular state of the session (e.g. the result of a command run in a shell). The same result could have been achieved writing scripts that periodically issued commands, checked the results and reacted accordingly, but such a simple task could result in complex sets of scripts and settings that would be harder to maintain. *When* was born out of need: I have been a (happy) Ubuntu user for years now, and couldn't think of having a different desktop environment than the one provided by Ubuntu. In *14.04 LTS* (the release I'm using now) the environment is consistent and pleasant. One thing I've noticed that Windows has evolved is the *Task Scheduler*: in fact it looks more useful and usable than the usual *cron* daemon, at least because it allows some more options to schedule tasks than the times based ones. I needed such an applet to perform some file synchronizations when the workstation is idle, and decided to write my own task scheduler targeted to Ubuntu. The scheduler runs in the background, and it displays an indicator applet icon for user interaction.
+The purpose of this small utility is to provide the user, possibly without administrative credentials, the ability to define conditions that do not only depend on time, but also on a particular state of the session (e.g. the result of a command run in a shell). The same result could be achieved with scripts that periodically run commands, check the results and react accordingly, but such a simple task could result in complex sets of scripts and settings that would be harder to maintain. *When* was born out of need: I have been a (happy) Ubuntu user for years now, and couldn't think of having a different desktop environment than the one provided by Ubuntu. In *14.04 LTS* (the release I'm using now) the environment is consistent and pleasant. One thing I've noticed that has evolved in Windows is the *Task Scheduler*: in fact it looks more useful and usable than the usual *cron* daemon, at least because it allows some more options to schedule tasks than just the system time. I needed such an utility to perform some file synchronizations when the workstation is idle, and decided to write my own task scheduler targeted to Ubuntu. The scheduler runs in the background, and it displays an indicator applet icon for user interaction.
 
 It is not generally intended as a replacement to [*cron*](https://en.wikipedia.org/wiki/Cron) and the [Gnome Task Scheduler](http://gnome-schedule.sourceforge.net/), although to some extent these utilities might overlap. **When** is intended to be more flexible, although less precise, and to provide an alternative to more complicated solutions -- such as the implementation of *cron* jobs that check for a particular condition and execute commands when the condition is verified. In such spirit, **When** is not as fine-grained in terms of doing things on a strict time schedule: the **When** approach is that "*when* a certain condition is met, *then* something has to be done". The condition is checked periodically, and the "countermeasure" is taken *subsequently* - although not *immediately*. In fact, and with the default configuration, the delay can reach two minutes in the worst case.
 
 
 ## Description
 
-The applet will show up in the indicator tray at startup, which would normally occur at login if the user chose to add **When** it to the startup programs. It will read its configuration and start the scheduler in an unattended fashion. Whenever one of the user defined conditions is met, the associated tasks are executed. A small alarm clock :alarm_clock: icon will display in the indicator tray, to show that the applet is running: by default it turns to an attention sign :warning: when the applet requires attention. Also, the icon changes its shape when the applet is *paused* (the clock is crossed by a slash) and when a configuration dialog is open (the alarm clock shows a plus sign inside the circle).
+The applet will show up in the indicator tray at startup, which would normally occur at login if the user chose to add **When** it to the startup applications. It will read its configuration and start the scheduler in an unattended fashion. Whenever one of the user defined conditions is met, the associated tasks are executed. A small alarm clock :alarm_clock: icon will display in the indicator tray, to show that the applet is running: by default it turns to an attention sign :warning: when the applet requires attention. Also, the icon changes its shape when the applet is *paused* (the clock is crossed by a slash) and when a configuration dialog is open (the alarm clock shows a plus sign inside the circle).
 
 The icon grants access to the main menu, which allows the following basic operations:
 
@@ -28,7 +28,7 @@ Where the *Task* and *Condition* editing boxes, the *Settings* dialog and the *T
 
 ### Tasks
 
-Tasks are basically commands associated with an environment and checks to determine whether the execution was successful or not. The interface lets the user configure some basic parameters (such as the startup directory and the *environment*) as well as what to test after execution (*exit code*, *stdout* or *stderr*). The user can choose to look for the specified text within the output and error streams (when *Exact Match* is unchecked) and to perform a case sensitive test, or to match a regular expression. In case a regular expression is chosen, the applet will try to search *stdout* or *stderr* for the given pattern, unless *Exact Match* is chosen in which a match test is performed at the beginning. Regular expression match can be case insensitive as well.
+Tasks are basically commands associated with an environment and checks to determine whether the execution was successful or not. The interface lets the user configure some basic parameters (such as the startup directory and the *environment*) as well as what to test after execution (*exit code*, *stdout* or *stderr*). The user can choose to look for the specified text within the output and error streams (when *Exact Match* is unchecked, otherwise the entire output is matched against the given value) and to perform a case sensitive test, or to match a regular expression. In case a regular expression is chosen, the applet will try to search *stdout* or *stderr* for the given pattern. In case of regular expressions, when *Exact Match* is chosen a match test is performed at the beginning of the output text. Regular expression tests can be case insensitive as well.
 
 The environment in which the subprocess is run can either import the current one (at **When** startup time), use its own variables or both.
 
@@ -58,9 +58,8 @@ There are several types of condition available:
 Also, the condition configuration interface allows to decide:
 
 * whether or not to repeat checks even after a task set has been executed -- that is, make an event *periodic*;
-* to run the tasks in a task set concurrently or sequentially: when tasks are set to run sequentially, the user can choose to ignore the outcome of tasks or to break the sequence on the first failure or success, selecting the appropriate entry in the box on the right;
-* the tasks in the task set are executed in the given order, although this makes a difference only when sequential execution is chosen;
-* a condition can be suspended: it will not be checked, but it's retained in the system
+* to run the tasks in a task set concurrently or sequentially: when tasks are set to run sequentially, the user can choose to ignore the outcome of tasks or to break the sequence on the first failure or success, selecting the appropriate entry in the box on the right - tasks that don't check for success or failure will *never* stop a sequence;
+* to *suspend* the condition: it will not be tested, but it's kept in the system, inactive until the *Suspend* box is unchecked.
 
 The selected condition (if any) can be deleted clicking the *Delete* button in the dialog box. Every condition must have an *unique name*, if a condition is named as an existing one it will replace it. The name *must* begin with an alphanumeric character (letter or digit) followed by alphanumerics, dashes and underscores.
 
@@ -168,15 +167,14 @@ For the applet to function and before unpacking it to the destination directory,
 ~$ sudo tar xzf /path/to/when-command.tar.gz
 ```
 
-If the Debian/Ubuntu package is available for the desired release, the last step can be replaced by `sudo dpkg --install when-command-VERSION_INFO.deb` where `VERSION_INFO` should be replaced by the version suffix of the downloaded package: this will install the applet in `/opt/when-command`. The instructions given in the following section will complete the installation for the current user. The applet icon will be activated at every login.
+If you downloaded the zip file from the master branch of the repository, you might want to `mv when-command-master when-command` in the directory where the files have been unzipped.
+
+If the Debian/Ubuntu package is available for the desired release, the unzip/extract step can be replaced by `sudo dpkg --install when-command-VERSION_INFO.deb` where `VERSION_INFO` should be replaced by the version suffix of the downloaded package: this will install the applet in `/opt/when-command`. The instructions given in the following section will complete the installation for the current user and the applet icon will be activated at every login. Also please note that if the package installation was chosen, the command to invoke the applet from the command line can be shortened to `/opt/when-command/when-command` instead of `python3 /opt/when-command/when-command.py` -- although this is not mandatory.
 
 The **When** utility will try to recognize the way it has been set up the first time it's invoked. Since there is no application icon, it has to be invoked from the command line. Assuming that it has been unarchived in `/opt` (possibly in the `/opt/when-command` directory), it's advisable to run it for the first time using the command
 
  ```
- ~$ python3 /opt/when-command/when-command.py --install
- ```
-
-(or just `/opt/when-command/when-command --install` if the package distribution was used) so that it can create the desktop entry and icon (available in *Dash*), an active autostart entry as well as all the needed directory structure in the user folder, and notably:
+ ~$ python3 /opt/when-command/when-command.py --install` if the package distribution was used) so that it can create the desktop entry and icon (available in *Dash*), an active autostart entry as well as all the needed directory structure in the user folder, and notably:
 
 * `~/.config/when-command` where it will store all configuration
 * `~/.local/share/when-command` where it stores resources and logs (in the `log` subdirectory)
