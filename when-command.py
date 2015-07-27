@@ -141,11 +141,11 @@ def verify_user_folders():
 #############################################################################
 # Support these installation schemes:
 #
-# * default: LSB standard (/usr/bin/when-applet, /usr/share/when-applet/*)
-# * /opt based (/opt/when-applet/when-applet, /opt/when-applet/share/*)
-# * LSB local (/usr/local/bin/when-applet, /usr/local/share/when-applet/*)
-# * $HOME generic (~/.local/bin/when-applet, ~/.local/when-applet/share/*)
-# * own folder ($FOLDER/when-applet, $FOLDER/share/*)
+# * default: LSB standard (/usr/bin/when-command, /usr/share/when-command/*)
+# * /opt based (/opt/when-command/when-command, /opt/when-command/share/*)
+# * LSB local (/usr/local/bin/when-command, /usr/local/share/when-command/*)
+# * $HOME generic (~/.local/bin/when-command, ~/.local/when-command/share/*)
+# * own folder ($FOLDER/when-command, $FOLDER/share/*)
 #
 # where the first element is the invoked command, the second one is the
 # prefix of the applet data folder (where dialogs, icons and other resources
