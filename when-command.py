@@ -68,7 +68,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.5.4-beta.3"
+APPLET_VERSION = "0.5.5-beta.1"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -1187,7 +1187,18 @@ class Task(object):
                 applet_lock.acquire()
                 self.running = False
                 applet_lock.release()
-            return success
+            to_report = bool(
+                self.failure_status is not None or
+                self.failure_stderr is not None or
+                self.failure_stdout is not None or
+                self.success_status is not None or
+                self.success_stderr is not None or
+                self.success_stdout is not None
+            )
+            if to_report:
+                return success
+            else:
+                return None
 
 
 # these functions convert a Task instance to a dictionary and back
@@ -1383,12 +1394,13 @@ class Condition(object):
                     if task:
                         self._info("sequential run of task %s" % task_name)
                         outcome = task.run(self.cond_name)
-                        if outcome and self.break_success:
-                            self._info("breaking on task %s success" % task_name)
-                            break
-                        elif not outcome and self.break_failure:
-                            self._info("breaking on task %s failure" % task_name)
-                            break
+                        if outcome is not None:
+                            if outcome and self.break_success:
+                                self._info("breaking on task %s success" % task_name)
+                                break
+                            elif not outcome and self.break_failure:
+                                self._info("breaking on task %s failure" % task_name)
+                                break
                     else:
                         self._warning("task not found: %s" % task_name)
             else:
