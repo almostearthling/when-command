@@ -68,7 +68,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.5.5-beta.1"
+APPLET_VERSION = "0.5.5-beta.4"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -663,7 +663,6 @@ class Tasks(object):
             self._list = l
             self._lock.release()
         else:
-            # FIXME: there should be a way to deduplicate these ops
             self._lock.acquire()
             self._list.append(task)
             self._lock.release()
@@ -681,8 +680,10 @@ class Tasks(object):
                     removable = False
                     break
             if removable:
+                self._lock.acquire()
                 self._list.remove(task)
                 task.unlink_file()
+                self._lock.release()
                 return True
             else:
                 return False
@@ -751,7 +752,6 @@ class Conditions(object):
             self._list = l
             self._lock.release()
         else:
-            # FIXME: there should be a way to deduplicate these ops
             self._lock.acquire()
             self._list.append(cond)
             self._lock.release()
@@ -763,8 +763,10 @@ class Conditions(object):
         elif cond_name:
             cond = next((c for c in self._list if c.cond_name == cond_name), None)
         if cond:
+            self._lock.acquire()
             self._list.remove(cond)
             cond.unlink_file()
+            self._lock.release()
             return True
         else:
             return False
@@ -2047,6 +2049,7 @@ class TaskDialog(object):
                 if ret == Gtk.ResponseType.YES:
                     self.default_box(True)
                     if tasks.remove(task_name=name):
+                        tasks.save()
                         cb_tasks.get_model().clear()
                         for x in self.stored_tasks:
                             cb_tasks.append_text(x)
@@ -2463,6 +2466,7 @@ class ConditionDialog(object):
                 if ret == Gtk.ResponseType.YES:
                     self.default_box(True)
                     if conditions.remove(cond_name=name):
+                        conditions.save()
                         cb_conds.get_model().clear()
                         for x in self.stored_conditions:
                             cb_conds.append_text(x)
