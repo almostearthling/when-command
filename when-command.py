@@ -864,46 +864,30 @@ class HistoryQueue(object):
         return list(rv)
 
 
-# list of events that are enqueued by external agents
+# list of events that are enqueued by external agents: it is implemented
+# as a set; this means that a deferred event only will appear once, no
+# matter how many times it is pushed to the list
 class DeferredEvents(object):
-
-    class DeferredEventItems(object):
-        def __init__(self, data):
-            self._data = data.copy()
-
-        def __getitem__(self, name):
-            if type(name) == str:
-                try:
-                    return self._data[name]
-                except KeyError:
-                    return None
-            else:
-                raise TypeError("invalid type for event name")
-
-        def get(self, name):
-            return self.__getitem__(name)
-
-        events = property(lambda self: self._data.keys())
 
     def __init__(self):
         self._lock = threading.Lock()
-        self._events = {}
+        self._events = set()
 
-    def append(self, event_name, event_param=None):
+    def append(self, event):
         self._lock.acquire()
-        self._events[event_name] = event_param
+        self._events.add(event)
         self._lock.release()
 
     def clear(self):
         self._lock.acquire()
-        self._events = {}
+        self._events.clear()
         self._lock.release()
 
     def items(self, clear=False):
         self._lock.acquire()
-        rv = self.DeferredEventItems(self._events)
+        rv = self._events.copy()
         if clear:
-            self._events = {}
+            self._events.clear()
         self._lock.release()
         return rv
 
@@ -1825,11 +1809,9 @@ class EventBasedCondition(Condition):
 
     def _check_condition(self):
         self._debug("checking event based condition: %s" % self.event)
-        if self.event == current_system_event:
-            # FIXME: handle parameters
+        if current_system_event and self.event == current_system_event:
             return True
-        elif current_deferred_events and self.event in current_deferred_events.events:
-            # FIXME: handle parameters
+        elif current_deferred_events and self.event in current_deferred_events:
             return True
         else:
             return False
