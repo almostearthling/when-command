@@ -615,7 +615,6 @@ def sysevent_condition_check(event, param=None):
     global current_system_event
     applet_lock.acquire()
     current_system_event = event
-    current_system_event_param = param
     applet_lock.release()
     try:
         if periodic.stopped:
@@ -627,7 +626,6 @@ def sysevent_condition_check(event, param=None):
     finally:
         applet_lock.acquire()
         current_system_event = None
-        current_system_event_param = None
         applet_lock.release()
 
 
