@@ -68,7 +68,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.6.0-beta.1"
+APPLET_VERSION = "0.6.0-beta.2"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -1205,7 +1205,7 @@ class Task(object):
 
 # these functions convert a Task instance to a dictionary and back
 def Task_to_dict(t):
-    applet_log.info("MAIN: trying to dump task %s" % t.name)
+    applet_log.info("MAIN: trying to dump task %s" % t.task_name)
     d = {}
     d['type'] = 'task'
     d['task_id'] = t.task_id
@@ -1223,12 +1223,12 @@ def Task_to_dict(t):
     d['command'] = t.command
     d['startup_dir'] = t.startup_dir
     d['match_regexp'] = t.match_regexp
-    applet_log.debug("MAIN: task %s dumped" % t.name)
+    applet_log.debug("MAIN: task %s dumped" % t.task_name)
     return d
 
 
 def dict_to_Task(d):
-    applet_log.debug("MAIN: trying to restore task %s" % t.name)
+    applet_log.debug("MAIN: trying to restore task %s" % t.task_name)
     if d['type'] != 'task':
         raise ValueError("incorrect dictionary type")
     t = Task()
@@ -1248,7 +1248,7 @@ def dict_to_Task(d):
     t.startup_dir = d['startup_dir']
     # TODO: if there are more parameters, use d.get('key', default_val)
     t.match_regexp = d.get('match_regexp', False)
-    applet_log.info("MAIN: task %s restored" % t.name)
+    applet_log.info("MAIN: task %s restored" % t.task_name)
     return t
 
 
@@ -1437,12 +1437,12 @@ def Condition_to_dict(c):
     d['suspended'] = c.suspended
     d['break_failure'] = c.break_failure
     d['break_success'] = c.break_success
-    applet_log.debug("MAIN: condition %s dumped" % c.name)
+    applet_log.debug("MAIN: condition %s dumped" % c.cond_name)
     return d
 
 
 def dict_to_Condition(d, c=None):
-    applet_log.debug("MAIN: trying to restore condition %s" % c.name)
+    applet_log.debug("MAIN: trying to restore condition %s" % c.cond_name)
     if d['type'] != 'condition':
         raise ValueError("incorrect dictionary type")
     # this will raise an error
@@ -1480,7 +1480,7 @@ class IntervalBasedCondition(Condition):
 
 
 def IntervalBasedCondition_to_dict(c):
-    applet_log.info("MAIN: dump interval based condition %s" % c.name)
+    applet_log.info("MAIN: dump interval based condition %s" % c.cond_name)
     d = Condition_to_dict(c)
     d['subtype'] = 'IntervalBasedCondition'
     d['interval'] = c.interval
@@ -1495,7 +1495,7 @@ def dict_to_IntervalBasedCondition(d):
     # TODO: if there are more parameters, use d.get('key', default_val)
     c = IntervalBasedCondition(name, interval)
     c = dict_to_Condition(d, c)
-    applet_log.info("MAIN: restored interval based condition %s" % c.name)
+    applet_log.info("MAIN: restored interval based condition %s" % c.cond_name)
     return c
 
 
@@ -1539,7 +1539,7 @@ class TimeBasedCondition(Condition):
 
 
 def TimeBasedCondition_to_dict(c):
-    applet_log.info("MAIN: dump time based condition %s" % c.name)
+    applet_log.info("MAIN: dump time based condition %s" % c.cond_name)
     d = Condition_to_dict(c)
     d['subtype'] = 'TimeBasedCondition'
     d['year'] = c.year
@@ -1559,7 +1559,7 @@ def dict_to_TimeBasedCondition(d):
     # TODO: if there are more parameters, use d.get('key', default_val)
     c = TimeBasedCondition(name, d)
     c = dict_to_Condition(d, c)
-    applet_log.info("MAIN: restored time based condition %s" % c.name)
+    applet_log.info("MAIN: restored time based condition %s" % c.cond_name)
     return c
 
 
@@ -1678,7 +1678,7 @@ class CommandBasedCondition(Condition):
 
 
 def CommandBasedCondition_to_dict(c):
-    applet_log.info("MAIN: dump command based condition %s" % c.name)
+    applet_log.info("MAIN: dump command based condition %s" % c.cond_name)
     d = Condition_to_dict(c)
     d['subtype'] = 'CommandBasedCondition'
     d['match_exact'] = c.match_exact
@@ -1708,7 +1708,7 @@ def dict_to_CommandBasedCondition(d):
     c.match_regexp = match_regexp
     c.case_sensitive = case_sensitive
     c = dict_to_Condition(d, c)
-    applet_log.info("MAIN: restored command based condition %s" % c.name)
+    applet_log.info("MAIN: restored command based condition %s" % c.cond_name)
     return c
 
 
@@ -1737,7 +1737,7 @@ class IdleTimeBasedCondition(CommandBasedCondition):
 
 
 def IdleTimeBasedCondition_to_dict(c):
-    applet_log.info("MAIN: dump idle time based condition %s" % c.name)
+    applet_log.info("MAIN: dump idle time based condition %s" % c.cond_name)
     d = Condition_to_dict(c)
     d['subtype'] = 'IdleTimeBasedCondition'
     d['idle_secs'] = c.idle_secs
@@ -1752,7 +1752,7 @@ def dict_to_IdleTimeBasedCondition(d):
     # TODO: if there are more parameters, use d.get('key', default_val)
     c = IdleTimeBasedCondition(name, idle_secs)
     c = dict_to_Condition(d, c)
-    applet_log.info("MAIN: restored idle time based condition %s" % c.name)
+    applet_log.info("MAIN: restored idle time based condition %s" % c.cond_name)
     return c
 
 
@@ -1776,7 +1776,7 @@ class EventBasedCondition(Condition):
 
 
 def EventBasedCondition_to_dict(c):
-    applet_log.info("MAIN: dump event based condition %s" % c.name)
+    applet_log.info("MAIN: dump event based condition %s" % c.cond_name)
     d = Condition_to_dict(c)
     d['subtype'] = 'EventBasedCondition'
     d['event'] = c.event
@@ -1793,7 +1793,7 @@ def dict_to_EventBasedCondition(d):
     # TODO: if there are more parameters, use d.get('key', default_val)
     c = EventBasedCondition(name, event, no_skip)
     c = dict_to_Condition(d, c)
-    applet_log.info("MAIN: restored event based condition %s" % c.name)
+    applet_log.info("MAIN: restored event based condition %s" % c.cond_name)
     return c
 
 
@@ -3005,8 +3005,8 @@ def init_signal_handler(applet_instance):
 
 # Configure services and start the application
 def main():
-    config_loghandler()
-    config_loglevel()
+    # config_loghandler()
+    # config_loglevel()
     init_signal_handler(applet)
     # signal.signal(signal.SIGINT, signal.SIG_DFL)
     preserve_pause = config.get('Scheduler', 'preserve pause')
@@ -3190,6 +3190,8 @@ if __name__ == '__main__':
     # check user folders and configure applet
     verify_user_folders()
     config = Config()
+    config_loghandler()
+    config_loglevel()
     tasks = Tasks()
     conditions = Conditions()
 
