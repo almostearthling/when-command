@@ -110,6 +110,7 @@ GRAPHIC_ENVIRONMENT = 'DISPLAY' in os.environ.keys()
 applet = None
 applet_lock = threading.Lock()
 current_system_event = None
+current_system_event_param = None
 current_deferred_events = None
 
 applet_log_handler = logging.NullHandler()
@@ -610,10 +611,11 @@ def periodic_condition_check():
 
 
 # check among the system event conditions setting the global system event
-def sysevent_condition_check(event):
+def sysevent_condition_check(event, param=None):
     global current_system_event
     applet_lock.acquire()
     current_system_event = event
+    current_system_event_param = param
     applet_lock.release()
     try:
         if periodic.stopped:
@@ -625,6 +627,7 @@ def sysevent_condition_check(event):
     finally:
         applet_lock.acquire()
         current_system_event = None
+        current_system_event_param = None
         applet_lock.release()
 
 
@@ -864,27 +867,45 @@ class HistoryQueue(object):
 # list of events that are enqueued by external agents
 class DeferredEvents(object):
 
-    def __init__(self, max_items=None):
-        self._lock = threading.Lock()
-        self._queue = deque(maxlen=max_items)
+    class DeferredEventItems(object):
+        def __init__(self, data):
+            self._data = data.copy()
 
-    def append(self, event_name):
+        def __getitem__(self, name):
+            if type(name) == str:
+                try:
+                    return self._data[name]
+                except KeyError:
+                    return None
+            else:
+                raise TypeError("invalid type for event name")
+
+        def get(self, name):
+            return self.__getitem__(name)
+
+        events = property(lambda self: self._data.keys())
+
+    def __init__(self):
+        self._lock = threading.Lock()
+        self._events = {}
+
+    def append(self, event_name, event_param=None):
         self._lock.acquire()
-        self._queue.append(event_name)
+        self._events[event_name] = event_param
         self._lock.release()
 
     def clear(self):
         self._lock.acquire()
-        self._queue.clear()
+        self._events = {}
         self._lock.release()
 
     def items(self, clear=False):
         self._lock.acquire()
-        rv = deque(self._queue)
+        rv = self.DeferredEventItems(self._events)
         if clear:
-            self._queue.clear()
+            self._events = {}
         self._lock.release()
-        return list(rv)
+        return rv
 
 
 #############################################################################
@@ -1805,8 +1826,10 @@ class EventBasedCondition(Condition):
     def _check_condition(self):
         self._debug("checking event based condition: %s" % self.event)
         if self.event == current_system_event:
+            # FIXME: handle parameters
             return True
-        elif current_deferred_events and self.event in current_deferred_events:
+        elif current_deferred_events and self.event in current_deferred_events.events:
+            # FIXME: handle parameters
             return True
         else:
             return False
