@@ -5,7 +5,7 @@
 # Copyright (c) 2015 Francesco Garosi
 # Released under the BSD License (see LICENSE.md)
 #
-# Small startup application that runs tasks when particular conditions are met.
+# Small startup applet that runs tasks when particular conditions are met.
 #
 #############################################################################
 # SOME NOTES ABOUT THE CODE
@@ -68,7 +68,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.6.0-beta.2"
+APPLET_VERSION = "0.6.1-beta.1"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -110,6 +110,7 @@ GRAPHIC_ENVIRONMENT = 'DISPLAY' in os.environ.keys()
 applet = None
 applet_lock = threading.Lock()
 current_system_event = None
+current_deferred_events = None
 
 applet_log_handler = logging.NullHandler()
 applet_log_formatter = logging.Formatter(fmt=LOG_FORMAT, datefmt="%Y-%m-%d %H:%M:%S")
@@ -122,6 +123,7 @@ periodic = None
 tasks = None
 conditions = None
 history = None
+deferred_events = None
 
 
 # verify that the user folders are present, otherwise create them
@@ -595,14 +597,24 @@ class Periodic(object):
 
 # module level functions to handle condition checks and thus task execution
 def periodic_condition_check():
-    with ThreadPoolExecutor(config.get('Concurrency', 'max threads')) as e:
-        e.map(lambda c: c.tick(), conditions)
+    applet_lock.acquire()
+    current_deferred_events = deferred_events.items(clear=True)
+    applet_lock.release()
+    try:
+        with ThreadPoolExecutor(config.get('Concurrency', 'max threads')) as e:
+            e.map(lambda c: c.tick(), conditions)
+    finally:
+        applet_lock.acquire()
+        current_deferred_events = None
+        applet_lock.release()
 
 
 # check among the system event conditions setting the global system event
 def sysevent_condition_check(event):
     global current_system_event
+    applet_lock.acquire()
     current_system_event = event
+    applet_lock.release()
     try:
         if periodic.stopped:
             applet_log.info("SYSEVENT: check skipped due to scheduler pause")
@@ -611,7 +623,9 @@ def sysevent_condition_check(event):
         with ThreadPoolExecutor(config.get('Concurrency', 'max threads')) as e:
             e.map(lambda c: c.tick(), conds)
     finally:
+        applet_lock.acquire()
         current_system_event = None
+        applet_lock.release()
 
 
 # application-wide collections
@@ -843,6 +857,32 @@ class HistoryQueue(object):
             rv = deque(self._queue)
         else:
             rv = deque(self._queue, max_items)
+        self._lock.release()
+        return list(rv)
+
+
+# list of events that are enqueued by external agents
+class DeferredEvents(object):
+
+    def __init__(self, max_items=None):
+        self._lock = threading.Lock()
+        self._queue = deque(maxlen=max_items)
+
+    def append(self, event_name):
+        self._lock.acquire()
+        self._queue.append(event_name)
+        self._lock.release()
+
+    def clear(self):
+        self._lock.acquire()
+        self._queue.clear()
+        self._lock.release()
+
+    def items(self, clear=False):
+        self._lock.acquire()
+        rv = deque(self._queue)
+        if clear:
+            self._queue.clear()
         self._lock.release()
         return list(rv)
 
@@ -1756,14 +1796,17 @@ def dict_to_IdleTimeBasedCondition(d):
     return c
 
 
-# For now the system event based conditions for startup and shutdown assume
-# that startup is when the applet is launched and shutdown is when the applet
-# is closed: consider the idea of renaming both conditions and events
+# current_system_event is for events that are not queued and are directly
+# triggered by something external (eg. startup, shutdown, other signals),
+# while current_deferred_events is a copy of the events that have been
+# more gently enqueued by other triggers (eg. via DBus or services)
 class EventBasedCondition(Condition):
 
     def _check_condition(self):
         self._debug("checking event based condition: %s" % self.event)
         if self.event == current_system_event:
+            return True
+        elif current_deferred_events and self.event in current_deferred_events:
             return True
         else:
             return False
@@ -3194,6 +3237,7 @@ if __name__ == '__main__':
     config_loglevel()
     tasks = Tasks()
     conditions = Conditions()
+    deferred_events = DeferredEvents()
 
     # initialize global variables that require graphic environment
     if GRAPHIC_ENVIRONMENT:
