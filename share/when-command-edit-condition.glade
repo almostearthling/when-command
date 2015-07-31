@@ -447,8 +447,18 @@
                             <property name="margin_left">15</property>
                             <property name="active_id">20</property>
                             <items>
-                              <item id="10" translatable="yes">Startup</item>
-                              <item id="20" translatable="yes">Shutdown</item>
+                              <item id="1" translatable="yes">Startup</item>
+                              <item id="2" translatable="yes">Shutdown</item>
+                              <item id="3" translatable="yes">Suspend</item>
+                              <item id="4" translatable="yes">Resume</item>
+                              <item id="5" translatable="yes">Connect Storage Device</item>
+                              <item id="6" translatable="yes">Disconnect Storage Device</item>
+                              <item id="7" translatable="yes">Join Network</item>
+                              <item id="8" translatable="yes">Leave Network</item>
+                              <item id="9" translatable="yes">Screensaver Started</item>
+                              <item id="10" translatable="yes">Return From Screensaver</item>
+                              <item id="11" translatable="yes">Session Lock</item>
+                              <item id="12" translatable="yes">Session Unlock</item>
                             </items>
                           </object>
                           <packing>

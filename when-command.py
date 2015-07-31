@@ -68,7 +68,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.6.1-beta.1"
+APPLET_VERSION = "0.6.1-beta.2"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -122,6 +122,7 @@ EVENT_SESSION_UNLOCK = 'session_unlock'
 # global variables referenced through the code (this should be redundant)
 applet = None
 applet_lock = threading.Lock()
+applet_enabled_events = None
 main_dbus_loop = None
 current_system_event = None
 current_system_event_param = None
@@ -228,6 +229,7 @@ resources.DLG_CANNOT_FIND_TASK = "Task %s could not be found."
 resources.DLG_CANNOT_FIND_CONDITION = "Condition %s could not be found."
 resources.DLG_WRONG_EXIT_STATUS = "Wrong value for exit status specified.\nPlease consider reviewing it."
 resources.DLG_ABOUT_VERSION_STRING = "Version: %s"
+resources.DLG_ITEM_DISABLED = "[disabled]"
 
 resources.NOTIFY_TASK_FAILED = "Task failed: %s"
 
@@ -2177,6 +2179,37 @@ class ConditionDialog(object):
         l = o('listTasks')
         c = Gtk.TreeViewColumn(resources.LISTCOL_TASKS_NAME, Gtk.CellRendererText(), text=0)
         l.append_column(c)
+        self.all_events = [
+            EVENT_APPLET_STARTUP,
+            EVENT_APPLET_SHUTDOWN,
+            EVENT_SYSTEM_SUSPEND,
+            EVENT_SYSTEM_RESUME,
+            EVENT_SYSTEM_DEVICE_ATTACH,
+            EVENT_SYSTEM_DEVICE_DETACH,
+            EVENT_SYSTEM_NETWORK_JOIN,
+            EVENT_SYSTEM_NETWORK_LEAVE,
+            EVENT_SESSION_SCREENSAVER,
+            EVENT_SESSION_SCREENSAVER_EXIT,
+            EVENT_SESSION_LOCK,
+            EVENT_SESSION_UNLOCK,
+        ]
+        if applet_enabled_events:
+            enabled_events = applet_enabled_events
+        else:
+            enabled_events = []
+        i = 0
+        li = []
+        model = o('cbSysEvent').get_model()
+        for row in model:
+            r, v = row[0], row[1]
+            if self.all_events[i] not in enabled_events:
+                r = "%s %s" % (r, resources.DLG_ITEM_DISABLED)
+            li.append([r, v])
+            i += 1
+        model.clear()
+        for x in li:
+            model.append(x)
+        o('cbSysEvent').set_model(model)
 
     def validate_int(self, s, min_value=None, max_value=None):
         try:
@@ -2305,10 +2338,8 @@ class ConditionDialog(object):
                 o('cbType').set_active(3)
             elif type(cond) == EventBasedCondition:
                 evt = cond.event
-                if evt == EVENT_APPLET_STARTUP:
-                    o('cbSysEvent').set_active(0)
-                elif evt == EVENT_APPLET_SHUTDOWN:
-                    o('cbSysEvent').set_active(1)
+                if evt in self.all_events:
+                    o('cbSysEvent').set_active(self.all_events.index(evt))
                 else:
                     o('cbSysEvent').set_active(-1)
                 o('cbType').set_active(4)
@@ -2509,10 +2540,7 @@ class ConditionDialog(object):
                 c.break_failure = break_failure
                 c.break_success = break_success
             elif idx == 4:
-                event_type = (
-                    EVENT_APPLET_STARTUP,
-                    EVENT_APPLET_SHUTDOWN
-                )[o('cbSysEvent').get_active()]
+                event_type = self.all_events[o('cbSysEvent').get_active()]
                 c = EventBasedCondition(name, event_type, True, repeat, sequence)
                 c.break_failure = break_failure
                 c.break_success = break_success
@@ -2828,39 +2856,91 @@ class AppletIndicator(Gtk.Application):
             sys.exit(2)
 
         self.connect("activate", self.applet_activate)
-
         self.leaving = False
-        self.dialog_add_task = TaskDialog()
-        self.dialog_add_condition = ConditionDialog()
-        self.dialog_about = AboutDialog()
-        self.dialog_settings = SettingsDialog()
-        self.dialog_history = HistoryDialog()
 
         # The system and session bus signals give many possibilities for events
         self.system_bus = dbus.SystemBus()
         self.session_bus = dbus.SessionBus()
         self.applet_bus = AppletDBusService()
-        self.login_mgr = dbus.Interface(
-            self.system_bus.get_object('org.freedesktop.login1', '/org/freedesktop/login1'),
-            'org.freedesktop.login1.Manager')
-        self.login_mgr.connect_to_signal('PrepareForShutdown', self.before_shutdown)
 
-        # other DBus events
-        self.screensaver_mgr = dbus.Interface(
-            self.session_bus.get_object('org.gnome.ScreenSaver', '/org/gnome/ScreenSaver'),
-            'org.gnome.ScreenSaver')
-        self.screensaver_mgr.connect_to_signal('ActiveChanged', self.screensaver_manager)
-        self.power_mgr = dbus.Interface(
-            self.system_bus.get_object('org.gnome.PowerManager', '/org/gnome/PowerManager'),
-            'org.gnome.PowerManager')
-        self.screensaver_mgr.connect_to_signal('DpmsModeChanged', self.system_power_manager)
-        # the screen lock manager will be difficult to implement since the
-        # lock/unlock state is determined bu the screen saver, that does
-        # not report it via DBus
-        # self.screen_lock_mgr = dbus.Interface(
-        #     self.session_bus.get_object('org.gnome.SessionManager', '/org/gnome/SessionManager/Presence'),
-        #     'org.gnome.SessionManager.Presence')
-        # self.screen_lock_mgr.connect_to_signal('StatusChanged', self.screen_lock_manager)
+        enabled_events = [EVENT_APPLET_STARTUP]
+        try:
+            self.login_mgr = dbus.Interface(
+                self.system_bus.get_object('org.freedesktop.login1', '/org/freedesktop/login1'),
+                'org.freedesktop.login1.Manager')
+            self.login_mgr.connect_to_signal('PrepareForShutdown', self.before_shutdown)
+            enabled_events.append(EVENT_APPLET_SHUTDOWN)
+        except dbus.exceptions.DBusException:
+            applet_log.error("MAIN: error registering logout manager")
+            self.login_mgr = None
+
+        # DBus events
+        try:
+            self.screensaver_mgr = dbus.Interface(
+                self.session_bus.get_object('org.gnome.ScreenSaver', '/org/gnome/ScreenSaver'),
+                'org.gnome.ScreenSaver')
+            self.screensaver_mgr.connect_to_signal('ActiveChanged', self.screensaver_manager)
+            enabled_events.append(EVENT_SESSION_SCREENSAVER)
+            enabled_events.append(EVENT_SESSION_SCREENSAVER_EXIT)
+        except dbus.exceptions.DBusException:
+            applet_log.error("MAIN: error registering screensaver manager")
+            self.screensaver_mgr = None
+
+        try:
+            self.lock_mgr = dbus.Interface(
+                self.system_bus.get_object('org.freedesktop.login1', '/org/freedesktop/login1'),
+                'org.freedesktop.login1.Session')
+            self.lock_mgr.connect_to_signal('Lock', self.session_login_lock)
+            self.lock_mgr.connect_to_signal('Unlock', self.session_login_unlock)
+            enabled_events.append(EVENT_SESSION_LOCK)
+            enabled_events.append(EVENT_SESSION_UNLOCK)
+        except dbus.exceptions.DBusException:
+            applet_log.error("MAIN: error registering session lock manager")
+            self.lock_mgr = None
+
+        try:
+            self.power_mgr = dbus.Interface(
+                self.system_bus.get_object('org.freedesktop.UPower', '/org/freedesktop/UPower'),
+                'org.freedesktop.UPower')
+            self.power_mgr.connect_to_signal('Sleeping', self.system_power_sleep)
+            self.power_mgr.connect_to_signal('Resuming', self.system_power_resume)
+            enabled_events.append(EVENT_SYSTEM_SUSPEND)
+            enabled_events.append(EVENT_SYSTEM_RESUME)
+        except dbus.exceptions.DBusException:
+            applet_log.error("MAIN: error registering sleep and resume manager")
+            self.power_mgr = None
+
+        try:
+            self.storage_mgr = dbus.Interface(
+                self.system_bus.get_object('org.freedesktop.UDisks2', '/org/freedesktop/UDisks2'),
+                'org.freedesktop.DBus.ObjectManager')
+            self.storage_mgr.connect_to_signal('InterfacesAdded', self.device_attach_manager)
+            self.storage_mgr.connect_to_signal('InterfacesRemoved', self.device_detach_manager)
+            enabled_events.append(EVENT_SYSTEM_DEVICE_ATTACH)
+            enabled_events.append(EVENT_SYSTEM_DEVICE_DETACH)
+        except dbus.exceptions.DBusException:
+            applet_log.error("MAIN: error registering storage device manager")
+            self.storage_mgr = None
+
+        try:
+            self.network_mgr = dbus.Interface(
+                self.system_bus.get_object('org.freedesktop.NetworkManager', '/org/freedesktop/NetworkManager'),
+                'org.freedesktop.NetworkManager')
+            self.network_mgr.connect_to_signal('StatusChanged', self.network_manager)
+            enabled_events.append(EVENT_SYSTEM_NETWORK_JOIN)
+            enabled_events.append(EVENT_SYSTEM_NETWORK_LEAVE)
+        except dbus.exceptions.DBusException:
+            applet_log.error("MAIN: error registering network connection manager")
+            self.network_mgr = None
+
+        set_applet_enabled_events(enabled_events)
+
+        # now we can build dialog boxes since all necessary data is present
+        self.dialog_add_task = TaskDialog()
+        self.dialog_add_condition = ConditionDialog()
+        self.dialog_about = AboutDialog()
+        self.dialog_settings = SettingsDialog()
+        self.dialog_history = HistoryDialog()
 
     def applet_activate(self, applet_instance):
         self.main()
@@ -2906,28 +2986,39 @@ class AppletIndicator(Gtk.Application):
     # system and session DBus event managers
     def screensaver_manager(self, *args):
         if self.screensaver_mgr.GetActive():
+            applet_log.debug("MAIN: screensaver is active")
             deferred_events.append(EVENT_SESSION_SCREENSAVER)
         else:
+            applet_log.debug("MAIN: screensaver deactivated")
             deferred_events.append(EVENT_SESSION_SCREENSAVER_EXIT)
 
-    # def screen_lock_manager(self, *args):
-    #     pass
+    def session_login_lock(self, *args):
+        applet_log.debug("MAIN: session lock")
+        deferred_events.append(EVENT_SESSION_LOCK)
 
-    def system_power_manager(self, *args):
-        mode = self.power_mgr.getDpmsMode()
-        if mode in ('suspend', 'standby'):
-            # cannot defer the event because we are being suspended
-            sysevent_condition_check(EVENT_SYSTEM_SUSPEND)
-        elif mode in ('on'):
-            # this does not happen at logon, since the applet is not yet
-            # started when the system bus carries this signal and mode
-            deferred_events.append(EVENT_SYSTEM_RESUME)
+    def session_login_unlock(self, *args):
+        applet_log.debug("MAIN: session unlock")
+        deferred_events.append(EVENT_SESSION_UNLOCK)
+
+    def system_power_sleep(self, *args):
+        applet_log.debug("MAIN: about to enter sleep state")
+        sysevent_condition_check(EVENT_SYSTEM_SUSPEND)
+
+    def system_power_resume(self, *args):
+        applet_log.debug("MAIN: woke up from sleep state")
+        deferred_events.append(EVENT_SYSTEM_RESUME)
 
     def device_attach_manager(self, *args):
-        pass
+        applet_log.debug("MAIN: new device attached")
+        deferred_events.append(EVENT_SYSTEM_DEVICE_ATTACH)
 
-    def network_join_manager(self, *args):
-        pass
+    def device_detach_manager(self, *args):
+        applet_log.debug("MAIN: device detached")
+        deferred_events.append(EVENT_SYSTEM_DEVICE_DETACH)
+
+    def network_manager(self, *args):
+        applet_log.debug("MAIN: state changed")
+        deferred_events.append(EVENT_SYSTEM_NETWORK_JOIN)
 
     def before_shutdown(self, *args):
         if not self.leaving:
@@ -3131,6 +3222,11 @@ def main():
     applet.run([])
     if not periodic.stopped:
         periodic.stop()
+
+
+def set_applet_enabled_events(evts):
+    global applet_enabled_events
+    applet_enabled_events = evts
 
 
 def oerr(s, verbose=True):
