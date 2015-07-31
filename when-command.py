@@ -68,7 +68,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.6.1-beta.2"
+APPLET_VERSION = "0.6.2-beta.1"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -624,6 +624,7 @@ class Periodic(object):
 
 # module level functions to handle condition checks and thus task execution
 def periodic_condition_check():
+    global current_deferred_events
     applet_lock.acquire()
     current_deferred_events = deferred_events.items(clear=True)
     applet_lock.release()
@@ -1297,10 +1298,10 @@ def Task_to_dict(t):
 
 
 def dict_to_Task(d):
-    applet_log.debug("MAIN: trying to restore task %s" % t.task_name)
     if d['type'] != 'task':
         raise ValueError("incorrect dictionary type")
     t = Task()
+    applet_log.debug("MAIN: trying to restore task %s" % t.task_name)
     t.task_id = d['task_id']
     t.task_name = d['task_name']
     t.environment_vars = d['environment_vars']
@@ -1511,13 +1512,13 @@ def Condition_to_dict(c):
 
 
 def dict_to_Condition(d, c=None):
-    applet_log.debug("MAIN: trying to restore condition %s" % c.cond_name)
     if d['type'] != 'condition':
         raise ValueError("incorrect dictionary type")
     # this will raise an error
     if c is None:
         applet_log.critical("MAIN: NTBS: attempt to restore base Condition")
         c = Condition()
+    applet_log.debug("MAIN: trying to restore condition %s" % c.cond_name)
     c.cond_id = d['cond_id']
     c.cond_name = d['cond_name']
     c.task_names = d['task_names']
@@ -1781,12 +1782,14 @@ def dict_to_CommandBasedCondition(d):
     return c
 
 
-# as a bonus, and provided that the xprintidle command is present, the idle
-# time condition is implemented as a special case of the command condition
+# this version should use DBus and the screensaver manager to determine
+# idle time, but it segfaults when the condition is verified
+# class IdleTimeBasedCondition(Condition):
 class IdleTimeBasedCondition(CommandBasedCondition):
 
     def _check_condition(self):
         if self.idle_reset:
+            # if get_applet_idle_seconds() >= idle_secs:
             if CommandBasedCondition._check_condition(self):
                 self.idle_reset = False
                 return True
@@ -1794,6 +1797,7 @@ class IdleTimeBasedCondition(CommandBasedCondition):
                 self.idle_reset = True
                 return False
         else:
+            # if get_applet_idle_seconds() < idle_secs:
             if not CommandBasedCondition._check_condition(self):
                 self.idle_reset = True
             return False
@@ -1802,6 +1806,7 @@ class IdleTimeBasedCondition(CommandBasedCondition):
         self.idle_secs = idle_secs
         self.idle_reset = True
         command = """test $(xprintidle) -gt %s""" % (idle_secs * 1000)
+        # Condition.__init__(self, name, repeat, exec_sequence)
         CommandBasedCondition.__init__(self, name, command, status=0, repeat=repeat, exec_sequence=exec_sequence)
 
 
@@ -3220,45 +3225,16 @@ def init_signal_handler(applet_instance):
         GLib.idle_add(install_glib_handler, signum, priority=GLib.PRIORITY_HIGH)
 
 
-# Configure services and start the application
-def main():
-    # config_loghandler()
-    # config_loglevel()
-    init_signal_handler(applet)
-    # signal.signal(signal.SIGINT, signal.SIG_DFL)
-    preserve_pause = config.get('Scheduler', 'preserve pause')
-    if not (preserve_pause and check_pause_file()):
-        periodic.start()
-    # the following two cases should be useless, but do some cleanup anyway
-    elif not preserve_pause:
-        unlink_pause_file()
-    else:
-        periodic.stop()
-    # If we have come here, the command line had no arguments so we clear it
-    applet.run([])
-    if not periodic.stopped:
-        periodic.stop()
-
-
 def set_applet_enabled_events(evts):
     global applet_enabled_events
     applet_enabled_events = evts
 
 
-def oerr(s, verbose=True):
-    if verbose:
-        sys.stderr.write("%s: %s\n" % (APPLET_NAME, s))
-
-
-def install_icons(overwrite=True):
-    create_desktop_file(overwrite=overwrite)
-    create_autostart_file(overwrite=overwrite)
-
-
-def start():
-    create_desktop_file(False)
-    create_autostart_file(False)
-    main()
+def get_applet_idle_seconds():
+    if applet:
+        return applet.session_idle_seconds()
+    else:
+        return 0
 
 
 def kill_existing(verbose=False, shutdown=False):
@@ -3270,6 +3246,16 @@ def kill_existing(verbose=False, shutdown=False):
     else:
         interface.kill_instance()
     oerr("instance shutdown finished", verbose)
+
+
+def oerr(s, verbose=True):
+    if verbose:
+        sys.stderr.write("%s: %s\n" % (APPLET_NAME, s))
+
+
+def install_icons(overwrite=True):
+    create_desktop_file(overwrite=overwrite)
+    create_autostart_file(overwrite=overwrite)
 
 
 def show_box(box='about', verbose=False):
@@ -3400,6 +3386,31 @@ def import_tasks_conditions(filename=None, verbose=False):
     tasks.save()
     conditions.save()
     oerr("tasks and conditions successfully imported")
+
+
+# Configure services and start the application
+def main():
+    init_signal_handler(applet)
+    # signal.signal(signal.SIGINT, signal.SIG_DFL)
+    preserve_pause = config.get('Scheduler', 'preserve pause')
+    if not (preserve_pause and check_pause_file()):
+        periodic.start()
+    # the following two cases should be useless, but do some cleanup anyway
+    elif not preserve_pause:
+        unlink_pause_file()
+    else:
+        periodic.stop()
+    # If we have come here, the command line had no arguments so we clear it
+    applet.run([])
+    if not periodic.stopped:
+        periodic.stop()
+
+
+def start():
+    applet_log.info("MAIN: starting %s version %s" % (APPLET_FULLNAME, APPLET_VERSION))
+    create_desktop_file(False)
+    create_autostart_file(False)
+    main()
 
 
 # Build the applet and start
