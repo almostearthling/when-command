@@ -118,6 +118,16 @@ EVENT_SESSION_SCREENSAVER_EXIT = 'screensaver_exit'
 EVENT_SESSION_LOCK = 'session_lock'
 EVENT_SESSION_UNLOCK = 'session_unlock'
 
+# network manager constants
+NM_STATE_UNKNOWN = 0
+NM_STATE_ASLEEP = 10
+NM_STATE_DISCONNECTED = 20
+NM_STATE_DISCONNECTING = 30
+NM_STATE_CONNECTING = 40
+NM_STATE_CONNECTED_LOCAL = 50
+NM_STATE_CONNECTED_SITE = 60
+NM_STATE_CONNECTED_GLOBAL = 70
+
 #############################################################################
 # global variables referenced through the code (this should be redundant)
 applet = None
@@ -2926,7 +2936,7 @@ class AppletIndicator(Gtk.Application):
             self.network_mgr = dbus.Interface(
                 self.system_bus.get_object('org.freedesktop.NetworkManager', '/org/freedesktop/NetworkManager'),
                 'org.freedesktop.NetworkManager')
-            self.network_mgr.connect_to_signal('StatusChanged', self.network_manager)
+            self.network_mgr.connect_to_signal('StateChanged', self.network_manager)
             enabled_events.append(EVENT_SYSTEM_NETWORK_JOIN)
             enabled_events.append(EVENT_SYSTEM_NETWORK_LEAVE)
         except dbus.exceptions.DBusException:
@@ -3017,8 +3027,14 @@ class AppletIndicator(Gtk.Application):
         deferred_events.append(EVENT_SYSTEM_DEVICE_DETACH)
 
     def network_manager(self, *args):
-        applet_log.debug("MAIN: state changed")
-        deferred_events.append(EVENT_SYSTEM_NETWORK_JOIN)
+        applet_log.debug("MAIN: network state changed")
+        state = self.network_mgr.state()
+        if state in [NM_STATE_CONNECTED_LOCAL, NM_STATE_CONNECTED_SITE, NM_STATE_CONNECTED_GLOBAL]:
+            applet_log.debug("MAIN: joined network")
+            deferred_events.append(EVENT_SYSTEM_NETWORK_JOIN)
+        elif state in [NM_STATE_DISCONNECTED]:
+            applet_log.debug("MAIN: left network")
+            deferred_events.append(EVENT_SYSTEM_NETWORK_LEAVE)
 
     def before_shutdown(self, *args):
         if not self.leaving:
