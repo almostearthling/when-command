@@ -104,11 +104,25 @@ USER_PAUSE_FILE = os.path.join(USER_CONFIG_FOLDER, "%s.pause" % APPLET_NAME)
 
 GRAPHIC_ENVIRONMENT = 'DISPLAY' in os.environ.keys()
 
+# event strings (applet, system, session)
+EVENT_APPLET_STARTUP = 'startup'
+EVENT_APPLET_SHUTDOWN = 'shutdown'
+EVENT_SYSTEM_SUSPEND = 'system_suspend'
+EVENT_SYSTEM_RESUME = 'system_resume'
+EVENT_SYSTEM_DEVICE_ATTACH = 'device_attach'
+EVENT_SYSTEM_DEVICE_DETACH = 'device_detach'
+EVENT_SYSTEM_NETWORK_JOIN = 'network_join'
+EVENT_SYSTEM_NETWORK_LEAVE = 'network_leave'
+EVENT_SESSION_SCREENSAVER = 'screensaver'
+EVENT_SESSION_SCREENSAVER_EXIT = 'screensaver_exit'
+EVENT_SESSION_LOCK = 'session_lock'
+EVENT_SESSION_UNLOCK = 'session_unlock'
 
 #############################################################################
 # global variables referenced through the code (this should be redundant)
 applet = None
 applet_lock = threading.Lock()
+main_dbus_loop = None
 current_system_event = None
 current_system_event_param = None
 current_deferred_events = None
@@ -2291,9 +2305,9 @@ class ConditionDialog(object):
                 o('cbType').set_active(3)
             elif type(cond) == EventBasedCondition:
                 evt = cond.event
-                if evt == 'startup':
+                if evt == EVENT_APPLET_STARTUP:
                     o('cbSysEvent').set_active(0)
-                elif evt == 'shutdown':
+                elif evt == EVENT_APPLET_SHUTDOWN:
                     o('cbSysEvent').set_active(1)
                 else:
                     o('cbSysEvent').set_active(-1)
@@ -2495,8 +2509,10 @@ class ConditionDialog(object):
                 c.break_failure = break_failure
                 c.break_success = break_success
             elif idx == 4:
-                event_type = ('startup', 'shutdown')[
-                    o('cbSysEvent').get_active()]
+                event_type = (
+                    EVENT_APPLET_STARTUP,
+                    EVENT_APPLET_SHUTDOWN
+                )[o('cbSysEvent').get_active()]
                 c = EventBasedCondition(name, event_type, True, repeat, sequence)
                 c.break_failure = break_failure
                 c.break_success = break_success
@@ -2822,11 +2838,29 @@ class AppletIndicator(Gtk.Application):
 
         # The system and session bus signals give many possibilities for events
         self.system_bus = dbus.SystemBus()
-        self.session_bus = AppletDBusService()
+        self.session_bus = dbus.SessionBus()
+        self.applet_bus = AppletDBusService()
         self.login_mgr = dbus.Interface(
             self.system_bus.get_object('org.freedesktop.login1', '/org/freedesktop/login1'),
             'org.freedesktop.login1.Manager')
         self.login_mgr.connect_to_signal('PrepareForShutdown', self.before_shutdown)
+
+        # other DBus events
+        self.screensaver_mgr = dbus.Interface(
+            self.session_bus.get_object('org.gnome.ScreenSaver', '/org/gnome/ScreenSaver'),
+            'org.gnome.ScreenSaver')
+        self.screensaver_mgr.connect_to_signal('ActiveChanged', self.screensaver_manager)
+        self.power_mgr = dbus.Interface(
+            self.system_bus.get_object('org.gnome.PowerManager', '/org/gnome/PowerManager'),
+            'org.gnome.PowerManager')
+        self.screensaver_mgr.connect_to_signal('DpmsModeChanged', self.system_power_manager)
+        # the screen lock manager will be difficult to implement since the
+        # lock/unlock state is determined bu the screen saver, that does
+        # not report it via DBus
+        # self.screen_lock_mgr = dbus.Interface(
+        #     self.session_bus.get_object('org.gnome.SessionManager', '/org/gnome/SessionManager/Presence'),
+        #     'org.gnome.SessionManager.Presence')
+        # self.screen_lock_mgr.connect_to_signal('StatusChanged', self.screen_lock_manager)
 
     def applet_activate(self, applet_instance):
         self.main()
@@ -2855,7 +2889,7 @@ class AppletIndicator(Gtk.Application):
             Notify.init(APPLET_NAME)
             self._notify = Notify.Notification()
 
-        # load tasks and conditions, if there are any
+        # load tasks and conditions if any, otherwise save empty lists
         try:
             tasks.load()
         except FileNotFoundError:
@@ -2866,13 +2900,39 @@ class AppletIndicator(Gtk.Application):
             conditions.save()
 
         applet_log.info("MAIN: trying to run startup tasks")
-        sysevent_condition_check('startup')
+        sysevent_condition_check(EVENT_APPLET_STARTUP)
         Gtk.main()
+
+    # system and session DBus event managers
+    def screensaver_manager(self, *args):
+        if self.screensaver_mgr.GetActive():
+            deferred_events.append(EVENT_SESSION_SCREENSAVER)
+        else:
+            deferred_events.append(EVENT_SESSION_SCREENSAVER_EXIT)
+
+    # def screen_lock_manager(self, *args):
+    #     pass
+
+    def system_power_manager(self, *args):
+        mode = self.power_mgr.getDpmsMode()
+        if mode in ('suspend', 'standby'):
+            # cannot defer the event because we are being suspended
+            sysevent_condition_check(EVENT_SYSTEM_SUSPEND)
+        elif mode in ('on'):
+            # this does not happen at logon, since the applet is not yet
+            # started when the system bus carries this signal and mode
+            deferred_events.append(EVENT_SYSTEM_RESUME)
+
+    def device_attach_manager(self, *args):
+        pass
+
+    def network_join_manager(self, *args):
+        pass
 
     def before_shutdown(self, *args):
         if not self.leaving:
             applet_log.info("MAIN: trying to run shutdown tasks")
-            sysevent_condition_check('shutdown')
+            sysevent_condition_check(EVENT_APPLET_SHUTDOWN)
             self.leaving = True
 
     def quit(self, _):
@@ -2953,6 +3013,10 @@ class AppletIndicator(Gtk.Application):
         if config.get('General', 'notifications'):
             self._notify.update(APPLET_SHORTNAME, message, icon)
             self._notify.show()
+
+    # TODO: use this instead of 'xprintidle' to save system resources
+    def session_idle_seconds(self):
+        return self.screensaver_mgr.getSessionIdleTime()
 
     def build_menu(self):
         menu = Gtk.Menu()
@@ -3230,7 +3294,7 @@ def import_tasks_conditions(filename=None, verbose=False):
 if __name__ == '__main__':
 
     if GRAPHIC_ENVIRONMENT:
-        DBusGMainLoop(set_as_default=True)
+        main_dbus_loop = DBusGMainLoop(set_as_default=True)
         GObject.threads_init()
 
     # check user folders and configure applet
