@@ -68,7 +68,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.6.2-beta.1"
+APPLET_VERSION = "0.6.2-beta.2"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -2929,8 +2929,11 @@ class AppletIndicator(Gtk.Application):
             self.storage_mgr = dbus.Interface(
                 self.system_bus.get_object('org.freedesktop.UDisks2', '/org/freedesktop/UDisks2'),
                 'org.freedesktop.DBus.ObjectManager')
-            self.storage_mgr.connect_to_signal('InterfacesAdded', self.device_attach_manager)
-            self.storage_mgr.connect_to_signal('InterfacesRemoved', self.device_detach_manager)
+            devices = self.storage_mgr.GetManagedObjects().keys()
+            drives = filter(lambda x: x.startswith('/org/freedesktop/UDisks2/block_devices/'), devices)
+            self.storage_mgr_num_devices = len(list(drives))
+            self.storage_mgr.connect_to_signal('InterfacesAdded', self.storage_device_manager)
+            self.storage_mgr.connect_to_signal('InterfacesRemoved', self.storage_device_manager)
             enabled_events.append(EVENT_SYSTEM_DEVICE_ATTACH)
             enabled_events.append(EVENT_SYSTEM_DEVICE_DETACH)
         except dbus.exceptions.DBusException:
@@ -3023,13 +3026,18 @@ class AppletIndicator(Gtk.Application):
         applet_log.debug("MAIN: woke up from sleep state")
         deferred_events.append(EVENT_SYSTEM_RESUME)
 
-    def device_attach_manager(self, *args):
-        applet_log.debug("MAIN: new device attached")
-        deferred_events.append(EVENT_SYSTEM_DEVICE_ATTACH)
-
-    def device_detach_manager(self, *args):
-        applet_log.debug("MAIN: device detached")
-        deferred_events.append(EVENT_SYSTEM_DEVICE_DETACH)
+    def storage_device_manager(self, *args):
+        applet_log.debug("MAIN: storage change detected")
+        devices = self.storage_mgr.GetManagedObjects().keys()
+        drives = filter(lambda x: x.startswith('/org/freedesktop/UDisks2/block_devices/'), devices)
+        num_devices = len(list(drives))
+        if self.storage_mgr_num_devices > num_devices:
+            applet_log.debug("MAIN: device detached")
+            deferred_events.append(EVENT_SYSTEM_DEVICE_DETACH)
+        elif self.storage_mgr_num_devices < num_devices:
+            applet_log.debug("MAIN: new device attached")
+            deferred_events.append(EVENT_SYSTEM_DEVICE_ATTACH)
+        self.storage_mgr_num_devices = num_devices
 
     def network_manager(self, *args):
         applet_log.debug("MAIN: network state changed")
