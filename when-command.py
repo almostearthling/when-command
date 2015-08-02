@@ -68,7 +68,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.6.2-beta.2"
+APPLET_VERSION = "0.6.2-beta.4"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -2884,7 +2884,10 @@ class AppletIndicator(Gtk.Application):
                 self.system_bus.get_object('org.freedesktop.login1', '/org/freedesktop/login1'),
                 'org.freedesktop.login1.Manager')
             self.login_mgr.connect_to_signal('PrepareForShutdown', self.before_shutdown)
+            self.login_mgr.connect_to_signal('PrepareForSleep', self.system_sleep_manager)
             enabled_events.append(EVENT_APPLET_SHUTDOWN)
+            enabled_events.append(EVENT_SYSTEM_SUSPEND)
+            enabled_events.append(EVENT_SYSTEM_RESUME)
         except dbus.exceptions.DBusException:
             applet_log.error("MAIN: error registering logout manager")
             self.login_mgr = None
@@ -2912,18 +2915,6 @@ class AppletIndicator(Gtk.Application):
         except dbus.exceptions.DBusException:
             applet_log.error("MAIN: error registering session lock manager")
             self.lock_mgr = None
-
-        try:
-            self.power_mgr = dbus.Interface(
-                self.system_bus.get_object('org.freedesktop.UPower', '/org/freedesktop/UPower'),
-                'org.freedesktop.UPower')
-            self.power_mgr.connect_to_signal('Sleeping', self.system_power_sleep)
-            self.power_mgr.connect_to_signal('Resuming', self.system_power_resume)
-            enabled_events.append(EVENT_SYSTEM_SUSPEND)
-            enabled_events.append(EVENT_SYSTEM_RESUME)
-        except dbus.exceptions.DBusException:
-            applet_log.error("MAIN: error registering sleep and resume manager")
-            self.power_mgr = None
 
         try:
             self.storage_mgr = dbus.Interface(
@@ -3018,13 +3009,14 @@ class AppletIndicator(Gtk.Application):
         applet_log.debug("MAIN: session unlock")
         deferred_events.append(EVENT_SESSION_UNLOCK)
 
-    def system_power_sleep(self, *args):
-        applet_log.debug("MAIN: about to enter sleep state")
-        sysevent_condition_check(EVENT_SYSTEM_SUSPEND)
-
-    def system_power_resume(self, *args):
-        applet_log.debug("MAIN: woke up from sleep state")
-        deferred_events.append(EVENT_SYSTEM_RESUME)
+    def system_sleep_manager(self, *args):
+        entering_sleep = args[0]
+        if entering_sleep:
+            applet_log.debug("MAIN: about to enter sleep state")
+            sysevent_condition_check(EVENT_SYSTEM_SUSPEND)
+        else:
+            applet_log.debug("MAIN: woke up from sleep state")
+            deferred_events.append(EVENT_SYSTEM_RESUME)
 
     def storage_device_manager(self, *args):
         applet_log.debug("MAIN: storage change detected")
