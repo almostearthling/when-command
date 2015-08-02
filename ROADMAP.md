@@ -82,7 +82,7 @@ List of achievements and expectations for the When applet.
 * Stop task sequence upon failure (or success) of one task :ok:
 * More system and session event conditions :ok:
   - System suspend and/or resume :+1:
-  - Screen lock :-1:
+  - Screen lock :interrobang:
   - Screensaver :+1:
   - Storage device attach/detach :+1:
   - Join/Leave network :+1:
