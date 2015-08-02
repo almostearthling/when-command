@@ -68,7 +68,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.6.2-beta.4"
+APPLET_VERSION = "0.6.2-beta.5"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -2905,11 +2905,21 @@ class AppletIndicator(Gtk.Application):
             self.screensaver_mgr = None
 
         try:
+            # This feature should possibly be deactivated, unless the applet
+            # really has to be supported on Ubuntu only
+            #
+            # raise dbus.exceptions.DBusException
+            # self.lock_mgr = dbus.Interface(
+            #     self.system_bus.get_object('org.freedesktop.login1', '/org/freedesktop/login1'),
+            #     'org.freedesktop.login1.Session')
+            # self.lock_mgr.connect_to_signal('Lock', self.session_login_lock)
+            # self.lock_mgr.connect_to_signal('Unlock', self.session_login_unlock)
+            # enabled_events.append(EVENT_SESSION_LOCK)
+            # enabled_events.append(EVENT_SESSION_UNLOCK)
             self.lock_mgr = dbus.Interface(
-                self.system_bus.get_object('org.freedesktop.login1', '/org/freedesktop/login1'),
-                'org.freedesktop.login1.Session')
-            self.lock_mgr.connect_to_signal('Lock', self.session_login_lock)
-            self.lock_mgr.connect_to_signal('Unlock', self.session_login_unlock)
+                self.system_bus.get_object('com.ubuntu.Upstart0_6', '/com/ubuntu/Upstart'),
+                'com.ubuntu.Upstart0_6')
+            self.lock_mgr.connect_to_signal('EventEmitted', self.upstart_lock_manager)
             enabled_events.append(EVENT_SESSION_LOCK)
             enabled_events.append(EVENT_SESSION_UNLOCK)
         except dbus.exceptions.DBusException:
@@ -3008,6 +3018,17 @@ class AppletIndicator(Gtk.Application):
     def session_login_unlock(self, *args):
         applet_log.debug("MAIN: session unlock")
         deferred_events.append(EVENT_SESSION_UNLOCK)
+
+    # this is apparently valid for ubuntu 14.04 and above
+    # see: http://unix.stackexchange.com/a/211863/125979
+    def upstart_lock_manager(self, *args):
+        message = args[0]
+        if message == 'desktop-lock':
+            applet_log.debug("MAIN: session lock")
+            deferred_events.append(EVENT_SESSION_LOCK)
+        elif message == 'desktop-unlock':
+            applet_log.debug("MAIN: session unlock")
+            deferred_events.append(EVENT_SESSION_UNLOCK)
 
     def system_sleep_manager(self, *args):
         entering_sleep = args[0]
