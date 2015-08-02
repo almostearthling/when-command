@@ -55,12 +55,13 @@ There are several types of condition available:
 4. **Idle time based**: When the session has been idle for the specified amount of time the tasks are executed. This actually is implemented as a shortcut to the command based condition built using the `xprintidle` command, which must be installed for the applet to work properly.
 5. **Event based**: The tasks are executed when a certain session or system event occurs. The following events are supported:
   - *Startup* and *Shutdown*. These are verified when the applet (or session, if the applet is launched at startup) starts or quits.
-  - *Suspend* and *Resume*, respectively matches on system suspension/hibernation and resume from a suspended state.
+  - *Suspend* and *Resume*, respectively match system suspension/hibernation and resume from a suspended state.
+  - *Session Lock* and *Unlock*, that occur when the screen is locked or unlocked.
   - *Screensaver*, both entering the screen saver state and exiting from it.
-  - *Storage Device Connect and Disconnect*, which take place when the user attaches or respectively detaches a removable storage device.
-  - *Join or Leave a Network*, these are verified whenever a network is joined or lost respectively.
+  - *Storage Device Connect* and *Disconnect*, which take place when the user attaches or respectively detaches a removable storage device.
+  - *Join* or *Leave a Network*, these are verified whenever a network is joined or lost respectively.
 
- *Warning*: because of the way applications are notified that the session is ending (first a TERM signal is sent, then a KILL if the first was unsuccessful), the *Shutdown* event is not suitable for long running tasks, such as file synchronizations, disk cleanup and similar actions. Longer running tasks will be run if the users quits the applet through the menu, though. Same yields for *Suspend*: by specification, no more than one second is available for tasks to complete. In reference to the event condition definition, one or more events might appear as *disabled* in the list: the user still can choose to create a condition based on a disabled event, but the corresponding tasks will never be run.
+ *Warning*: because of the way applications are notified that the session is ending (first a TERM signal is sent, then a KILL if the first was unsuccessful), the *Shutdown* event is not suitable for long running tasks, such as file synchronizations, disk cleanup and similar actions. Longer running tasks will be run if the users quits the applet through the menu, though. Same yields for *Suspend*: by specification, no more than one second is available for tasks to complete. In reference to the event condition definition, one or more events might appear as *[disabled]* in the list: the user still can choose to create a condition based on a disabled event, but the corresponding tasks will never be run.
 
 Also, the condition configuration interface allows to decide:
 
