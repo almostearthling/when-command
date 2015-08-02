@@ -68,7 +68,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.6.2-beta.5"
+APPLET_VERSION = "0.6.2-beta.6"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -2917,7 +2917,7 @@ class AppletIndicator(Gtk.Application):
             # enabled_events.append(EVENT_SESSION_LOCK)
             # enabled_events.append(EVENT_SESSION_UNLOCK)
             self.lock_mgr = dbus.Interface(
-                self.system_bus.get_object('com.ubuntu.Upstart0_6', '/com/ubuntu/Upstart'),
+                self.session_bus.get_object('com.ubuntu.Upstart', '/com/ubuntu/Upstart'),
                 'com.ubuntu.Upstart0_6')
             self.lock_mgr.connect_to_signal('EventEmitted', self.upstart_lock_manager)
             enabled_events.append(EVENT_SESSION_LOCK)
