@@ -60,7 +60,7 @@ There are several types of condition available:
   - *Storage Device Connect and Disconnect*, which take place when the user attaches or respectively detaches a removable storage device.
   - *Join or Leave a Network*, these are verified whenever a network is joined or lost respectively.
 
- *Warning*: because of the way applications are notified that the session is ending (first a TERM signal is sent, then a KILL if the first was unsuccessful), the *Shutdown* event is not suitable for long running tasks, such as file synchronizations, disk cleanup and similar actions. Longer running tasks will be run if the users quits the applet through the menu, though. One or more events might appear as *disabled* in the list: the user still can choose to create a condition based on a disabled event, but it will never be verified.
+ *Warning*: because of the way applications are notified that the session is ending (first a TERM signal is sent, then a KILL if the first was unsuccessful), the *Shutdown* event is not suitable for long running tasks, such as file synchronizations, disk cleanup and similar actions. Longer running tasks will be run if the users quits the applet through the menu, though. Same yields for *Suspend*: by specification, no more than one second is available for tasks to complete. In reference to the event condition definition, one or more events might appear as *disabled* in the list: the user still can choose to create a condition based on a disabled event, but the corresponding tasks will never be run.
 
 Also, the condition configuration interface allows to decide:
 
