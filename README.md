@@ -60,6 +60,7 @@ There are several types of condition available:
   - *Screensaver*, both entering the screen saver state and exiting from it.
   - *Storage Device Connect* and *Disconnect*, which take place when the user attaches or respectively detaches a removable storage device.
   - *Join* or *Leave a Network*, these are verified whenever a network is joined or lost respectively.
+  - *Command Line Trigger* is a special event type, that is triggered invoking the command line. The associated condition can be scheduled to be run at the next clock tick or immediately using the appropriate switch.
 
  *Warning*: because of the way applications are notified that the session is ending (first a TERM signal is sent, then a KILL if the first was unsuccessful), the *Shutdown* event is not suitable for long running tasks, such as file synchronizations, disk cleanup and similar actions. Longer running tasks will be run if the users quits the applet through the menu, though. Same yields for *Suspend*: by specification, no more than one second is available for tasks to complete. In reference to the event condition definition, one or more events might appear as *[disabled]* in the list: the user still can choose to create a condition based on a disabled event, but the corresponding tasks will never be run.
 
@@ -152,6 +153,8 @@ By default, when the applet is invoked with no arguments, it just starts an inst
 * `-T` or `--install`: install or reinstall application icon and autostart icon, requires applet to be shut down with an appropriate switch
 * `-C` or `--clear`: clear current tasks and conditions, requires applet to be shut down with an appropriate switch
 * `-Q` or `--query`: query for an existing instance (returns a zero exit status if an instance is running, nonzero otherwise, and prints an human-readable message if the `--verbose` switch is also specified)
+* `-r` *[condition]* or `--run-condition` *[condition]*: trigger a command-line associated condition and immediately run the associated tasks.
+* `-f` *[condition]* or `--defer-condition` *[condition]*: schedule a command-line associated condition to run the associated tasks at the next clock tick.
 * `--shutdown`: close a running instance performing shutdown tasks first
 * `--kill`: close a running instance abruptly, no shutdown tasks are run
 * `--export` *[filename]*: save tasks and conditions to a portable format, if *filename* is not specified these items are saved in a default file in the `~/.config/when-command` directory; this will especially be useful in cases where the compatibility of the "running" versions of tasks and conditions (which are a binary format) could be broken across releases

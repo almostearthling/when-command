@@ -86,6 +86,7 @@ List of achievements and expectations for the When applet.
   - Screensaver :+1:
   - Storage device attach/detach :+1:
   - Join/Leave network :+1:
+* Command-line triggered conditions :ok:
 
 
 ## 2) To *Working* Alpha Release
