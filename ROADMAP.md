@@ -50,17 +50,17 @@ List of achievements and expectations for the When applet.
 * Delete condition :ok:
 * Resource strings (temporarily local, but moveable) :ok:
 * History box :ok:
-  1. History list with: :ok:
-    - Event time and duration :ok:
-    - Triggering condition :ok:
-    - Task name :ok:
-    - Task result (success/failure) :ok:
-    - Failure reason :ok:
+  1. History list with: :+1:
+    - Event time and duration :+1:
+    - Triggering condition :+1:
+    - Task name :+1:
+    - Task result (success/failure) :+1:
+    - Failure reason :+1:
   2. Task output pane (changes on list selection) :ok:
 * Single instance application (per user) :ok:
 * Better logging :ok:
-  - Remove excess and redundant cruft :ok:
-  - Log limits (size and backups) in configuration :ok:
+  - Remove excess and redundant cruft :+1:
+  - Log limits (size and backups) in configuration :+1:
 * Log management :ok:
 * Application icon :ok:
 * Application `.desktop` entry :ok:
@@ -69,17 +69,23 @@ List of achievements and expectations for the When applet.
 * Move initialization calls (not variables) to the `if __name__ == "__main__"` block
 * Dialog box design and refactoring :ok:
 * Command line switches (and configuration maintenance) :+1:
-  - Close current instance :ok:
-  - Open settings dialog :ok:
-  - Clear/Rebuild configuration directory :ok:
-  - Rewrite configuration :ok:
-  - Rewrite configuration and exit (via 2 switches) :ok:
-  - Install icons :ok:
-  - Force indicator icon on :ok:
-  - export tasks and conditions :ok:
-  - import tasks and conditions :ok:
+  - Close current instance  :+1:
+  - Open settings dialog  :+1:
+  - Clear/Rebuild configuration directory  :+1:
+  - Rewrite configuration  :+1:
+  - Rewrite configuration and exit (via 2 switches)  :+1:
+  - Install icons  :+1:
+  - Force indicator icon on  :+1:
+  - export tasks and conditions :+1:
+  - import tasks and conditions  :+1:
 * Regexp match for shell command results (in both tasks and conditions) :ok:
 * Stop task sequence upon failure (or success) of one task :ok:
+* More system and session event conditions :ok:
+  - System suspend and/or resume :+1:
+  - Screen lock :interrobang:
+  - Screensaver :+1:
+  - Storage device attach/detach :+1:
+  - Join/Leave network :+1:
 
 
 ## 2) To *Working* Alpha Release
@@ -99,12 +105,6 @@ List of achievements and expectations for the When applet.
 
 ## 5) To 1.0 *Production* Release
 
-* More system and session event conditions
-  - System suspend and/or resume
-  - Screen lock
-  - Device attach/detach
-  - Join network
-  - More to come
 * File watch conditions
 
 
