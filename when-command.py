@@ -68,7 +68,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.6.4-beta.1"
+APPLET_VERSION = "0.6.4-beta.2"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -275,6 +275,8 @@ resources.COMMAND_LINE_HELP_SHOW_ICON = "show applet icon [N]"
 resources.COMMAND_LINE_HELP_CLEAR = "clear all tasks and conditions [S]"
 resources.COMMAND_LINE_HELP_INSTALL = "install application icons and autostart [S]"
 resources.COMMAND_LINE_HELP_QUERY = "query for a running instance"
+resources.COMMAND_LINE_HELP_RUN_CONDITION = "run a command-line bound condition"
+resources.COMMAND_LINE_HELP_DEFER_CONDITION = "enqueue a command-line bound condition"
 resources.COMMAND_LINE_HELP_SHUTDOWN = "run shutdown tasks and close an existing istance [R]"
 resources.COMMAND_LINE_HELP_KILL = "kill an existing istance [R]"
 resources.COMMAND_LINE_HELP_EXPORT = "save tasks and conditions to a portable format"
@@ -3354,6 +3356,17 @@ def show_icon(show=True, running=True):
     config.save()
 
 
+def run_condition(cond_name, deferred, verbose=False):
+    oerr("attempting to run condition %s" % cond_name, verbose)
+    bus = dbus.SessionBus()
+    interface = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
+    if not interface.run_condition(cond_name, deferred):
+        oerr("condition %s could not be run" % cond_name, verbose)
+        return False
+    else:
+        return True
+
+
 def clear_tasks_conditions(verbose=False):
     oerr("removing all tasks and conditions", verbose)
     try:
@@ -3589,6 +3602,16 @@ if __name__ == '__main__':
             help=resources.COMMAND_LINE_HELP_QUERY
         )
         parser.add_argument(
+            '-r', '--run-condition',
+            dest='run_condition', metavar='CONDITION', default=None,
+            help=resources.COMMAND_LINE_HELP_RUN_CONDITION
+        )
+        parser.add_argument(
+            '-f', '--defer-condition',
+            dest='defer_condition', metavar='CONDITION', default=None,
+            help=resources.COMMAND_LINE_HELP_DEFER_CONDITION
+        )
+        parser.add_argument(
             '--shutdown',
             dest='shutdown', action='store_true',
             help=resources.COMMAND_LINE_HELP_SHUTDOWN
@@ -3661,6 +3684,21 @@ if __name__ == '__main__':
                 oerr("an error occurred while trying to export items", verbose)
                 sys.exit(2)
             oerr("tasks and conditions successfully exported", verbose)
+
+        if args.run_condition:
+            if not running:
+                oerr("could not find a running instance, please start it first", verbose)
+                sys.exit(2)
+            else:
+                if not(run_condition(args.run_condition, False, verbose)):
+                    sys.exit(2)
+        if args.defer_condition:
+            if not running:
+                oerr("could not find a running instance, please start it first", verbose)
+                sys.exit(2)
+            else:
+                if not(run_condition(args.defer_condition, True, verbose)):
+                    sys.exit(2)
 
         if args.shutdown:
             if running:
