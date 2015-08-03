@@ -117,6 +117,9 @@ EVENT_SESSION_SCREENSAVER = 'screensaver'
 EVENT_SESSION_SCREENSAVER_EXIT = 'screensaver_exit'
 EVENT_SESSION_LOCK = 'session_lock'
 EVENT_SESSION_UNLOCK = 'session_unlock'
+EVENT_COMMAND_LINE = 'command_line'
+
+EVENT_COMMAND_LINE_PREAMBLE = 'command_line'
 
 # network manager constants
 NM_STATE_UNKNOWN = 0
@@ -467,6 +470,10 @@ class AppletDBusService(dbus.service.Object):
     @dbus.service.method(APPLET_BUS_NAME)
     def show_icon(self, show=True):
         applet.hide_icon(not show)
+
+    @dbus.service.method(APPLET_BUS_NAME)
+    def run_condition(self, cond_name, deferred=False):
+        return applet.start_event_condition(cond_name, deferred)
 
 
 #############################################################################
@@ -2207,6 +2214,9 @@ class ConditionDialog(object):
             EVENT_SESSION_SCREENSAVER_EXIT,
             EVENT_SESSION_LOCK,
             EVENT_SESSION_UNLOCK,
+
+            # the following should be the last one
+            EVENT_COMMAND_LINE
         ]
         if applet_enabled_events:
             enabled_events = applet_enabled_events
@@ -2355,6 +2365,8 @@ class ConditionDialog(object):
                 evt = cond.event
                 if evt in self.all_events:
                     o('cbSysEvent').set_active(self.all_events.index(evt))
+                elif evt.startswith(EVENT_COMMAND_LINE_PREAMBLE + ':'):
+                    o('cbSysEvent').set_active(self.all_events.index(EVENT_COMMAND_LINE))
                 else:
                     o('cbSysEvent').set_active(-1)
                 o('cbType').set_active(4)
@@ -2556,6 +2568,8 @@ class ConditionDialog(object):
                 c.break_success = break_success
             elif idx == 4:
                 event_type = self.all_events[o('cbSysEvent').get_active()]
+                if event_type == EVENT_COMMAND_LINE:
+                    event_type = EVENT_COMMAND_LINE_PREAMBLE + ':' + name
                 c = EventBasedCondition(name, event_type, True, repeat, sequence)
                 c.break_failure = break_failure
                 c.break_success = break_success
@@ -2981,6 +2995,7 @@ class AppletIndicator(Gtk.Application):
         # if self.MANAGER:
         #     enabled_events.append(EVENT_NAME)
 
+        enabled_events.append(EVENT_COMMAND_LINE)
         set_applet_enabled_events(enabled_events)
 
         # now we can build dialog boxes since all necessary data is present
@@ -3096,6 +3111,21 @@ class AppletIndicator(Gtk.Application):
             applet_log.info("MAIN: trying to run shutdown tasks")
             sysevent_condition_check(EVENT_APPLET_SHUTDOWN)
             self.leaving = True
+
+    def start_event_condition(self, cond_name, deferred):
+        if cond_name not in conditions.names:
+            applet_log.warning("MAIN: non existing condition %s will not trigger" % cond_name)
+            return False
+        cond = conditions.get(cond_name=cond_name)
+        event = EVENT_COMMAND_LINE_PREAMBLE + ':' + cond_name
+        if cond.event != event:
+            applet_log.warning("MAIN: wrong event type for condition %s" % cond_name)
+            return False
+        if deferred:
+            deferred_events.append(event)
+        else:
+            sysevent_condition_check(event)
+        return True
 
     def quit(self, _):
         self.before_shutdown()
