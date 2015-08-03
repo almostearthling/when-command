@@ -68,7 +68,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.6.2-beta.6"
+APPLET_VERSION = "0.6.3-beta.1"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -2864,6 +2864,19 @@ class AppletIndicator(Gtk.Application):
         Gtk.Application.__init__(self,
                                  application_id=APPLET_ID,
                                  flags=Gio.ApplicationFlags.FLAGS_NONE)
+
+        # shortcut to make code more clean and less repetitive
+        def _signal_manager(bus, bus_name, bus_path, bus_interface, sigs_handlers):
+            try:
+                proxy = bus.get_object(bus_name, bus_path)
+                manager = dbus.Interface(proxy, bus_interface)
+                for signal, handler in sigs_handlers:
+                    manager.connect_to_signal(signal, handler)
+                return manager
+            except dbus.exceptions.DBusException:
+                applet_log.error("MAIN: error registering %s handlers" % bus_interface)
+                return None
+
         try:
             self.register(None)
         except Exception as e:
@@ -2879,78 +2892,94 @@ class AppletIndicator(Gtk.Application):
         self.applet_bus = AppletDBusService()
 
         enabled_events = [EVENT_APPLET_STARTUP]
-        try:
-            self.login_mgr = dbus.Interface(
-                self.system_bus.get_object('org.freedesktop.login1', '/org/freedesktop/login1'),
-                'org.freedesktop.login1.Manager')
-            self.login_mgr.connect_to_signal('PrepareForShutdown', self.before_shutdown)
-            self.login_mgr.connect_to_signal('PrepareForSleep', self.system_sleep_manager)
+
+        # DBus events
+        self.login_mgr = _signal_manager(
+            self.system_bus,
+            'org.freedesktop.login1', '/org/freedesktop/login1',
+            'org.freedesktop.login1.Manager',
+            [
+                ('PrepareForShutdown', self.before_shutdown),
+                ('PrepareForSleep', self.system_sleep_manager),
+            ]
+        )
+        if self.login_mgr:
             enabled_events.append(EVENT_APPLET_SHUTDOWN)
             enabled_events.append(EVENT_SYSTEM_SUSPEND)
             enabled_events.append(EVENT_SYSTEM_RESUME)
-        except dbus.exceptions.DBusException:
-            applet_log.error("MAIN: error registering logout manager")
-            self.login_mgr = None
 
-        # DBus events
-        try:
-            self.screensaver_mgr = dbus.Interface(
-                self.session_bus.get_object('org.gnome.ScreenSaver', '/org/gnome/ScreenSaver'),
-                'org.gnome.ScreenSaver')
-            self.screensaver_mgr.connect_to_signal('ActiveChanged', self.screensaver_manager)
+        self.screensaver_mgr = _signal_manager(
+            self.session_bus,
+            'org.gnome.ScreenSaver', '/org/gnome/ScreenSaver',
+            'org.gnome.ScreenSaver',
+            [
+                ('ActiveChanged', self.screensaver_manager),
+            ]
+        )
+        if self.screensaver_mgr:
             enabled_events.append(EVENT_SESSION_SCREENSAVER)
             enabled_events.append(EVENT_SESSION_SCREENSAVER_EXIT)
-        except dbus.exceptions.DBusException:
-            applet_log.error("MAIN: error registering screensaver manager")
-            self.screensaver_mgr = None
 
-        try:
-            # This feature should possibly be deactivated, unless the applet
-            # really has to be supported on Ubuntu only
-            #
-            # raise dbus.exceptions.DBusException
-            # self.lock_mgr = dbus.Interface(
-            #     self.system_bus.get_object('org.freedesktop.login1', '/org/freedesktop/login1'),
-            #     'org.freedesktop.login1.Session')
-            # self.lock_mgr.connect_to_signal('Lock', self.session_login_lock)
-            # self.lock_mgr.connect_to_signal('Unlock', self.session_login_unlock)
-            # enabled_events.append(EVENT_SESSION_LOCK)
-            # enabled_events.append(EVENT_SESSION_UNLOCK)
-            self.lock_mgr = dbus.Interface(
-                self.session_bus.get_object('com.ubuntu.Upstart', '/com/ubuntu/Upstart'),
-                'com.ubuntu.Upstart0_6')
-            self.lock_mgr.connect_to_signal('EventEmitted', self.upstart_lock_manager)
+        self.lock_mgr = _signal_manager(
+            self.session_bus,
+            'com.ubuntu.Upstart', '/com/ubuntu/Upstart',
+            'com.ubuntu.Upstart0_6',
+            [
+                ('EventEmitted', self.upstart_lock_manager),
+            ]
+        )
+        # self.lock_mgr = _signal_manager(
+        #     self.system_bus,
+        #     'org.freedesktop.login1', '/org/freedesktop/login1',
+        #     'org.freedesktop.login1.Session',
+        #     [
+        #         ('Lock', self.session_login_lock),
+        #         ('Unlock', self.session_login_unlock),
+        #     ]
+        # )
+        if self.lock_mgr:
             enabled_events.append(EVENT_SESSION_LOCK)
             enabled_events.append(EVENT_SESSION_UNLOCK)
-        except dbus.exceptions.DBusException:
-            applet_log.error("MAIN: error registering session lock manager")
-            self.lock_mgr = None
 
-        try:
-            self.storage_mgr = dbus.Interface(
-                self.system_bus.get_object('org.freedesktop.UDisks2', '/org/freedesktop/UDisks2'),
-                'org.freedesktop.DBus.ObjectManager')
+        self.storage_mgr = _signal_manager(
+            self.system_bus,
+            'org.freedesktop.UDisks2', '/org/freedesktop/UDisks2',
+            'org.freedesktop.DBus.ObjectManager',
+            [
+                ('InterfacesAdded', self.storage_device_manager),
+                ('InterfacesRemoved', self.storage_device_manager),
+            ]
+        )
+        if self.storage_mgr:
             devices = self.storage_mgr.GetManagedObjects().keys()
             drives = filter(lambda x: x.startswith('/org/freedesktop/UDisks2/block_devices/'), devices)
             self.storage_mgr_num_devices = len(list(drives))
-            self.storage_mgr.connect_to_signal('InterfacesAdded', self.storage_device_manager)
-            self.storage_mgr.connect_to_signal('InterfacesRemoved', self.storage_device_manager)
             enabled_events.append(EVENT_SYSTEM_DEVICE_ATTACH)
             enabled_events.append(EVENT_SYSTEM_DEVICE_DETACH)
-        except dbus.exceptions.DBusException:
-            applet_log.error("MAIN: error registering storage device manager")
-            self.storage_mgr = None
 
-        try:
-            self.network_mgr = dbus.Interface(
-                self.system_bus.get_object('org.freedesktop.NetworkManager', '/org/freedesktop/NetworkManager'),
-                'org.freedesktop.NetworkManager')
-            self.network_mgr.connect_to_signal('StateChanged', self.network_manager)
+        self.network_mgr = _signal_manager(
+            self.system_bus,
+            'org.freedesktop.NetworkManager', '/org/freedesktop/NetworkManager',
+            'org.freedesktop.NetworkManager',
+            [
+                ('StateChanged', self.network_manager),
+            ]
+        )
+        if self.network_mgr:
             enabled_events.append(EVENT_SYSTEM_NETWORK_JOIN)
             enabled_events.append(EVENT_SYSTEM_NETWORK_LEAVE)
-        except dbus.exceptions.DBusException:
-            applet_log.error("MAIN: error registering network connection manager")
-            self.network_mgr = None
+
+        # Template for standard (not custom DBus) signal handlers
+        # self.MANAGER = _signal_manager(
+        #     self.TYPE_BUS,
+        #     'BUSNAME', '/BUSPATH',
+        #     'BUSINT',
+        #     [
+        #         ('SIGNAL', self.HANDLER),
+        #     ]
+        # )
+        # if self.MANAGER:
+        #     enabled_events.append(EVENT_NAME)
 
         set_applet_enabled_events(enabled_events)
 
@@ -3011,13 +3040,13 @@ class AppletIndicator(Gtk.Application):
             applet_log.debug("MAIN: screensaver deactivated")
             deferred_events.append(EVENT_SESSION_SCREENSAVER_EXIT)
 
-    def session_login_lock(self, *args):
-        applet_log.debug("MAIN: session lock")
-        deferred_events.append(EVENT_SESSION_LOCK)
+    # def session_login_lock(self, *args):
+    #     applet_log.debug("MAIN: session lock")
+    #     deferred_events.append(EVENT_SESSION_LOCK)
 
-    def session_login_unlock(self, *args):
-        applet_log.debug("MAIN: session unlock")
-        deferred_events.append(EVENT_SESSION_UNLOCK)
+    # def session_login_unlock(self, *args):
+    #     applet_log.debug("MAIN: session unlock")
+    #     deferred_events.append(EVENT_SESSION_UNLOCK)
 
     # this is apparently valid for ubuntu 14.04 and above
     # see: http://unix.stackexchange.com/a/211863/125979
