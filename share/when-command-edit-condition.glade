@@ -445,7 +445,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="margin_left">15</property>
-                            <property name="active_id">20</property>
+                            <property name="active_id">-1</property>
                             <items>
                               <item id="1" translatable="yes">Startup</item>
                               <item id="2" translatable="yes">Shutdown</item>
@@ -459,6 +459,7 @@
                               <item id="10" translatable="yes">Return From Screensaver</item>
                               <item id="11" translatable="yes">Session Lock</item>
                               <item id="12" translatable="yes">Session Unlock</item>
+                              <item id="13" translatable="yes">Command Line Trigger</item>
                             </items>
                           </object>
                           <packing>

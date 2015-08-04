@@ -68,7 +68,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.6.3-beta.1"
+APPLET_VERSION = "0.6.4-beta.2"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -117,6 +117,9 @@ EVENT_SESSION_SCREENSAVER = 'screensaver'
 EVENT_SESSION_SCREENSAVER_EXIT = 'screensaver_exit'
 EVENT_SESSION_LOCK = 'session_lock'
 EVENT_SESSION_UNLOCK = 'session_unlock'
+EVENT_COMMAND_LINE = 'command_line'
+
+EVENT_COMMAND_LINE_PREAMBLE = 'command_line'
 
 # network manager constants
 NM_STATE_UNKNOWN = 0
@@ -272,6 +275,8 @@ resources.COMMAND_LINE_HELP_SHOW_ICON = "show applet icon [N]"
 resources.COMMAND_LINE_HELP_CLEAR = "clear all tasks and conditions [S]"
 resources.COMMAND_LINE_HELP_INSTALL = "install application icons and autostart [S]"
 resources.COMMAND_LINE_HELP_QUERY = "query for a running instance"
+resources.COMMAND_LINE_HELP_RUN_CONDITION = "run a command-line bound condition"
+resources.COMMAND_LINE_HELP_DEFER_CONDITION = "enqueue a command-line bound condition"
 resources.COMMAND_LINE_HELP_SHUTDOWN = "run shutdown tasks and close an existing istance [R]"
 resources.COMMAND_LINE_HELP_KILL = "kill an existing istance [R]"
 resources.COMMAND_LINE_HELP_EXPORT = "save tasks and conditions to a portable format"
@@ -467,6 +472,10 @@ class AppletDBusService(dbus.service.Object):
     @dbus.service.method(APPLET_BUS_NAME)
     def show_icon(self, show=True):
         applet.hide_icon(not show)
+
+    @dbus.service.method(APPLET_BUS_NAME)
+    def run_condition(self, cond_name, deferred=False):
+        return applet.start_event_condition(cond_name, deferred)
 
 
 #############################################################################
@@ -2207,6 +2216,9 @@ class ConditionDialog(object):
             EVENT_SESSION_SCREENSAVER_EXIT,
             EVENT_SESSION_LOCK,
             EVENT_SESSION_UNLOCK,
+
+            # the following should be the last one
+            EVENT_COMMAND_LINE
         ]
         if applet_enabled_events:
             enabled_events = applet_enabled_events
@@ -2355,6 +2367,8 @@ class ConditionDialog(object):
                 evt = cond.event
                 if evt in self.all_events:
                     o('cbSysEvent').set_active(self.all_events.index(evt))
+                elif evt.startswith(EVENT_COMMAND_LINE_PREAMBLE + ':'):
+                    o('cbSysEvent').set_active(self.all_events.index(EVENT_COMMAND_LINE))
                 else:
                     o('cbSysEvent').set_active(-1)
                 o('cbType').set_active(4)
@@ -2556,6 +2570,8 @@ class ConditionDialog(object):
                 c.break_success = break_success
             elif idx == 4:
                 event_type = self.all_events[o('cbSysEvent').get_active()]
+                if event_type == EVENT_COMMAND_LINE:
+                    event_type = EVENT_COMMAND_LINE_PREAMBLE + ':' + name
                 c = EventBasedCondition(name, event_type, True, repeat, sequence)
                 c.break_failure = break_failure
                 c.break_success = break_success
@@ -2981,6 +2997,7 @@ class AppletIndicator(Gtk.Application):
         # if self.MANAGER:
         #     enabled_events.append(EVENT_NAME)
 
+        enabled_events.append(EVENT_COMMAND_LINE)
         set_applet_enabled_events(enabled_events)
 
         # now we can build dialog boxes since all necessary data is present
@@ -3096,6 +3113,21 @@ class AppletIndicator(Gtk.Application):
             applet_log.info("MAIN: trying to run shutdown tasks")
             sysevent_condition_check(EVENT_APPLET_SHUTDOWN)
             self.leaving = True
+
+    def start_event_condition(self, cond_name, deferred):
+        if cond_name not in conditions.names:
+            applet_log.warning("MAIN: non existing condition %s will not trigger" % cond_name)
+            return False
+        cond = conditions.get(cond_name=cond_name)
+        event = EVENT_COMMAND_LINE_PREAMBLE + ':' + cond_name
+        if cond.event != event:
+            applet_log.warning("MAIN: wrong event type for condition %s" % cond_name)
+            return False
+        if deferred:
+            deferred_events.append(event)
+        else:
+            sysevent_condition_check(event)
+        return True
 
     def quit(self, _):
         self.before_shutdown()
@@ -3322,6 +3354,17 @@ def show_icon(show=True, running=True):
         interface.show_icon(show)
     config.set('General', 'show icon', show)
     config.save()
+
+
+def run_condition(cond_name, deferred, verbose=False):
+    oerr("attempting to run condition %s" % cond_name, verbose)
+    bus = dbus.SessionBus()
+    interface = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
+    if not interface.run_condition(cond_name, deferred):
+        oerr("condition %s could not be run" % cond_name, verbose)
+        return False
+    else:
+        return True
 
 
 def clear_tasks_conditions(verbose=False):
@@ -3559,6 +3602,16 @@ if __name__ == '__main__':
             help=resources.COMMAND_LINE_HELP_QUERY
         )
         parser.add_argument(
+            '-r', '--run-condition',
+            dest='run_condition', metavar='CONDITION', default=None,
+            help=resources.COMMAND_LINE_HELP_RUN_CONDITION
+        )
+        parser.add_argument(
+            '-f', '--defer-condition',
+            dest='defer_condition', metavar='CONDITION', default=None,
+            help=resources.COMMAND_LINE_HELP_DEFER_CONDITION
+        )
+        parser.add_argument(
             '--shutdown',
             dest='shutdown', action='store_true',
             help=resources.COMMAND_LINE_HELP_SHUTDOWN
@@ -3631,6 +3684,21 @@ if __name__ == '__main__':
                 oerr("an error occurred while trying to export items", verbose)
                 sys.exit(2)
             oerr("tasks and conditions successfully exported", verbose)
+
+        if args.run_condition:
+            if not running:
+                oerr("could not find a running instance, please start it first", verbose)
+                sys.exit(2)
+            else:
+                if not(run_condition(args.run_condition, False, verbose)):
+                    sys.exit(2)
+        if args.defer_condition:
+            if not running:
+                oerr("could not find a running instance, please start it first", verbose)
+                sys.exit(2)
+            else:
+                if not(run_condition(args.defer_condition, True, verbose)):
+                    sys.exit(2)
 
         if args.shutdown:
             if running:
