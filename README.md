@@ -153,8 +153,8 @@ By default, when the applet is invoked with no arguments, it just starts an inst
 * `-T` or `--install`: install or reinstall application icon and autostart icon, requires applet to be shut down with an appropriate switch
 * `-C` or `--clear`: clear current tasks and conditions, requires applet to be shut down with an appropriate switch
 * `-Q` or `--query`: query for an existing instance (returns a zero exit status if an instance is running, nonzero otherwise, and prints an human-readable message if the `--verbose` switch is also specified)
-* `-r` *[condition]* or `--run-condition` *[condition]*: trigger a command-line associated condition and immediately run the associated tasks.
-* `-f` *[condition]* or `--defer-condition` *[condition]*: schedule a command-line associated condition to run the associated tasks at the next clock tick.
+* `-r` *condition* or `--run-condition` *condition*: trigger a command-line associated condition and immediately run the associated tasks
+* `-f` *condition* or `--defer-condition` *condition*: schedule a command-line associated condition to run the associated tasks at the next clock tick
 * `--shutdown`: close a running instance performing shutdown tasks first
 * `--kill`: close a running instance abruptly, no shutdown tasks are run
 * `--export` *[filename]*: save tasks and conditions to a portable format, if *filename* is not specified these items are saved in a default file in the `~/.config/when-command` directory; this will especially be useful in cases where the compatibility of the "running" versions of tasks and conditions (which are a binary format) could be broken across releases
