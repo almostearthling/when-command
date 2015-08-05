@@ -83,6 +83,13 @@ ACTION_OK = 0
 ACTION_CANCEL = -1
 ACTION_DELETE = 9
 
+# DBus return value comparison operators
+DBUS_CHECK_COMPARE_IS = 'is'
+DBUS_CHECK_COMPARE_CONTAINS = 'contains'
+DBUS_CHECK_COMPARE_MATCHES = 'matches'
+DBUS_CHECK_COMPARE_GREATER = 'gt'
+DBUS_CHECK_COMPARE_LESS = 'lt'
+
 # validation constants
 VALIDATE_TASK_RE = re.compile(r'^[a-zA-Z0-9][a-zA-Z0-9_-]*$')
 VALIDATE_CONDITION_RE = re.compile(r'^[a-zA-Z0-9][a-zA-Z0-9_-]*$')
@@ -153,6 +160,7 @@ tasks = None
 conditions = None
 history = None
 deferred_events = None
+dbus_handlers = None
 
 
 # verify that the user folders are present, otherwise create them
@@ -1885,12 +1893,30 @@ def dict_to_EventBasedCondition(d):
 
 #############################################################################
 # a class to easily build DBus signal handlers
-retval_check = namedtuple('retval_check', ['value_idx', 'sub_idx',
-                                           'comparison', 'negate',
-                                           'test_value'])
+param_check = namedtuple('param_check', ['value_idx', 'sub_idx',
+                                         'comparison', 'negate',
+                                         'test_value'])
 
 
 class DBusSignalHandler(object):
+
+    _logger = logging.getLogger(APPLET_NAME)
+
+    # make task level logging easier
+    def _debug(self, msg):
+        self._logger.debug("DBUS: %s: %s" % (self.handler_name, msg))
+
+    def _info(self, msg):
+        self._logger.info("DBUS: %s: %s" % (self.handler_name, msg))
+
+    def _warning(self, msg):
+        self._logger.warning("DBUS: %s: %s" % (self.handler_name, msg))
+
+    def _error(self, msg):
+        self._logger.error("DBUS: %s: %s" % (self.handler_name, msg))
+
+    def _critical(self, msg):
+        self._logger.critical("DBUS: %s: %s" % (self.handler_name, msg))
 
     def __init__(self, name, bus=None, bus_name=None, bus_path=None, interface=None, signal=None):
         self.handler_name = name
@@ -1899,8 +1925,90 @@ class DBusSignalHandler(object):
         self.bus_path = bus_path
         self.interface = interface
         self.signal = signal
-        self.retval_checks = []
+        self.param_checks = []
         self.verify_all_checks = False
+        self.condition = None
+        self.defer = True
+
+    # this will be called by the actual handler with the actual arguments
+    def signal_handler_helper(self, *args):
+        # incomparable values or comparison errors return False by design
+        def perform_check(c):
+            try:
+                v = args[c.value_idx]
+            except IndexError:
+                return False
+            if c.sub_idx is not None:
+                try:
+                    v = v[c.sub_idx]
+                except IndexError:
+                    self._warning("handler %s param #%s: index out of range" % (self.handler_name, c.value_id))
+                    return False
+                except TypeError:
+                    self._warning("handler %s param #%s: subindex provided but returned value is not a list" % (self.handler_name, c.value_id))
+                    return False
+            return_type = type(v)
+            if comparison == DBUS_CHECK_COMPARE_IS:
+                try:
+                    testv = return_type(c.test_value)
+                except ValueError:
+                    self._warning("handler %s param #%s: type conversion impossible: cannot compare" % (self.handler_name, c.value_id))
+                    return False
+                if c.negate:
+                    return not(v == testv)
+                else:
+                    return v == testv
+            elif comparison == DBUS_CHECK_COMPARE_CONTAINS:
+                if type(v) == list:
+                    v = map(lambda x: str(x).strip(), v)
+                else:
+                    v = str(v).strip()
+                testv = str(c.test_value).strip()
+                if c.negate:
+                    return not(testv in v)
+                else:
+                    return testv in v
+            elif comparison == DBUS_CHECK_COMPARE_MATCHES:
+                v = str(v).strip()
+                if c.negate:
+                    return not bool(re.match(str(testv), v))
+                else:
+                    return bool(re.match(str(testv), v))
+            elif comparison == DBUS_CHECK_COMPARE_GREATER:
+                try:
+                    testv = return_type(c.test_value)
+                except ValueError:
+                    self._warning("handler %s param #%s: type conversion impossible: cannot compare" % (self.handler_name, c.value_id))
+                    return False
+                try:
+                    if c.negate:
+                        return not(v > testv)
+                    else:
+                        return v > testv
+                except TypeError:
+                    self._warning("handler %s param #%s: cannot compare" % (self.handler_name, c.value_id))
+                    return False
+            elif comparison == DBUS_CHECK_COMPARE_GREATER:
+                try:
+                    testv = return_type(c.test_value)
+                except ValueError:
+                    self._warning("handler %s param #%s: type conversion impossible: cannot compare" % (self.handler_name, c.value_id))
+                    return False
+                try:
+                    if c.negate:
+                        return not(v < testv)
+                    else:
+                        return v < testv
+                except TypeError:
+                    self._warning("handler %s param #%s: cannot compare" % (self.handler_name, c.value_id))
+                    return False
+        for check in self.param_checks:
+            r = perform_check(check)
+            if self.verify_all_checks and not r:
+                return False
+            elif not self.verify_all_checks and r:
+                return True
+        return True
 
 
 def DBusSignalHandler_to_dict(h):
@@ -1913,7 +2021,7 @@ def DBusSignalHandler_to_dict(h):
     d['bus_path'] = h.bus_path
     d['interface'] = h.interface
     d['signal'] = h.signal
-    d['retval_checks'] = h.retval_checks
+    d['param_checks'] = h.param_checks
     d['verify_all_checks'] = h.verify_all_checks
     applet_log.debug("MAIN: DBus signal handler %s dumped" % h.handler_name)
     return d
@@ -1929,7 +2037,7 @@ def dict_to_DBusSignalHandler(d):
     h.bus_path = d['bus_path']
     h.interface = d['interface']
     h.signal = d['signal']
-    h.retval_checks = d['retval_checks']
+    h.param_checks = d['param_checks']
     h.verify_all_checks = d['verify_all_checks']
     # TODO: if there are more parameters, use d.get('key', default_val)
     applet_log.info("MAIN: DBus signal handler %s restored" % h.handler_name)
