@@ -1937,22 +1937,23 @@ class DBusSignalHandler(object):
             try:
                 v = args[c.value_idx]
             except IndexError:
+                self._warning("handler %s param #%s: index out of range" % (self.handler_name, c.value_idx))
                 return False
             if c.sub_idx is not None:
                 try:
                     v = v[c.sub_idx]
                 except IndexError:
-                    self._warning("handler %s param #%s: index out of range" % (self.handler_name, c.value_id))
+                    self._warning("handler %s param #%s: index out of range" % (self.handler_name, c.value_idx))
                     return False
                 except TypeError:
-                    self._warning("handler %s param #%s: subindex provided but returned value is not a list" % (self.handler_name, c.value_id))
+                    self._warning("handler %s param #%s: subindex provided but returned value is not a list" % (self.handler_name, c.value_idx))
                     return False
             return_type = type(v)
             if comparison == DBUS_CHECK_COMPARE_IS:
                 try:
                     testv = return_type(c.test_value)
                 except ValueError:
-                    self._warning("handler %s param #%s: type conversion impossible: cannot compare" % (self.handler_name, c.value_id))
+                    self._warning("handler %s param #%s: type conversion impossible: cannot compare" % (self.handler_name, c.value_idx))
                     return False
                 if c.negate:
                     return not(v == testv)
@@ -1978,7 +1979,7 @@ class DBusSignalHandler(object):
                 try:
                     testv = return_type(c.test_value)
                 except ValueError:
-                    self._warning("handler %s param #%s: type conversion impossible: cannot compare" % (self.handler_name, c.value_id))
+                    self._warning("handler %s param #%s: type conversion impossible: cannot compare" % (self.handler_name, c.value_idx))
                     return False
                 try:
                     if c.negate:
@@ -1986,13 +1987,13 @@ class DBusSignalHandler(object):
                     else:
                         return v > testv
                 except TypeError:
-                    self._warning("handler %s param #%s: cannot compare" % (self.handler_name, c.value_id))
+                    self._warning("handler %s param #%s: cannot compare" % (self.handler_name, c.value_idx))
                     return False
             elif comparison == DBUS_CHECK_COMPARE_GREATER:
                 try:
                     testv = return_type(c.test_value)
                 except ValueError:
-                    self._warning("handler %s param #%s: type conversion impossible: cannot compare" % (self.handler_name, c.value_id))
+                    self._warning("handler %s param #%s: type conversion impossible: cannot compare" % (self.handler_name, c.value_idx))
                     return False
                 try:
                     if c.negate:
@@ -2000,7 +2001,7 @@ class DBusSignalHandler(object):
                     else:
                         return v < testv
                 except TypeError:
-                    self._warning("handler %s param #%s: cannot compare" % (self.handler_name, c.value_id))
+                    self._warning("handler %s param #%s: cannot compare" % (self.handler_name, c.value_idx))
                     return False
         for check in self.param_checks:
             r = perform_check(check)
