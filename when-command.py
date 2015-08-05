@@ -1884,6 +1884,59 @@ def dict_to_EventBasedCondition(d):
 
 
 #############################################################################
+# a class to easily build DBus signal handlers
+retval_check = namedtuple('retval_check', ['value_idx', 'sub_idx',
+                                           'comparison', 'negate',
+                                           'test_value'])
+
+
+class DBusSignalHandler(object):
+
+    def __init__(self, name, bus=None, bus_name=None, bus_path=None, interface=None, signal=None):
+        self.handler_name = name
+        self.bus = bus
+        self.bus_name = bus_name
+        self.bus_path = bus_path
+        self.interface = interface
+        self.signal = signal
+        self.retval_checks = []
+        self.verify_all_checks = False
+
+
+def DBusSignalHandler_to_dict(h):
+    applet_log.info("MAIN: trying to dump DBus signal handler %s" % h.handler_name)
+    d = {}
+    d['type'] = 'dbus_signal_handler'
+    d['handler_name'] = h.handler_name
+    d['bus'] = h.bus
+    d['bus_name'] = h.bus_name
+    d['bus_path'] = h.bus_path
+    d['interface'] = h.interface
+    d['signal'] = h.signal
+    d['retval_checks'] = h.retval_checks
+    d['verify_all_checks'] = h.verify_all_checks
+    applet_log.debug("MAIN: DBus signal handler %s dumped" % h.handler_name)
+    return d
+
+
+def dict_to_DBusSignalHandler(d):
+    if d['type'] != 'dbus_signal_handler':
+        raise ValueError("incorrect dictionary type")
+    applet_log.debug("MAIN: trying to restore DBus signal handler %s" % d['handler_name'])
+    h = DBusSignalHandler(d['handler_name'])
+    h.bus = d['bus']
+    h.bus_name = d['bus_name']
+    h.bus_path = d['bus_path']
+    h.interface = d['interface']
+    h.signal = d['signal']
+    h.retval_checks = d['retval_checks']
+    h.verify_all_checks = d['verify_all_checks']
+    # TODO: if there are more parameters, use d.get('key', default_val)
+    applet_log.info("MAIN: DBus signal handler %s restored" % h.handler_name)
+    return h
+
+
+#############################################################################
 # dialog boxes and windows
 
 # This dialog box is populated by loading a dummy task from a file, when the
