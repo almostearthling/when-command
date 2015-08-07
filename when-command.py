@@ -127,6 +127,7 @@ EVENT_SESSION_UNLOCK = 'session_unlock'
 EVENT_COMMAND_LINE = 'command_line'
 
 EVENT_COMMAND_LINE_PREAMBLE = 'command_line'
+EVENT_DBUS_SIGNAL_PREAMBLE = 'dbus_signal'
 
 # network manager constants
 NM_STATE_UNKNOWN = 0
@@ -1892,7 +1893,8 @@ def dict_to_EventBasedCondition(d):
 
 
 #############################################################################
-# a class to easily build DBus signal handlers
+# a class to build DBus signal handlers: related conditions are event based
+# conditions with a special event (dbus_signal:ConditionName) to reuse code
 param_check = namedtuple('param_check', ['value_idx', 'sub_idx',
                                          'comparison', 'negate',
                                          'test_value'])
@@ -1927,7 +1929,6 @@ class DBusSignalHandler(object):
         self.signal = signal
         self.param_checks = []
         self.verify_all_checks = False
-        self.condition = None
         self.defer = True
 
     # this will be called by the actual handler with the actual arguments
@@ -2022,6 +2023,21 @@ class DBusSignalHandler(object):
                 return True
         return True
 
+    # the callback to be registered as a signal listener
+    def signal_handler_callback(self, *args):
+        try:
+            signal_caught = self.signal_handler_helper(*args)
+        except Exception as e:
+            self._error("exception %s caught by signal handler %s" % (e, self.handler_name))
+            return
+        if signal_caught:
+            event_name = EVENT_DBUS_SIGNAL_PREAMBLE + ":" + self.handler_name
+            self._info("DBus signal caught: raising event %s" % event_name)
+            if self.defer:
+                deferred_events.append(event_name)
+            else:
+                sysevent_condition_check(event_name)
+
 
 def DBusSignalHandler_to_dict(h):
     applet_log.info("MAIN: trying to dump DBus signal handler %s" % h.handler_name)
@@ -2035,6 +2051,7 @@ def DBusSignalHandler_to_dict(h):
     d['signal'] = h.signal
     d['param_checks'] = h.param_checks
     d['verify_all_checks'] = h.verify_all_checks
+    d['defer'] = h.defer
     applet_log.debug("MAIN: DBus signal handler %s dumped" % h.handler_name)
     return d
 
@@ -2051,6 +2068,7 @@ def dict_to_DBusSignalHandler(d):
     h.signal = d['signal']
     h.param_checks = d['param_checks']
     h.verify_all_checks = d['verify_all_checks']
+    h.defer = d['defer']
     # TODO: if there are more parameters, use d.get('key', default_val)
     applet_log.info("MAIN: DBus signal handler %s restored" % h.handler_name)
     return h
