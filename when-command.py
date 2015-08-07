@@ -1941,7 +1941,16 @@ class DBusSignalHandler(object):
                 return False
             if c.sub_idx is not None:
                 try:
-                    v = v[c.sub_idx]
+                    if isinstance(v, dict):
+                        try:
+                            v = v[str(c.sub_idx)]
+                        except KeyError:
+                            self._warning("handler %s param #%s: subindex key not found" % (self.handler_name, c.value_idx))
+                            return False
+                    elif isinstance(v, list):
+                        v = v[int(c.sub_idx)]
+                    else:
+                        self._warning("handler %s param #%s: subindex provided but returned value is not a list" % (self.handler_name, c.value_idx))
                 except IndexError:
                     self._warning("handler %s param #%s: index out of range" % (self.handler_name, c.value_idx))
                     return False
@@ -1960,8 +1969,10 @@ class DBusSignalHandler(object):
                 else:
                     return v == testv
             elif comparison == DBUS_CHECK_COMPARE_CONTAINS:
-                if type(v) == list:
+                if isinstance(v, list):
                     v = map(lambda x: str(x).strip(), v)
+                elif isinstance(v, dict):
+                    v = map(lambda x: str(x).strip(), v.values())
                 else:
                     v = str(v).strip()
                 testv = str(c.test_value).strip()
