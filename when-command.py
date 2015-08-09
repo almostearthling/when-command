@@ -161,7 +161,7 @@ tasks = None
 conditions = None
 history = None
 deferred_events = None
-dbus_handlers = None
+signal_handlers = None
 
 
 # verify that the user folders are present, otherwise create them
@@ -840,6 +840,74 @@ class Conditions(object):
         elif cond_name:
             try:
                 return list(filter(lambda x: cond_name == x.cond_name, self._list))[0]
+            except IndexError as e:
+                return None
+
+
+class SignalHandlers(object):
+
+    _list = []
+    _lock = threading.Lock()
+
+    def __iter__(self):
+        for handler in self._list:
+            yield handler
+
+    names = property(lambda self: [h.handler_name for h in self._list])
+
+    def save(self):
+        l = []
+        for h in self._list:
+            h.dump()
+            l.append((h.handler_name, c.__class__.__name__))
+        file_name = os.path.join(USER_CONFIG_FOLDER, 'signalhandler.list')
+        with open(file_name, 'wb') as f:
+            pickle.dump(l, f)
+
+    def load(self):
+        self._list = []
+        self._last_id = 0
+        file_name = os.path.join(USER_CONFIG_FOLDER, 'signalhandler.list')
+        with open(file_name, 'rb') as f:
+            l = pickle.load(f)
+        for x, xc in l:
+            h = SignalHandler.restore(x)
+            h.reset()
+            self.add(h)
+
+    def add(self, handler):
+        if handler.handler_name in [h.handler_name for h in self._list]:
+            applet_log.info("GLOBAL: adding signal handler %s" % handler.handler_name)
+            self._lock.acquire()
+            l = list(filter(lambda x: x.handler_name != handler.handler_name, self._list))
+            l.append(handler)
+            handler.register()
+            self._list = l
+            self._lock.release()
+        else:
+            self._lock.acquire()
+            handler.register()
+            self._list.append(handler)
+            self._lock.release()
+
+    def remove(self, handler_name=None):
+        cond = None
+        if handler_name:
+            handler = next((h for h in self._list if h.handler_name == handler_name), None)
+        if handler:
+            self._lock.acquire()
+            handler.unregister()
+            self._list.remove(handler)
+            handler.unlink_file()
+            self._lock.release()
+            return True
+        else:
+            return False
+
+    def get(self, handler_name=None):
+        if handler_name:
+            try:
+                return list(filter(lambda x: handler_name == x.handler_name, self._list))[0]
             except IndexError as e:
                 return None
 
@@ -1900,7 +1968,7 @@ param_check = namedtuple('param_check', ['value_idx', 'sub_idx',
                                          'test_value'])
 
 
-class DBusSignalHandler(object):
+class SignalHandler(object):
 
     _logger = logging.getLogger(APPLET_NAME)
 
@@ -2038,8 +2106,16 @@ class DBusSignalHandler(object):
             else:
                 sysevent_condition_check(event_name)
 
+    def register(self):
+        # TODO: write signal handler registration/unregistration code
+        pass
 
-def DBusSignalHandler_to_dict(h):
+    def unregister(self):
+        # TODO: write signal handler registration/unregistration code
+        pass
+
+
+def SignalHandler_to_dict(h):
     applet_log.info("MAIN: trying to dump DBus signal handler %s" % h.handler_name)
     d = {}
     d['type'] = 'dbus_signal_handler'
@@ -2056,11 +2132,11 @@ def DBusSignalHandler_to_dict(h):
     return d
 
 
-def dict_to_DBusSignalHandler(d):
+def dict_to_SignalHandler(d):
     if d['type'] != 'dbus_signal_handler':
         raise ValueError("incorrect dictionary type")
     applet_log.debug("MAIN: trying to restore DBus signal handler %s" % d['handler_name'])
-    h = DBusSignalHandler(d['handler_name'])
+    h = SignalHandler(d['handler_name'])
     h.bus = d['bus']
     h.bus_name = d['bus_name']
     h.bus_path = d['bus_path']
@@ -3711,6 +3787,7 @@ if __name__ == '__main__':
     config_loglevel()
     tasks = Tasks()
     conditions = Conditions()
+    signal_handlers = SignalHandlers()
     deferred_events = DeferredEvents()
 
     # initialize global variables that require graphic environment
