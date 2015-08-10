@@ -2,7 +2,20 @@
 <!-- Generated with glade 3.16.1 -->
 <interface>
   <requires lib="gtk+" version="3.10"/>
-  <object class="GtkListStore" id="store_listTests"/>
+  <object class="GtkListStore" id="store_listTests">
+    <columns>
+      <!-- column-name Parameter -->
+      <column type="gchararray"/>
+      <!-- column-name Sub -->
+      <column type="gchararray"/>
+      <!-- column-name Negation -->
+      <column type="gchararray"/>
+      <!-- column-name Comparison -->
+      <column type="gchararray"/>
+      <!-- column-name Test Value -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
   <object class="GtkDialog" id="dlgAddDBusSignal">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">DBus Signal Handler Editor</property>
@@ -80,11 +93,9 @@
                 <property name="margin_right">15</property>
                 <property name="margin_top">10</property>
                 <property name="margin_bottom">10</property>
-                <property name="hexpand">True</property>
                 <property name="row_spacing">5</property>
                 <property name="column_spacing">5</property>
                 <property name="row_homogeneous">True</property>
-                <property name="column_homogeneous">True</property>
                 <child>
                   <object class="GtkLabel" id="lblName">
                     <property name="visible">True</property>
@@ -103,11 +114,13 @@
                   <object class="GtkComboBoxText" id="cbName">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="valign">center</property>
                     <property name="margin_right">10</property>
                     <property name="has_entry">True</property>
                     <child internal-child="entry">
                       <object class="GtkEntry" id="txtName">
-                        <property name="can_focus">False</property>
+                        <property name="can_focus">True</property>
+                        <signal name="changed" handler="change_txtValues" swapped="no"/>
                       </object>
                     </child>
                   </object>
@@ -142,21 +155,6 @@
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">2</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkButton" id="btnVerify">
-                    <property name="label" translatable="yes">Verify</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
-                    <property name="relief">half</property>
-                  </object>
-                  <packing>
-                    <property name="left_attach">7</property>
-                    <property name="top_attach">3</property>
                     <property name="width">1</property>
                     <property name="height">1</property>
                   </packing>
@@ -229,6 +227,7 @@
                   <object class="GtkEntry" id="txtBusID">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <signal name="changed" handler="change_txtValues" swapped="no"/>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
@@ -241,6 +240,7 @@
                   <object class="GtkEntry" id="txtBusPath">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <signal name="changed" handler="change_txtValues" swapped="no"/>
                   </object>
                   <packing>
                     <property name="left_attach">5</property>
@@ -253,6 +253,8 @@
                   <object class="GtkEntry" id="txtInterface">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="hexpand">True</property>
+                    <signal name="changed" handler="change_txtValues" swapped="no"/>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
@@ -265,11 +267,12 @@
                   <object class="GtkEntry" id="txtSignal">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <signal name="changed" handler="change_txtValues" swapped="no"/>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
                     <property name="top_attach">3</property>
-                    <property name="width">6</property>
+                    <property name="width">7</property>
                     <property name="height">1</property>
                   </packing>
                 </child>
@@ -324,6 +327,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="margin_bottom">10</property>
+                    <property name="hexpand">True</property>
                     <child>
                       <object class="GtkLabel" id="lblValueNum">
                         <property name="visible">True</property>
@@ -433,7 +437,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="btnAdd">
+                      <object class="GtkButton" id="btnAddTest">
                         <property name="label" translatable="yes">Update</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
@@ -442,6 +446,7 @@
                         <property name="margin_left">10</property>
                         <property name="hexpand">False</property>
                         <property name="vexpand">False</property>
+                        <signal name="clicked" handler="click_btnAddTest" swapped="no"/>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -450,7 +455,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="btnRemove">
+                      <object class="GtkButton" id="btnRemoveTest">
                         <property name="label" translatable="yes">Remove</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
@@ -459,6 +464,7 @@
                         <property name="margin_left">5</property>
                         <property name="hexpand">False</property>
                         <property name="vexpand">False</property>
+                        <signal name="clicked" handler="click_btnRemoveTest" swapped="no"/>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -538,6 +544,7 @@
     </child>
     <action-widgets>
       <action-widget response="9">btnDelete</action-widget>
+      <action-widget response="-1">buttonCancel</action-widget>
     </action-widgets>
   </object>
 </interface>

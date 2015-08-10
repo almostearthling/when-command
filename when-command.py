@@ -68,7 +68,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.6.4-beta.2"
+APPLET_VERSION = "0.6.5-beta.1"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -93,6 +93,13 @@ DBUS_CHECK_COMPARE_LESS = 'lt'
 # validation constants
 VALIDATE_TASK_RE = re.compile(r'^[a-zA-Z0-9][a-zA-Z0-9_-]*$')
 VALIDATE_CONDITION_RE = re.compile(r'^[a-zA-Z0-9][a-zA-Z0-9_-]*$')
+VALIDATE_SIGNAL_HANDLER_RE = re.compile(r'^[a-zA-Z0-9][a-zA-Z0-9_-]*$')
+
+# see http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names
+VALIDATE_DBUS_NAME_RE = re.compile(r'^[-a-zA-Z_][-a-zA-Z0-9_]*(\.[-a-zA-Z_][-a-zA-Z0-9_]*)+\.?$')
+VALIDATE_DBUS_PATH_RE = re.compile(r'^[a-zA-Z0-9_]+(\/[a-zA-Z0-9_]+)+$')
+VALIDATE_DBUS_INTERFACE_RE = re.compile(r'^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)+\.?$')
+VALIDATE_DBUS_SIGNAL_RE = re.compile(r'^[a-zA-Z_][a-zA-Z0-9_]*$')
 
 # user interface constants
 UI_INTERVALS_MINUTES = [1, 2, 3, 5, 15, 30, 60]
@@ -284,6 +291,7 @@ resources.LISTCOL_SIGNAL_PARAMETER_SUB = "Sub"
 resources.LISTCOL_SIGNAL_NEGATE = "Negate"
 resources.LISTCOL_SIGNAL_OPERATOR = "Compare"
 resources.LISTCOL_SIGNAL_VALUE = "Value"
+# resources.LISTCOL_SIGNAL_ROWID = "Row ID"
 
 resources.COMMAND_LINE_HELP_VERSION = "show applet version"
 resources.COMMAND_LINE_HELP_SHOW_SETTINGS = "show settings dialog box for the running instance [R]"
@@ -890,8 +898,11 @@ class SignalHandlers(object):
             self.add(h)
 
     def add(self, handler):
+        applet_log.info("GLOBAL: adding signal handler %s" % handler.handler_name)
         if handler.handler_name in [h.handler_name for h in self._list]:
-            applet_log.info("GLOBAL: adding signal handler %s" % handler.handler_name)
+            applet_log.info("GLOBAL: unregistering old signal handler %s" % handler.handler_name)
+            old_handler = self.get(handler.handler_name)
+            old_handler.unregister()
             self._lock.acquire()
             l = list(filter(lambda x: x.handler_name != handler.handler_name, self._list))
             l.append(handler)
@@ -909,6 +920,7 @@ class SignalHandlers(object):
         if handler_name:
             handler = next((h for h in self._list if h.handler_name == handler_name), None)
         if handler:
+            applet_log.info("GLOBAL: removing signal handler %s" % handler_name)
             self._lock.acquire()
             handler.unregister()
             self._list.remove(handler)
@@ -2014,6 +2026,20 @@ class SignalHandler(object):
         self.verify_all_checks = False
         self.defer = True
 
+    def add_check(self, value_idx, sub_idx, negate, comparison, test_value):
+        t = param_check(
+            value_idx,
+            sub_idx,
+            comparison,
+            negate,
+            test_value,
+        )
+        self.param_checks = list(filter(lambda x: x.value_idx != value_idx and x.sub_idx != sub_idx, self.param_checks))
+        self.param_checks.append(t)
+
+    def remove_check(self, value_idx, sub_idx):
+        self.param_checks = list(filter(lambda x: x.value_idx != value_idx and x.sub_idx != sub_idx, self.param_checks))
+
     # this will be called by the actual handler with the actual arguments
     def signal_handler_helper(self, *args):
         # incomparable values or comparison errors return False by design
@@ -2042,13 +2068,15 @@ class SignalHandler(object):
                     self._warning("handler %s param #%s: subindex provided but returned value is not a list" % (self.handler_name, c.value_idx))
                     return False
             return_type = type(v)
+            comparison = c.comparison
+            negate = c.negate
             if comparison == DBUS_CHECK_COMPARE_IS:
                 try:
                     testv = return_type(c.test_value)
                 except ValueError:
                     self._warning("handler %s param #%s: type conversion impossible: cannot compare" % (self.handler_name, c.value_idx))
                     return False
-                if c.negate:
+                if negate:
                     return not(v == testv)
                 else:
                     return v == testv
@@ -2060,13 +2088,13 @@ class SignalHandler(object):
                 else:
                     v = str(v).strip()
                 testv = str(c.test_value).strip()
-                if c.negate:
+                if negate:
                     return not(testv in v)
                 else:
                     return testv in v
             elif comparison == DBUS_CHECK_COMPARE_MATCHES:
                 v = str(v).strip()
-                if c.negate:
+                if negate:
                     return not bool(re.match(str(testv), v))
                 else:
                     return bool(re.match(str(testv), v))
@@ -2077,21 +2105,21 @@ class SignalHandler(object):
                     self._warning("handler %s param #%s: type conversion impossible: cannot compare" % (self.handler_name, c.value_idx))
                     return False
                 try:
-                    if c.negate:
+                    if negate:
                         return not(v > testv)
                     else:
                         return v > testv
                 except TypeError:
                     self._warning("handler %s param #%s: cannot compare" % (self.handler_name, c.value_idx))
                     return False
-            elif comparison == DBUS_CHECK_COMPARE_GREATER:
+            elif comparison == DBUS_CHECK_COMPARE_LESS:
                 try:
                     testv = return_type(c.test_value)
                 except ValueError:
                     self._warning("handler %s param #%s: type conversion impossible: cannot compare" % (self.handler_name, c.value_idx))
                     return False
                 try:
-                    if c.negate:
+                    if negate:
                         return not(v < testv)
                     else:
                         return v < testv
@@ -2123,7 +2151,14 @@ class SignalHandler(object):
 
     def register(self):
         try:
-            proxy = self.bus.get_object(self.bus_name, self.bus_path)
+            if self.bus == 'session':
+                bus = dbus.SessionBus()
+            elif self.bus == 'system':
+                bus = dbus.SystemBus()
+            else:
+                self._error("NTBS: invalid bus specification %s: not registering %s:%s handler" % (self.bus, self.interface, self.signal))
+                return None
+            proxy = bus.get_object(self.bus_name, self.bus_path)
             manager = dbus.Interface(proxy, self.bus_interface)
             self.signal_match = manager.connect_to_signal(self.signal, self.signal_handler_callback)
             return manager
@@ -2938,6 +2973,220 @@ class ConditionDialog(object):
             return None
 
 
+class SignalDialog(object):
+
+    def __init__(self):
+        self.builder = Gtk.Builder().new_from_string(DIALOG_ADD_DBUS_SIGNAL, -1)
+        self.builder.connect_signals(self)
+        o = self.builder.get_object
+        self.dialog = o('dlgAddDBusSignal')
+        self.stored_handlers = signal_handlers.names
+        self.stored_handlers.sort()
+        cb_handlers = o('cbName')
+        cb_handlers.get_model().clear()
+        for x in self.stored_handlers:
+            cb_handlers.append_text(x)
+        l = o('listTests')
+        renderer = Gtk.CellRendererText()
+        c = Gtk.TreeViewColumn(resources.LISTCOL_SIGNAL_PARAMETER, renderer, text=0)
+        l.append_column(c)
+        renderer = Gtk.CellRendererText()
+        c = Gtk.TreeViewColumn(resources.LISTCOL_SIGNAL_PARAMETER_SUB, renderer, text=1)
+        l.append_column(c)
+        renderer = Gtk.CellRendererText()
+        c = Gtk.TreeViewColumn(resources.LISTCOL_SIGNAL_NEGATE, renderer, text=2)
+        l.append_column(c)
+        renderer = Gtk.CellRendererText()
+        c = Gtk.TreeViewColumn(resources.LISTCOL_SIGNAL_OPERATOR, renderer, text=3)
+        l.append_column(c)
+        renderer = Gtk.CellRendererText()
+        c = Gtk.TreeViewColumn(resources.LISTCOL_SIGNAL_VALUE, renderer, text=4)
+        l.append_column(c)
+        self.signal_param_tests = []
+
+    def validate_int(self, s, min_value=None, max_value=None):
+        try:
+            n = int(s)
+            if min_value is not None and n < min_value:
+                return None
+            elif max_value is not None and n > max_value:
+                return None
+            else:
+                return n
+        except ValueError as e:
+            return None
+
+    def update_listTests(self):
+        o = self.builder.get_object
+        m = o('listTests').get_model()
+        m.clear()
+        for check in self.signal_param_tests:
+            row = [
+                str(check.value_idx),
+                "" if not check.sub_idx else str(check.sub_idx),
+                "NOT" if check.negate else "",
+                {
+                    DBUS_CHECK_COMPARE_IS: "=",
+                    DBUS_CHECK_COMPARE_CONTAINS: "CONTAINS",
+                    DBUS_CHECK_COMPARE_MATCHES: "MATCHES",
+                    DBUS_CHECK_COMPARE_LESS: "<",
+                    DBUS_CHECK_COMPARE_GREATER: ">",
+                }[check.comparison],
+                str(check.test_value),
+            ]
+            m.append(row)
+
+    def click_btnAddTest(self, _):
+        o = self.builder.get_object
+        s = o('txtValueNum').get_text()
+        if not s:
+            applet_log.debug("DLGSIG: not adding signal check without param index")
+            return
+        try:
+            value_idx = int(s)
+        except:
+            applet_log.debug("DLGSIG: not adding signal check with bad param index")
+            return
+        sub_idx = o('txtValueSub').get_text()
+        if not sub_idx:
+            sub_idx = None
+        l = list(filter(lambda x: x.value_idx != value_idx and x.sub_idx != sub_idx, self.signal_param_tests))
+        check = param_check(
+            value_idx,
+            sub_idx,
+            [
+                DBUS_CHECK_COMPARE_IS,
+                DBUS_CHECK_COMPARE_CONTAINS,
+                DBUS_CHECK_COMPARE_MATCHES,
+                DBUS_CHECK_COMPARE_LESS,
+                DBUS_CHECK_COMPARE_GREATER,
+            ][o('cbOperatorCompare').get_active()],
+            bool(o('chkOperatorNot').get_active()),
+            str(o('txtTestValue').get_text()),
+        )
+        l.append(check)
+        self.signal_param_tests = l
+        self.update_listTests()
+        o('txtValueNum').set_text("")
+        o('txtValueSub').set_text("")
+        o('chkOperatorNot').set_active(False)
+        o('cbOperatorCompare').set_active(0)
+        o('txtTestValue').set_text("")
+
+    def click_btnRemoveTest(self, _):
+        o = self.builder.get_object
+        s = o('txtValueNum').get_text()
+        if not s:
+            applet_log.debug("DLGSIG: not removing signal check without param index")
+            return
+        try:
+            value_idx = int(s)
+        except:
+            applet_log.debug("DLGSIG: not removing signal check with bad param index")
+            return
+        sub_idx = o('txtValueSub').get_text()
+        if not sub_idx:
+            sub_idx = None
+        l = list(filter(lambda x: x.value_idx != value_idx and x.sub_idx != sub_idx, self.signal_param_tests))
+        self.signal_param_tests = l
+        self.update_listTests()
+        # o('txtValueNum').set_text("")
+        # o('txtValueSub').set_text("")
+        # o('chkOperatorNot').set_active(False)
+        # o('cbOperatorCompare').set_active(0)
+        # o('txtTestValue').set_text("")
+
+    def change_txtValues(self, _):
+        o = self.builder.get_object
+        name = o('txtName').get_text()
+        valid_name = bool(VALIDATE_SIGNAL_HANDLER_RE.match(name))
+        valid_busname = bool(VALIDATE_DBUS_NAME_RE.match(name))
+        valid_path = bool(VALIDATE_DBUS_PATH_RE.match(name))
+        valid_interface = bool(VALIDATE_DBUS_INTERFACE_RE.match(name))
+        valid_signal = bool(VALIDATE_DBUS_SIGNAL_RE.match(name))
+        if valid_name:
+            if valid_busname and valid_path and valid_interface and valid_signal:
+                o('buttonOK').set_sensitive(True)
+            else:
+                o('buttonOK').set_sensitive(False)
+            if name in self.stored_handlers:
+                o('btnDelete').set_sensitive(True)
+            else:
+                o('btnDelete').set_sensitive(False)
+        else:
+            o('buttonOK').set_sensitive(False)
+            o('btnDelete').set_sensitive(False)
+
+    def choose_handler(self, box):
+        o = self.builder.get_object
+        name = box.get_active_text()
+        self.default_box()
+        if name in self.stored_handlers:
+            handler = signal_handlers.get(handler_name=name)
+            o('txtValueNum').set_text("")
+            o('txtValueSub').set_text("")
+            o('txtTestValue').set_text("")
+            if handler.bus == 'session':
+                o('cbBusType').set_active(0)
+            elif handler.bus == 'system':
+                o('cbBusType').set_active(1)
+            o('txtBusID').set_text(handler.bus_name)
+            o('txtBusPath').set_text(handler.bus_path)
+            o('txtInterface').set_text(handler.interface)
+            o('txtSignal').set_text(handler.signal)
+            self.signal_param_tests = handler.param_checks.copy()
+            self.update_listTests()
+            if handler.verify_all_checks:
+                o('rdAll').set_active(True)
+            else:
+                o('rdAny').set_active(True)
+
+    def default_box(self):
+        o = self.builder.get_object
+        o('txtName').set_text("")
+        o('cbBusType').set_active(0)
+        o('txtBusID').set_text("")
+        o('txtBusPath').set_text("")
+        o('txtInterface').set_text("")
+        o('txtSignal').set_text("")
+        o('txtValueNum').set_text("")
+        o('txtValueSub').set_text("")
+        o('chkOperatorNot').set_active(False)
+        o('cbOperatorCompare').set_active(0)
+        o('txtTestValue').set_text("")
+        o('rdAny').set_active(True)
+        o('store_listTests').clear()
+        o('buttonOK').set_sensitive(False)
+        o('btnDelete').set_sensitive(False)
+
+    def run(self):
+        self.default_box()
+        self.dialog.set_keep_above(True)
+        self.dialog.present()
+        ret = self.dialog.run()
+        self.dialog.hide()
+        self.dialog.set_keep_above(False)
+        if ret == ACTION_OK:
+            name = o('txtName').get_text()
+            bus_name = o('txtName').get_text()
+            bus_path = o('txtName').get_text()
+            interface = o('txtName').get_text()
+            signal = o('txtName').get_text()
+            if o('cbBusType').get_active() == 0:
+                bus = 'session'
+            elif o('cbBusType').get_active() == 1:
+                bus = 'system'
+            if o('rdAny').get_active():
+                verify_all = False
+            elif o('rdAll').get_active():
+                verify_all = True
+            h = SignalHandler(name, bus, bus_name, bus_path, interface, signal)
+            for x in self.signal_param_tests:
+                h.add_check(x.value_idx, x.sub_idx, x.negate, x.comparison, x.test_value)
+            signal_handlers.add(h)
+            self.stored_handlers = signal_handlers.names
+
+
 # settings dialog
 class SettingsDialog(object):
 
@@ -3152,43 +3401,6 @@ class HistoryDialog(object):
 
     def run(self):
         self.update_list()
-        self.dialog.set_keep_above(True)
-        self.dialog.present()
-        ret = self.dialog.run()
-        self.dialog.hide()
-        self.dialog.set_keep_above(False)
-
-
-class SignalDialog(object):
-
-    def __init__(self):
-        self.builder = Gtk.Builder().new_from_string(DIALOG_ADD_DBUS_SIGNAL, -1)
-        self.builder.connect_signals(self)
-        o = self.builder.get_object
-        self.dialog = o('dlgAddDBusSignal')
-        l = o('listTests')
-        renderer = Gtk.CellRendererText()
-        c = Gtk.TreeViewColumn(resources.LISTCOL_SIGNAL_PARAMETER, renderer, text=0)
-        l.append_column(c)
-        renderer = Gtk.CellRendererText()
-        c = Gtk.TreeViewColumn(resources.LISTCOL_SIGNAL_PARAMETER_SUB, renderer, text=1)
-        l.append_column(c)
-        renderer = Gtk.CellRendererText()
-        c = Gtk.TreeViewColumn(resources.LISTCOL_SIGNAL_NEGATE, renderer, text=2)
-        l.append_column(c)
-        renderer = Gtk.CellRendererText()
-        c = Gtk.TreeViewColumn(resources.LISTCOL_SIGNAL_OPERATOR, renderer, text=3)
-        l.append_column(c)
-        renderer = Gtk.CellRendererText()
-        c = Gtk.TreeViewColumn(resources.LISTCOL_SIGNAL_VALUE, renderer, text=4)
-        l.append_column(c)
-
-    def default_box(self):
-        # TODO: update dialog box with default values
-        pass
-
-    def run(self):
-        self.default_box()
         self.dialog.set_keep_above(True)
         self.dialog.present()
         ret = self.dialog.run()
