@@ -212,6 +212,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="resize_mode">queue</property>
+                    <property name="active">0</property>
                     <items>
                       <item id="1" translatable="yes">Session Bus</item>
                       <item id="2" translatable="yes">System Bus</item>
@@ -373,29 +374,13 @@
                         <property name="halign">center</property>
                         <property name="margin_right">10</property>
                         <property name="hexpand">False</property>
-                        <property name="width_chars">2</property>
+                        <property name="width_chars">6</property>
                         <property name="input_purpose">digits</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">True</property>
                         <property name="position">3</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkComboBoxText" id="cbOperatorCompare">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <items>
-                          <item id="1" translatable="yes">IS</item>
-                          <item id="2" translatable="yes">CONTAINS</item>
-                          <item id="3" translatable="yes">MATCHES</item>
-                        </items>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">4</property>
                       </packing>
                     </child>
                     <child>
@@ -411,6 +396,25 @@
                       </object>
                       <packing>
                         <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkComboBoxText" id="cbOperatorCompare">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="active">0</property>
+                        <items>
+                          <item id="1" translatable="yes">IS</item>
+                          <item id="2" translatable="yes">CONTAINS</item>
+                          <item id="3" translatable="yes">MATCHES</item>
+                          <item id="4" translatable="yes">&lt;</item>
+                          <item id="5" translatable="yes">&gt;</item>
+                        </items>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
                         <property name="fill">True</property>
                         <property name="position">5</property>
                       </packing>
@@ -419,6 +423,8 @@
                       <object class="GtkEntry" id="txtTestValue">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
+                        <property name="hexpand">True</property>
+                        <property name="width_chars">10</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -434,7 +440,7 @@
                         <property name="receives_default">True</property>
                         <property name="valign">center</property>
                         <property name="margin_left">10</property>
-                        <property name="hexpand">True</property>
+                        <property name="hexpand">False</property>
                         <property name="vexpand">False</property>
                       </object>
                       <packing>
@@ -451,7 +457,7 @@
                         <property name="receives_default">True</property>
                         <property name="valign">center</property>
                         <property name="margin_left">5</property>
-                        <property name="hexpand">True</property>
+                        <property name="hexpand">False</property>
                         <property name="vexpand">False</property>
                       </object>
                       <packing>
