@@ -241,6 +241,7 @@ DIALOG_ADD_CONDITION = load_applet_dialog('when-command-edit-condition')
 DIALOG_SETTINGS = load_applet_dialog('when-command-settings')
 DIALOG_TASK_HISTORY = load_applet_dialog('when-command-task-history')
 DIALOG_ABOUT = load_applet_dialog('when-command-about')
+DIALOG_ADD_DBUS_SIGNAL = load_applet_dialog('when-command-edit-dbus-signal')
 
 
 # resource strings (consider making a module out of them)
@@ -278,12 +279,18 @@ resources.LISTCOL_HISTORY_EXITCODE = "Exit Code"
 resources.LISTCOL_HISTORY_SUCCESS = "Result"
 resources.LISTCOL_HISTORY_REASON = "Reason"
 resources.LISTCOL_HISTORY_ROWID = "Row ID"
+resources.LISTCOL_SIGNAL_PARAMETER = "Param"
+resources.LISTCOL_SIGNAL_PARAMETER_SUB = "Sub"
+resources.LISTCOL_SIGNAL_NEGATE = "Negate"
+resources.LISTCOL_SIGNAL_OPERATOR = "Compare"
+resources.LISTCOL_SIGNAL_VALUE = "Value"
 
 resources.COMMAND_LINE_HELP_VERSION = "show applet version"
 resources.COMMAND_LINE_HELP_SHOW_SETTINGS = "show settings dialog box for the running instance [R]"
 resources.COMMAND_LINE_HELP_SHOW_HISTORY = "show history dialog box for the running instance [R]"
 resources.COMMAND_LINE_HELP_SHOW_TASKS = "show tasks dialog box for the running instance [R]"
 resources.COMMAND_LINE_HELP_SHOW_CONDITIONS = "show conditions box for the running instance [R]"
+resources.COMMAND_LINE_HELP_SHOW_DBUS_SIGNALS = "show dbus signals box for the running instance [R]"
 resources.COMMAND_LINE_HELP_RESET_CONFIG = "reset general configuration to default [S]"
 resources.COMMAND_LINE_HELP_SHOW_ICON = "show applet icon [N]"
 resources.COMMAND_LINE_HELP_CLEAR = "clear all tasks and conditions [S]"
@@ -482,6 +489,8 @@ class AppletDBusService(dbus.service.Object):
             applet.dlgcondition(None)
         elif dlgname == 'history':
             applet.dlghistory(None)
+        elif dlgname == 'dbus_signal':
+            applet.dlgdbussignal(None)
 
     @dbus.service.method(APPLET_BUS_NAME)
     def show_icon(self, show=True):
@@ -3150,6 +3159,43 @@ class HistoryDialog(object):
         self.dialog.set_keep_above(False)
 
 
+class SignalDialog(object):
+
+    def __init__(self):
+        self.builder = Gtk.Builder().new_from_string(DIALOG_ADD_DBUS_SIGNAL, -1)
+        self.builder.connect_signals(self)
+        o = self.builder.get_object
+        self.dialog = o('dlgAddDBusSignal')
+        l = o('listTests')
+        renderer = Gtk.CellRendererText()
+        c = Gtk.TreeViewColumn(resources.LISTCOL_SIGNAL_PARAMETER, renderer, text=0)
+        l.append_column(c)
+        renderer = Gtk.CellRendererText()
+        c = Gtk.TreeViewColumn(resources.LISTCOL_SIGNAL_PARAMETER_SUB, renderer, text=1)
+        l.append_column(c)
+        renderer = Gtk.CellRendererText()
+        c = Gtk.TreeViewColumn(resources.LISTCOL_SIGNAL_NEGATE, renderer, text=2)
+        l.append_column(c)
+        renderer = Gtk.CellRendererText()
+        c = Gtk.TreeViewColumn(resources.LISTCOL_SIGNAL_OPERATOR, renderer, text=3)
+        l.append_column(c)
+        renderer = Gtk.CellRendererText()
+        c = Gtk.TreeViewColumn(resources.LISTCOL_SIGNAL_VALUE, renderer, text=4)
+        l.append_column(c)
+
+    def default_box(self):
+        # TODO: update dialog box with default values
+        pass
+
+    def run(self):
+        self.default_box()
+        self.dialog.set_keep_above(True)
+        self.dialog.present()
+        ret = self.dialog.run()
+        self.dialog.hide()
+        self.dialog.set_keep_above(False)
+
+
 class AboutDialog(object):
 
     def __init__(self):
@@ -3306,6 +3352,7 @@ class AppletIndicator(Gtk.Application):
         self.dialog_about = AboutDialog()
         self.dialog_settings = SettingsDialog()
         self.dialog_history = HistoryDialog()
+        self.dialog_add_dbus_signal = SignalDialog()
 
     def applet_activate(self, applet_instance):
         self.main()
@@ -3473,6 +3520,12 @@ class AppletIndicator(Gtk.Application):
         self.icon_dialog()
         applet_log.debug("MAIN: opening condition dialog")
         self.dialog_add_condition.run()
+        self.icon_dialog(False)
+
+    def dlgdbussignal(self, _):
+        self.icon_dialog()
+        applet_log.debug("MAIN: opening DBus signal definition dialog")
+        self.dialog_add_dbus_signal.run()
         self.icon_dialog(False)
 
     def dlgabout(self, _):
@@ -3916,6 +3969,11 @@ if __name__ == '__main__':
             help=resources.COMMAND_LINE_HELP_SHOW_CONDITIONS
         )
         parser.add_argument(
+            '-d', '--show-signals',
+            dest='show_dbus_signals', action='store_true',
+            help=resources.COMMAND_LINE_HELP_SHOW_DBUS_SIGNALS
+        )
+        parser.add_argument(
             '-R', '--reset-config',
             dest='reset_config', action='store_true',
             help=resources.COMMAND_LINE_HELP_RESET_CONFIG
@@ -4010,6 +4068,12 @@ if __name__ == '__main__':
                 sys.exit(2)
             else:
                 show_box('condition', verbose)
+        elif args.show_dbus_signals:
+            if not running:
+                oerr("could not find a running instance, please start it first", verbose)
+                sys.exit(2)
+            else:
+                show_box('dbus_signal', verbose)
 
         if args.export_items:
             if args.export_items == '*':
