@@ -129,6 +129,11 @@ EVENT_COMMAND_LINE = 'command_line'
 EVENT_COMMAND_LINE_PREAMBLE = 'command_line'
 EVENT_DBUS_SIGNAL_PREAMBLE = 'dbus_signal'
 
+# file names
+FILE_CONFIG_LIST_TASKS = 'task.list'
+FILE_CONFIG_LIST_CONDITIONS = 'condition.list'
+FILE_CONFIG_LIST_SIGNAL_HANDLERS = 'signalhandler.list'
+
 # network manager constants
 NM_STATE_UNKNOWN = 0
 NM_STATE_ASLEEP = 10
@@ -698,14 +703,14 @@ class Tasks(object):
         for t in self._list:
             t.dump()
             l.append(t.task_name)
-        file_name = os.path.join(USER_CONFIG_FOLDER, 'task.list')
+        file_name = os.path.join(USER_CONFIG_FOLDER, FILE_CONFIG_LIST_TASKS)
         with open(file_name, 'wb') as f:
             pickle.dump(l, f)
 
     def load(self):
         self._list = []
         self._last_id = 0
-        file_name = os.path.join(USER_CONFIG_FOLDER, 'task.list')
+        file_name = os.path.join(USER_CONFIG_FOLDER, FILE_CONFIG_LIST_TASKS)
         with open(file_name, 'rb') as f:
             l = pickle.load(f)
         for x in l:
@@ -786,14 +791,14 @@ class Conditions(object):
         for c in self._list:
             c.dump()
             l.append((c.cond_name, c.__class__.__name__))
-        file_name = os.path.join(USER_CONFIG_FOLDER, 'condition.list')
+        file_name = os.path.join(USER_CONFIG_FOLDER, FILE_CONFIG_LIST_CONDITIONS)
         with open(file_name, 'wb') as f:
             pickle.dump(l, f)
 
     def load(self):
         self._list = []
         self._last_id = 0
-        file_name = os.path.join(USER_CONFIG_FOLDER, 'condition.list')
+        file_name = os.path.join(USER_CONFIG_FOLDER, FILE_CONFIG_LIST_CONDITIONS)
         with open(file_name, 'rb') as f:
             l = pickle.load(f)
         for x, xc in l:
@@ -860,14 +865,14 @@ class SignalHandlers(object):
         for h in self._list:
             h.dump()
             l.append((h.handler_name, c.__class__.__name__))
-        file_name = os.path.join(USER_CONFIG_FOLDER, 'signalhandler.list')
+        file_name = os.path.join(USER_CONFIG_FOLDER, FILE_CONFIG_LIST_SIGNAL_HANDLERS)
         with open(file_name, 'wb') as f:
             pickle.dump(l, f)
 
     def load(self):
         self._list = []
         self._last_id = 0
-        file_name = os.path.join(USER_CONFIG_FOLDER, 'signalhandler.list')
+        file_name = os.path.join(USER_CONFIG_FOLDER, FILE_CONFIG_LIST_SIGNAL_HANDLERS)
         with open(file_name, 'rb') as f:
             l = pickle.load(f)
         for x, xc in l:
@@ -1995,6 +2000,7 @@ class SignalHandler(object):
         self.bus_path = bus_path
         self.interface = interface
         self.signal = signal
+        self.signal_match = None
         self.param_checks = []
         self.verify_all_checks = False
         self.defer = True
@@ -2107,12 +2113,39 @@ class SignalHandler(object):
                 sysevent_condition_check(event_name)
 
     def register(self):
-        # TODO: write signal handler registration/unregistration code
-        pass
+        try:
+            proxy = self.bus.get_object(self.bus_name, self.bus_path)
+            manager = dbus.Interface(proxy, self.bus_interface)
+            self.signal_match = manager.connect_to_signal(self.signal, self.signal_handler_callback)
+            return manager
+        except dbus.exceptions.DBusException:
+            self._warning("error registering %s:%s handler" % (self.interface, self.signal))
+            return None
 
     def unregister(self):
-        # TODO: write signal handler registration/unregistration code
-        pass
+        # the signal matcher has the ability to kill itself, as per source code
+        # (see: http://dbus.freedesktop.org/doc/dbus-python/api/dbus.connection-pysrc.html#SignalMatch.remove)
+        if self.signal_match:
+            self.signal_match.remove()
+
+    def dump(self):
+        if self.handler_name is None:
+            raise RuntimeError("signal handler not initialized")
+        file_name = os.path.join(USER_CONFIG_FOLDER, '%s.handler' % self.handler_name)
+        with open(file_name, 'wb') as f:
+            pickle.dump(self, f)
+
+    def unlink_file(self):
+        file_name = os.path.join(USER_CONFIG_FOLDER, "%s.handler" % self.handler_name)
+        if os.path.exists(file_name):
+            os.unlink(file_name)
+
+    @staticmethod
+    def restore(name):
+        file_name = os.path.join(USER_CONFIG_FOLDER, '%s.handler' % name)
+        with open(file_name, 'rb') as f:
+            o = pickle.load(f)
+            return o
 
 
 def SignalHandler_to_dict(h):
@@ -3310,6 +3343,10 @@ class AppletIndicator(Gtk.Application):
             conditions.load()
         except FileNotFoundError:
             conditions.save()
+        try:
+            signal_handlers.load()
+        except FileNotFoundError:
+            signal_handlers.save()
 
         applet_log.info("MAIN: trying to run startup tasks")
         sysevent_condition_check(EVENT_APPLET_STARTUP)
@@ -3634,7 +3671,7 @@ def run_condition(cond_name, deferred, verbose=False):
         return True
 
 
-def clear_tasks_conditions(verbose=False):
+def clear_item_data(verbose=False):
     oerr("removing all tasks and conditions", verbose)
     try:
         tasks.load()
@@ -3644,11 +3681,15 @@ def clear_tasks_conditions(verbose=False):
         conditions.load()
     except FileNotFoundError:
         conditions.save()
+    try:
+        signal_handlers.load()
+    except FileNotFoundError:
+        signal_handlers.save()
     l = list(conditions.names)
     for x in l:
         conditions.remove(cond_name=x)
     conditions.save()
-    file_name = os.path.join(USER_CONFIG_FOLDER, 'condition.list')
+    file_name = os.path.join(USER_CONFIG_FOLDER, FILE_CONFIG_LIST_CONDITIONS)
     try:
         os.unlink(file_name)
     except OSError:
@@ -3657,16 +3698,26 @@ def clear_tasks_conditions(verbose=False):
     for x in l:
         tasks.remove(task_name=x)
     tasks.save()
-    file_name = os.path.join(USER_CONFIG_FOLDER, 'task.list')
+    file_name = os.path.join(USER_CONFIG_FOLDER, FILE_CONFIG_LIST_TASKS)
     try:
         os.unlink(file_name)
     except OSError:
         oerr("could not remove task list file", verbose)
+    l = list(signal_handlers.names)
+    for x in l:
+        signal_handlers.remove(handler_name=x)
+    signal_handlers.save()
+    file_name = os.path.join(USER_CONFIG_FOLDER, FILE_CONFIG_LIST_SIGNAL_HANDLERS)
+    try:
+        os.unlink(file_name)
+    except OSError:
+        oerr("could not remove signal handler list file", verbose)
 
 
-def export_tasks_conditions(filename=None, verbose=False):
+def export_item_data(filename=None, verbose=False):
     task_dict_list = []
     condition_dict_list = []
+    signal_handler_dict_list = []
     try:
         tasks.load()
     except FileNotFoundError:
@@ -3675,6 +3726,10 @@ def export_tasks_conditions(filename=None, verbose=False):
         conditions.load()
     except FileNotFoundError:
         conditions.save()
+    try:
+        signal_handlers.load()
+    except FileNotFoundError:
+        signal_handlers.save()
     for name in tasks.names:
         t = tasks.get(task_name=name)
         d = Task_to_dict(t)
@@ -3696,11 +3751,18 @@ def export_tasks_conditions(filename=None, verbose=False):
         else:
             d = Condition_to_dict(c)
         condition_dict_list.append(d)
-    oerr("exporting %s tasks and %s conditions" % (
-        len(task_dict_list), len(condition_dict_list)), verbose)
+    for name in signal_handlers.names:
+        t = signal_handlers.get(handler_name=name)
+        d = SignalHandler_to_dict(t)
+        signal_handler_dict_list.append(d)
+    oerr("exporting items:", verbose)
+    oerr("    %s tasks" % len(task_dict_list), verbose)
+    oerr("    %s conditions" % len(condition_dict_list), verbose)
+    oerr("    %s signal handlers" % len(signal_handler_dict_list), verbose)
     json_dic = {
         'tasks': task_dict_list,
         'conditions': condition_dict_list,
+        'signalhandlers': signal_handler_dict_list,
     }
     if not filename:
         filename = os.path.join(USER_CONFIG_FOLDER, '%s.dump' % APPLET_NAME)
@@ -3709,7 +3771,7 @@ def export_tasks_conditions(filename=None, verbose=False):
     oerr("items exported to file %s" % filename, verbose)
 
 
-def import_tasks_conditions(filename=None, verbose=False):
+def import_item_data(filename=None, verbose=False):
     if not filename:
         filename = os.path.join(USER_CONFIG_FOLDER, '%s.dump' % APPLET_NAME)
     oerr("importing items from file %s" % filename, verbose)
@@ -3719,33 +3781,42 @@ def import_tasks_conditions(filename=None, verbose=False):
     except:
         oerr("could not import from dump file")
         sys.exit(2)
-    clear_tasks_conditions(verbose)
-    for task_dic in json_dic['tasks']:
-        task = dict_to_Task(task_dic)
-        tasks.add(task)
-    for condition_dic in json_dic['conditions']:
-        condition = None
-        condtype = condition_dic['subtype']
-        if condtype == 'IntervalBasedCondition':
-            condition = dict_to_IntervalBasedCondition(condition_dic)
-        elif condtype == 'TimeBasedCondition':
-            condition = dict_to_TimeBasedCondition(condition_dic)
-        elif condtype == 'CommandBasedCondition':
-            condition = dict_to_CommandBasedCondition(condition_dic)
-        elif condtype == 'IdleTimeBasedCondition':
-            condition = dict_to_IdleTimeBasedCondition(condition_dic)
-        elif condtype == 'EventBasedCondition':
-            condition = dict_to_EventBasedCondition(condition_dic)
-        # TODO: add further condition loaders here
-        else:
-            condition = dict_to_Condition(condition_dic)
-        if condition:
-            conditions.add(condition)
-    oerr("loaded %s tasks and %s conditions" % (
-        len(json_dic['tasks']), len(json_dic['conditions'])), verbose)
+    clear_item_data(verbose)
+    oerr("restoring items:", verbose)
+    if 'tasks' in json_dic.keys():
+        for task_dic in json_dic['tasks']:
+            task = dict_to_Task(task_dic)
+            tasks.add(task)
+        oerr("    %s tasks" % len(json_dic['tasks']), verbose)
+    if 'conditions' in json_dic.keys():
+        for condition_dic in json_dic['conditions']:
+            condition = None
+            condtype = condition_dic['subtype']
+            if condtype == 'IntervalBasedCondition':
+                condition = dict_to_IntervalBasedCondition(condition_dic)
+            elif condtype == 'TimeBasedCondition':
+                condition = dict_to_TimeBasedCondition(condition_dic)
+            elif condtype == 'CommandBasedCondition':
+                condition = dict_to_CommandBasedCondition(condition_dic)
+            elif condtype == 'IdleTimeBasedCondition':
+                condition = dict_to_IdleTimeBasedCondition(condition_dic)
+            elif condtype == 'EventBasedCondition':
+                condition = dict_to_EventBasedCondition(condition_dic)
+            # TODO: add further condition loaders here
+            else:
+                condition = dict_to_Condition(condition_dic)
+            if condition:
+                conditions.add(condition)
+        oerr("    %s conditions" % len(json_dic['conditions']), verbose)
+    if 'signalhandlers' in json_dic.keys():
+        for handler_dic in json_dic['signalhandlers']:
+            handler = dict_to_SignalHandler(handler_dic)
+            signal_handlers.add(handler)
+        oerr("    %s signal handlers" % len(json_dic['signalhandlers']), verbose)
     tasks.save()
     conditions.save()
-    oerr("tasks and conditions successfully imported")
+    signal_handlers.save()
+    oerr("items successfully imported", verbose)
 
 
 # Configure services and start the application
@@ -3946,7 +4017,7 @@ if __name__ == '__main__':
             else:
                 filename = args.export_items
             try:
-                export_tasks_conditions(filename, verbose)
+                export_item_data(filename, verbose)
             except Exception as e:
                 applet_log.critical("MAIN: exception %s occurred while performing 'export'" % e)
                 oerr("an error occurred while trying to export items", verbose)
@@ -4003,7 +4074,7 @@ if __name__ == '__main__':
                 sys.exit(2)
             else:
                 try:
-                    clear_tasks_conditions(verbose)
+                    clear_item_data(verbose)
                 except Exception as e:
                     applet_log.critical("MAIN: exception %s occurred while performing 'clear'" % e)
                     oerr("an error occurred while trying to delete items", verbose)
@@ -4020,7 +4091,7 @@ if __name__ == '__main__':
                 else:
                     filename = args.import_items
                 try:
-                    import_tasks_conditions(filename, verbose)
+                    import_item_data(filename, verbose)
                 except Exception as e:
                     applet_log.critical("MAIN: exception %s occurred while performing 'import'" % e)
                     oerr("an error occurred while trying to import items", verbose)
