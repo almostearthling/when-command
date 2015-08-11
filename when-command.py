@@ -97,7 +97,7 @@ VALIDATE_SIGNAL_HANDLER_RE = re.compile(r'^[a-zA-Z0-9][a-zA-Z0-9_-]*$')
 
 # see http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names
 VALIDATE_DBUS_NAME_RE = re.compile(r'^[-a-zA-Z_][-a-zA-Z0-9_]*(\.[-a-zA-Z_][-a-zA-Z0-9_]*)+\.?$')
-VALIDATE_DBUS_PATH_RE = re.compile(r'^[a-zA-Z0-9_]+(\/[a-zA-Z0-9_]+)+$')
+VALIDATE_DBUS_PATH_RE = re.compile(r'^\/[a-zA-Z0-9_]+(\/[a-zA-Z0-9_]+)+$')
 VALIDATE_DBUS_INTERFACE_RE = re.compile(r'^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)+\.?$')
 VALIDATE_DBUS_SIGNAL_RE = re.compile(r'^[a-zA-Z_][a-zA-Z0-9_]*$')
 
@@ -881,7 +881,7 @@ class SignalHandlers(object):
         l = []
         for h in self._list:
             h.dump()
-            l.append((h.handler_name, c.__class__.__name__))
+            l.append(h.handler_name)
         file_name = os.path.join(USER_CONFIG_FOLDER, FILE_CONFIG_LIST_SIGNAL_HANDLERS)
         with open(file_name, 'wb') as f:
             pickle.dump(l, f)
@@ -892,9 +892,8 @@ class SignalHandlers(object):
         file_name = os.path.join(USER_CONFIG_FOLDER, FILE_CONFIG_LIST_SIGNAL_HANDLERS)
         with open(file_name, 'rb') as f:
             l = pickle.load(f)
-        for x, xc in l:
+        for x in l:
             h = SignalHandler.restore(x)
-            h.reset()
             self.add(h)
 
     def add(self, handler):
@@ -2159,7 +2158,7 @@ class SignalHandler(object):
                 self._error("NTBS: invalid bus specification %s: not registering %s:%s handler" % (self.bus, self.interface, self.signal))
                 return None
             proxy = bus.get_object(self.bus_name, self.bus_path)
-            manager = dbus.Interface(proxy, self.bus_interface)
+            manager = dbus.Interface(proxy, self.interface)
             self.signal_match = manager.connect_to_signal(self.signal, self.signal_handler_callback)
             return manager
         except dbus.exceptions.DBusException:
@@ -2980,7 +2979,8 @@ class SignalDialog(object):
         self.builder.connect_signals(self)
         o = self.builder.get_object
         self.dialog = o('dlgAddDBusSignal')
-        self.stored_handlers = signal_handlers.names
+        self.stored_handlers = list(signal_handlers.names)
+        print(self.stored_handlers)
         self.stored_handlers.sort()
         cb_handlers = o('cbName')
         cb_handlers.get_model().clear()
@@ -3099,11 +3099,15 @@ class SignalDialog(object):
     def change_txtValues(self, _):
         o = self.builder.get_object
         name = o('txtName').get_text()
+        busname = o('txtBusID').get_text()
+        path = o('txtBusPath').get_text()
+        interface = o('txtInterface').get_text()
+        signal = o('txtSignal').get_text()
         valid_name = bool(VALIDATE_SIGNAL_HANDLER_RE.match(name))
-        valid_busname = bool(VALIDATE_DBUS_NAME_RE.match(name))
-        valid_path = bool(VALIDATE_DBUS_PATH_RE.match(name))
-        valid_interface = bool(VALIDATE_DBUS_INTERFACE_RE.match(name))
-        valid_signal = bool(VALIDATE_DBUS_SIGNAL_RE.match(name))
+        valid_busname = bool(VALIDATE_DBUS_NAME_RE.match(busname))
+        valid_path = bool(VALIDATE_DBUS_PATH_RE.match(path))
+        valid_interface = bool(VALIDATE_DBUS_INTERFACE_RE.match(interface))
+        valid_signal = bool(VALIDATE_DBUS_SIGNAL_RE.match(signal))
         if valid_name:
             if valid_busname and valid_path and valid_interface and valid_signal:
                 o('buttonOK').set_sensitive(True)
@@ -3120,7 +3124,7 @@ class SignalDialog(object):
     def choose_handler(self, box):
         o = self.builder.get_object
         name = box.get_active_text()
-        self.default_box()
+        # self.default_box()
         if name in self.stored_handlers:
             handler = signal_handlers.get(handler_name=name)
             o('txtValueNum').set_text("")
@@ -3160,7 +3164,14 @@ class SignalDialog(object):
         o('btnDelete').set_sensitive(False)
 
     def run(self):
+        o = self.builder.get_object
         self.default_box()
+        self.stored_handlers = list(signal_handlers.names)
+        self.stored_handlers.sort()
+        cb_handlers = o('cbName')
+        cb_handlers.get_model().clear()
+        for x in self.stored_handlers:
+            cb_handlers.append_text(x)
         self.dialog.set_keep_above(True)
         self.dialog.present()
         ret = self.dialog.run()
@@ -3168,10 +3179,10 @@ class SignalDialog(object):
         self.dialog.set_keep_above(False)
         if ret == ACTION_OK:
             name = o('txtName').get_text()
-            bus_name = o('txtName').get_text()
-            bus_path = o('txtName').get_text()
-            interface = o('txtName').get_text()
-            signal = o('txtName').get_text()
+            bus_name = o('txtBusID').get_text()
+            bus_path = o('txtBusPath').get_text()
+            interface = o('txtInterface').get_text()
+            signal = o('txtSignal').get_text()
             if o('cbBusType').get_active() == 0:
                 bus = 'session'
             elif o('cbBusType').get_active() == 1:
@@ -3184,6 +3195,7 @@ class SignalDialog(object):
             for x in self.signal_param_tests:
                 h.add_check(x.value_idx, x.sub_idx, x.negate, x.comparison, x.test_value)
             signal_handlers.add(h)
+            signal_handlers.save()
             self.stored_handlers = signal_handlers.names
 
 
@@ -3613,12 +3625,15 @@ class AppletIndicator(Gtk.Application):
 
     # system and session DBus event managers
     def screensaver_manager(self, *args):
-        if self.screensaver_mgr.GetActive():
-            applet_log.debug("MAIN: screensaver is active")
-            deferred_events.append(EVENT_SESSION_SCREENSAVER)
-        else:
-            applet_log.debug("MAIN: screensaver deactivated")
-            deferred_events.append(EVENT_SESSION_SCREENSAVER_EXIT)
+        try:
+            if self.screensaver_mgr.GetActive():
+                applet_log.debug("MAIN: screensaver is active")
+                deferred_events.append(EVENT_SESSION_SCREENSAVER)
+            else:
+                applet_log.debug("MAIN: screensaver deactivated")
+                deferred_events.append(EVENT_SESSION_SCREENSAVER_EXIT)
+        except dbus.exceptions.DBusException:
+            applet_log.warning("MAIN: screensaver activity query failed")
 
     # def session_login_lock(self, *args):
     #     applet_log.debug("MAIN: session lock")
@@ -3650,26 +3665,32 @@ class AppletIndicator(Gtk.Application):
 
     def storage_device_manager(self, *args):
         applet_log.debug("MAIN: storage change detected")
-        devices = self.storage_mgr.GetManagedObjects().keys()
-        drives = filter(lambda x: x.startswith('/org/freedesktop/UDisks2/block_devices/'), devices)
-        num_devices = len(list(drives))
-        if self.storage_mgr_num_devices > num_devices:
-            applet_log.debug("MAIN: device detached")
-            deferred_events.append(EVENT_SYSTEM_DEVICE_DETACH)
-        elif self.storage_mgr_num_devices < num_devices:
-            applet_log.debug("MAIN: new device attached")
-            deferred_events.append(EVENT_SYSTEM_DEVICE_ATTACH)
-        self.storage_mgr_num_devices = num_devices
+        try:
+            devices = self.storage_mgr.GetManagedObjects().keys()
+            drives = filter(lambda x: x.startswith('/org/freedesktop/UDisks2/block_devices/'), devices)
+            num_devices = len(list(drives))
+            if self.storage_mgr_num_devices > num_devices:
+                applet_log.debug("MAIN: device detached")
+                deferred_events.append(EVENT_SYSTEM_DEVICE_DETACH)
+            elif self.storage_mgr_num_devices < num_devices:
+                applet_log.debug("MAIN: new device attached")
+                deferred_events.append(EVENT_SYSTEM_DEVICE_ATTACH)
+            self.storage_mgr_num_devices = num_devices
+        except dbus.exceptions.DBusException:
+            applet_log.warning("MAIN: storage objects query failed")
 
     def network_manager(self, *args):
         applet_log.debug("MAIN: network state changed")
-        state = self.network_mgr.state()
-        if state in [NM_STATE_CONNECTED_LOCAL, NM_STATE_CONNECTED_SITE, NM_STATE_CONNECTED_GLOBAL]:
-            applet_log.debug("MAIN: joined network")
-            deferred_events.append(EVENT_SYSTEM_NETWORK_JOIN)
-        elif state in [NM_STATE_DISCONNECTED]:
-            applet_log.debug("MAIN: left network")
-            deferred_events.append(EVENT_SYSTEM_NETWORK_LEAVE)
+        try:
+            state = self.network_mgr.state()
+            if state in [NM_STATE_CONNECTED_LOCAL, NM_STATE_CONNECTED_SITE, NM_STATE_CONNECTED_GLOBAL]:
+                applet_log.debug("MAIN: joined network")
+                deferred_events.append(EVENT_SYSTEM_NETWORK_JOIN)
+            elif state in [NM_STATE_DISCONNECTED]:
+                applet_log.debug("MAIN: left network")
+                deferred_events.append(EVENT_SYSTEM_NETWORK_LEAVE)
+        except dbus.exceptions.DBusException:
+            applet_log.warning("MAIN: network state query failed")
 
     def before_shutdown(self, *args):
         if not self.leaving:
@@ -3909,18 +3930,23 @@ def install_icons(overwrite=True):
     create_autostart_file(overwrite=overwrite)
 
 
+# the horrible hack below is because no way was found to set the timeout for
+# introspective DBus methods to infinite (that is: GObject.G_MAXINT)
 def show_box(box='about', verbose=False):
     oerr("showing %s box of currently running instance" % box, verbose)
-    bus = dbus.SessionBus()
-    interface = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
-    interface.show_dialog(box)
+    bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
+    proxy = Gio.DBusProxy.new_sync(bus, Gio.DBusProxyFlags.NONE, None,
+                                   APPLET_BUS_NAME, APPLET_BUS_PATH,
+                                   APPLET_BUS_NAME, None)
+    proxy.call_sync('show_dialog', GLib.Variant('(s)', (box,)),
+                    Gio.DBusCallFlags.NONE, GObject.G_MAXINT, None)
 
 
 def show_icon(show=True, running=True):
     if running:
         bus = dbus.SessionBus()
-        interface = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
-        interface.show_icon(show)
+        proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
+        proxy.show_icon(show)
     config.set('General', 'show icon', show)
     config.save()
 
@@ -3928,8 +3954,8 @@ def show_icon(show=True, running=True):
 def run_condition(cond_name, deferred, verbose=False):
     oerr("attempting to run condition %s" % cond_name, verbose)
     bus = dbus.SessionBus()
-    interface = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
-    if not interface.run_condition(cond_name, deferred):
+    proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
+    if not proxy.run_condition(cond_name, deferred):
         oerr("condition %s could not be run" % cond_name, verbose)
         return False
     else:
