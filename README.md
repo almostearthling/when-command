@@ -62,7 +62,7 @@ There are several types of condition available:
   - *Join* or *Leave a Network*, these are verified whenever a network is joined or lost respectively.
   - *Command Line Trigger* is a special event type, that is triggered invoking the command line. The associated condition can be scheduled to be run at the next clock tick or immediately using the appropriate switch.
 
- *Warning*: because of the way applications are notified that the session is ending (first a TERM signal is sent, then a KILL if the first was unsuccessful), the *Shutdown* event is not suitable for long running tasks, such as file synchronizations, disk cleanup and similar actions. Longer running tasks will be run if the users quits the applet through the menu, though. Same yields for *Suspend*: by specification, no more than one second is available for tasks to complete. In reference to the event condition definition, one or more events might appear as *[disabled]* in the list: the user still can choose to create a condition based on a disabled event, but the corresponding tasks will never be run.
+ **Warning**: because of the way applications are notified that the session is ending (first a TERM signal is sent, then a KILL if the first was unsuccessful), the *Shutdown* event is not suitable for long running tasks, such as file synchronizations, disk cleanup and similar actions. Longer running tasks will be run if the users quits the applet through the menu, though. Same yields for *Suspend*: by specification, no more than one second is available for tasks to complete. In reference to the event condition definition, one or more events might appear as *[disabled]* in the list: the user still can choose to create a condition based on a disabled event, but the corresponding tasks will never be run.
 
 Also, the condition configuration interface allows to decide:
 
@@ -183,7 +183,7 @@ For the applet to function and before unpacking it to the destination directory,
 
 If you downloaded the zip file from the master branch of the repository, you might want to `mv when-command-master when-command` in the directory where the files have been unzipped.
 
-If the Debian/Ubuntu package is available for the desired release, the unzip/extract step can be replaced by `sudo dpkg --install when-command-VERSION_INFO.deb` where `VERSION_INFO` should be replaced by the version suffix of the downloaded package: this will install the applet in `/opt/when-command`. The instructions given in the following section will complete the installation for the current user and the applet icon will be activated at every login. Also please note that if the package installation was chosen, the command to invoke the applet from the command line can be shortened to `/opt/when-command/when-command` instead of `python3 /opt/when-command/when-command.py` -- although this is not mandatory.
+If the Debian/Ubuntu package is available for the desired release, the unzip/extract step can be replaced by `sudo dpkg --install when-command-VERSION_INFO.deb` where `VERSION_INFO` is the version suffix of the downloaded package: this will install the applet in `/opt/when-command`. The instructions given in the following section will complete the installation for the current user and the applet icon will be activated at every login. Also please note that if the package installation was chosen, the command to invoke the applet from the command line can be shortened to `/opt/when-command/when-command` instead of `python3 /opt/when-command/when-command.py` -- although this is not mandatory.
 
 The **When** utility will try to recognize the way it has been set up the first time it's invoked. Since there is no application icon, it has to be invoked from the command line. Assuming that it has been unarchived in `/opt` (possibly in the `/opt/when-command` directory), it's advisable to run it for the first time using the command
 
@@ -229,12 +229,12 @@ All these values follow a precise syntax, which can be found in the DBus documen
   2. `CONTAINS`: the test evaluates to true when either the test string is a substring of the returned value, or the return value is a list, no *Sub #* has been specified, and the test value is in the list
   3. `MATCHES`: the test value is treated as a *regular expression* and the return value (as a string) matches it
   4. `<`: the return value is less than the test value (converted to the return value type)
-  5. `<`: the return value is greater than the test value (converted to the return value type)
+  5. `>`: the return value is greater than the test value (converted to the return value type)
 * *Test Value* is the user provided value to compare the return value to.
 
 When all the needed fields for a tests are given, the test can be accepted by clicking the *Update* button. To remove a test line, either specify *Value #* and *Sub #* or select the line to delete, then click the *Remove* button. Tests are optional: if no test is provided, the condition will be enqueued as soon as the signal is emitted.
 
-**Warning:** when the system or session do not support a bus, path, interface, or signal, the signal handler registration fails: in this case the associated event never takes place and it is impossible for any associated condition to be ever verified. If a test is specified in the wrong way, or a comparison is impossible (e.g. comparing a returned list a string), or any error arises within a test, the test will evaluate to *false* and the signal will not activate any associated condition.
+**Warning:** when the system or session do not support a bus, path, interface, or signal, the signal handler registration fails: in this case the associated event never takes place and it is impossible for any associated condition to be ever verified. If a test is specified in the wrong way, or a comparison is impossible (e.g. comparing a returned list against a string), or any error arises within a test, the test will evaluate to *false* and the signal will not activate any associated condition.
 
 
 ## Developer notes and resources
