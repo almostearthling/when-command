@@ -2,6 +2,7 @@
 
 ## Version 0.7.0 (beta)
 * Implement generic DBus signal handler and related toolbox
+* Some conditions can be activated from the command line
 * Bug fixes
 
 
