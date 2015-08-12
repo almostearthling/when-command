@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.7.0 (beta)
+* Implement generic DBus signal handler and related toolbox
+* Bug fixes
+
+
 ## Version 0.6.0 (beta)
 * Match regular expressions in command output for tasks and command based conditions
 * Stop task sequence on task outcome
