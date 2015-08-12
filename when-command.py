@@ -262,7 +262,9 @@ resources.DLG_CANNOT_DELETE_TASK = "Task %s could not be deleted."
 resources.DLG_CANNOT_DELETE_CONDITION = "Condition %s could not be deleted."
 resources.DLG_CANNOT_FIND_TASK = "Task %s could not be found."
 resources.DLG_CANNOT_FIND_CONDITION = "Condition %s could not be found."
-resources.DLG_WRONG_EXIT_STATUS = "Wrong value for exit status specified.\nPlease consider reviewing it."
+resources.DLG_WRONG_EXIT_STATUS = "Invalid value for exit status specified.\nPlease consider reviewing it."
+resources.DLG_WRONG_PARAM_INDEX = "Invalid value for signal parameter index specified.\nCannot add parameter test."
+resources.DLG_NOT_IMPLEMENTED_FEATURE = "This feature has not been implemented yet."
 resources.DLG_ABOUT_VERSION_STRING = "Version: %s"
 resources.DLG_ITEM_DISABLED = "[disabled]"
 
@@ -2546,6 +2548,11 @@ class ConditionDialog(object):
         cb_tasks.get_model().clear()
         for x in self.stored_tasks:
             cb_tasks.append_text(x)
+        self.stored_handlers = signal_handlers.names
+        self.stored_handlers.sort()
+        cb_handlers = o('cbDBusEvent')
+        for x in self.stored_handlers:
+            cb_handlers.append_text(x)
         self.update_box_type(None)
         l = o('listTasks')
         c = Gtk.TreeViewColumn(resources.LISTCOL_TASKS_NAME, Gtk.CellRendererText(), text=0)
@@ -2649,6 +2656,8 @@ class ConditionDialog(object):
         o('cbType').set_active(2)
         o('cbTimeUnit').set_active(1)
         o('cbSysEvent').set_active(1)
+        o('cbDBusEvent').set_active(0)
+        o('txtWatchPath').set_text('')
         o('cbAddTask').set_active(-1)
         o('cbCheckWhat').set_active(0)
         o('chkRepeat').set_active(True)
@@ -2712,16 +2721,22 @@ class ConditionDialog(object):
                 o('cbType').set_active(3)
             elif type(cond) == EventBasedCondition:
                 evt = cond.event
+                cb_type = 4
                 if evt in self.all_events:
                     o('cbSysEvent').set_active(self.all_events.index(evt))
                 elif evt.startswith(EVENT_COMMAND_LINE_PREAMBLE + ':'):
                     o('cbSysEvent').set_active(self.all_events.index(EVENT_COMMAND_LINE))
+                elif evt.startswith(EVENT_DBUS_SIGNAL_PREAMBLE + ':'):
+                    # although this is implemented as an event based condition
+                    # it is not presented to the user as such
+                    handler_name = evt.split(':')[1]
+                    o('cbDBusEvent').set_active(self.stored_handlers.index(handler_name))
+                    cb_type = 6
                 else:
                     o('cbSysEvent').set_active(-1)
-                o('cbType').set_active(4)
+                o('cbType').set_active(cb_type)
             else:
                 o('cbType').set_active(-1)
-                pass
             o('chkRepeat').set_active(cond.repeat)
             o('chkSequence').set_active(cond.exec_sequence)
             o('chkSuspend').set_active(cond.suspended)
@@ -2815,9 +2830,10 @@ class ConditionDialog(object):
             to_disable = ['chkRepeat']
         elif idx == 5:
             current_widget = 'canvasOptions_FileWatch'
+            to_disable = ['chkRepeat']
         elif idx == 6:
             current_widget = 'canvasOptions_DBusEvent'
-            # to_disable = ['chkRepeat']
+            to_disable = ['chkRepeat']
         else:
             current_widget = 'canvasOptions_Empty'
         for w in widgets:
@@ -2934,6 +2950,19 @@ class ConditionDialog(object):
                 c = EventBasedCondition(name, event_type, True, repeat, sequence)
                 c.break_failure = break_failure
                 c.break_success = break_success
+            elif idx == 5:
+                msgbox = Gtk.MessageDialog(type=Gtk.MessageType.ERROR,
+                                           buttons=Gtk.ButtonsType.OK)
+                msgbox.set_markup(resources.DLG_NOT_IMPLEMENTED_FEATURE % name)
+                msgbox.run()
+                msgbox.hide()
+                return None
+            elif idx == 6:
+                handler_name = o('cbDBusEvent').get_active_text()
+                event_type = EVENT_DBUS_SIGNAL_PREAMBLE + ":" + handler_name
+                c = EventBasedCondition(name, event_type, True, repeat, sequence)
+                c.break_failure = break_failure
+                c.break_success = break_success
             for x in task_names:
                 if tasks.get(task_name=x):
                     c.add_task(x)
@@ -2995,7 +3024,7 @@ class SignalDialog(object):
         self.builder.connect_signals(self)
         o = self.builder.get_object
         self.dialog = o('dlgAddDBusSignal')
-        self.stored_handlers = list(signal_handlers.names)
+        self.stored_handlers = signal_handlers.names
         self.stored_handlers.sort()
         cb_handlers = o('cbName')
         cb_handlers.get_model().clear()
@@ -3018,6 +3047,23 @@ class SignalDialog(object):
         c = Gtk.TreeViewColumn(resources.LISTCOL_SIGNAL_VALUE, renderer, text=4)
         l.append_column(c)
         self.signal_param_tests = []
+        self.all_comparisons = [
+            DBUS_CHECK_COMPARE_IS,
+            DBUS_CHECK_COMPARE_CONTAINS,
+            DBUS_CHECK_COMPARE_MATCHES,
+            DBUS_CHECK_COMPARE_LESS,
+            DBUS_CHECK_COMPARE_GREATER,
+        ]
+        self.all_comparisons_symdict = {
+            DBUS_CHECK_COMPARE_IS: "=",
+            DBUS_CHECK_COMPARE_CONTAINS: "CONTAINS",
+            DBUS_CHECK_COMPARE_MATCHES: "MATCHES",
+            DBUS_CHECK_COMPARE_LESS: "<",
+            DBUS_CHECK_COMPARE_GREATER: ">",
+        }
+        self.all_comparisons_revdict = {}
+        for k in self.all_comparisons_symdict.keys():
+            self.all_comparisons_revdict[self.all_comparisons_symdict[k]] = k
 
     def validate_int(self, s, min_value=None, max_value=None):
         try:
@@ -3040,13 +3086,7 @@ class SignalDialog(object):
                 str(check.value_idx),
                 "" if not check.sub_idx else str(check.sub_idx),
                 "NOT" if check.negate else "",
-                {
-                    DBUS_CHECK_COMPARE_IS: "=",
-                    DBUS_CHECK_COMPARE_CONTAINS: "CONTAINS",
-                    DBUS_CHECK_COMPARE_MATCHES: "MATCHES",
-                    DBUS_CHECK_COMPARE_LESS: "<",
-                    DBUS_CHECK_COMPARE_GREATER: ">",
-                }[check.comparison],
+                self.all_comparisons_symdict[check.comparison],
                 str(check.test_value),
             ]
             m.append(row)
@@ -3054,13 +3094,13 @@ class SignalDialog(object):
     def click_btnAddTest(self, _):
         o = self.builder.get_object
         s = o('txtValueNum').get_text()
-        if not s:
-            applet_log.debug("DLGSIG: not adding signal check without param index")
-            return
-        try:
-            value_idx = int(s)
-        except:
+        value_idx = self.validate_int(s, min_value=0)
+        if value_idx is None:
             applet_log.debug("DLGSIG: not adding signal check with bad param index")
+            msgbox = Gtk.MessageDialog(type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK)
+            msgbox.set_markup(resources.DLG_WRONG_PARAM_INDEX % name)
+            msgbox.run()
+            msgbox.hide()
             return
         sub_idx = o('txtValueSub').get_text()
         if not sub_idx:
@@ -3069,13 +3109,7 @@ class SignalDialog(object):
         check = param_check(
             value_idx,
             sub_idx,
-            [
-                DBUS_CHECK_COMPARE_IS,
-                DBUS_CHECK_COMPARE_CONTAINS,
-                DBUS_CHECK_COMPARE_MATCHES,
-                DBUS_CHECK_COMPARE_LESS,
-                DBUS_CHECK_COMPARE_GREATER,
-            ][o('cbOperatorCompare').get_active()],
+            self.all_comparisons[o('cbOperatorCompare').get_active()],
             bool(o('chkOperatorNot').get_active()),
             str(o('txtTestValue').get_text()),
         )
@@ -3136,6 +3170,17 @@ class SignalDialog(object):
             o('buttonOK').set_sensitive(False)
             o('btnDelete').set_sensitive(False)
 
+    def click_listTests(self, selected):
+        o = self.builder.get_object
+        m, i = selected.get_selected()
+        if i is not None:
+            o('txtValueNum').set_text(m[i][0])
+            o('txtValueSub').set_text(m[i][1])
+            o('chkOperatorNot').set_active(m[i][2] == "NOT")
+            o('cbOperatorCompare').set_active(
+                self.all_comparisons.index(self.all_comparisons_revdict[m[i][3]]))
+            o('txtTestValue').set_text(m[i][4])
+
     def choose_handler(self, box):
         o = self.builder.get_object
         name = box.get_active_text()
@@ -3181,7 +3226,7 @@ class SignalDialog(object):
     def run(self):
         o = self.builder.get_object
         self.default_box()
-        self.stored_handlers = list(signal_handlers.names)
+        self.stored_handlers = signal_handlers.names
         self.stored_handlers.sort()
         cb_handlers = o('cbName')
         cb_handlers.get_model().clear()
@@ -3212,6 +3257,9 @@ class SignalDialog(object):
             signal_handlers.add(h)
             signal_handlers.save()
             self.stored_handlers = signal_handlers.names
+        elif ret == ACTION_DELETE:
+            # TODO: implement deletion
+            return None
 
 
 # settings dialog
@@ -3978,7 +4026,7 @@ def run_condition(cond_name, deferred, verbose=False):
 
 
 def clear_item_data(verbose=False):
-    oerr("removing all tasks and conditions", verbose)
+    oerr("removing all items", verbose)
     try:
         tasks.load()
     except FileNotFoundError:

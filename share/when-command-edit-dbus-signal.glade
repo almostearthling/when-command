@@ -317,7 +317,9 @@
                     <property name="vexpand">True</property>
                     <property name="model">store_listTests</property>
                     <child internal-child="selection">
-                      <object class="GtkTreeSelection" id="listTests_selection"/>
+                      <object class="GtkTreeSelection" id="listTests_selection">
+                        <signal name="changed" handler="click_listTests" swapped="no"/>
+                      </object>
                     </child>
                   </object>
                   <packing>
@@ -414,7 +416,7 @@
                         <property name="can_focus">False</property>
                         <property name="active">0</property>
                         <items>
-                          <item id="1" translatable="yes">IS</item>
+                          <item id="1" translatable="yes">=</item>
                           <item id="2" translatable="yes">CONTAINS</item>
                           <item id="3" translatable="yes">MATCHES</item>
                           <item id="4" translatable="yes">&lt;</item>
