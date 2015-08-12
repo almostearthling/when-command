@@ -3212,6 +3212,7 @@ class SignalDialog(object):
                 o('rdAll').set_active(True)
             else:
                 o('rdAny').set_active(True)
+            o('chkDefer').set_active(handler.defer)
 
     def change_txtValues(self, _):
         o = self.builder.get_object
@@ -3252,6 +3253,7 @@ class SignalDialog(object):
         o('cbOperatorCompare').set_active(0)
         o('txtTestValue').set_text("")
         o('rdAny').set_active(True)
+        o('chkDefer').set_active(True)
         o('store_listTests').clear()
         o('buttonOK').set_sensitive(False)
         o('btnDelete').set_sensitive(False)
@@ -3276,6 +3278,7 @@ class SignalDialog(object):
             bus_path = o('txtBusPath').get_text()
             interface = o('txtInterface').get_text()
             signal = o('txtSignal').get_text()
+            defer = o('chkDefer').get_active()
             if o('cbBusType').get_active() == 0:
                 bus = 'session'
             elif o('cbBusType').get_active() == 1:
@@ -3285,6 +3288,7 @@ class SignalDialog(object):
             elif o('rdAll').get_active():
                 verify_all = True
             h = SignalHandler(name, bus, bus_name, bus_path, interface, signal)
+            h.defer = bool(defer)
             for x in self.signal_param_tests:
                 h.add_check(
                     x.value_idx, x.sub_idx, x.negate, x.comparison,
