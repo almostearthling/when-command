@@ -218,7 +218,8 @@ To define a signal to listen to, the following values must be specified in the *
 * the unique bus name in dotted form (e.g. `org.freedesktop.DBus`)
 * the path of the object that emits the signal (e.g. `/org/freedesktop/FileManager1`)
 * the interface name in dotted form (e.g. `org.freedesktop.FileManager1`)
-* the signal name.
+* the signal name
+* whether the scheduler must wait until the next clock tick to process the signal (checking *Activate on next clock tick*)
 
 All these values follow a precise syntax, which can be found in the DBus documentation. Moreover, if the signal has any parameters, constraints on the parameters can be specified for the condition to be verified: given a list of constraints, the user can choose whether to require all of them or just any to evaluate to true. The tests against signal parameters require the following data:
 
