@@ -68,7 +68,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.6.5-beta.1"
+APPLET_VERSION = "0.6.5-beta.2"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -258,10 +258,14 @@ class Resources(object):
 resources = Resources()
 resources.DLG_CONFIRM_DELETE_TASK = "Are you sure you want to delete task %s?"
 resources.DLG_CONFIRM_DELETE_CONDITION = "Are you sure you want to delete condition %s?"
+resources.DLG_CONFIRM_DELETE_SIGHANDLER = "Are you sure you want to delete signal handler %s?"
 resources.DLG_CANNOT_DELETE_TASK = "Task %s could not be deleted."
 resources.DLG_CANNOT_DELETE_CONDITION = "Condition %s could not be deleted."
+resources.DLG_CANNOT_DELETE_SIGHANDLER = "Signal handler %s could not be deleted."
 resources.DLG_CANNOT_FIND_TASK = "Task %s could not be found."
 resources.DLG_CANNOT_FIND_CONDITION = "Condition %s could not be found."
+resources.DLG_CANNOT_FIND_SIGHANDLER = "Signal handler %s could not be found."
+resources.DLG_CANNOT_REGISTER_SIGHANDLER = "Signal handler %s could not be registered."
 resources.DLG_WRONG_EXIT_STATUS = "Invalid value for exit status specified.\nPlease consider reviewing it."
 resources.DLG_WRONG_PARAM_INDEX = "Invalid value for signal parameter index specified.\nCannot add parameter test."
 resources.DLG_NOT_IMPLEMENTED_FEATURE = "This feature has not been implemented yet."
@@ -373,7 +377,8 @@ def create_desktop_file(overwrite=False):
         os.chmod(pathname, 0o755)
         if os.path.isdir(USER_LAUNCHER_FOLDER):
             try:
-                os.symlink(pathname, os.path.join(USER_LAUNCHER_FOLDER, filename))
+                os.symlink(
+                    pathname, os.path.join(USER_LAUNCHER_FOLDER, filename))
             except Error:
                 applet_log.error("MAIN: could not create the launcher")
 
@@ -463,7 +468,8 @@ def config_loghandler(max_size=None, max_backups=None):
         max_size = config.get('History', 'log size')
     if max_backups is None:
         max_backups = config.get('History', 'log backups')
-    handler = logging.handlers.RotatingFileHandler(USER_LOG_FILE, 'a', max_size, max_backups)
+    handler = logging.handlers.RotatingFileHandler(
+        USER_LOG_FILE, 'a', max_size, max_backups)
     handler.setFormatter(applet_log_formatter)
     applet_log.removeHandler(applet_log_handler)
     applet_log_handler = handler
@@ -777,12 +783,14 @@ class Tasks(object):
     def get(self, task_id=None, task_name=None):
         if task_id:
             try:
-                return list(filter(lambda x: task_id == x.task_id, self._list))[0]
+                return list(filter(
+                    lambda x: task_id == x.task_id, self._list))[0]
             except IndexError as e:
                 return None
         elif task_name:
             try:
-                return list(filter(lambda x: task_name == x.task_name, self._list))[0]
+                return list(filter(
+                    lambda x: task_name == x.task_name, self._list))[0]
             except IndexError as e:
                 return None
 
@@ -858,12 +866,14 @@ class Conditions(object):
     def get(self, cond_id=None, cond_name=None):
         if cond_id:
             try:
-                return list(filter(lambda x: cond_id == x.cond_id, self._list))[0]
+                return list(filter(
+                    lambda x: cond_id == x.cond_id, self._list))[0]
             except IndexError as e:
                 return None
         elif cond_name:
             try:
-                return list(filter(lambda x: cond_name == x.cond_name, self._list))[0]
+                return list(filter(
+                    lambda x: cond_name == x.cond_name, self._list))[0]
             except IndexError as e:
                 return None
 
@@ -884,14 +894,16 @@ class SignalHandlers(object):
         for h in self._list:
             h.dump()
             l.append(h.handler_name)
-        file_name = os.path.join(USER_CONFIG_FOLDER, FILE_CONFIG_LIST_SIGNAL_HANDLERS)
+        file_name = os.path.join(
+            USER_CONFIG_FOLDER, FILE_CONFIG_LIST_SIGNAL_HANDLERS)
         with open(file_name, 'wb') as f:
             pickle.dump(l, f)
 
     def load(self):
         self._list = []
         self._last_id = 0
-        file_name = os.path.join(USER_CONFIG_FOLDER, FILE_CONFIG_LIST_SIGNAL_HANDLERS)
+        file_name = os.path.join(
+            USER_CONFIG_FOLDER, FILE_CONFIG_LIST_SIGNAL_HANDLERS)
         with open(file_name, 'rb') as f:
             l = pickle.load(f)
         for x in l:
@@ -901,34 +913,50 @@ class SignalHandlers(object):
     def add(self, handler):
         applet_log.info("GLOBAL: adding signal handler %s" % handler.handler_name)
         if handler.handler_name in [h.handler_name for h in self._list]:
-            applet_log.info("GLOBAL: unregistering old signal handler %s" % handler.handler_name)
             old_handler = self.get(handler.handler_name)
-            old_handler.unregister()
             self._lock.acquire()
-            l = list(filter(lambda x: x.handler_name != handler.handler_name, self._list))
+            l = list(filter(
+                lambda x: x.handler_name != handler.handler_name, self._list))
             l.append(handler)
-            handler.register()
+            reg = None
+            applet_log.info("GLOBAL: unregistering old signal handler %s" % old_handler.handler_name)
+            if old_handler.unregister():
+                reg = handler.register()
             self._list = l
             self._lock.release()
         else:
             self._lock.acquire()
-            handler.register()
+            reg = handler.register()
             self._list.append(handler)
             self._lock.release()
+        if not reg:
+            applet_log.error("GLOBAL: could not register signal handler %s" % handler.handler_name)
+            return False
+        else:
+            return True
 
     def remove(self, handler_name=None):
-        cond = None
+        handler = None
         if handler_name:
+            for c in conditions:
+                if type(c) == EventBasedCondition and c.event.startswith(EVENT_DBUS_SIGNAL_PREAMBLE + ':'):
+                    if c.event.split(':')[1] == handler_name:
+                        applet_log.warning("GLOBAL: cannot delete signal handler %s used in condition %s" % (handler_name, c.cond_name))
+                        return False
             handler = next((h for h in self._list if h.handler_name == handler_name), None)
         if handler:
             applet_log.info("GLOBAL: removing signal handler %s" % handler_name)
             self._lock.acquire()
-            handler.unregister()
-            self._list.remove(handler)
-            handler.unlink_file()
+            rv = handler.unregister()
+            if rv:
+                self._list.remove(handler)
+                handler.unlink_file()
             self._lock.release()
-            return True
+            applet_log.debug("GLOBAL: signal handler %s removed" % handler_name)
+            return rv
         else:
+            if handler_name:
+                applet_log.info("GLOBAL: signal handler %s could not be found" % handler_name)
             return False
 
     def get(self, handler_name=None):
@@ -1920,7 +1948,9 @@ class IdleTimeBasedCondition(CommandBasedCondition):
         self.idle_reset = True
         command = """test $(xprintidle) -gt %s""" % (idle_secs * 1000)
         # Condition.__init__(self, name, repeat, exec_sequence)
-        CommandBasedCondition.__init__(self, name, command, status=0, repeat=repeat, exec_sequence=exec_sequence)
+        CommandBasedCondition.__init__(
+            self, name, command, status=0, repeat=repeat,
+            exec_sequence=exec_sequence)
 
 
 def IdleTimeBasedCondition_to_dict(c):
@@ -2140,7 +2170,7 @@ class SignalHandler(object):
         try:
             signal_caught = self.signal_handler_helper(*args)
         except Exception as e:
-            self._error("exception %s caught by signal handler %s" % (e, self.handler_name))
+            self._error("exception %s raised by signal handler %s" % (e, self.handler_name))
             return
         if signal_caught:
             event_name = EVENT_DBUS_SIGNAL_PREAMBLE + ":" + self.handler_name
@@ -2161,7 +2191,9 @@ class SignalHandler(object):
                 return None
             proxy = bus.get_object(self.bus_name, self.bus_path)
             manager = dbus.Interface(proxy, self.interface)
-            self.signal_match = manager.connect_to_signal(self.signal, self.signal_handler_callback)
+            self.signal_match = manager.connect_to_signal(
+                self.signal, self.signal_handler_callback)
+            self._info("signal handler %s:%s correctly registered" % (self.interface, self.signal))
             return manager
         except dbus.exceptions.DBusException:
             self._warning("error registering %s:%s handler" % (self.interface, self.signal))
@@ -2170,8 +2202,15 @@ class SignalHandler(object):
     def unregister(self):
         # the signal matcher has the ability to kill itself, as per source code
         # (see: http://dbus.freedesktop.org/doc/dbus-python/api/dbus.connection-pysrc.html#SignalMatch.remove)
-        if self.signal_match:
-            self.signal_match.remove()
+        try:
+            if self.signal_match:
+                self.signal_match.remove()
+                return True
+            else:
+                return False
+        except Exception as e:
+            self._warning("could not unregister handler (%s)" % e)
+            return False
 
     def dump(self):
         if self.handler_name is None:
@@ -2251,9 +2290,11 @@ class TaskDialog(object):
         for x in self.stored_tasks:
             cb_tasks.append_text(x)
         l = o('listEnvVars')
-        c = Gtk.TreeViewColumn(resources.LISTCOL_ENVVARS_NAME, Gtk.CellRendererText(), text=0)
+        c = Gtk.TreeViewColumn(
+            resources.LISTCOL_ENVVARS_NAME, Gtk.CellRendererText(), text=0)
         l.append_column(c)
-        c = Gtk.TreeViewColumn(resources.LISTCOL_ENVVARS_VALUE, Gtk.CellRendererText(), text=1)
+        c = Gtk.TreeViewColumn(
+            resources.LISTCOL_ENVVARS_VALUE, Gtk.CellRendererText(), text=1)
         l.append_column(c)
 
     def validate_int(self, s, min_value=None, max_value=None):
@@ -2288,13 +2329,6 @@ class TaskDialog(object):
         for i in li:
             m.append(i)
 
-    def click_listEnvVars(self, selected):
-        o = self.builder.get_object
-        m, i = selected.get_selected()
-        if i is not None:
-            o('txtVarName').set_text(m[i][0])
-            o('txtVarValue').set_text(m[i][1])
-
     def click_btnVarRemove(self, _):
         o = self.builder.get_object
         name = o('txtVarName').get_text()
@@ -2307,6 +2341,13 @@ class TaskDialog(object):
         m.clear()
         for i in li:
             m.append(i)
+
+    def click_listEnvVars(self, selected):
+        o = self.builder.get_object
+        m, i = selected.get_selected()
+        if i is not None:
+            o('txtVarName').set_text(m[i][0])
+            o('txtVarValue').set_text(m[i][1])
 
     def click_btnChooseDir(self, _):
         o = self.builder.get_object
@@ -2482,12 +2523,6 @@ class TaskDialog(object):
             task.dump()
             tasks.add(task)
             tasks.save()
-            self.stored_tasks = tasks.names
-            self.stored_tasks.sort()
-            cb_tasks = o('cbTaskName')
-            cb_tasks.get_model().clear()
-            for x in self.stored_tasks:
-                cb_tasks.append_text(x)
             return task
         elif ret == ACTION_DELETE:
             name = o('txtName').get_text()
@@ -2502,14 +2537,12 @@ class TaskDialog(object):
                     self.default_box(True)
                     if tasks.remove(task_name=name):
                         tasks.save()
-                        cb_tasks.get_model().clear()
-                        for x in self.stored_tasks:
-                            cb_tasks.append_text(x)
                     else:
                         applet_log.error("DLGTASK: task %s could not be deleted" % name)
                         msgbox = Gtk.MessageDialog(type=Gtk.MessageType.ERROR,
                                                    buttons=Gtk.ButtonsType.OK)
-                        msgbox.set_markup(resources.DLG_CANNOT_DELETE_TASK % name)
+                        msgbox.set_markup(
+                            resources.DLG_CANNOT_DELETE_TASK % name)
                         msgbox.run()
                         msgbox.hide()
                 else:
@@ -2555,7 +2588,8 @@ class ConditionDialog(object):
             cb_handlers.append_text(x)
         self.update_box_type(None)
         l = o('listTasks')
-        c = Gtk.TreeViewColumn(resources.LISTCOL_TASKS_NAME, Gtk.CellRendererText(), text=0)
+        c = Gtk.TreeViewColumn(
+            resources.LISTCOL_TASKS_NAME, Gtk.CellRendererText(), text=0)
         l.append_column(c)
         self.all_events = [
             EVENT_APPLET_STARTUP,
@@ -2604,74 +2638,97 @@ class ConditionDialog(object):
         except ValueError as e:
             return None
 
-    def change_txtName(self, _):
+    def click_btnAddTask(self, _):
         o = self.builder.get_object
-        name = o('txtName').get_text()
-        if VALIDATE_CONDITION_RE.match(name):
-            o('buttonOK').set_sensitive(True)
-            if name in self.stored_conditions:
-                o('btnDelete').set_sensitive(True)
+        task_name = o('cbAddTask').get_active_text()
+        if task_name:
+            li = []
+            m = o('store_listTasks')
+            for row in m:
+                r = row[0]
+                if r != task_name:
+                    li.append(r)
+            li.append(task_name)
+            m.clear()
+            for x in li:
+                m.append([x])
+
+    def click_btnRemoveTask(self, _):
+        o = self.builder.get_object
+        task_name = o('cbAddTask').get_active_text()
+        if task_name:
+            li = []
+            m = o('store_listTasks')
+            for row in m:
+                r = row[0]
+                if r != task_name:
+                    li.append(r)
+            m.clear()
+            for x in li:
+                m.append([x])
+
+    def click_listTasks(self, selected):
+        o = self.builder.get_object
+        m = o('cbAddTask').get_model()
+        m1, i = selected.get_selected()
+        if i is not None:
+            idx = 0
+            for row in m:
+                if row[0] == m1[i][0]:
+                    o('cbAddTask').set_active(idx)
+                    break
+                else:
+                    idx += 1
+
+    def update_box_type(self, _):
+        o = self.builder.get_object
+        idx = o('cbType').get_active()
+        widgets = [
+            'canvasOptions_Interval',
+            'canvasOptions_Time',
+            'canvasOptions_Command',
+            'canvasOptions_IdleTime',
+            'canvasOptions_SysEvent',
+            'canvasOptions_FileWatch',
+            'canvasOptions_DBusEvent',
+            'canvasOptions_Empty',
+        ]
+        can_disable = [
+            'chkRepeat',
+            'chkSequence',
+            'cbBreakSequence',
+            'chkSuspend',
+        ]
+        to_disable = []
+        if idx == 0:
+            current_widget = 'canvasOptions_Interval'
+        elif idx == 1:
+            current_widget = 'canvasOptions_Time'
+        elif idx == 2:
+            current_widget = 'canvasOptions_Command'
+        elif idx == 3:
+            current_widget = 'canvasOptions_IdleTime'
+        elif idx == 4:
+            current_widget = 'canvasOptions_SysEvent'
+            to_disable = ['chkRepeat']
+        elif idx == 5:
+            current_widget = 'canvasOptions_FileWatch'
+            to_disable = ['chkRepeat']
+        elif idx == 6:
+            current_widget = 'canvasOptions_DBusEvent'
+            to_disable = ['chkRepeat']
+        else:
+            current_widget = 'canvasOptions_Empty'
+        for w in widgets:
+            if w == current_widget:
+                o(w).show()
             else:
-                o('btnDelete').set_sensitive(False)
-        else:
-            o('buttonOK').set_sensitive(False)
-            o('btnDelete').set_sensitive(False)
-
-    def change_cbCheckWhat(self, _):
-        o = self.builder.get_object
-        if o('cbCheckWhat').get_active() == 0:
-            o('chkExactMatch').set_sensitive(False)
-            o('chkCaseSensitive').set_sensitive(False)
-            o('chkRegExp').set_sensitive(False)
-        else:
-            o('chkExactMatch').set_sensitive(True)
-            o('chkCaseSensitive').set_sensitive(True)
-            o('chkRegExp').set_sensitive(True)
-
-    def change_cbTimeUnit(self, _):
-        o = self.builder.get_object
-        if o('cbTimeUnit').get_active() == 0:
-            l = UI_INTERVALS_HOURS
-        else:
-            l = UI_INTERVALS_MINUTES
-        cb = o('cbInterval')
-        cb.get_model().clear()
-        for x in l:
-            cb.append_text(str(x))
-
-    def default_box(self, include_name=False):
-        o = self.builder.get_object
-        if include_name:
-            o('txtName').set_text('')
-        o('txtInterval').set_text('')
-        o('txtYear').set_text('')
-        o('cbMonth').set_active(-1)
-        o('txtDay').set_text('')
-        o('cbWeekday').set_active(-1)
-        o('txtHour').set_text('')
-        o('txtMinute').set_text('')
-        o('txtCommand').set_text('')
-        o('txtCheckValue').set_text('0')
-        o('txtIdleMins').set_text('')
-        o('cbType').set_active(2)
-        o('cbTimeUnit').set_active(1)
-        o('cbSysEvent').set_active(1)
-        o('cbDBusEvent').set_active(0)
-        o('txtWatchPath').set_text('')
-        o('cbAddTask').set_active(-1)
-        o('cbCheckWhat').set_active(0)
-        o('chkRepeat').set_active(True)
-        o('chkSequence').set_active(True)
-        o('cbBreakSequence').set_active(0)
-        o('chkExactMatch').set_active(False)
-        o('chkCaseSensitive').set_active(False)
-        o('chkRegExp').set_active(False)
-        o('chkSuspend').set_active(False)
-        o('store_listTasks').clear()
-        cb = o('cbInterval')
-        cb.get_model().clear()
-        for x in UI_INTERVALS_MINUTES:
-            cb.append_text(str(x))
+                o(w).hide()
+        for w in can_disable:
+            if w in to_disable:
+                o(w).set_sensitive(False)
+            else:
+                o(w).set_sensitive(True)
 
     def choose_condition(self, box):
         o = self.builder.get_object
@@ -2725,12 +2782,14 @@ class ConditionDialog(object):
                 if evt in self.all_events:
                     o('cbSysEvent').set_active(self.all_events.index(evt))
                 elif evt.startswith(EVENT_COMMAND_LINE_PREAMBLE + ':'):
-                    o('cbSysEvent').set_active(self.all_events.index(EVENT_COMMAND_LINE))
+                    o('cbSysEvent').set_active(
+                        self.all_events.index(EVENT_COMMAND_LINE))
                 elif evt.startswith(EVENT_DBUS_SIGNAL_PREAMBLE + ':'):
                     # although this is implemented as an event based condition
                     # it is not presented to the user as such
                     handler_name = evt.split(':')[1]
-                    o('cbDBusEvent').set_active(self.stored_handlers.index(handler_name))
+                    o('cbDBusEvent').set_active(
+                        self.stored_handlers.index(handler_name))
                     cb_type = 6
                 else:
                     o('cbSysEvent').set_active(-1)
@@ -2751,101 +2810,78 @@ class ConditionDialog(object):
             for x in cond.task_names:
                 m.append([x])
 
-    def click_btnRemoveTask(self, _):
+    def change_txtName(self, _):
         o = self.builder.get_object
-        task_name = o('cbAddTask').get_active_text()
-        if task_name:
-            li = []
-            m = o('store_listTasks')
-            for row in m:
-                r = row[0]
-                if r != task_name:
-                    li.append(r)
-            m.clear()
-            for x in li:
-                m.append([x])
+        name = o('txtName').get_text()
+        if VALIDATE_CONDITION_RE.match(name):
+            o('buttonOK').set_sensitive(True)
+            if name in self.stored_conditions:
+                o('btnDelete').set_sensitive(True)
+            else:
+                o('btnDelete').set_sensitive(False)
+        else:
+            o('buttonOK').set_sensitive(False)
+            o('btnDelete').set_sensitive(False)
 
-    def click_btnAddTask(self, _):
+    def change_cbCheckWhat(self, _):
         o = self.builder.get_object
-        task_name = o('cbAddTask').get_active_text()
-        if task_name:
-            li = []
-            m = o('store_listTasks')
-            for row in m:
-                r = row[0]
-                if r != task_name:
-                    li.append(r)
-            li.append(task_name)
-            m.clear()
-            for x in li:
-                m.append([x])
+        if o('cbCheckWhat').get_active() == 0:
+            o('chkExactMatch').set_sensitive(False)
+            o('chkCaseSensitive').set_sensitive(False)
+            o('chkRegExp').set_sensitive(False)
+        else:
+            o('chkExactMatch').set_sensitive(True)
+            o('chkCaseSensitive').set_sensitive(True)
+            o('chkRegExp').set_sensitive(True)
 
-    def click_listTasks(self, selected):
+    def change_cbTimeUnit(self, _):
         o = self.builder.get_object
-        m = o('cbAddTask').get_model()
-        m1, i = selected.get_selected()
-        if i is not None:
-            idx = 0
-            for row in m:
-                if row[0] == m1[i][0]:
-                    o('cbAddTask').set_active(idx)
-                    break
-                else:
-                    idx += 1
+        if o('cbTimeUnit').get_active() == 0:
+            l = UI_INTERVALS_HOURS
+        else:
+            l = UI_INTERVALS_MINUTES
+        cb = o('cbInterval')
+        cb.get_model().clear()
+        for x in l:
+            cb.append_text(str(x))
 
     def click_chkSequence(self, _):
         o = self.builder.get_object
         o('cbBreakSequence').set_sensitive(o('chkSequence').get_active())
 
-    def update_box_type(self, _):
+    def default_box(self, include_name=False):
         o = self.builder.get_object
-        idx = o('cbType').get_active()
-        widgets = [
-            'canvasOptions_Interval',
-            'canvasOptions_Time',
-            'canvasOptions_Command',
-            'canvasOptions_IdleTime',
-            'canvasOptions_SysEvent',
-            'canvasOptions_FileWatch',
-            'canvasOptions_DBusEvent',
-            'canvasOptions_Empty',
-        ]
-        can_disable = [
-            'chkRepeat',
-            'chkSequence',
-            'cbBreakSequence',
-            'chkSuspend',
-        ]
-        to_disable = []
-        if idx == 0:
-            current_widget = 'canvasOptions_Interval'
-        elif idx == 1:
-            current_widget = 'canvasOptions_Time'
-        elif idx == 2:
-            current_widget = 'canvasOptions_Command'
-        elif idx == 3:
-            current_widget = 'canvasOptions_IdleTime'
-        elif idx == 4:
-            current_widget = 'canvasOptions_SysEvent'
-            to_disable = ['chkRepeat']
-        elif idx == 5:
-            current_widget = 'canvasOptions_FileWatch'
-            to_disable = ['chkRepeat']
-        elif idx == 6:
-            current_widget = 'canvasOptions_DBusEvent'
-            to_disable = ['chkRepeat']
-        else:
-            current_widget = 'canvasOptions_Empty'
-        for w in widgets:
-            if w == current_widget:
-                o(w).show()
-            else:
-                o(w).hide()
-        for w in can_disable:
-            if w in to_disable:
-                o(w).set_sensitive(False)
-            else:
-                o(w).set_sensitive(True)
+        if include_name:
+            o('txtName').set_text('')
+        o('txtInterval').set_text('')
+        o('txtYear').set_text('')
+        o('cbMonth').set_active(-1)
+        o('txtDay').set_text('')
+        o('cbWeekday').set_active(-1)
+        o('txtHour').set_text('')
+        o('txtMinute').set_text('')
+        o('txtCommand').set_text('')
+        o('txtCheckValue').set_text('0')
+        o('txtIdleMins').set_text('')
+        o('cbType').set_active(2)
+        o('cbTimeUnit').set_active(1)
+        o('cbSysEvent').set_active(1)
+        o('cbDBusEvent').set_active(0)
+        o('txtWatchPath').set_text('')
+        o('cbAddTask').set_active(-1)
+        o('cbCheckWhat').set_active(0)
+        o('chkRepeat').set_active(True)
+        o('chkSequence').set_active(True)
+        o('cbBreakSequence').set_active(0)
+        o('chkExactMatch').set_active(False)
+        o('chkCaseSensitive').set_active(False)
+        o('chkRegExp').set_active(False)
+        o('chkSuspend').set_active(False)
+        o('store_listTasks').clear()
+        cb = o('cbInterval')
+        cb.get_model().clear()
+        for x in UI_INTERVALS_MINUTES:
+            cb.append_text(str(x))
 
     def run(self):
         self.default_box()
@@ -2932,7 +2968,8 @@ class ConditionDialog(object):
                     stdout = str(o('txtCheckValue').get_text())
                 elif chk == 2:
                     stderr = str(o('txtCheckValue').get_text())
-                c = CommandBasedCondition(name, command, status, stdout, stderr, repeat, sequence)
+                c = CommandBasedCondition(
+                    name, command, status, stdout, stderr, repeat, sequence)
                 c.break_failure = break_failure
                 c.break_success = break_success
                 c.match_exact = o('chkExactMatch').get_active()
@@ -2973,12 +3010,6 @@ class ConditionDialog(object):
             c.dump()
             conditions.add(c)
             conditions.save()
-            self.stored_conditions = conditions.names
-            self.stored_conditions.sort()
-            cb_conds = o('cbConditionName')
-            cb_conds.get_model().clear()
-            for x in self.stored_conditions:
-                cb_conds.append_text(x)
             return c
         elif ret == ACTION_DELETE:
             name = o('txtName').get_text()
@@ -2993,14 +3024,12 @@ class ConditionDialog(object):
                     self.default_box(True)
                     if conditions.remove(cond_name=name):
                         conditions.save()
-                        cb_conds.get_model().clear()
-                        for x in self.stored_conditions:
-                            cb_conds.append_text(x)
                     else:
                         applet_log.error("DLGCOND: condition %s could not be deleted" % name)
                         msgbox = Gtk.MessageDialog(type=Gtk.MessageType.ERROR,
                                                    buttons=Gtk.ButtonsType.OK)
-                        msgbox.set_markup(resources.DLG_CANNOT_DELETE_CONDITION % name)
+                        msgbox.set_markup(
+                            resources.DLG_CANNOT_DELETE_CONDITION % name)
                         msgbox.run()
                         msgbox.hide()
                 else:
@@ -3032,19 +3061,24 @@ class SignalDialog(object):
             cb_handlers.append_text(x)
         l = o('listTests')
         renderer = Gtk.CellRendererText()
-        c = Gtk.TreeViewColumn(resources.LISTCOL_SIGNAL_PARAMETER, renderer, text=0)
+        c = Gtk.TreeViewColumn(
+            resources.LISTCOL_SIGNAL_PARAMETER, renderer, text=0)
         l.append_column(c)
         renderer = Gtk.CellRendererText()
-        c = Gtk.TreeViewColumn(resources.LISTCOL_SIGNAL_PARAMETER_SUB, renderer, text=1)
+        c = Gtk.TreeViewColumn(
+            resources.LISTCOL_SIGNAL_PARAMETER_SUB, renderer, text=1)
         l.append_column(c)
         renderer = Gtk.CellRendererText()
-        c = Gtk.TreeViewColumn(resources.LISTCOL_SIGNAL_NEGATE, renderer, text=2)
+        c = Gtk.TreeViewColumn(
+            resources.LISTCOL_SIGNAL_NEGATE, renderer, text=2)
         l.append_column(c)
         renderer = Gtk.CellRendererText()
-        c = Gtk.TreeViewColumn(resources.LISTCOL_SIGNAL_OPERATOR, renderer, text=3)
+        c = Gtk.TreeViewColumn(
+            resources.LISTCOL_SIGNAL_OPERATOR, renderer, text=3)
         l.append_column(c)
         renderer = Gtk.CellRendererText()
-        c = Gtk.TreeViewColumn(resources.LISTCOL_SIGNAL_VALUE, renderer, text=4)
+        c = Gtk.TreeViewColumn(
+            resources.LISTCOL_SIGNAL_VALUE, renderer, text=4)
         l.append_column(c)
         self.signal_param_tests = []
         self.all_comparisons = [
@@ -3077,27 +3111,14 @@ class SignalDialog(object):
         except ValueError as e:
             return None
 
-    def update_listTests(self):
-        o = self.builder.get_object
-        m = o('listTests').get_model()
-        m.clear()
-        for check in self.signal_param_tests:
-            row = [
-                str(check.value_idx),
-                "" if not check.sub_idx else str(check.sub_idx),
-                "NOT" if check.negate else "",
-                self.all_comparisons_symdict[check.comparison],
-                str(check.test_value),
-            ]
-            m.append(row)
-
     def click_btnAddTest(self, _):
         o = self.builder.get_object
         s = o('txtValueNum').get_text()
         value_idx = self.validate_int(s, min_value=0)
         if value_idx is None:
             applet_log.debug("DLGSIG: not adding signal check with bad param index")
-            msgbox = Gtk.MessageDialog(type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK)
+            msgbox = Gtk.MessageDialog(type=Gtk.MessageType.ERROR,
+                                       buttons=Gtk.ButtonsType.OK)
             msgbox.set_markup(resources.DLG_WRONG_PARAM_INDEX % name)
             msgbox.run()
             msgbox.hide()
@@ -3105,7 +3126,9 @@ class SignalDialog(object):
         sub_idx = o('txtValueSub').get_text()
         if not sub_idx:
             sub_idx = None
-        l = list(filter(lambda x: x.value_idx != value_idx and x.sub_idx != sub_idx, self.signal_param_tests))
+        l = list(filter(
+            lambda x: x.value_idx != value_idx and x.sub_idx != sub_idx,
+            self.signal_param_tests))
         check = param_check(
             value_idx,
             sub_idx,
@@ -3136,14 +3159,59 @@ class SignalDialog(object):
         sub_idx = o('txtValueSub').get_text()
         if not sub_idx:
             sub_idx = None
-        l = list(filter(lambda x: x.value_idx != value_idx and x.sub_idx != sub_idx, self.signal_param_tests))
+        l = list(filter(
+            lambda x: x.value_idx != value_idx and x.sub_idx != sub_idx,
+            self.signal_param_tests))
         self.signal_param_tests = l
         self.update_listTests()
-        # o('txtValueNum').set_text("")
-        # o('txtValueSub').set_text("")
-        # o('chkOperatorNot').set_active(False)
-        # o('cbOperatorCompare').set_active(0)
-        # o('txtTestValue').set_text("")
+
+    def click_listTests(self, selected):
+        o = self.builder.get_object
+        m, i = selected.get_selected()
+        if i is not None:
+            o('txtValueNum').set_text(m[i][0])
+            o('txtValueSub').set_text(m[i][1])
+            o('chkOperatorNot').set_active(m[i][2] == "NOT")
+            o('cbOperatorCompare').set_active(
+                self.all_comparisons.index(self.all_comparisons_revdict[m[i][3]]))
+            o('txtTestValue').set_text(m[i][4])
+
+    def update_listTests(self):
+        o = self.builder.get_object
+        m = o('listTests').get_model()
+        m.clear()
+        for check in self.signal_param_tests:
+            row = [
+                str(check.value_idx),
+                "" if not check.sub_idx else str(check.sub_idx),
+                "NOT" if check.negate else "",
+                self.all_comparisons_symdict[check.comparison],
+                str(check.test_value),
+            ]
+            m.append(row)
+
+    def choose_handler(self, box):
+        o = self.builder.get_object
+        name = box.get_active_text()
+        if name in self.stored_handlers:
+            handler = signal_handlers.get(handler_name=name)
+            o('txtValueNum').set_text("")
+            o('txtValueSub').set_text("")
+            o('txtTestValue').set_text("")
+            if handler.bus == 'session':
+                o('cbBusType').set_active(0)
+            elif handler.bus == 'system':
+                o('cbBusType').set_active(1)
+            o('txtBusID').set_text(handler.bus_name)
+            o('txtBusPath').set_text(handler.bus_path)
+            o('txtInterface').set_text(handler.interface)
+            o('txtSignal').set_text(handler.signal)
+            self.signal_param_tests = handler.param_checks.copy()
+            self.update_listTests()
+            if handler.verify_all_checks:
+                o('rdAll').set_active(True)
+            else:
+                o('rdAny').set_active(True)
 
     def change_txtValues(self, _):
         o = self.builder.get_object
@@ -3169,41 +3237,6 @@ class SignalDialog(object):
         else:
             o('buttonOK').set_sensitive(False)
             o('btnDelete').set_sensitive(False)
-
-    def click_listTests(self, selected):
-        o = self.builder.get_object
-        m, i = selected.get_selected()
-        if i is not None:
-            o('txtValueNum').set_text(m[i][0])
-            o('txtValueSub').set_text(m[i][1])
-            o('chkOperatorNot').set_active(m[i][2] == "NOT")
-            o('cbOperatorCompare').set_active(
-                self.all_comparisons.index(self.all_comparisons_revdict[m[i][3]]))
-            o('txtTestValue').set_text(m[i][4])
-
-    def choose_handler(self, box):
-        o = self.builder.get_object
-        name = box.get_active_text()
-        # self.default_box()
-        if name in self.stored_handlers:
-            handler = signal_handlers.get(handler_name=name)
-            o('txtValueNum').set_text("")
-            o('txtValueSub').set_text("")
-            o('txtTestValue').set_text("")
-            if handler.bus == 'session':
-                o('cbBusType').set_active(0)
-            elif handler.bus == 'system':
-                o('cbBusType').set_active(1)
-            o('txtBusID').set_text(handler.bus_name)
-            o('txtBusPath').set_text(handler.bus_path)
-            o('txtInterface').set_text(handler.interface)
-            o('txtSignal').set_text(handler.signal)
-            self.signal_param_tests = handler.param_checks.copy()
-            self.update_listTests()
-            if handler.verify_all_checks:
-                o('rdAll').set_active(True)
-            else:
-                o('rdAny').set_active(True)
 
     def default_box(self):
         o = self.builder.get_object
@@ -3253,12 +3286,45 @@ class SignalDialog(object):
                 verify_all = True
             h = SignalHandler(name, bus, bus_name, bus_path, interface, signal)
             for x in self.signal_param_tests:
-                h.add_check(x.value_idx, x.sub_idx, x.negate, x.comparison, x.test_value)
-            signal_handlers.add(h)
+                h.add_check(
+                    x.value_idx, x.sub_idx, x.negate, x.comparison,
+                    x.test_value)
+            if not signal_handlers.add(h):
+                applet_log.error("DLGSIG: signal handler %s could not be registererd" % name)
+                msgbox = Gtk.MessageDialog(type=Gtk.MessageType.ERROR,
+                                           buttons=Gtk.ButtonsType.OK)
+                msgbox.set_markup(
+                    resources.DLG_CANNOT_REGISTER_SIGHANDLER % name)
+                msgbox.run()
+                msgbox.hide()
             signal_handlers.save()
-            self.stored_handlers = signal_handlers.names
+            return h
         elif ret == ACTION_DELETE:
-            # TODO: implement deletion
+            name = o('txtName').get_text()
+            handler = signal_handlers.get(handler_name=name)
+            if handler:
+                msgbox = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,
+                                           buttons=Gtk.ButtonsType.YES_NO)
+                msgbox.set_markup(
+                    resources.DLG_CONFIRM_DELETE_SIGHANDLER % name)
+                ret = msgbox.run()
+                msgbox.hide()
+                if ret == Gtk.ResponseType.YES:
+                    self.default_box(True)
+                    if signal_handlers.remove(handler_name=name):
+                        signal_handlers.save()
+                    else:
+                        applet_log.error("DLGSIG: signal handler %s could not be deleted" % name)
+                        msgbox = Gtk.MessageDialog(type=Gtk.MessageType.ERROR,
+                                                   buttons=Gtk.ButtonsType.OK)
+                        msgbox.set_markup(
+                            resources.DLG_CANNOT_DELETE_SIGHANDLER % name)
+                        msgbox.run()
+                        msgbox.hide()
+                else:
+                    applet_log.info("DLGSIG: removal of signal handler %s canceled" % name)
+            return None
+        else:
             return None
 
 
@@ -3316,10 +3382,12 @@ class SettingsDialog(object):
                 config.set('General', 'log level', self.log_levels[v])
             else:
                 config_skip.append('log level')
-            config.set('General', 'icon theme', self.icon_themes[o('cbIconTheme').get_active()])
+            config.set('General', 'icon theme',
+                       self.icon_themes[o('cbIconTheme').get_active()])
             config.set('General', 'show icon', o('chkShowIcon').get_active())
             config.set('General', 'autostart', o('chkAutostart').get_active())
-            config.set('General', 'notifications', o('chkNotifications').get_active())
+            config.set('General', 'notifications',
+                       o('chkNotifications').get_active())
             preserve_pause = o('chkPreservePause').get_active()
             config.set('Scheduler', 'preserve pause', preserve_pause)
             if not preserve_pause:
@@ -3389,9 +3457,7 @@ class SettingsDialog(object):
             periodic.restart(new_interval=config.get('Scheduler', 'tick seconds'))
             history.resize()
             create_autostart_file()
-            # FIXME: find applet even when called by a second instance
-            if applet:
-                applet.hide_icon(not config.get('General', 'show icon'))
+            applet.hide_icon(not config.get('General', 'show icon'))
 
 
 class HistoryDialog(object):
@@ -3401,31 +3467,40 @@ class HistoryDialog(object):
         self.builder.connect_signals(self)
         o = self.builder.get_object
         self.dialog = o('dlgHistory')
-        self.image_success = Gtk.Image.new_from_file(os.path.join(APP_ICON_FOLDER, 'emblems', 'success.png'))
-        self.image_failure = Gtk.Image.new_from_file(os.path.join(APP_ICON_FOLDER, 'emblems', 'failure.png'))
+        self.image_success = Gtk.Image.new_from_file(
+            os.path.join(APP_ICON_FOLDER, 'emblems', 'success.png'))
+        self.image_failure = Gtk.Image.new_from_file(
+            os.path.join(APP_ICON_FOLDER, 'emblems', 'failure.png'))
         l = o('listHistory')
         renderer = Gtk.CellRendererText()
-        c = Gtk.TreeViewColumn(resources.LISTCOL_HISTORY_TIMESTAMP, renderer, text=0)
+        c = Gtk.TreeViewColumn(
+            resources.LISTCOL_HISTORY_TIMESTAMP, renderer, text=0)
         l.append_column(c)
         renderer = Gtk.CellRendererText()
-        c = Gtk.TreeViewColumn(resources.LISTCOL_HISTORY_TASK, renderer, text=1)
+        c = Gtk.TreeViewColumn(
+            resources.LISTCOL_HISTORY_TASK, renderer, text=1)
         c.props.expand = True
         l.append_column(c)
         renderer = Gtk.CellRendererText()
-        c = Gtk.TreeViewColumn(resources.LISTCOL_HISTORY_TRIGGER, renderer, text=2)
+        c = Gtk.TreeViewColumn(
+            resources.LISTCOL_HISTORY_TRIGGER, renderer, text=2)
         c.props.expand = True
         l.append_column(c)
         renderer = Gtk.CellRendererText()
-        c = Gtk.TreeViewColumn(resources.LISTCOL_HISTORY_EXITCODE, renderer, text=3)
+        c = Gtk.TreeViewColumn(
+            resources.LISTCOL_HISTORY_EXITCODE, renderer, text=3)
         l.append_column(c)
         renderer = Gtk.CellRendererPixbuf()
-        c = Gtk.TreeViewColumn(resources.LISTCOL_HISTORY_SUCCESS, renderer, pixbuf=4)
+        c = Gtk.TreeViewColumn(
+            resources.LISTCOL_HISTORY_SUCCESS, renderer, pixbuf=4)
         l.append_column(c)
         renderer = Gtk.CellRendererText()
-        c = Gtk.TreeViewColumn(resources.LISTCOL_HISTORY_REASON, renderer, text=5)
+        c = Gtk.TreeViewColumn(
+            resources.LISTCOL_HISTORY_REASON, renderer, text=5)
         l.append_column(c)
         renderer = Gtk.CellRendererText()
-        c = Gtk.TreeViewColumn(resources.LISTCOL_HISTORY_ROWID, renderer, text=6)
+        c = Gtk.TreeViewColumn(
+            resources.LISTCOL_HISTORY_ROWID, renderer, text=6)
         c.set_visible(False)
         l.append_column(c)
         o('txtStdOut').modify_font(Pango.FontDescription("Monospace"))
@@ -3454,7 +3529,8 @@ class HistoryDialog(object):
         o = self.builder.get_object
         rows = []
         for i in history.items():
-            s_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(i.startup_time))
+            s_time = time.strftime(
+                '%Y-%m-%d %H:%M:%S', time.localtime(i.startup_time))
             emblem = self.image_success if i.success else self.image_failure
             row = [
                 '%s / %.2f' % (s_time, i.run_time),
@@ -3486,14 +3562,17 @@ class HistoryDialog(object):
 class AboutDialog(object):
 
     def __init__(self):
-        self.image_logo = Gtk.Image.new_from_file(os.path.join(APP_ICON_FOLDER, 'alarmclock-128.png'))
+        self.image_logo = Gtk.Image.new_from_file(
+            os.path.join(APP_ICON_FOLDER, 'alarmclock-128.png'))
         self.builder = Gtk.Builder().new_from_string(DIALOG_ABOUT, -1)
         self.builder.connect_signals(self)
         o = self.builder.get_object
         self.dialog = o('dlgAbout')
         self.dialog.set_logo(self.image_logo.get_pixbuf())
-        self.dialog.set_version(resources.DLG_ABOUT_VERSION_STRING % APPLET_VERSION)
-        self.dialog.set_icon_from_file(os.path.join(APP_ICON_FOLDER, 'alarmclock.png'))
+        self.dialog.set_version(
+            resources.DLG_ABOUT_VERSION_STRING % APPLET_VERSION)
+        self.dialog.set_icon_from_file(
+            os.path.join(APP_ICON_FOLDER, 'alarmclock.png'))
 
     def run(self):
         self.dialog.set_keep_above(True)
@@ -3601,7 +3680,9 @@ class AppletIndicator(Gtk.Application):
         )
         if self.storage_mgr:
             devices = self.storage_mgr.GetManagedObjects().keys()
-            drives = filter(lambda x: x.startswith('/org/freedesktop/UDisks2/block_devices/'), devices)
+            drives = filter(
+                lambda x: x.startswith('/org/freedesktop/UDisks2/block_devices/'),
+                devices)
             self.storage_mgr_num_devices = len(list(drives))
             enabled_events.append(EVENT_SYSTEM_DEVICE_ATTACH)
             enabled_events.append(EVENT_SYSTEM_DEVICE_DETACH)
@@ -3656,8 +3737,10 @@ class AppletIndicator(Gtk.Application):
                 icon_suffix = 'light'
             else:
                 icon_suffix = 'color'
-        self.indicator = AppIndicator.Indicator.new(APPLET_NAME, 'alarm', AppIndicator.IndicatorCategory.SYSTEM_SERVICES)
-        self.indicator.set_icon_theme_path(os.path.join(APP_ICON_FOLDER, icon_suffix))
+        self.indicator = AppIndicator.Indicator.new(
+            APPLET_NAME, 'alarm', AppIndicator.IndicatorCategory.SYSTEM_SERVICES)
+        self.indicator.set_icon_theme_path(
+            os.path.join(APP_ICON_FOLDER, icon_suffix))
         if config.get('General', 'show icon'):
             self.indicator.set_icon('alarm')
             self.indicator.set_attention_icon('warning')
@@ -3730,7 +3813,9 @@ class AppletIndicator(Gtk.Application):
         applet_log.debug("MAIN: storage change detected")
         try:
             devices = self.storage_mgr.GetManagedObjects().keys()
-            drives = filter(lambda x: x.startswith('/org/freedesktop/UDisks2/block_devices/'), devices)
+            drives = filter(
+                lambda x: x.startswith('/org/freedesktop/UDisks2/block_devices/'),
+                devices)
             num_devices = len(list(drives))
             if self.storage_mgr_num_devices > num_devices:
                 applet_log.debug("MAIN: device detached")
@@ -4061,7 +4146,8 @@ def clear_item_data(verbose=False):
     for x in l:
         signal_handlers.remove(handler_name=x)
     signal_handlers.save()
-    file_name = os.path.join(USER_CONFIG_FOLDER, FILE_CONFIG_LIST_SIGNAL_HANDLERS)
+    file_name = os.path.join(
+        USER_CONFIG_FOLDER, FILE_CONFIG_LIST_SIGNAL_HANDLERS)
     try:
         os.unlink(file_name)
     except OSError:
