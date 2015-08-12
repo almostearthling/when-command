@@ -2846,6 +2846,11 @@ class ConditionDialog(object):
         cb_tasks.get_model().clear()
         for x in self.stored_tasks:
             cb_tasks.append_text(x)
+        self.stored_handlers = signal_handlers.names
+        self.stored_handlers.sort()
+        cb_handlers = o('cbDBusEvent')
+        for x in self.stored_handlers:
+            cb_handlers.append_text(x)
         self.dialog.set_keep_above(True)
         self.dialog.present()
         self.change_txtName(None)
