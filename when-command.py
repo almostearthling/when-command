@@ -2791,6 +2791,8 @@ class ConditionDialog(object):
             'canvasOptions_Command',
             'canvasOptions_IdleTime',
             'canvasOptions_SysEvent',
+            'canvasOptions_FileWatch',
+            'canvasOptions_DBusEvent',
             'canvasOptions_Empty',
         ]
         can_disable = [
@@ -2811,6 +2813,11 @@ class ConditionDialog(object):
         elif idx == 4:
             current_widget = 'canvasOptions_SysEvent'
             to_disable = ['chkRepeat']
+        elif idx == 5:
+            current_widget = 'canvasOptions_FileWatch'
+        elif idx == 6:
+            current_widget = 'canvasOptions_DBusEvent'
+            # to_disable = ['chkRepeat']
         else:
             current_widget = 'canvasOptions_Empty'
         for w in widgets:
