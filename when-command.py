@@ -3292,7 +3292,7 @@ class SignalDialog(object):
             for x in self.signal_param_tests:
                 h.add_check(
                     x.value_idx, x.sub_idx, x.negate, x.comparison,
-                    x.test_value)
+                    x.test_value.strip())
             if not signal_handlers.add(h):
                 applet_log.error("DLGSIG: signal handler %s could not be registererd" % name)
                 msgbox = Gtk.MessageDialog(type=Gtk.MessageType.ERROR,
