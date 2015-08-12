@@ -2175,8 +2175,12 @@ class SignalHandler(object):
         if self.handler_name is None:
             raise RuntimeError("signal handler not initialized")
         file_name = os.path.join(USER_CONFIG_FOLDER, '%s.handler' % self.handler_name)
+        # self.signal_match is session dependent (and a weakref): don't dump
+        m = self.signal_match
+        self.signal_match = None
         with open(file_name, 'wb') as f:
             pickle.dump(self, f)
+        self.signal_match = m
 
     def unlink_file(self):
         file_name = os.path.join(USER_CONFIG_FOLDER, "%s.handler" % self.handler_name)
@@ -2980,7 +2984,6 @@ class SignalDialog(object):
         o = self.builder.get_object
         self.dialog = o('dlgAddDBusSignal')
         self.stored_handlers = list(signal_handlers.names)
-        print(self.stored_handlers)
         self.stored_handlers.sort()
         cb_handlers = o('cbName')
         cb_handlers.get_model().clear()
