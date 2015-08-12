@@ -148,6 +148,7 @@ By default, when the applet is invoked with no arguments, it just starts an inst
 * `-l` or `--show-history`: show the history dialog box of an existing instance
 * `-t` or `--show-tasks`: show the task dialog box of an existing instance
 * `-c` or `--show-conditions`: show the condition dialog box of an existing instance
+* `-d` or `--show-signals`: show the DBus signal handler editor box for an existing instance (*advanced feature, see below*)
 * `-R` or `--reset-config`: reset applet configuration to default, requires the applet to be shut down with an appropriate switch
 * `-I` or `--show-icon`: show applet icon, the icon will be shown at the next startup
 * `-T` or `--install`: install or reinstall application icon and autostart icon, requires applet to be shut down with an appropriate switch
@@ -157,8 +158,8 @@ By default, when the applet is invoked with no arguments, it just starts an inst
 * `-f` *condition* or `--defer-condition` *condition*: schedule a command-line associated condition to run the associated tasks at the next clock tick; the same as above yields for *condition*
 * `--shutdown`: close a running instance performing shutdown tasks first
 * `--kill`: close a running instance abruptly, no shutdown tasks are run
-* `--export` *[filename]*: save tasks and conditions to a portable format, if *filename* is not specified these items are saved in a default file in the `~/.config/when-command` directory; this will especially be useful in cases where the compatibility of the "running" versions of tasks and conditions (which are a binary format) could be broken across releases
-* `--import` *[filename]*: clear tasks and conditions and import them from a previously saved file, if *filename* is not specified the applet tries to import these items from the default file in the `~/.config/when-command` directory; the applet has to be shut down before attempting to import tasks and conditions.
+* `--export` *[filename]*: save tasks, conditions and other items to a portable format, if *filename* is not specified these items are saved in a default file in the `~/.config/when-command` directory; this will especially be useful in cases where the compatibility of the "running" versions of tasks and conditions (which are a binary format) could be broken across releases
+* `--import` *[filename]*: clear tasks, conditions and other items and import them from a previously saved file, if *filename* is not specified the applet tries to import these items from the default file in the `~/.config/when-command` directory; the applet has to be shut down before attempting to import items.
 
 Some trivial switches are also available:
 
@@ -196,6 +197,44 @@ The **When** utility will try to recognize the way it has been set up the first 
 * `~/.local/share/when-command` where it stores resources and logs (in the `log` subdirectory)
 
 Please note that the full path to the command has to be used on the first run: in this way **When** can recognize the installation type and set up the icons and shortcuts properly.
+
+
+## Advanced features
+
+### DBus signal handlers
+
+Recent versions of the applet support the possibility to define system and session events using [DBus](http://dbus.freedesktop.org/). Such events can activate conditions which in turn trigger task sequences, just like any other condition. However, since this is not a common use for the **When** scheduler as it assumes a good knowledge of the DBus interprocess communication system and the related tools, this feature is intentionally inaccessible from the applet menu. To access the *DBus Signal Handler Editor* dialog, the user must invoke the applet from the command line with the appropriate switch, while an instance is running in the same session:
+
+```
+~$ python3 /opt/when-command/when-command.py --show-signals
+```
+
+This is actually the only way to expose this dialog box. Unless the user defines one or more signal handlers, there will be no *User Defined Events* in the corresponding box and pane in the *Conditions* dialog box, and **When** will not listen to any other system and session events than the ones available in the *Events* list that can be found in the *Conditions* dialog box.
+
+To define a signal to listen to, the following values must be specified in the *DBus Signal Handler Editor* box:
+
+* the handler name, free for the user to define as long as it begins with an alphanumeric character (letter or digit) followed by alphanumerics, dashes and underscores
+* the bus type (either *Session* or *System* bus)
+* the unique bus name in dotted form (e.g. `org.freedesktop.DBus`)
+* the path of the object that emits the signal (e.g. `/org/freedesktop/FileManager1`)
+* the interface name in dotted form (e.g. `org.freedesktop.FileManager1`)
+* the signal name.
+
+All these values follow a precise syntax, which can be found in the DBus documentation. Moreover, if the signal has any parameters, constraints on the parameters can be specified for the condition to be verified: given a list of constraints, the user can choose whether to require all of them or just any to evaluate to true. The tests against signal parameters require the following data:
+
+* *Value #* is the parameter index
+* *Sub #* (optional) is the index within the returned parameter, when it is either a list or a dictionary: in the latter case, the index is read as a string and must match a dictionary key
+* *comparison* (consisting of an operator, possibly negated) specifies how the value is compared to a test value: the supported operators are
+  1. `=` (equality): the operands are considered strings, and the test is successful when they are identical
+  2. `CONTAINS`: the test evaluates to true when either the test string is a substring of the returned value, or the return value is a list, no *Sub #* has been specified, and the test value is in the list
+  3. `MATCHES`: the test value is treated as a *regular expression* and the return value (as a string) matches it
+  4. `<`: the return value is less than the test value (converted to the return value type)
+  5. `<`: the return value is greater than the test value (converted to the return value type)
+* *Test Value* is the user provided value to compare the return value to.
+
+When all the needed fields for a tests are given, the test can be accepted by clicking the *Update* button. To remove a test line, either specify *Value #* and *Sub #* or select the line to delete, then click the *Remove* button. Tests are optional: if no test is provided, the condition will be enqueued as soon as the signal is emitted.
+
+**Warning:** when the system or session do not support a bus, path, interface, or signal, the signal handler registration fails: in this case the associated event never takes place and it is impossible for any associated condition to be ever verified. If a test is specified in the wrong way, or a comparison is impossible (e.g. comparing a returned list a string), or any error arises within a test, the test will evaluate to *false* and the signal will not activate any associated condition.
 
 
 ## Developer notes and resources
