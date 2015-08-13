@@ -20,6 +20,8 @@ List of achievements and expectations for the When applet.
   3. Command :+1:
   4. Idle :+1:
   5. Event :+1:
+  6. File Watch :-1:
+  7. Generic DBus signal :+1:
 * One time or repeated condition checks :ok:
 * Parallel or sequential task execution :ok:
 * Functioning task definition box :ok:
@@ -78,6 +80,7 @@ List of achievements and expectations for the When applet.
   - Force indicator icon on  :+1:
   - export tasks and conditions :+1:
   - import tasks and conditions  :+1:
+  - export and import DBus signal handlers :+1:
 * Regexp match for shell command results (in both tasks and conditions) :ok:
 * Stop task sequence upon failure (or success) of one task :ok:
 * More system and session event conditions :ok:
@@ -87,6 +90,7 @@ List of achievements and expectations for the When applet.
   - Storage device attach/detach :+1:
   - Join/Leave network :+1:
 * Command-line triggered conditions :ok:
+* Generic DBus signal handler conditions :ok:
 
 
 ## 2) To *Working* Alpha Release

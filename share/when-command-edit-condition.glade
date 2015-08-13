@@ -111,6 +111,7 @@
                           <item id="30" translatable="yes">Command</item>
                           <item id="40" translatable="yes">Idle Session</item>
                           <item id="50" translatable="yes">Event</item>
+                          <item id="60" translatable="yes">File Change</item>
                         </items>
                         <signal name="changed" handler="update_box_type" swapped="no"/>
                       </object>
@@ -146,6 +147,7 @@
                     <property name="can_focus">False</property>
                     <property name="margin_left">15</property>
                     <property name="margin_right">15</property>
+                    <property name="margin_bottom">5</property>
                     <property name="orientation">vertical</property>
                     <child>
                       <object class="GtkBox" id="boxCommand">
@@ -287,6 +289,7 @@
                     <property name="can_focus">False</property>
                     <property name="margin_left">15</property>
                     <property name="margin_right">15</property>
+                    <property name="margin_bottom">5</property>
                     <property name="orientation">vertical</property>
                     <child>
                       <object class="GtkBox" id="canvasOptions_idledef">
@@ -336,6 +339,7 @@
                   <object class="GtkBox" id="canvasOptions_Interval">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="margin_bottom">5</property>
                     <property name="orientation">vertical</property>
                     <child>
                       <object class="GtkGrid" id="gridOptions_intvlen">
@@ -488,6 +492,7 @@
                     <property name="can_focus">False</property>
                     <property name="margin_left">15</property>
                     <property name="margin_right">15</property>
+                    <property name="margin_bottom">5</property>
                     <child>
                       <object class="GtkGrid" id="gridTime">
                         <property name="visible">True</property>
@@ -702,6 +707,74 @@
                   </packing>
                 </child>
                 <child>
+                  <object class="GtkBox" id="canvasOptions_FileWatch">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="margin_left">15</property>
+                    <property name="margin_right">15</property>
+                    <property name="margin_bottom">5</property>
+                    <property name="orientation">vertical</property>
+                    <child>
+                      <object class="GtkBox" id="canvasOptions_filewatchdef">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkLabel" id="lblWatchPath">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="margin_bottom">5</property>
+                            <property name="label" translatable="yes">Watch File</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkEntry" id="txtWatchPath">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="valign">center</property>
+                            <property name="margin_left">15</property>
+                            <property name="margin_right">10</property>
+                            <property name="margin_bottom">5</property>
+                          </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="btnChooseWatchFile">
+                            <property name="label" translatable="yes">Choose...</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <property name="valign">center</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">2</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">5</property>
+                  </packing>
+                </child>
+                <child>
                   <object class="GtkBox" id="canvasOptions_Empty">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
@@ -715,6 +788,57 @@
                     <property name="fill">True</property>
                     <property name="pack_type">end</property>
                     <property name="position">5</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkBox" id="canvasOptions_DBusEvent">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="margin_left">15</property>
+                    <property name="margin_right">15</property>
+                    <property name="margin_bottom">5</property>
+                    <property name="orientation">vertical</property>
+                    <child>
+                      <object class="GtkBox" id="canvasOptions_dbuseventdef">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkLabel" id="lblDBusEvent">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">User Event Identifier</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkComboBoxText" id="cbDBusEvent">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="margin_left">15</property>
+                            <property name="active_id">-1</property>
+                          </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">7</property>
                   </packing>
                 </child>
               </object>
