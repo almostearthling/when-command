@@ -226,7 +226,7 @@ All these values follow a precise syntax, which can be found in the DBus documen
 * *Value #* is the parameter index
 * *Sub #* (optional) is the index within the returned parameter, when it is either a list or a dictionary: in the latter case, the index is read as a string and must match a dictionary key
 * *comparison* (consisting of an operator, possibly negated) specifies how the value is compared to a test value: the supported operators are
-  1. `=` (equality): the operands are considered strings, and the test is successful when they are identical
+  1. `=` (equality): the operands are considered strings, and the test is successful when they are identical; please notice that, in case of boolean parameters, the only possible comparison is equality (and the related *not* equality): all other comparisons, if used, will evaluate to false and prevent condition activation, and the comparison value should be either `true` or `false`
   2. `CONTAINS`: the test evaluates to true when either the test string is a substring of the returned value, or the return value is a list, no *Sub #* has been specified, and the test value is in the list
   3. `MATCHES`: the test value is treated as a *regular expression* and the return value (as a string) matches it
   4. `<`: the return value is less than the test value (converted to the return value type)
