@@ -34,15 +34,13 @@ The environment in which the subprocess is run can either import the current one
 
 The selected task (if any) can be deleted clicking the *Delete* button in the dialog box. However the application will refuse to delete a task that is used in a condition: remove the task reference from the condition first. Every task must have an *unique name*, if a task is named as an existing task it will replace the existing one. The name *must* begin with an alphanumeric character (letter or digit) followed by alphanumerics, dashes and underscores.
 
-**A note on the "Check for" option:** The applet can either ignore whatever the underlying process returns to the caller by specifying *Nothing* in the *Check for* group, or check
+**How to use the "Check for" option:** The applet can either ignore whatever the underlying process returns to the caller by specifying *Nothing* in the *Check for* group, or check
 
 * exit code
 * process output (*stdout*)
 * process written errors (*stderr*)
 
-to determine whether the process succeeded or failed. When choosing to check for  *Success*, the operation is considered successful *if and only if* the process result (exit code, output, or error) corresponds to the user provided value. Same yields for *Failure*: if *Failure* is chosen, only the provided result will indicate a failure. For example, in the most common case the user will choose to expect *Success* to correspond to an *Exit Code* of `0` (in fact the default choice), all other exit codes will indicate a failure. And if the user chooses to expect *Failure* to be reported as the word `Error` in the error messages, whatever other error messages will be ignored and the operation will turn out successful.
-
-**A note about the exit code:** Since all commands are executed in the default shell, expect an exit code different from `0` when the command is not found. On Ubuntu, with the `/bin/sh` shell, the `not found` code is `127`.
+to determine whether the process succeeded or failed. When choosing to check for  *Success*, the operation is considered successful *if and only if* the process result (exit code, output, or error) corresponds to the user provided value. Same yields for *Failure*: if *Failure* is chosen, only the provided result will indicate a failure. For example, in the most common case the user will choose to expect *Success* to correspond to an *Exit Code* of `0` (in fact the default choice), all other exit codes will indicate a failure. And if the user chooses to expect *Failure* to be reported as the word `Error` in the error messages, whatever other error messages will be ignored and the operation will turn out successful. Please note that since all commands are executed in the default shell, expect an exit code different from `0` when the command is not found. On Ubuntu, with the `/bin/sh` shell, the `not found` code is `127`.
 
 
 ### Conditions
@@ -61,8 +59,10 @@ There are several types of condition available:
   - *Storage Device Connect* and *Disconnect*, which take place when the user attaches or respectively detaches a removable storage device.
   - *Join* or *Leave a Network*, these are verified whenever a network is joined or lost respectively.
   - *Command Line Trigger* is a special event type, that is triggered invoking the command line. The associated condition can be scheduled to be run at the next clock tick or immediately using the appropriate switch.
+6. **Based on File Change:** *(to be implemented)* The tasks are run when a certain file is changed.
+7. **Generic User Event based (DBus):** The user can define system events by listening to signals emitted on the system bus and the session bus. This is an advanced feature, and the events must be defined using the procedure described below.
 
- **Warning**: because of the way applications are notified that the session is ending (first a TERM signal is sent, then a KILL if the first was unsuccessful), the *Shutdown* event is not suitable for long running tasks, such as file synchronizations, disk cleanup and similar actions. Longer running tasks will be run if the users quits the applet through the menu, though. Same yields for *Suspend*: by specification, no more than one second is available for tasks to complete. In reference to the event condition definition, one or more events might appear as *[disabled]* in the list: the user still can choose to create a condition based on a disabled event, but the corresponding tasks will never be run.
+ **Warning**: because of the way applications are notified that the session is ending (first a TERM signal is sent, then a KILL if the first was unsuccessful), the *Shutdown* event is not suitable for long running tasks, such as file synchronizations, disk cleanup and similar actions. The system usually concedes a "grace time" of about one second before shutting everything down. Longer running tasks will be run if the users quits the applet through the menu, though. Same yields for *Suspend*: by specification, no more than one second is available for tasks to complete. In reference to the event condition definition, one or more events might appear as *[disabled]* in the list: the user still can choose to create a condition based on a disabled event, but the corresponding tasks will never be run.
 
 Also, the condition configuration interface allows to decide:
 
@@ -72,7 +72,7 @@ Also, the condition configuration interface allows to decide:
 
 The selected condition (if any) can be deleted clicking the *Delete* button in the dialog box. Every condition must have an *unique name*, if a condition is named as an existing one it will replace it. The name *must* begin with an alphanumeric character (letter or digit) followed by alphanumerics, dashes and underscores.
 
-**Attention should be paid to events:** some events may not be supported on every platform, even on Ubuntu implementations. *Screen Lock/Unlock* for instance does not follow very precise specifications, and could be disabled on some desktops.
+**Possibly unsupported events:** some events may not be supported on every platform, even on Ubuntu implementations. *Screen Lock/Unlock* for instance does not follow very precise specifications, and could be disabled on some desktops.
 
 
 ### The History window
@@ -109,7 +109,8 @@ The options are:
   * *Log Level*: the amount of detail in the log file
   * *Max Log Size*: max size (in bytes) for the log file
   * *Number Of Log Backups*: number of backup log files (older ones are erased)
-  * *Instance History Items*: max number of tasks in the event list (*History* window); this option is named `max items` in the configuration file.
+  * *Instance History Items*: max number of tasks in the event list (*History* window); this option is named `max items` in the configuration file
+  * *Enable User Defined Events*: if set, then the user can define events using DBus *(see below)*. Please note that if there are any user defined events already present, this option remains set and will not be modifiable. It corresponds to `user events` in the configuration file. Also, to make this option effective and to enable user defined events in the *Conditions* dialog box, the applet must be restarted.
 
 The configuration is *immediately stored upon confirmation* to the configuration file, although some settings (such as *Notifications*, *Icon Theme*) might require a restart of the applet. The configuration file can be edited with a standard text editor, and it follows some conventions common to most configuration files. The sections in the file might slightly differ from the tabs in the *Settings* dialog, but the entries are easily recognizable.
 
@@ -209,7 +210,7 @@ Recent versions of the applet support the possibility to define system and sessi
 ~$ python3 /opt/when-command/when-command.py --show-signals
 ```
 
-This is actually the only way to expose this dialog box. Unless the user defines one or more signal handlers, there will be no *User Defined Events* in the corresponding box and pane in the *Conditions* dialog box, and **When** will not listen to any other system and session events than the ones available in the *Events* list that can be found in the *Conditions* dialog box.
+This is actually the only way to expose this dialog box. Unless the user defines one or more signal handlers, there will be no *User Defined Events* in the corresponding box and pane in the *Conditions* dialog box, and **When** will not listen to any other system and session events than the ones available in the *Events* list that can be found in the *Conditions* dialog box. The possibility to define such events must be enabled (it is disabled by default) in the *Settings* dialog box, and **When** has to be restarted to make the option effective: before restart the user events are not available in the *Conditions* box, although it becomes possible to show the *DBus Signal Handler Editor* using the command shown above. If the appropriate setting is disabled, the above command exits without showing the editor dialog.
 
 To define a signal to listen to, the following values must be specified in the *DBus Signal Handler Editor* box:
 
@@ -235,7 +236,7 @@ All these values follow a precise syntax, which can be found in the DBus documen
 
 When all the needed fields for a tests are given, the test can be accepted by clicking the *Update* button. To remove a test line, either specify *Value #* and *Sub #* or select the line to delete, then click the *Remove* button. Tests are optional: if no test is provided, the condition will be enqueued as soon as the signal is emitted.
 
-**Warning:** when the system or session do not support a bus, path, interface, or signal, the signal handler registration fails: in this case the associated event never takes place and it is impossible for any associated condition to be ever verified. If a test is specified in the wrong way, or a comparison is impossible (e.g. comparing a returned list against a string), or any error arises within a test, the test will evaluate to *false* and the signal will not activate any associated condition. **When** tries to compare signal parameters in several ways, and as a last resort it tries to handle every possible value as a string to achieve the most possible flexibility: if none of these attempts leads to a possible comparison, the test fails.
+**Warning:** when the system or session do not support a bus, path, interface, or signal, the signal handler registration fails: in this case the associated event never takes place and it is impossible for any associated condition to be ever verified. If a test is specified in the wrong way, or a comparison is impossible (e.g. comparing a returned list against a string), or any error arises within a test, the test will evaluate to *false* and the signal will not activate any associated condition. **When** tries to compare signal parameters in several ways, and as a last resort it tries to handle every possible value as a string to achieve the most flexibility: if none of these attempts leads to a possible comparison, the test fails.
 
 
 ## Developer notes and resources

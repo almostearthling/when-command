@@ -68,7 +68,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.6.5-beta.2"
+APPLET_VERSION = "0.6.5-beta.3"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -281,6 +281,8 @@ resources.MENU_TASK_HISTORY = "Task History..."
 resources.MENU_PAUSE = "Pause"
 resources.MENU_ABOUT = "About..."
 resources.MENU_QUIT = "Quit"
+
+resources.CBENTRY_CONDITION_DBUS_EVENTS = ["User Defined Event", '70']
 
 resources.LISTCOL_ENVVARS_NAME = "Variable"
 resources.LISTCOL_ENVVARS_VALUE = "Value"
@@ -556,6 +558,7 @@ class Config(object):
                 'notifications': bool_spec,
                 'log level': str,
                 'icon theme': str,
+                'user events': bool_spec,
             },
             'Concurrency': {
                 'max threads': int,
@@ -580,6 +583,7 @@ class Config(object):
             notifications = true
             icon theme = guess
             log level = warning
+            user events = false
 
             [Concurrency]
             max threads = 5
@@ -888,6 +892,7 @@ class SignalHandlers(object):
             yield handler
 
     names = property(lambda self: [h.handler_name for h in self._list])
+    not_empty = property(lambda self: bool(self._list))
 
     def save(self):
         l = []
@@ -901,7 +906,6 @@ class SignalHandlers(object):
 
     def load(self):
         self._list = []
-        self._last_id = 0
         file_name = os.path.join(
             USER_CONFIG_FOLDER, FILE_CONFIG_LIST_SIGNAL_HANDLERS)
         with open(file_name, 'rb') as f:
@@ -2660,6 +2664,15 @@ class ConditionDialog(object):
             model.append(x)
         o('cbSysEvent').set_model(model)
 
+        # since the box was built using the Glade interface designer, for now
+        # just add the extra condition if enabled: this forces the user to
+        # restart the applet to actually enable DBus signal handlers in this
+        # dialog box, but it's probably a good way to handle such a setting
+        if config.get("General", "user events"):
+            model = o("cbType").get_model()
+            model.append(resources.CBENTRY_CONDITION_DBUS_EVENTS)
+            o('cbType').set_model(model)
+
     def validate_int(self, s, min_value=None, max_value=None):
         try:
             n = int(s)
@@ -3404,6 +3417,13 @@ class SettingsDialog(object):
         o('txtMaxLogSize').set_text(str(config.get('History', 'log size')))
         o('txtMaxLogBackups').set_text(str(config.get('History', 'log backups')))
         o('txtMaxHistoryItems').set_text(str(config.get('History', 'max items')))
+        if signal_handlers.not_empty:
+            o('chkEnableUserEvents').set_active(True)
+            o('chkEnableUserEvents').set_sensitive(False)
+        else:
+            o('chkEnableUserEvents').set_active(
+                config.get('General', 'user events'))
+            o('chkEnableUserEvents').set_sensitive(True)
 
     def run(self):
         self.default_box()
@@ -3426,6 +3446,8 @@ class SettingsDialog(object):
             config.set('General', 'autostart', o('chkAutostart').get_active())
             config.set('General', 'notifications',
                        o('chkNotifications').get_active())
+            config.set('General', 'user events',
+                       o('chkEnableUserEvents').get_active())
             preserve_pause = o('chkPreservePause').get_active()
             config.set('Scheduler', 'preserve pause', preserve_pause)
             if not preserve_pause:
@@ -3789,7 +3811,7 @@ class AppletIndicator(Gtk.Application):
             Notify.init(APPLET_NAME)
             self._notify = Notify.Notification()
 
-        # load tasks and conditions if any, otherwise save empty lists
+        # load items if any, otherwise save empty lists
         try:
             tasks.load()
         except FileNotFoundError:
@@ -3802,6 +3824,11 @@ class AppletIndicator(Gtk.Application):
             signal_handlers.load()
         except FileNotFoundError:
             signal_handlers.save()
+
+        if signal_handlers.not_empty:
+            applet_log.info("MAIN: signal handlers found, enabling user events")
+            config.set("General", "user events", True)
+            config.save()
 
         applet_log.info("MAIN: trying to run startup tasks")
         sysevent_condition_check(EVENT_APPLET_STARTUP)
@@ -4336,8 +4363,8 @@ if __name__ == '__main__':
     config_loglevel()
     tasks = Tasks()
     conditions = Conditions()
-    signal_handlers = SignalHandlers()
     deferred_events = DeferredEvents()
+    signal_handlers = SignalHandlers()
 
     # initialize global variables that require graphic environment
     if GRAPHIC_ENVIRONMENT:
@@ -4498,6 +4525,9 @@ if __name__ == '__main__':
                 oerr("could not find a running instance, please start it first", verbose)
                 sys.exit(2)
             else:
+                if not config.get("General", "user events"):
+                    oerr("dbus signals disabled by configuration", verbose)
+                    sys.exit(1)
                 show_box('dbus_signal', verbose)
 
         if args.export_items:

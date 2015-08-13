@@ -111,8 +111,7 @@
                           <item id="30" translatable="yes">Command</item>
                           <item id="40" translatable="yes">Idle Session</item>
                           <item id="50" translatable="yes">Event</item>
-                          <item id="60" translatable="yes">File or Directory Change</item>
-                          <item id="70" translatable="yes">User Defined Event (via DBus)</item>
+                          <item id="60" translatable="yes">File Change</item>
                         </items>
                         <signal name="changed" handler="update_box_type" swapped="no"/>
                       </object>
