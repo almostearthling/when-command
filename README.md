@@ -235,7 +235,7 @@ All these values follow a precise syntax, which can be found in the DBus documen
 
 When all the needed fields for a tests are given, the test can be accepted by clicking the *Update* button. To remove a test line, either specify *Value #* and *Sub #* or select the line to delete, then click the *Remove* button. Tests are optional: if no test is provided, the condition will be enqueued as soon as the signal is emitted.
 
-**Warning:** when the system or session do not support a bus, path, interface, or signal, the signal handler registration fails: in this case the associated event never takes place and it is impossible for any associated condition to be ever verified. If a test is specified in the wrong way, or a comparison is impossible (e.g. comparing a returned list against a string), or any error arises within a test, the test will evaluate to *false* and the signal will not activate any associated condition.
+**Warning:** when the system or session do not support a bus, path, interface, or signal, the signal handler registration fails: in this case the associated event never takes place and it is impossible for any associated condition to be ever verified. If a test is specified in the wrong way, or a comparison is impossible (e.g. comparing a returned list against a string), or any error arises within a test, the test will evaluate to *false* and the signal will not activate any associated condition. **When** tries to compare signal parameters in several ways, and as a last resort it tries to handle every possible value as a string to achieve the most possible flexibility: if none of these attempts leads to a possible comparison, the test fails.
 
 
 ## Developer notes and resources
