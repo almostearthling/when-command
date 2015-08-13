@@ -2137,8 +2137,12 @@ class SignalHandler(object):
                 try:
                     testv = return_type(c.test_value)
                 except ValueError:
-                    self._warning("handler %s param #%s: type conversion impossible: cannot compare" % (self.handler_name, c.value_idx))
-                    return False
+                    testv = c.test_value
+                    try:
+                        v = str(v).strip()
+                    except:
+                        self._warning("handler %s param #%s: type conversion impossible: cannot compare" % (self.handler_name, c.value_idx))
+                        return False
                 try:
                     if negate:
                         return not(v > testv)
@@ -2151,8 +2155,12 @@ class SignalHandler(object):
                 try:
                     testv = return_type(c.test_value)
                 except ValueError:
-                    self._warning("handler %s param #%s: type conversion impossible: cannot compare" % (self.handler_name, c.value_idx))
-                    return False
+                    testv = c.test_value
+                    try:
+                        v = str(v).strip()
+                    except:
+                        self._warning("handler %s param #%s: type conversion impossible: cannot compare" % (self.handler_name, c.value_idx))
+                        return False
                 try:
                     if negate:
                         return not(v < testv)
