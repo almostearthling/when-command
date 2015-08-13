@@ -68,7 +68,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.6.5-beta.3"
+APPLET_VERSION = "0.6.5-beta.4"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -2023,7 +2023,7 @@ def dict_to_EventBasedCondition(d):
 
 #############################################################################
 # a class to build DBus signal handlers: related conditions are event based
-# conditions with a special event (dbus_signal:ConditionName) to reuse code
+# conditions with a special event (dbus_signal:SigHandlerName) to reuse code
 param_check = namedtuple('param_check', ['value_idx', 'sub_idx',
                                          'comparison', 'negate',
                                          'test_value'])
@@ -2079,6 +2079,7 @@ class SignalHandler(object):
     def signal_handler_helper(self, *args):
         # incomparable values or comparison errors return False by design
         def perform_check(c):
+            # TODO: write an utility to check this inner function
             try:
                 v = args[c.value_idx]
             except IndexError:
