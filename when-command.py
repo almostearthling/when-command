@@ -2098,25 +2098,41 @@ class SignalHandler(object):
                 except TypeError:
                     self._warning("handler %s param #%s: subindex provided but returned value is not a list" % (self.handler_name, c.value_idx))
                     return False
-            return_type = type(v)
+            if isinstance(v, bool):
+                def return_type(x):
+                    x = x.lower()
+                    if x in ('1', 'yes', 'true'):
+                        return True
+                    elif x in ('0', 'no', 'false'):
+                        return False
+                    else:
+                        return None
+            else:
+                return_type = type(v)
             comparison = c.comparison
             negate = c.negate
             if comparison == DBUS_CHECK_COMPARE_IS:
-                try:
-                    testv = return_type(c.test_value)
-                except ValueError:
-                    testv = c.test_value
-                    try:
-                        v = str(v).strip()
-                    except:
-                        self._warning("handler %s param #%s: type conversion impossible: cannot compare" % (self.handler_name, c.value_idx))
-                        return False
-                if negate:
-                    return not(v == testv)
+                if isinstance(v, bool):
+                    retv = bool(v and return_type(c.test_value))
                 else:
-                    return v == testv
+                    try:
+                        testv = return_type(c.test_value)
+                    except ValueError:
+                        testv = c.test_value
+                        try:
+                            v = str(v).strip()
+                        except:
+                            self._warning("handler %s param #%s: type conversion impossible: cannot compare" % (self.handler_name, c.value_idx))
+                            return False
+                    retv = bool(v == testv)
+                if negate:
+                    return not retv
+                else:
+                    return retv
             elif comparison == DBUS_CHECK_COMPARE_CONTAINS:
-                if isinstance(v, list):
+                if isinstance(v, bool):
+                    return False
+                elif isinstance(v, list):
                     v = map(lambda x: str(x).strip(), v)
                 elif isinstance(v, dict):
                     v = map(lambda x: str(x).strip(), v.values())
@@ -2128,12 +2144,16 @@ class SignalHandler(object):
                 else:
                     return testv in v
             elif comparison == DBUS_CHECK_COMPARE_MATCHES:
+                if isinstance(v, bool):
+                    return False
                 v = str(v).strip()
                 if negate:
                     return not bool(re.match(str(testv), v))
                 else:
                     return bool(re.match(str(testv), v))
             elif comparison == DBUS_CHECK_COMPARE_GREATER:
+                if isinstance(v, bool):
+                    return False
                 try:
                     testv = return_type(c.test_value)
                 except ValueError:
@@ -2152,6 +2172,8 @@ class SignalHandler(object):
                     self._warning("handler %s param #%s: cannot compare" % (self.handler_name, c.value_idx))
                     return False
             elif comparison == DBUS_CHECK_COMPARE_LESS:
+                if isinstance(v, bool):
+                    return False
                 try:
                     testv = return_type(c.test_value)
                 except ValueError:
