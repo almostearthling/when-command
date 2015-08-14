@@ -68,7 +68,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.6.5-beta.4"
+APPLET_VERSION = "0.6.5-beta.5"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -3362,7 +3362,7 @@ class SignalDialog(object):
                 ret = msgbox.run()
                 msgbox.hide()
                 if ret == Gtk.ResponseType.YES:
-                    self.default_box(True)
+                    self.default_box()
                     if signal_handlers.remove(handler_name=name):
                         signal_handlers.save()
                     else:
