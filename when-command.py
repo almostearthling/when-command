@@ -68,7 +68,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.6.5-beta.6"
+APPLET_VERSION = "0.6.5-beta.8"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -2085,8 +2085,6 @@ class SignalHandler(object):
             test = c.test_value
             compare = c.comparison
             rv = None
-            print("args:", args)
-            print("test:", index, sub, test, compare, 'not' if c.negate else '...')
 
             def warning(msg):
                 self._warning("param %s: %s" % (index, msg))
@@ -2180,8 +2178,8 @@ class SignalHandler(object):
                                  dbus.ObjectPath, dbus.Signature,
                                  dbus.ByteArray):
                 try:
-                    param = float(param)
-                    test = float(test)
+                    param = str(param)
+                    test = str(test)
                 except Exception as e:
                     error("cannot convert either param or test value (%s)" % e)
                     return False
@@ -2290,13 +2288,24 @@ class SignalHandler(object):
             return rv
 
         # try to evaluate as shortcut as possible
+        r = True
         for check in self.param_checks:
             r = perform_check(check)
-            if self.verify_all_checks and not r:
-                return False
-            elif not self.verify_all_checks and r:
-                return True
-        return True
+            if r is None:
+                self._warning("could not compare signal parameter")
+                if self.verify_all_checks:
+                    return False
+                else:
+                    r = False
+            elif not r:
+                if self.verify_all_checks:
+                    return False
+            else:
+                if not self.verify_all_checks:
+                    return True
+        # the last evaluation is the one that yields, because if we are here
+        # then none of the shortcut checks before has been encountered
+        return r
 
     # the callback to be registered as a signal listener
     def signal_handler_callback(self, *args):
