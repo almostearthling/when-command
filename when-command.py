@@ -68,7 +68,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.6.5-beta.5"
+APPLET_VERSION = "0.6.5-beta.6"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -2077,125 +2077,219 @@ class SignalHandler(object):
 
     # this will be called by the actual handler with the actual arguments
     def signal_handler_helper(self, *args):
+
         # incomparable values or comparison errors return False by design
         def perform_check(c):
-            # TODO: write an utility to check this inner function
-            try:
-                v = args[c.value_idx]
-            except IndexError:
-                self._warning("handler %s param #%s: index out of range" % (self.handler_name, c.value_idx))
-                return False
-            if c.sub_idx is not None:
-                try:
-                    if isinstance(v, dict):
-                        try:
-                            v = v[str(c.sub_idx)]
-                        except KeyError:
-                            self._warning("handler %s param #%s: subindex key not found" % (self.handler_name, c.value_idx))
-                            return False
-                    elif isinstance(v, list):
-                        v = v[int(c.sub_idx)]
-                    else:
-                        self._warning("handler %s param #%s: subindex provided but returned value is not a list" % (self.handler_name, c.value_idx))
-                except IndexError:
-                    self._warning("handler %s param #%s: index out of range" % (self.handler_name, c.value_idx))
-                    return False
-                except TypeError:
-                    self._warning("handler %s param #%s: subindex provided but returned value is not a list" % (self.handler_name, c.value_idx))
-                    return False
-            if isinstance(v, bool):
-                def return_type(x):
-                    x = x.lower()
-                    if x in ('1', 'yes', 'true'):
+            index = c.value_idx
+            sub = c.sub_idx
+            test = c.test_value
+            compare = c.comparison
+            rv = None
+            print("args:", args)
+            print("test:", index, sub, test, compare, 'not' if c.negate else '...')
+
+            def warning(msg):
+                self._warning("param %s: %s" % (index, msg))
+
+            def error(msg):
+                self._error("param %s: %s" % (index, msg))
+
+            def bool_spec(v):
+                if type(v) == str:
+                    v = v.lower()
+                    if v in ('true', 'yes', 'on', '1'):
                         return True
-                    elif x in ('0', 'no', 'false'):
+                    elif v in ('false', 'no', 'off', '0'):
                         return False
                     else:
                         return None
+                else:
+                    return bool(v)
+
+            try:
+                param = args[index]
+            except Exception as e:
+                error("cannot extract parameter (%s)" % e)
+                return False
+            if sub is not None:
+                if type(param) in (dbus.Array, dbus.Struct):
+                    try:
+                        sub = int(sub)
+                    except Exception as e:
+                        error("expected integer subindex (%s)" % e)
+                        return False
+                    param = param[sub]
+                elif type(param) == dbus.Dictionary:
+                    try:
+                        sub = str(sub)
+                    except Exception as e:
+                        error("expected string subindex (%s)" % e)
+                        return False
+                    param = param[sub]
+                else:
+                    error("cannot apply subindex to non-compound type")
+                    return False
+            # here param is already something that is not compound or, if it
+            # actually is still compound, only accepts a 'contains' operator
+            if type(param) == dbus.Boolean:
+                if compare != DBUS_CHECK_COMPARE_IS:
+                    error("boolean comparison requires equality test")
+                    return False
+                else:
+                    param = bool(param)
+                    test = bool_spec(test)
+                    if test is None:
+                        error("invalid value specified for boolean comparison")
+                        return False
+                    else:
+                        rv = bool(param == test)
+            elif type(param) in (dbus.Byte, dbus.Int16, dbus.Int32, dbus.Int64,
+                                 dbus.UInt16, dbus.UInt32, dbus.UInt64):
+                try:
+                    param = int(param)
+                    test = int(test)
+                except Exception as e:
+                    error("cannot convert either param or test value (%s)" % e)
+                    return False
+                if compare == DBUS_CHECK_COMPARE_IS:
+                    rv = bool(param == test)
+                elif compare == DBUS_CHECK_COMPARE_GREATER:
+                    rv = bool(param > test)
+                elif compare == DBUS_CHECK_COMPARE_LESS:
+                    rv = bool(param < test)
+                else:
+                    error("numeric comparison requires equality, greater or less")
+                    return False
+            elif type(param) == dbus.Double:
+                try:
+                    param = float(param)
+                    test = float(test)
+                except Exception as e:
+                    error("cannot convert either param or test value (%s)" % e)
+                    return False
+                if compare == DBUS_CHECK_COMPARE_IS:
+                    rv = bool(param == test)
+                elif compare == DBUS_CHECK_COMPARE_GREATER:
+                    rv = bool(param > test)
+                elif compare == DBUS_CHECK_COMPARE_LESS:
+                    rv = bool(param < test)
+                else:
+                    error("numeric comparison requires equality, greater or less")
+                    return False
+            elif type(param) in (dbus.String,
+                                 dbus.ObjectPath, dbus.Signature,
+                                 dbus.ByteArray):
+                try:
+                    param = float(param)
+                    test = float(test)
+                except Exception as e:
+                    error("cannot convert either param or test value (%s)" % e)
+                    return False
+                if compare == DBUS_CHECK_COMPARE_IS:
+                    rv = bool(param == test)
+                elif compare == DBUS_CHECK_COMPARE_GREATER:
+                    rv = bool(param > test)
+                elif compare == DBUS_CHECK_COMPARE_LESS:
+                    rv = bool(param < test)
+                elif compare == DBUS_CHECK_COMPARE_CONTAINS:
+                    rv = bool(test in param)
+                elif compare == DBUS_CHECK_COMPARE_MATCHES:
+                    if re.match(test, param):
+                        rv = True
+                    else:
+                        rv = False
+                else:
+                    error("invalid operator for string comparison")
+                    return False
+            elif type(param) in (dbus.Array, dbus.Struct):
+                if compare == DBUS_CHECK_COMPARE_CONTAINS:
+                    for x in param:
+                        if type(x) == dbus.Boolean:
+                            x = bool(x)
+                            test = bool_spec(test)
+                            if test is not None:
+                                rv = bool(x == test)
+                        elif type(x) in (dbus.Byte, dbus.Int16, dbus.Int32,
+                                         dbus.Int64, dbus.UInt16, dbus.UInt32,
+                                         dbus.UInt64):
+                            try:
+                                x = int(x)
+                                test = int(test)
+                            except Exception as e:
+                                continue
+                            rv = bool(x == test)
+                        elif type(x) == dbus.Double:
+                            try:
+                                x = float(x)
+                                test = float(test)
+                            except Exception as e:
+                                continue
+                            rv = bool(x == test)
+                        elif type(x) in (dbus.String,
+                                         dbus.ObjectPath, dbus.Signature,
+                                         dbus.ByteArray):
+                            try:
+                                x = str(x)
+                                test = str(test)
+                            except Exception as e:
+                                continue
+                            rv = bool(x == test)
+                        if rv:
+                            break
+                else:
+                    error("comparison in compound types requires subindex or contains")
+                    return False
+            elif type(param) == dbus.Dictionary:
+                if compare == DBUS_CHECK_COMPARE_CONTAINS:
+                    for k in param.keys():
+                        x = param[k]
+                        if type(x) == dbus.Boolean:
+                            x = bool(x)
+                            test = bool_spec(test)
+                            if test is not None:
+                                rv = bool(x == test)
+                        elif type(x) in (dbus.Byte, dbus.Int16, dbus.Int32,
+                                         dbus.Int64, dbus.UInt16, dbus.UInt32,
+                                         dbus.UInt64):
+                            try:
+                                x = int(x)
+                                test = int(test)
+                            except Exception as e:
+                                continue
+                            rv = bool(x == test)
+                        elif type(x) == dbus.Double:
+                            try:
+                                x = float(x)
+                                test = float(test)
+                            except Exception as e:
+                                continue
+                            rv = bool(x == test)
+                        elif type(x) in (dbus.String,
+                                         dbus.ObjectPath, dbus.Signature,
+                                         dbus.ByteArray):
+                            try:
+                                x = str(x)
+                                test = str(test)
+                            except Exception as e:
+                                continue
+                            rv = bool(x == test)
+                        if rv:
+                            break
+                else:
+                    error("comparison in compound types requires subindex or contains")
+                    return False
+            # there is no special handling of variant types, because the
+            # new DBus interface automatically casts variants to their
+            # actual type, just including the variant_level attribute
             else:
-                return_type = type(v)
-            comparison = c.comparison
-            negate = c.negate
-            if comparison == DBUS_CHECK_COMPARE_IS:
-                if isinstance(v, bool):
-                    retv = bool(v and return_type(c.test_value))
-                else:
-                    try:
-                        testv = return_type(c.test_value)
-                    except ValueError:
-                        testv = c.test_value
-                        try:
-                            v = str(v).strip()
-                        except:
-                            self._warning("handler %s param #%s: type conversion impossible: cannot compare" % (self.handler_name, c.value_idx))
-                            return False
-                    retv = bool(v == testv)
-                if negate:
-                    return not retv
-                else:
-                    return retv
-            elif comparison == DBUS_CHECK_COMPARE_CONTAINS:
-                if isinstance(v, bool):
-                    return False
-                elif isinstance(v, list):
-                    v = map(lambda x: str(x).strip(), v)
-                elif isinstance(v, dict):
-                    v = map(lambda x: str(x).strip(), v.values())
-                else:
-                    v = str(v).strip()
-                testv = str(c.test_value).strip()
-                if negate:
-                    return not(testv in v)
-                else:
-                    return testv in v
-            elif comparison == DBUS_CHECK_COMPARE_MATCHES:
-                if isinstance(v, bool):
-                    return False
-                v = str(v).strip()
-                if negate:
-                    return not bool(re.match(str(testv), v))
-                else:
-                    return bool(re.match(str(testv), v))
-            elif comparison == DBUS_CHECK_COMPARE_GREATER:
-                if isinstance(v, bool):
-                    return False
-                try:
-                    testv = return_type(c.test_value)
-                except ValueError:
-                    testv = c.test_value
-                    try:
-                        v = str(v).strip()
-                    except:
-                        self._warning("handler %s param #%s: type conversion impossible: cannot compare" % (self.handler_name, c.value_idx))
-                        return False
-                try:
-                    if negate:
-                        return not(v > testv)
-                    else:
-                        return v > testv
-                except TypeError:
-                    self._warning("handler %s param #%s: cannot compare" % (self.handler_name, c.value_idx))
-                    return False
-            elif comparison == DBUS_CHECK_COMPARE_LESS:
-                if isinstance(v, bool):
-                    return False
-                try:
-                    testv = return_type(c.test_value)
-                except ValueError:
-                    testv = c.test_value
-                    try:
-                        v = str(v).strip()
-                    except:
-                        self._warning("handler %s param #%s: type conversion impossible: cannot compare" % (self.handler_name, c.value_idx))
-                        return False
-                try:
-                    if negate:
-                        return not(v < testv)
-                    else:
-                        return v < testv
-                except TypeError:
-                    self._warning("handler %s param #%s: cannot compare" % (self.handler_name, c.value_idx))
-                    return False
+                error("unsupported data type for comparison")
+                return False
+            # at this point rv is either bool or None
+            if rv is not None and c.negate:
+                return not rv
+            return rv
+
+        # try to evaluate as shortcut as possible
         for check in self.param_checks:
             r = perform_check(check)
             if self.verify_all_checks and not r:
