@@ -271,6 +271,7 @@ resources.DLG_WRONG_PARAM_INDEX = "Invalid value for signal parameter index spec
 resources.DLG_NOT_IMPLEMENTED_FEATURE = "This feature has not been implemented yet."
 resources.DLG_ABOUT_VERSION_STRING = "Version: %s"
 resources.DLG_ITEM_DISABLED = "[disabled]"
+resources.DLG_TITLE_CHOOSE_DIR = "Choose Directory"
 
 resources.NOTIFY_TASK_FAILED = "Task failed: %s"
 
@@ -2494,7 +2495,7 @@ class TaskDialog(object):
     def click_btnChooseDir(self, _):
         o = self.builder.get_object
         curpath = o('txtFolder').get_text()
-        dirdlg = Gtk.FileChooserDialog(title="Choose Directory",
+        dirdlg = Gtk.FileChooserDialog(title=DLG_TITLE_CHOOSE_DIR,
                                        action=Gtk.FileChooserAction.SELECT_FOLDER,
                                        buttons=(Gtk.STOCK_CANCEL,
                                                 Gtk.ResponseType.CANCEL,
