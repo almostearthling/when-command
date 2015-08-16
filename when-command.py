@@ -2070,11 +2070,15 @@ class SignalHandler(object):
             negate,
             test_value,
         )
-        self.param_checks = list(filter(lambda x: x.value_idx != value_idx and x.sub_idx != sub_idx, self.param_checks))
+        self.param_checks = list(filter(
+            lambda x: x.value_idx != value_idx and x.sub_idx != sub_idx,
+            self.param_checks))
         self.param_checks.append(t)
 
     def remove_check(self, value_idx, sub_idx):
-        self.param_checks = list(filter(lambda x: x.value_idx != value_idx and x.sub_idx != sub_idx, self.param_checks))
+        self.param_checks = list(filter(
+            lambda x: x.value_idx != value_idx and x.sub_idx != sub_idx,
+            self.param_checks))
 
     # this will be called by the actual handler with the actual arguments
     def signal_handler_helper(self, *args):
