@@ -3391,9 +3391,10 @@ class SignalDialog(object):
             o('buttonOK').set_sensitive(False)
             o('btnDelete').set_sensitive(False)
 
-    def default_box(self):
+    def default_box(self, include_name=False):
         o = self.builder.get_object
-        o('txtName').set_text("")
+        if include_name:
+            o('txtName').set_text("")
         o('cbBusType').set_active(0)
         o('txtBusID').set_text("")
         o('txtBusPath').set_text("")
@@ -3466,7 +3467,7 @@ class SignalDialog(object):
                 ret = msgbox.run()
                 msgbox.hide()
                 if ret == Gtk.ResponseType.YES:
-                    self.default_box()
+                    self.default_box(True)
                     if signal_handlers.remove(handler_name=name):
                         signal_handlers.save()
                     else:
