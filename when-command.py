@@ -2062,6 +2062,8 @@ class SignalHandler(object):
         self.verify_all_checks = False
         self.defer = True
 
+    registered = property(lambda self: self.signal_match is not None)
+
     def add_check(self, value_idx, sub_idx, negate, comparison, test_value):
         t = param_check(
             value_idx,
@@ -2329,6 +2331,9 @@ class SignalHandler(object):
 
     def register(self):
         try:
+            if self.signal_match:
+                self.signal_match.remove()
+            self.signal_match = None
             if self.bus == 'session':
                 bus = dbus.SessionBus()
             elif self.bus == 'system':
@@ -2352,9 +2357,8 @@ class SignalHandler(object):
         try:
             if self.signal_match:
                 self.signal_match.remove()
-                return True
-            else:
-                return False
+            self.signal_match = None
+            return True
         except Exception as e:
             self._warning("could not unregister handler (%s)" % e)
             return False
@@ -2410,7 +2414,12 @@ def dict_to_SignalHandler(d):
     h.bus_path = d['bus_path']
     h.interface = d['interface']
     h.signal = d['signal']
-    h.param_checks = d['param_checks']
+    # too bad I used named tuples: they are not well JSONified
+    param_checks = d['param_checks']
+    h.param_checks = []
+    for p in param_checks:
+        t = param_check(p[0], p[1], p[2], p[3], p[4])
+        h.param_checks.append(t)
     h.verify_all_checks = d['verify_all_checks']
     h.defer = d['defer']
     # TODO: if there are more parameters, use d.get('key', default_val)
@@ -2514,8 +2523,8 @@ class TaskDialog(object):
 
     def choose_task(self, box):
         o = self.builder.get_object
-        name = box.get_active_text()
         self.default_box()
+        name = box.get_active_text()
         if name in self.stored_tasks:
             task = tasks.get(task_name=name)
             o('txtVarName').set_text('')
@@ -2606,6 +2615,7 @@ class TaskDialog(object):
 
     def run(self):
         o = self.builder.get_object
+        self.default_box(True)
         self.stored_tasks = tasks.names
         self.stored_tasks.sort()
         cb_tasks = o('cbTaskName')
@@ -2888,8 +2898,8 @@ class ConditionDialog(object):
 
     def choose_condition(self, box):
         o = self.builder.get_object
-        name = box.get_active_text()
         self.default_box()
+        name = box.get_active_text()
         if name in self.stored_conditions:
             cond = conditions.get(cond_name=name)
             self.update_box_type(None)
@@ -2944,8 +2954,8 @@ class ConditionDialog(object):
                     # although this is implemented as an event based condition
                     # it is not presented to the user as such
                     handler_name = evt.split(':')[1]
-                    o('cbDBusEvent').set_active(
-                        self.stored_handlers.index(handler_name))
+                    handler_index = self.stored_handlers.index(handler_name)
+                    o('cbDBusEvent').set_active(handler_index)
                     cb_type = 6
                 else:
                     o('cbSysEvent').set_active(-1)
@@ -3040,8 +3050,8 @@ class ConditionDialog(object):
             cb.append_text(str(x))
 
     def run(self):
-        self.default_box()
         o = self.builder.get_object
+        self.default_box(True)
         self.stored_conditions = conditions.names
         self.stored_conditions.sort()
         cb_conds = o('cbConditionName')
@@ -3057,6 +3067,7 @@ class ConditionDialog(object):
         self.stored_handlers = signal_handlers.names
         self.stored_handlers.sort()
         cb_handlers = o('cbDBusEvent')
+        cb_handlers.get_model().clear()
         for x in self.stored_handlers:
             cb_handlers.append_text(x)
         self.dialog.set_keep_above(True)
@@ -3417,7 +3428,7 @@ class SignalDialog(object):
 
     def run(self):
         o = self.builder.get_object
-        self.default_box()
+        self.default_box(True)
         self.stored_handlers = signal_handlers.names
         self.stored_handlers.sort()
         cb_handlers = o('cbName')
@@ -3536,13 +3547,13 @@ class SettingsDialog(object):
             o('chkEnableUserEvents').set_sensitive(True)
 
     def run(self):
-        self.default_box()
+        o = self.builder.get_object
+        self.default_box(True)
         self.dialog.set_keep_above(True)
         self.dialog.present()
         ret = self.dialog.run()
         self.dialog.hide()
         self.dialog.set_keep_above(False)
-        o = self.builder.get_object
         if ret == ACTION_OK:
             config_skip = []
             v = o('cbLogLevel').get_active()

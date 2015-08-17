@@ -819,7 +819,6 @@
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="margin_left">15</property>
-                            <property name="active_id">-1</property>
                           </object>
                           <packing>
                             <property name="expand">True</property>
