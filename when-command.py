@@ -2126,7 +2126,7 @@ class SignalHandler(object):
                     param = param[sub]
                 elif type(param) == dbus.Dictionary:
                     try:
-                        sub = str(sub)
+                        sub = dbus.String(sub)
                     except Exception as e:
                         error("expected string subindex (%s)" % e)
                         return False
@@ -2316,10 +2316,11 @@ class SignalHandler(object):
 
     # the callback to be registered as a signal listener
     def signal_handler_callback(self, *args):
+        signal_caught = False
         try:
             signal_caught = self.signal_handler_helper(*args)
         except Exception as e:
-            self._error("exception %s raised by signal handler %s" % (e, self.handler_name))
+            self._error("exception %s raised by signal handler %s" % (e.__class__.__name__, self.handler_name))
             return
         if signal_caught:
             event_name = EVENT_DBUS_SIGNAL_PREAMBLE + ":" + self.handler_name
