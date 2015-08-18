@@ -68,7 +68,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.6.5-beta.9"
+APPLET_VERSION = "0.6.5-beta.10"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -2123,14 +2123,22 @@ class SignalHandler(object):
                     except Exception as e:
                         error("expected integer subindex (%s)" % e)
                         return False
-                    param = param[sub]
+                    try:
+                        param = param[sub]
+                    except IndexError as e:
+                        warning("subindex %s not in list" % sub)
+                        return False
                 elif type(param) == dbus.Dictionary:
                     try:
                         sub = dbus.String(sub)
                     except Exception as e:
                         error("expected string subindex (%s)" % e)
                         return False
-                    param = param[sub]
+                    try:
+                        param = param[sub]
+                    except KeyError as e:
+                        warning("subindex '%s' not in dictionary keys" % sub)
+                        return False
                 else:
                     error("cannot apply subindex to non-compound type")
                     return False
