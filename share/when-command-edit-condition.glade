@@ -753,6 +753,7 @@
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
                             <property name="valign">center</property>
+                            <property name="margin_bottom">5</property>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -1029,6 +1030,8 @@
                       <object class="GtkComboBoxText" id="cbBreakSequence">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="margin_left">15</property>
+                        <property name="margin_right">15</property>
                         <items>
                           <item id="0" translatable="yes">Ignore Task Outcome</item>
                           <item id="1" translatable="yes">Break on Task Failure</item>
