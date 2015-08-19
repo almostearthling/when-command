@@ -68,7 +68,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.6.5-beta.10"
+APPLET_VERSION = "0.6.5-beta.11"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -700,7 +700,7 @@ def sysevent_condition_check(event, param=None):
         if periodic.stopped:
             applet_log.info("SYSEVENT: check skipped due to scheduler pause")
             return
-        conds = filter(lambda c: type(c) == EventBasedCondition, conditions)
+        conds = [c for c in conditions if type(c) == EventBasedCondition]
         with ThreadPoolExecutor(config.get('Concurrency', 'max threads')) as e:
             e.map(lambda c: c.tick(), conds)
     finally:
@@ -753,7 +753,7 @@ class Tasks(object):
         if task.task_id <= self._last_id or task.task_name in [t.task_name for t in self._list]:
             applet_log.info("GLOBAL: adding task %s" % task.task_name)
             self._lock.acquire()
-            l = list(filter(lambda x: x.task_name != task.task_name, self._list))
+            l = [x for x in self._list if x.task_name != task.task_name]
             l.append(task)
             self._list = l
             self._lock.release()
@@ -787,17 +787,9 @@ class Tasks(object):
 
     def get(self, task_id=None, task_name=None):
         if task_id:
-            try:
-                return list(filter(
-                    lambda x: task_id == x.task_id, self._list))[0]
-            except IndexError as e:
-                return None
+            return next((x for x in self._list if task_id == x.task_id), None)
         elif task_name:
-            try:
-                return list(filter(
-                    lambda x: task_name == x.task_name, self._list))[0]
-            except IndexError as e:
-                return None
+            return next((x for x in self._list if task_name == x.task_name), None)
 
 
 class Conditions(object):
@@ -844,7 +836,7 @@ class Conditions(object):
         if cond.cond_id <= self._last_id or cond.cond_name in [t.cond_name for t in self._list]:
             applet_log.info("GLOBAL: adding condition %s" % cond.cond_name)
             self._lock.acquire()
-            l = list(filter(lambda x: x.cond_name != cond.cond_name, self._list))
+            l = [x for x in self._list if x.cond_name != cond.cond_name]
             l.append(cond)
             self._list = l
             self._lock.release()
@@ -870,17 +862,9 @@ class Conditions(object):
 
     def get(self, cond_id=None, cond_name=None):
         if cond_id:
-            try:
-                return list(filter(
-                    lambda x: cond_id == x.cond_id, self._list))[0]
-            except IndexError as e:
-                return None
+            return next((c for c in self._list if c.cond_id == cond_id), None)
         elif cond_name:
-            try:
-                return list(filter(
-                    lambda x: cond_name == x.cond_name, self._list))[0]
-            except IndexError as e:
-                return None
+            return next((c for c in self._list if c.cond_name == cond_name), None)
 
 
 class SignalHandlers(object):
@@ -920,8 +904,8 @@ class SignalHandlers(object):
         if handler.handler_name in [h.handler_name for h in self._list]:
             old_handler = self.get(handler.handler_name)
             self._lock.acquire()
-            l = list(filter(
-                lambda x: x.handler_name != handler.handler_name, self._list))
+            l = list(
+                x for x in self._list if x.handler_name != handler.handler_name)
             l.append(handler)
             reg = None
             applet_log.info("GLOBAL: unregistering old signal handler %s" % old_handler.handler_name)
@@ -964,12 +948,9 @@ class SignalHandlers(object):
                 applet_log.info("GLOBAL: signal handler %s could not be found" % handler_name)
             return False
 
-    def get(self, handler_name=None):
-        if handler_name:
-            try:
-                return list(filter(lambda x: handler_name == x.handler_name, self._list))[0]
-            except IndexError as e:
-                return None
+    def get(self, handler_name):
+        return next(
+            (x for x in self._list if handler_name == x.handler_name), None)
 
 
 # data for the history queue (which is actually a resizable bounded deque)
@@ -1019,7 +1000,7 @@ class HistoryQueue(object):
         self._lock.release()
 
     def item_by_id(self, item_id):
-        l = list([item for item in self._queue if item.item_id == item_id])
+        l = list(item for item in self._queue if item.item_id == item_id)
         if len(l) == 1:
             return l[0]
         else:
@@ -1528,13 +1509,11 @@ class Condition(object):
             self._start_timer()
 
     def add_task(self, task_name):
-        l = list(filter(lambda x: x != task_name, self.task_names))
-        self.task_names = l
+        self.task_names = [x for x in self.task_names if x != task_name]
         self.task_names.append(task_name)
 
     def delete_task(self, task_name):
-        l = list(filter(lambda x: x != task_name, self.task_names))
-        self.task_names = l
+        self.task_names = [x for x in self.task_names if x != task_name]
 
     def renew_id(self):
         self.cond_id = conditions.get_id()
@@ -2072,15 +2051,15 @@ class SignalHandler(object):
             negate,
             test_value,
         )
-        self.param_checks = list(filter(
-            lambda x: x.value_idx != value_idx and x.sub_idx != sub_idx,
-            self.param_checks))
+        self.param_checks = list(
+            x for x in self.param_checks
+            if x.value_idx != value_idx and x.sub_idx != sub_idx)
         self.param_checks.append(t)
 
     def remove_check(self, value_idx, sub_idx):
-        self.param_checks = list(filter(
-            lambda x: x.value_idx != value_idx and x.sub_idx != sub_idx,
-            self.param_checks))
+        self.param_checks = list(
+            x for x in self.param_checks
+            if x.value_idx != value_idx and x.sub_idx != sub_idx)
 
     # this will be called by the actual handler with the actual arguments
     def signal_handler_helper(self, *args):
@@ -3302,9 +3281,8 @@ class SignalDialog(object):
         sub_idx = o('txtValueSub').get_text()
         if not sub_idx:
             sub_idx = None
-        l = list(filter(
-            lambda x: x.value_idx != value_idx and x.sub_idx != sub_idx,
-            self.signal_param_tests))
+        l = [x for x in self.signal_param_tests
+             if x.value_idx != value_idx and x.sub_idx != sub_idx]
         check = param_check(
             value_idx,
             sub_idx,
@@ -3335,9 +3313,8 @@ class SignalDialog(object):
         sub_idx = o('txtValueSub').get_text()
         if not sub_idx:
             sub_idx = None
-        l = list(filter(
-            lambda x: x.value_idx != value_idx and x.sub_idx != sub_idx,
-            self.signal_param_tests))
+        l = [x for x in self.signal_param_tests
+             if x.value_idx != value_idx and x.sub_idx != sub_idx]
         self.signal_param_tests = l
         self.update_listTests()
 
@@ -4234,7 +4211,7 @@ def init_signal_handler(applet_instance):
             applet_log.warning("SIGHANDLER: cannot install signal handler")
 
     SIGS = [getattr(signal, s, None) for s in "SIGINT SIGTERM SIGHUP".split()]
-    for signum in filter(None, SIGS):
+    for signum in SIGS:
         applet_log.info("SIGHANDLER: register system handler for signal: %r" % signum)
         signal.signal(signum, idle_handler)
         GLib.idle_add(install_glib_handler, signum, priority=GLib.PRIORITY_HIGH)
