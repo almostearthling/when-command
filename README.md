@@ -40,7 +40,7 @@ The selected task (if any) can be deleted clicking the *Delete* button in the di
 * process output (*stdout*)
 * process written errors (*stderr*)
 
-to determine whether the process succeeded or failed. When the use chooses to check for  *Success*, the operation is considered successful *if and only if* the process result (exit code, output, or error) corresponds to the user provided value. Same yields for *Failure*: if *Failure* is chosen, only the provided result will indicate a failure. For example, in the most common case the user will choose to expect *Success* to correspond to an *Exit Code* of `0` (in fact the default choice), all other exit codes will indicate a failure. And if the user chooses to expect *Failure* to be reported as the word `Error` in the error messages, whatever other error messages will be ignored and the operation will turn out successful. Please note that since all commands are executed in the default shell, expect an exit code different from `0` when the command is not found. On Ubuntu, with the `/bin/sh` shell, the `not found` code is `127`.
+to determine whether the process succeeded or failed. When the user chooses to check for *Success*, the operation is considered successful *if and only if* the process result (exit code, output, or error) corresponds to the user provided value. Same yields for *Failure*: if *Failure* is chosen, only the provided result will indicate a failure. For example, in the most common case the user will choose to expect *Success* to correspond to an *Exit Code* of `0` (in fact the default choice), all other exit codes will indicate a failure. And if the user chooses to expect *Failure* to be reported as the word `Error` in the error messages, whatever other error messages will be ignored and the operation will turn out successful. Please note that since all commands are executed in the default shell, expect an exit code different from `0` when the command is not found. With the `/bin/sh` shell used on Linux, the *not found* code is `127`.
 
 
 ### Conditions
@@ -59,10 +59,10 @@ There are several types of condition available:
   - *Storage Device Connect* and *Disconnect*, which take place when the user attaches or respectively detaches a removable storage device.
   - *Join* or *Leave a Network*, these are verified whenever a network is joined or lost respectively.
   - *Command Line Trigger* is a special event type, that is triggered invoking the command line. The associated condition can be scheduled to be run at the next clock tick or immediately using the appropriate switch.
-6. **Based on File Change:** *(to be implemented)* The tasks are run when a certain file is changed.
+6. **Based on File Change:** *(to be implemented)* The tasks are run when a certain file changes.
 7. **Based on an User Defined Event:** The user can define system events by listening to signals emitted on the system bus and the session bus. This is an advanced feature, and the events must be defined using the procedure described below.
 
-**Warning**: because of the way applications are notified that the session is ending (first a TERM signal is sent, then a KILL if the first was unsuccessful), the *Shutdown* event is not suitable for long running tasks, such as file synchronizations, disk cleanup and similar actions. The system usually concedes a "grace time" of about one second before shutting everything down. Longer running tasks will be run if the users quits the applet through the menu, though. Same yields for *Suspend*: by specification, no more than one second is available for tasks to complete. In reference to the event condition definition, one or more events might appear as *[disabled]* in the list: the user still can choose to create a condition based on a disabled event, but the corresponding tasks will never be run.
+**Warning**: because of the way applications are notified that the session is ending (first a TERM signal is sent, then a KILL if the first was unsuccessful), the *Shutdown* event is not suitable for long running tasks, such as file synchronizations, disk cleanup and similar actions. The system usually concedes a "grace time" of about one second before shutting everything down. Longer running tasks will be run if the users quits the applet through the menu, though. Same yields for *Suspend*: by specification, no more than one second is available for tasks to complete.
 
 Also, the condition configuration interface allows to decide:
 
@@ -72,7 +72,7 @@ Also, the condition configuration interface allows to decide:
 
 The selected condition (if any) can be deleted clicking the *Delete* button in the dialog box. Every condition must have an *unique name*, if a condition is named as an existing one it will replace it. The name *must* begin with an alphanumeric character (letter or digit) followed by alphanumerics, dashes and underscores.
 
-**Possibly unsupported events:** some events may not be supported on every platform, even on different Ubuntu implementations. *Screen Lock/Unlock* for instance does not follow very precise specifications, and could be disabled on some desktops.
+**Possibly unsupported events:** some events may not be supported on every platform, even on different Ubuntu implementations. *Screen Lock/Unlock* for instance does not follow very precise specifications, and could be disabled on some desktops. Thus one or more events might appear as *[disabled]* in the list: the user still can choose to create a condition based on a disabled event, but the corresponding tasks will never be run.
 
 
 ### The History window
@@ -174,7 +174,7 @@ Please note that whenever a command line option is given, the applet will not "s
 
 ### Installation requirements and Directory structure
 
-For the applet to function and before unpacking it to the destination directory, make sure that *Python 3.x*,  *PyGObject* for *Python 3.x* and the `xprintidle` utility are installed. For example, not all of these are installed by default on Ubuntu: in this case use the following commands.
+For the applet to function and before unpacking it to the destination directory, make sure that *Python 3.x*,  *PyGObject* for *Python 3.x* and the `xprintidle` utility are installed. For example, not all of these are installed by default on Ubuntu: in this case the following commands can be used.
 
 ```
 ~$ sudo apt-get install python3-gi
@@ -183,7 +183,7 @@ For the applet to function and before unpacking it to the destination directory,
 ~$ sudo tar xzf /path/to/when-command.tar.gz
 ```
 
-If you downloaded the zip file from the master branch of the repository, you might want to `mv when-command-master when-command` in the directory where the files have been unzipped.
+If you downloaded the zip file from the master branch of the repository, the user might want to `mv when-command-master when-command` in the directory where the files have been unzipped. Also, it's advisable to `cd` to the installation directory and `ln -s when-command.py when-command` in order to have a setup more similar to the one provided by the package and to be able to invoke the command omitting the `.py` extension. In the case of a system-wide installation, this has to be done using `sudo`.
 
 If the Debian/Ubuntu package is available for the desired release, the unzip/extract step can be replaced by `sudo dpkg --install when-command-VERSION_INFO.deb` where `VERSION_INFO` is the version suffix of the downloaded package: this will install the applet in `/opt/when-command`. The instructions given below will complete the installation for the current user and the applet icon will be activated at every login. Also please note that if the package installation was chosen, the command to invoke the applet from the command line can be shortened to `/opt/when-command/when-command` instead of `python3 /opt/when-command/when-command.py` -- although this is not mandatory.
 
