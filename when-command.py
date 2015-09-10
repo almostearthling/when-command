@@ -68,7 +68,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.6.5-beta.11"
+APPLET_VERSION = "0.6.5-beta.13"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -2496,7 +2496,7 @@ class TaskDialog(object):
     def click_btnChooseDir(self, _):
         o = self.builder.get_object
         curpath = o('txtFolder').get_text()
-        dirdlg = Gtk.FileChooserDialog(title=DLG_TITLE_CHOOSE_DIR,
+        dirdlg = Gtk.FileChooserDialog(title=resources.DLG_TITLE_CHOOSE_DIR,
                                        action=Gtk.FileChooserAction.SELECT_FOLDER,
                                        buttons=(Gtk.STOCK_CANCEL,
                                                 Gtk.ResponseType.CANCEL,
@@ -3534,7 +3534,7 @@ class SettingsDialog(object):
 
     def run(self):
         o = self.builder.get_object
-        self.default_box(True)
+        self.default_box()
         self.dialog.set_keep_above(True)
         self.dialog.present()
         ret = self.dialog.run()
