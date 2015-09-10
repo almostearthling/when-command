@@ -68,7 +68,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.6.5-beta.11"
+APPLET_VERSION = "0.6.5-beta.12"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -3534,7 +3534,7 @@ class SettingsDialog(object):
 
     def run(self):
         o = self.builder.get_object
-        self.default_box(True)
+        self.default_box()
         self.dialog.set_keep_above(True)
         self.dialog.present()
         ret = self.dialog.run()
