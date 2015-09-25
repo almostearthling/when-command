@@ -58,6 +58,12 @@ from concurrent.futures import ThreadPoolExecutor
 
 from collections import OrderedDict, deque, namedtuple
 
+try:
+    import pyinotify
+    FILE_NOTIFY_ENABLED = True
+except ImportError:
+    FILE_NOTIFY_ENABLED = False
+
 
 #############################################################################
 # constants
