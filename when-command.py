@@ -141,7 +141,6 @@ EVENT_COMMAND_LINE = 'command_line'
 
 EVENT_COMMAND_LINE_PREAMBLE = 'command_line'
 EVENT_DBUS_SIGNAL_PREAMBLE = 'dbus_signal'
-EVENT_FILE_NOTIFY_PREAMBLE = 'file_notify'
 
 # file names
 FILE_CONFIG_LIST_TASKS = 'task.list'
@@ -570,6 +569,7 @@ class Config(object):
                 'log level': str,
                 'icon theme': str,
                 'user events': bool_spec,
+                'file notifications': bool_spec,
             },
             'Concurrency': {
                 'max threads': int,
@@ -595,6 +595,7 @@ class Config(object):
             icon theme = guess
             log level = warning
             user events = false
+            file notifications = false
 
             [Concurrency]
             max threads = 5
@@ -721,12 +722,15 @@ def sysevent_condition_check(event, param=None):
         applet_lock.release()
 
 
-# check among the path notifications by setting the global changed path
+# check among the path notifications by setting the global changed path:
+# it is not going to be used for now, all file notification events are handled
+# in a deferred fashion until a safe way to specify synchronous notifications
+# is found, maybe using a dedicated lock
 def pathchanged_condition_check(path):
     global current_changed_path
     applet_lock.acquire()
     current_changed_path = path
-    applet_lock.release()
+    # applet_lock.release()     # FIXME: should it be released here?
     try:
         if periodic.stopped:
             applet_log.info("PATHNOTIFY: check skipped due to scheduler pause")
@@ -735,7 +739,7 @@ def pathchanged_condition_check(path):
         with ThreadPoolExecutor(config.get('Concurrency', 'max threads')) as e:
             e.map(lambda c: c.tick(), conds)
     finally:
-        applet_lock.acquire()
+        # applet_lock.acquire()
         current_changed_path = None
         applet_lock.release()
 
@@ -3257,7 +3261,7 @@ class ConditionDialog(object):
                 c.break_failure = break_failure
                 c.break_success = break_success
             elif idx == 5:
-                if FILE_NOTIFY_ENABLED:
+                if FILE_NOTIFY_ENABLED and config.get('General', 'file notifications'):
                     fname = str(o('txtWatchPath').get_text()).strip()
                     if fname:
                         c = PathNotifyCondition(name, [fname])
