@@ -284,6 +284,7 @@ As said above, this software is designed to run mainly on Ubuntu, so the chosen 
 * [PyGObject Documentation](https://developer.gnome.org/pygobject/stable/)
 * [GTK 3.0 Documentation](http://lazka.github.io/pgi-docs/Gtk-3.0/index.html)
 * [DBus Documentation](http://www.freedesktop.org/wiki/Software/dbus/)
+* [pyinotify Documentation](https://github.com/seb-m/pyinotify/wiki)
 
 The top panel icons and the emblems used in the application were selected within Google's [Material Design](https://materialdesignicons.com/) icon collection.
 
