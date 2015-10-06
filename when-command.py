@@ -141,6 +141,7 @@ EVENT_COMMAND_LINE = 'command_line'
 
 EVENT_COMMAND_LINE_PREAMBLE = 'command_line'
 EVENT_DBUS_SIGNAL_PREAMBLE = 'dbus_signal'
+EVENT_FILE_NOTIFY_PREAMBLE = 'file_notify'
 
 # file names
 FILE_CONFIG_LIST_TASKS = 'task.list'
@@ -164,8 +165,9 @@ applet_lock = threading.Lock()
 applet_enabled_events = None
 main_dbus_loop = None
 current_system_event = None
-current_system_event_param = None
 current_deferred_events = None
+current_changed_path = None
+current_deferred_changed_paths = None
 
 applet_log_handler = logging.NullHandler()
 applet_log_formatter = logging.Formatter(fmt=LOG_FORMAT, datefmt="%Y-%m-%d %H:%M:%S")
@@ -179,6 +181,7 @@ tasks = None
 conditions = None
 history = None
 deferred_events = None
+deferred_watch_paths = None
 signal_handlers = None
 
 
@@ -275,6 +278,7 @@ resources.DLG_CANNOT_REGISTER_SIGHANDLER = "Signal handler %s could not be regis
 resources.DLG_WRONG_EXIT_STATUS = "Invalid value for exit status specified.\nPlease consider reviewing it."
 resources.DLG_WRONG_PARAM_INDEX = "Invalid value for signal parameter index specified.\nCannot add parameter test."
 resources.DLG_NOT_IMPLEMENTED_FEATURE = "This feature has not been implemented yet."
+resources.DLG_NOT_ENABLED_FEATURE = "This feature is not enabled.\nPlease check documentation for possible reasons."
 resources.DLG_ABOUT_VERSION_STRING = "Version: %s"
 resources.DLG_ITEM_DISABLED = "[disabled]"
 resources.DLG_TITLE_CHOOSE_DIR = "Choose Directory"
@@ -686,6 +690,7 @@ def periodic_condition_check():
     global current_deferred_events
     applet_lock.acquire()
     current_deferred_events = deferred_events.items(clear=True)
+    current_deferred_changed_paths = deferred_watch_paths.items(clear=True)
     applet_lock.release()
     try:
         with ThreadPoolExecutor(config.get('Concurrency', 'max threads')) as e:
@@ -693,6 +698,7 @@ def periodic_condition_check():
     finally:
         applet_lock.acquire()
         current_deferred_events = None
+        current_deferred_changed_paths = None
         applet_lock.release()
 
 
@@ -712,6 +718,25 @@ def sysevent_condition_check(event, param=None):
     finally:
         applet_lock.acquire()
         current_system_event = None
+        applet_lock.release()
+
+
+# check among the path notifications by setting the global changed path
+def pathchanged_condition_check(path):
+    global current_changed_path
+    applet_lock.acquire()
+    current_changed_path = path
+    applet_lock.release()
+    try:
+        if periodic.stopped:
+            applet_log.info("PATHNOTIFY: check skipped due to scheduler pause")
+            return
+        conds = [c for c in conditions if type(c) == PathNotifyCondition]
+        with ThreadPoolExecutor(config.get('Concurrency', 'max threads')) as e:
+            e.map(lambda c: c.tick(), conds)
+    finally:
+        applet_lock.acquire()
+        current_changed_path = None
         applet_lock.release()
 
 
@@ -1046,6 +1071,32 @@ class DeferredEvents(object):
         rv = self._events.copy()
         if clear:
             self._events.clear()
+        self._lock.release()
+        return rv
+
+
+# list of monitored files that are enqueued by pyinotify
+class DeferredWatchPaths(object):
+
+    def __init__(self):
+        self._lock = threading.Lock()
+        self._paths = set()
+
+    def append(self, path):
+        self._lock.acquire()
+        self._paths.add(path)
+        self._lock.release()
+
+    def clear(self):
+        self._lock.acquire()
+        self._paths.clear()
+        self._lock.release()
+
+    def items(self, clear=False):
+        self._lock.acquire()
+        rv = self._paths.copy()
+        if clear:
+            self._paths.clear()
         self._lock.release()
         return rv
 
@@ -2007,6 +2058,54 @@ def dict_to_EventBasedCondition(d):
     return c
 
 
+# the file notification condition only fires when currently notified file list
+# contains one or more of the files watched by the condition itself: the
+# mechanism is similar to the one of EventBasedCondition and implemented via
+# a parallel system
+class PathNotifyCondition(Condition):
+
+        def _check_condition(self):
+            if FILE_NOTIFY_ENABLED:
+                self._debug("checking file notification based condition for files: %s" % ', '.join(self.watched_paths))
+                if current_changed_path and current_changed_path in self.watched_paths:
+                    return True
+                for x in current_deferred_changed_paths:
+                    if x in self.watched_paths:
+                        return True
+                return False
+            else:
+                self._warning("file notifications are not enabled, cannot check")
+                return False
+
+        def __init__(self, name, paths, no_skip=True, repeat=False, exec_sequence=True):
+            self.watched_paths = paths
+            Condition.__init__(self, name, repeat, exec_sequence)
+            if no_skip:
+                self.skip_seconds = 0
+
+
+def PathNotifyCondition_to_dict(c):
+    applet_log.info("MAIN: dump file notification based condition %s" % c.cond_name)
+    d = Condition_to_dict(c)
+    d['subtype'] = 'PathNotifyCondition'
+    d['watched_paths'] = c.watched_paths
+    d['no_skip'] = bool(c.skip_seconds == 0)
+    return d
+
+
+def dict_to_PathNotifyCondition(d):
+    if d['type'] != 'condition' or d['subtype'] != 'PathNotifyCondition':
+        raise ValueError("incorrect dictionary type")
+    name = d['cond_name']
+    event = d['watched_paths']
+    no_skip = d['no_skip']
+    # TODO: if there are more parameters, use d.get('key', default_val)
+    c = PathNotifyCondition(name, event, no_skip)
+    c = dict_to_Condition(d, c)
+    applet_log.info("MAIN: restored file notification based condition %s" % c.cond_name)
+    return c
+
+
 #############################################################################
 # a class to build DBus signal handlers: related conditions are event based
 # conditions with a special event (dbus_signal:SigHandlerName) to reuse code
@@ -2954,6 +3053,15 @@ class ConditionDialog(object):
                 else:
                     o('cbSysEvent').set_active(-1)
                 o('cbType').set_active(cb_type)
+            elif type(cond) == PathNotifyCondition:
+                # here we only handle a single file, so the file name is the
+                # first element of the watched_paths list
+                if cond.watched_file:
+                    fname = cond.watched_paths[0]
+                else:
+                    fname = ''
+                o('txtWatchPath').set_text(fname)
+                o('cbType').set_active(5)
             else:
                 o('cbType').set_active(-1)
             o('chkRepeat').set_active(cond.repeat)
@@ -3149,12 +3257,22 @@ class ConditionDialog(object):
                 c.break_failure = break_failure
                 c.break_success = break_success
             elif idx == 5:
-                msgbox = Gtk.MessageDialog(type=Gtk.MessageType.ERROR,
-                                           buttons=Gtk.ButtonsType.OK)
-                msgbox.set_markup(resources.DLG_NOT_IMPLEMENTED_FEATURE % name)
-                msgbox.run()
-                msgbox.hide()
-                return None
+                if FILE_NOTIFY_ENABLED:
+                    fname = str(o('txtWatchPath').get_text()).strip()
+                    if fname:
+                        c = PathNotifyCondition(name, [fname])
+                        fname = None
+                        c.break_failure = break_failure
+                        c.break_success = break_success
+                    else:
+                        return None
+                else:
+                    msgbox = Gtk.MessageDialog(type=Gtk.MessageType.ERROR,
+                                               buttons=Gtk.ButtonsType.OK)
+                    msgbox.set_markup(resources.DLG_NOT_ENABLED_FEATURE % name)
+                    msgbox.run()
+                    msgbox.hide()
+                    return None
             elif idx == 6:
                 handler_name = o('cbDBusEvent').get_active_text()
                 event_type = EVENT_DBUS_SIGNAL_PREAMBLE + ":" + handler_name
@@ -4477,6 +4595,7 @@ if __name__ == '__main__':
     tasks = Tasks()
     conditions = Conditions()
     deferred_events = DeferredEvents()
+    deferred_watch_paths = DeferredWatchPaths()
     signal_handlers = SignalHandlers()
 
     # initialize global variables that require graphic environment
