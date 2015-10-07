@@ -157,6 +157,23 @@ NM_STATE_CONNECTED_LOCAL = 50
 NM_STATE_CONNECTED_SITE = 60
 NM_STATE_CONNECTED_GLOBAL = 70
 
+# file notification constants: from inotify.h here are the constants
+# IN_ACCESS		   0x00000001	/* File was accessed */
+# IN_MODIFY		   0x00000002	/* File was modified */
+# IN_ATTRIB		   0x00000004	/* Metadata changed */
+# IN_CLOSE_WRITE   0x00000008	/* Writtable file was closed */
+# IN_CLOSE_NOWRITE 0x00000010	/* Unwrittable file closed */
+# IN_OPEN		   0x00000020	/* File was opened */
+# IN_MOVED_FROM	   0x00000040	/* File was moved from X */
+# IN_MOVED_TO	   0x00000080	/* File was moved to Y */
+# IN_CREATE		   0x00000100	/* Subfile was created */
+# IN_DELETE		   0x00000200	/* Subfile was deleted */
+# IN_DELETE_SELF   0x00000400	/* Self was deleted */
+#
+# Need everything *but* access and open, thus:
+# 2 | 4 | 8 | 16 | 64 | 128 | 256 | 512 | 1024 = 2014
+FN_IN_MODIFY_EVENTS = 2014
+
 #############################################################################
 # global variables referenced through the code (this should be redundant)
 applet = None
@@ -182,6 +199,8 @@ history = None
 deferred_events = None
 deferred_watch_paths = None
 signal_handlers = None
+watch_path_manager = None
+watch_path_notifier = None
 
 
 # verify that the user folders are present, otherwise create them
@@ -873,11 +892,15 @@ class Conditions(object):
             self._lock.acquire()
             l = [x for x in self._list if x.cond_name != cond.cond_name]
             l.append(cond)
+            if 'activate' in dir(cond):
+                cond.activate()
             self._list = l
             self._lock.release()
         else:
             self._lock.acquire()
             self._list.append(cond)
+            if 'activate' in dir(cond):
+                cond.activate()
             self._lock.release()
 
     def remove(self, cond_name=None, cond_id=None):
@@ -888,6 +911,8 @@ class Conditions(object):
             cond = next((c for c in self._list if c.cond_name == cond_name), None)
         if cond:
             self._lock.acquire()
+            if 'deactivate' in dir(cond):
+                cond.deactivate()
             self._list.remove(cond)
             cond.unlink_file()
             self._lock.release()
@@ -2068,24 +2093,57 @@ def dict_to_EventBasedCondition(d):
 # a parallel system
 class PathNotifyCondition(Condition):
 
-        def _check_condition(self):
-            if FILE_NOTIFY_ENABLED:
-                self._debug("checking file notification based condition for files: %s" % ', '.join(self.watched_paths))
-                if current_changed_path and current_changed_path in self.watched_paths:
-                    return True
+    def _check_condition(self):
+        if not self._active:
+            return False
+        # the following test is equivalent to checking whether notifications
+        # are enabled or not, and maybe faster than the full flag and config
+        # test since it involves less function calls and comparisons
+        if watch_path_manager is not None:
+            self._debug("checking file notification based condition for files: %s" % ', '.join(self.watched_paths))
+            if current_changed_path and current_changed_path in self.watched_paths:
+                return True
+            elif current_deferred_changed_paths:
                 for x in current_deferred_changed_paths:
                     if x in self.watched_paths:
                         return True
-                return False
-            else:
-                self._warning("file notifications are not enabled, cannot check")
-                return False
+            return False
+        else:
+            self._info("no check because file notifications are not enabled")
+            return False
 
-        def __init__(self, name, paths, no_skip=True, repeat=False, exec_sequence=True):
-            self.watched_paths = paths
-            Condition.__init__(self, name, repeat, exec_sequence)
-            if no_skip:
-                self.skip_seconds = 0
+    def __init__(self, name, paths, no_skip=True, repeat=False, exec_sequence=True):
+        self._wdd = None
+        self._active = False
+        self.watched_paths = paths
+        Condition.__init__(self, name, repeat, exec_sequence)
+        if no_skip:
+            self.skip_seconds = 0
+
+    def activate(self):
+        if watch_path_manager is None:
+            self._debug("file notifications not enabled, cannot activate")
+            return
+        if not self._active:
+            applet_lock.acquire()
+            self._wdd = watch_path_manager.add_watch(self.watched_paths,
+                                                     mask=FN_IN_MODIFY_EVENTS,
+                                                     rec=True)
+            applet_lock.release()
+            self._active = True
+            self._debug("watching files/directories: %s" % ', '.join(self.watched_paths))
+
+    def deactivate(self):
+        if watch_path_manager is None:
+            self._debug("file notifications not enabled, cannot deactivate")
+            return
+        if self._active:
+            self._debug("removing all watches")
+            applet_lock.acquire()
+            watch_path_manager.rm_watch(self._wdd.values(), rec=True)
+            applet_lock.release()
+            self._active = False
+            self._wdd = None
 
 
 def PathNotifyCondition_to_dict(c):
@@ -3261,11 +3319,10 @@ class ConditionDialog(object):
                 c.break_failure = break_failure
                 c.break_success = break_success
             elif idx == 5:
-                if FILE_NOTIFY_ENABLED and config.get('General', 'file notifications'):
+                if watch_path_manager is not None:
                     fname = str(o('txtWatchPath').get_text()).strip()
                     if fname:
                         c = PathNotifyCondition(name, [fname])
-                        fname = None
                         c.break_failure = break_failure
                         c.break_success = break_success
                     else:
@@ -4571,8 +4628,13 @@ def main():
         unlink_pause_file()
     else:
         periodic.stop()
+    # start the threaded file notifier if enabled
+    if watch_path_notifier is not None:
+        watch_path_notifier.start()
     # If we have come here, the command line had no arguments so we clear it
     applet.run([])
+    if watch_path_notifier is not None:
+        watch_path_notifier.stop()
     if not periodic.stopped:
         periodic.stop()
 
@@ -4611,6 +4673,18 @@ if __name__ == '__main__':
             periodic_condition_check,
             autostart=False,
         )
+
+    # if pyinotify was imported and enabled, activate watch path manager
+    if FILE_NOTIFY_ENABLED and config.get('General', 'file notifications'):
+        class LocalEventHandler(pyinotify.ProcessEvent):
+            def process_ALL_EVENTS(self, event):
+                applet_log.debug("PATHNOTIFY: file notification raised by %s" % event.pathname)
+                applet_log.info("PATHNOTIFY: notifying changes (%s) in %s" % (event.maskname, event.path))
+                deferred_watch_paths.append(event.path)
+        watch_path_manager = pyinotify.ProcessManager()
+        watch_path_notifier = pyinotify.ThreadedNotifier(watch_path_manager,
+                                                         LocalEventHandler())
+        # ...
 
     if len(sys.argv) == 1:
         if not GRAPHIC_ENVIRONMENT:
