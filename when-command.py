@@ -74,7 +74,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.6.6-beta.1"
+APPLET_VERSION = "0.6.6-beta.2"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -293,13 +293,16 @@ resources.DLG_CANNOT_FIND_TASK = "Task %s could not be found."
 resources.DLG_CANNOT_FIND_CONDITION = "Condition %s could not be found."
 resources.DLG_CANNOT_FIND_SIGHANDLER = "Signal handler %s could not be found."
 resources.DLG_CANNOT_REGISTER_SIGHANDLER = "Signal handler %s could not be registered."
+resources.DLG_PATH_NOT_SPECIFIED = "Must specify watched path: condition not created."
 resources.DLG_WRONG_EXIT_STATUS = "Invalid value for exit status specified.\nPlease consider reviewing it."
 resources.DLG_WRONG_PARAM_INDEX = "Invalid value for signal parameter index specified.\nCannot add parameter test."
 resources.DLG_NOT_IMPLEMENTED_FEATURE = "This feature has not been implemented yet."
 resources.DLG_NOT_ENABLED_FEATURE = "This feature is not enabled.\nPlease check documentation for possible reasons."
 resources.DLG_ABOUT_VERSION_STRING = "Version: %s"
 resources.DLG_ITEM_DISABLED = "[disabled]"
+resources.DLG_TITLE_CHOOSE_FILE = "Choose File"
 resources.DLG_TITLE_CHOOSE_DIR = "Choose Directory"
+resources.DLG_TITLE_CHOOSE_FILEDIR = "Choose File or Directory"
 
 resources.NOTIFY_TASK_FAILED = "Task failed: %s"
 
@@ -2100,7 +2103,7 @@ class PathNotifyCondition(Condition):
         # are enabled or not, and maybe faster than the full flag and config
         # test since it involves less function calls and comparisons
         if watch_path_manager is not None:
-            self._debug("checking file notification based condition for files: %s" % ', '.join(self.watched_paths))
+            self._debug("checking file change based condition for: %s" % ', '.join(self.watched_paths))
             if current_changed_path and current_changed_path in self.watched_paths:
                 return True
             elif current_deferred_changed_paths:
@@ -2122,7 +2125,7 @@ class PathNotifyCondition(Condition):
 
     def activate(self):
         if watch_path_manager is None:
-            self._debug("file notifications not enabled, cannot activate")
+            self._warning("file notifications not enabled, cannot activate")
             return
         if not self._active:
             applet_lock.acquire()
@@ -2142,12 +2145,12 @@ class PathNotifyCondition(Condition):
             applet_lock.acquire()
             watch_path_manager.rm_watch(self._wdd.values(), rec=True)
             applet_lock.release()
-            self._active = False
+            self._warning = False
             self._wdd = None
 
 
 def PathNotifyCondition_to_dict(c):
-    applet_log.info("MAIN: dump file notification based condition %s" % c.cond_name)
+    applet_log.info("MAIN: dump file change based condition %s" % c.cond_name)
     d = Condition_to_dict(c)
     d['subtype'] = 'PathNotifyCondition'
     d['watched_paths'] = c.watched_paths
@@ -2164,7 +2167,7 @@ def dict_to_PathNotifyCondition(d):
     # TODO: if there are more parameters, use d.get('key', default_val)
     c = PathNotifyCondition(name, event, no_skip)
     c = dict_to_Condition(d, c)
-    applet_log.info("MAIN: restored file notification based condition %s" % c.cond_name)
+    applet_log.info("MAIN: restored file change based condition %s" % c.cond_name)
     return c
 
 
@@ -3051,6 +3054,27 @@ class ConditionDialog(object):
             else:
                 o(w).set_sensitive(True)
 
+    def click_btnChooseWatchedPath(self, _):
+        o = self.builder.get_object
+        curpath = o('txtWatchPath').get_text()
+        if o('chkSelectDirectory').get_active():
+            dlgtitle = resources.DLG_TITLE_CHOOSE_DIR
+            dlgaction = Gtk.FileChooserAction.SELECT_FOLDER
+        else:
+            dlgtitle = resources.DLG_TITLE_CHOOSE_FILE
+            dlgaction = Gtk.FileChooserAction.OPEN
+        dirdlg = Gtk.FileChooserDialog(title=dlgtitle, action=dlgaction,
+                                       buttons=(Gtk.STOCK_CANCEL,
+                                                Gtk.ResponseType.CANCEL,
+                                                Gtk.STOCK_OK,
+                                                Gtk.ResponseType.OK))
+        if os.path.exists(curpath):
+            dirdlg.set_filename(curpath)
+        ret = dirdlg.run()
+        dirdlg.hide()
+        if ret == Gtk.ResponseType.OK:
+            o('txtWatchPath').set_text(dirdlg.get_filename())
+
     def choose_condition(self, box):
         o = self.builder.get_object
         self.default_box()
@@ -3116,12 +3140,21 @@ class ConditionDialog(object):
                     o('cbSysEvent').set_active(-1)
                 o('cbType').set_active(cb_type)
             elif type(cond) == PathNotifyCondition:
-                # here we only handle a single file, so the file name is the
-                # first element of the watched_paths list
-                if cond.watched_file:
+                # here we only handle a single file or directory for the
+                # moment, so the file name is the first element of the
+                # inherent watched_paths list
+                if cond.watched_paths:
                     fname = cond.watched_paths[0]
+                    if os.path.exists(fname):
+                        if os.path.isdir(fname):
+                            o('chkSelectDirectory').set_active(True)
+                        else:
+                            o('chkSelectDirectory').set_active(False)
+                    else:
+                        o('chkSelectDirectory').set_active(False)
                 else:
                     fname = ''
+                    o('chkSelectDirectory').set_active(True)
                 o('txtWatchPath').set_text(fname)
                 o('cbType').set_active(5)
             else:
@@ -3198,6 +3231,7 @@ class ConditionDialog(object):
         o('cbSysEvent').set_active(1)
         o('cbDBusEvent').set_active(0)
         o('txtWatchPath').set_text('')
+        o('chkSelectDirectory').set_active(True)
         o('cbAddTask').set_active(-1)
         o('cbCheckWhat').set_active(0)
         o('chkRepeat').set_active(True)
@@ -3315,7 +3349,8 @@ class ConditionDialog(object):
                 event_type = self.all_events[o('cbSysEvent').get_active()]
                 if event_type == EVENT_COMMAND_LINE:
                     event_type = EVENT_COMMAND_LINE_PREAMBLE + ':' + name
-                c = EventBasedCondition(name, event_type, True, repeat, sequence)
+                c = EventBasedCondition(
+                    name, event_type, True, repeat, sequence)
                 c.break_failure = break_failure
                 c.break_success = break_success
             elif idx == 5:
@@ -3326,18 +3361,25 @@ class ConditionDialog(object):
                         c.break_failure = break_failure
                         c.break_success = break_success
                     else:
+                        msgbox = Gtk.MessageDialog(type=Gtk.MessageType.ERROR,
+                                                   buttons=Gtk.ButtonsType.OK)
+                        msgbox.set_markup(resources.DLG_PATH_NOT_SPECIFIED)
+                        msgbox.run()
+                        msgbox.hide()
                         return None
                 else:
                     msgbox = Gtk.MessageDialog(type=Gtk.MessageType.ERROR,
                                                buttons=Gtk.ButtonsType.OK)
-                    msgbox.set_markup(resources.DLG_NOT_ENABLED_FEATURE % name)
+                    msgbox.set_markup(resources.DLG_NOT_ENABLED_FEATURE)
                     msgbox.run()
                     msgbox.hide()
+                    applet_log.warning("DLGCOND: file watch condition is disabled")
                     return None
             elif idx == 6:
                 handler_name = o('cbDBusEvent').get_active_text()
                 event_type = EVENT_DBUS_SIGNAL_PREAMBLE + ":" + handler_name
-                c = EventBasedCondition(name, event_type, True, repeat, sequence)
+                c = EventBasedCondition(
+                    name, event_type, True, repeat, sequence)
                 c.break_failure = break_failure
                 c.break_success = break_success
             for x in task_names:
@@ -3695,20 +3737,30 @@ class SettingsDialog(object):
 
     def default_box(self):
         o = self.builder.get_object
-        log_level_idx = self.log_levels.index(config.get('General', 'log level'))
-        icon_theme_idx = self.icon_themes.index(config.get('General', 'icon theme'))
-        o('chkShowIcon').set_active(config.get('General', 'show icon'))
-        o('chkAutostart').set_active(config.get('General', 'autostart'))
+        log_level_idx = self.log_levels.index(
+            config.get('General', 'log level'))
+        icon_theme_idx = self.icon_themes.index(
+            config.get('General', 'icon theme'))
+        o('chkShowIcon').set_active(
+            config.get('General', 'show icon'))
+        o('chkAutostart').set_active(
+            config.get('General', 'autostart'))
         o('chkNotifications').set_active(config.get('General', 'notifications'))
-        o('chkPreservePause').set_active(config.get('Scheduler', 'preserve pause'))
+        o('chkPreservePause').set_active(
+            config.get('Scheduler', 'preserve pause'))
         o('cbLogLevel').set_active(log_level_idx)
         o('cbIconTheme').set_active(icon_theme_idx)
-        o('txtTickSeconds').set_text(str(config.get('Scheduler', 'tick seconds')))
-        o('txtSkipSeconds').set_text(str(config.get('Scheduler', 'skip seconds')))
-        o('txtMaxThreads').set_text(str(config.get('Concurrency', 'max threads')))
+        o('txtTickSeconds').set_text(
+            str(config.get('Scheduler', 'tick seconds')))
+        o('txtSkipSeconds').set_text(
+            str(config.get('Scheduler', 'skip seconds')))
+        o('txtMaxThreads').set_text(
+            str(config.get('Concurrency', 'max threads')))
         o('txtMaxLogSize').set_text(str(config.get('History', 'log size')))
-        o('txtMaxLogBackups').set_text(str(config.get('History', 'log backups')))
-        o('txtMaxHistoryItems').set_text(str(config.get('History', 'max items')))
+        o('txtMaxLogBackups').set_text(
+            str(config.get('History', 'log backups')))
+        o('txtMaxHistoryItems').set_text(
+            str(config.get('History', 'max items')))
         if signal_handlers.not_empty:
             o('chkEnableUserEvents').set_active(True)
             o('chkEnableUserEvents').set_sensitive(False)
@@ -3716,6 +3768,13 @@ class SettingsDialog(object):
             o('chkEnableUserEvents').set_active(
                 config.get('General', 'user events'))
             o('chkEnableUserEvents').set_sensitive(True)
+        if FILE_NOTIFY_ENABLED:
+            o('chkEnableWatchPaths').set_active(
+                config.get('General', 'file notifications'))
+            o('chkEnableWatchPaths').set_sensitive(True)
+        else:
+            o('chkEnableWatchPaths').set_active(False)
+            o('chkEnableWatchPaths').set_sensitive(False)
 
     def run(self):
         o = self.builder.get_object
@@ -3740,6 +3799,8 @@ class SettingsDialog(object):
                        o('chkNotifications').get_active())
             config.set('General', 'user events',
                        o('chkEnableUserEvents').get_active())
+            config.set('General', 'file notifications',
+                       o('chkEnableWatchPaths').get_active())
             preserve_pause = o('chkPreservePause').get_active()
             config.set('Scheduler', 'preserve pause', preserve_pause)
             if not preserve_pause:
@@ -4641,6 +4702,8 @@ def main():
 
 def start():
     applet_log.info("MAIN: starting %s version %s" % (APPLET_FULLNAME, APPLET_VERSION))
+    if FILE_NOTIFY_ENABLED:
+        applet_log.info("MAIN: optional file notifications can be enabled")
     create_desktop_file(False)
     create_autostart_file(False)
     main()
@@ -4681,7 +4744,7 @@ if __name__ == '__main__':
                 applet_log.debug("PATHNOTIFY: file notification raised by %s" % event.pathname)
                 applet_log.info("PATHNOTIFY: notifying changes (%s) in %s" % (event.maskname, event.path))
                 deferred_watch_paths.append(event.path)
-        watch_path_manager = pyinotify.ProcessManager()
+        watch_path_manager = pyinotify.WatchManager()
         watch_path_notifier = pyinotify.ThreadedNotifier(watch_path_manager,
                                                          LocalEventHandler())
         # ...
