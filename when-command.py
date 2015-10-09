@@ -74,7 +74,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.6.6-beta.3"
+APPLET_VERSION = "0.6.7-beta.8"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -170,9 +170,9 @@ NM_STATE_CONNECTED_GLOBAL = 70
 # IN_DELETE		   0x00000200	/* Subfile was deleted */
 # IN_DELETE_SELF   0x00000400	/* Self was deleted */
 #
-# Need everything *but* access and open, thus:
-# 2 | 4 | 8 | 16 | 64 | 128 | 256 | 512 | 1024 = 2014
-FN_IN_MODIFY_EVENTS = 2014
+# Need everything *but* access, open, and close_nowrite thus:
+# 2 | 4 | 8 | 64 | 128 | 256 | 512 | 1024 = 1998
+FN_IN_MODIFY_EVENTS = 1998
 
 #############################################################################
 # global variables referenced through the code (this should be redundant)
@@ -711,6 +711,7 @@ class Periodic(object):
 # module level functions to handle condition checks and thus task execution
 def periodic_condition_check():
     global current_deferred_events
+    global current_deferred_changed_paths
     applet_lock.acquire()
     current_deferred_events = deferred_events.items(clear=True)
     current_deferred_changed_paths = deferred_watch_paths.items(clear=True)
@@ -720,8 +721,8 @@ def periodic_condition_check():
             e.map(lambda c: c.tick(), conditions)
     finally:
         applet_lock.acquire()
-        current_deferred_events = None
         current_deferred_changed_paths = None
+        current_deferred_events = None
         applet_lock.release()
 
 
@@ -757,7 +758,7 @@ def pathchanged_condition_check(path):
         if periodic.stopped:
             applet_log.info("PATHNOTIFY: check skipped due to scheduler pause")
             return
-        conds = [c for c in conditions if type(c) == PathNotifyCondition]
+        conds = [c for c in conditions if type(c) == PathNotifyBasedCondition]
         with ThreadPoolExecutor(config.get('Concurrency', 'max threads')) as e:
             e.map(lambda c: c.tick(), conds)
     finally:
@@ -1517,7 +1518,7 @@ def dict_to_Task(d):
     if d['type'] != 'task':
         raise ValueError("incorrect dictionary type")
     t = Task()
-    applet_log.debug("MAIN: trying to restore task %s" % t.task_name)
+    applet_log.debug("MAIN: trying to restore task %s" % d['task_name'])
     t.task_id = d['task_id']
     t.task_name = d['task_name']
     t.environment_vars = d['environment_vars']
@@ -2094,7 +2095,7 @@ def dict_to_EventBasedCondition(d):
 # contains one or more of the files watched by the condition itself: the
 # mechanism is similar to the one of EventBasedCondition and implemented via
 # a parallel system
-class PathNotifyCondition(Condition):
+class PathNotifyBasedCondition(Condition):
 
     def _check_condition(self):
         if not self._active:
@@ -2104,12 +2105,20 @@ class PathNotifyCondition(Condition):
         # test since it involves less function calls and comparisons
         if watch_path_manager is not None:
             self._debug("checking file change based condition for: %s" % ', '.join(self.watched_paths))
-            if current_changed_path and current_changed_path in self.watched_paths:
-                return True
+            if current_changed_path:
+                try:
+                    v = next(x for x in self.watched_paths
+                             if current_changed_path.startswith(x))
+                    return True
+                except StopIteration:
+                    pass
             elif current_deferred_changed_paths:
-                for x in current_deferred_changed_paths:
-                    if x in self.watched_paths:
+                for p in current_deferred_changed_paths:
+                    try:
+                        v = next(x for x in self.watched_paths if p.startswith(x))
                         return True
+                    except StopIteration:
+                        pass
             return False
         else:
             self._info("no check because file notifications are not enabled")
@@ -2129,12 +2138,11 @@ class PathNotifyCondition(Condition):
             return
         if not self._active:
             applet_lock.acquire()
-            self._wdd = watch_path_manager.add_watch(self.watched_paths,
-                                                     mask=FN_IN_MODIFY_EVENTS,
-                                                     rec=True)
+            self._wdd = watch_path_manager.add_watch(
+                self.watched_paths, mask=FN_IN_MODIFY_EVENTS, rec=True)
             applet_lock.release()
             self._active = True
-            self._debug("watching files/directories: %s" % ', '.join(self.watched_paths))
+            self._debug("watching filesystem: %s" % ', '.join(self.watched_paths))
 
     def deactivate(self):
         if watch_path_manager is None:
@@ -2142,30 +2150,41 @@ class PathNotifyCondition(Condition):
             return
         if self._active:
             self._debug("removing all watches")
+            # explicit conversion to list as pyinotify does strict checking
             applet_lock.acquire()
-            watch_path_manager.rm_watch(self._wdd.values(), rec=True)
+            watch_path_manager.rm_watch(list(self._wdd.values()))
             applet_lock.release()
             self._warning = False
             self._wdd = None
 
+    # do not save activity state or it might not be activated on restore
+    def dump(self):
+        save_active = self._active
+        save_wdd = self._wdd
+        self._active = False
+        self._wdd = None
+        Condition.dump(self)
+        self._wdd = save_wdd
+        self._active = save_active
 
-def PathNotifyCondition_to_dict(c):
+
+def PathNotifyBasedCondition_to_dict(c):
     applet_log.info("MAIN: dump file change based condition %s" % c.cond_name)
     d = Condition_to_dict(c)
-    d['subtype'] = 'PathNotifyCondition'
+    d['subtype'] = 'PathNotifyBasedCondition'
     d['watched_paths'] = c.watched_paths
     d['no_skip'] = bool(c.skip_seconds == 0)
     return d
 
 
-def dict_to_PathNotifyCondition(d):
-    if d['type'] != 'condition' or d['subtype'] != 'PathNotifyCondition':
+def dict_to_PathNotifyBasedCondition(d):
+    if d['type'] != 'condition' or d['subtype'] != 'PathNotifyBasedCondition':
         raise ValueError("incorrect dictionary type")
     name = d['cond_name']
     event = d['watched_paths']
     no_skip = d['no_skip']
     # TODO: if there are more parameters, use d.get('key', default_val)
-    c = PathNotifyCondition(name, event, no_skip)
+    c = PathNotifyBasedCondition(name, event, no_skip)
     c = dict_to_Condition(d, c)
     applet_log.info("MAIN: restored file change based condition %s" % c.cond_name)
     return c
@@ -3037,7 +3056,6 @@ class ConditionDialog(object):
             to_disable = ['chkRepeat']
         elif idx == 5:
             current_widget = 'canvasOptions_FileWatch'
-            to_disable = ['chkRepeat']
         elif idx == 6:
             current_widget = 'canvasOptions_DBusEvent'
             to_disable = ['chkRepeat']
@@ -3139,7 +3157,7 @@ class ConditionDialog(object):
                 else:
                     o('cbSysEvent').set_active(-1)
                 o('cbType').set_active(cb_type)
-            elif type(cond) == PathNotifyCondition:
+            elif type(cond) == PathNotifyBasedCondition:
                 # here we only handle a single file or directory for the
                 # moment, so the file name is the first element of the
                 # inherent watched_paths list
@@ -3357,7 +3375,11 @@ class ConditionDialog(object):
                 if watch_path_manager is not None:
                     fname = str(o('txtWatchPath').get_text()).strip()
                     if fname:
-                        c = PathNotifyCondition(name, [fname])
+                        fname = os.path.realpath(os.path.normpath(fname))
+                        if os.path.isdir(fname):
+                            fname += '/'
+                        c = PathNotifyBasedCondition(
+                            name, [fname], True, repeat, sequence)
                         c.break_failure = break_failure
                         c.break_success = break_success
                     else:
@@ -4606,8 +4628,8 @@ def export_item_data(filename=None, verbose=False):
         elif condtype == IntervalBasedCondition:
             d = IntervalBasedCondition_to_dict(c)
         # TODO: add further condition type converters here
-        elif condtype == PathNotifyCondition:
-            d = PathNotifyCondition_to_dict(c)
+        elif condtype == PathNotifyBasedCondition:
+            d = PathNotifyBasedCondition_to_dict(c)
         else:
             d = Condition_to_dict(c)
         condition_dict_list.append(d)
@@ -4663,8 +4685,8 @@ def import_item_data(filename=None, verbose=False):
             elif condtype == 'EventBasedCondition':
                 condition = dict_to_EventBasedCondition(condition_dic)
             # TODO: add further condition loaders here
-            elif condtype == 'PathNotifyCondition':
-                condition = dict_to_PathNotifyCondition(condition_dic)
+            elif condtype == 'PathNotifyBasedCondition':
+                condition = dict_to_PathNotifyBasedCondition(condition_dic)
             else:
                 condition = dict_to_Condition(condition_dic)
             if condition:
@@ -4704,15 +4726,6 @@ def main():
         periodic.stop()
 
 
-def start():
-    applet_log.info("MAIN: starting %s version %s" % (APPLET_FULLNAME, APPLET_VERSION))
-    if FILE_NOTIFY_ENABLED:
-        applet_log.info("MAIN: optional file notifications can be enabled")
-    create_desktop_file(False)
-    create_autostart_file(False)
-    main()
-
-
 # Build the applet and start
 if __name__ == '__main__':
 
@@ -4725,42 +4738,50 @@ if __name__ == '__main__':
     config = Config()
     config_loghandler()
     config_loglevel()
+
+    # create main collections
     tasks = Tasks()
     conditions = Conditions()
-    deferred_events = DeferredEvents()
-    deferred_watch_paths = DeferredWatchPaths()
     signal_handlers = SignalHandlers()
-
-    # initialize global variables that require graphic environment
-    if GRAPHIC_ENVIRONMENT:
-        applet = AppletIndicator()
-        history = HistoryQueue()
-        periodic = Periodic(
-            config.get('Scheduler', 'tick seconds'),
-            periodic_condition_check,
-            autostart=False,
-        )
-
-    # if pyinotify was imported and enabled, activate watch path manager
-    if FILE_NOTIFY_ENABLED and config.get('General', 'file notifications'):
-        class LocalEventHandler(pyinotify.ProcessEvent):
-            def process_ALL_EVENTS(self, event):
-                applet_log.debug("PATHNOTIFY: file notification raised by %s" % event.pathname)
-                applet_log.info("PATHNOTIFY: notifying changes (%s) in %s" % (event.maskname, event.path))
-                deferred_watch_paths.append(event.path)
-        watch_path_manager = pyinotify.WatchManager()
-        watch_path_notifier = pyinotify.ThreadedNotifier(watch_path_manager,
-                                                         LocalEventHandler())
-        # ...
+    applet = AppletIndicator()
 
     if len(sys.argv) == 1:
         if not GRAPHIC_ENVIRONMENT:
             oerr("this program requires a graphical session")
             sys.exit(2)
+
         if applet.get_is_remote():
             oerr("another instance is present: leaving")
             sys.exit(2)
-        start()
+
+        applet_log.info("MAIN: starting %s version %s" % (APPLET_FULLNAME, APPLET_VERSION))
+        if FILE_NOTIFY_ENABLED:
+            applet_log.info("MAIN: optional file notifications can be enabled")
+
+        # if pyinotify was imported and enabled, activate watch path manager
+        if FILE_NOTIFY_ENABLED and config.get('General', 'file notifications'):
+            class LocalEventHandler(pyinotify.ProcessEvent):
+                def process_default(self, event):
+                    if event.mask & FN_IN_MODIFY_EVENTS:
+                        applet_log.debug("PATHNOTIFY: notifying changes (%s) in %s" % (event.maskname, event.pathname))
+                        deferred_watch_paths.append(event.pathname)
+                    else:
+                        applet_log.debug("PATHNOTIFY: event ignored (%s) for %s" % (event.maskname, event.pathname))
+            watch_path_manager = pyinotify.WatchManager()
+            watch_path_notifier = pyinotify.ThreadedNotifier(
+                watch_path_manager, LocalEventHandler())
+            applet_log.debug("MAIN: filesystem change based conditions are enabled")
+
+        # initialize global variables that require running environment
+        periodic = Periodic(config.get('Scheduler', 'tick seconds'),
+                            periodic_condition_check, autostart=False)
+        history = HistoryQueue()
+        deferred_events = DeferredEvents()
+        deferred_watch_paths = DeferredWatchPaths()
+        create_desktop_file(False)
+        create_autostart_file(False)
+        main()
+
     else:
         parser = argparse.ArgumentParser(
             prog=APPLET_NAME,
