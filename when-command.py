@@ -895,14 +895,14 @@ class Conditions(object):
             self._lock.acquire()
             l = [x for x in self._list if x.cond_name != cond.cond_name]
             l.append(cond)
-            if 'activate' in dir(cond):
+            if 'activate' in dir(cond) and watch_path_manager is not None:
                 cond.activate()
             self._list = l
             self._lock.release()
         else:
             self._lock.acquire()
             self._list.append(cond)
-            if 'activate' in dir(cond):
+            if 'activate' in dir(cond) and watch_path_manager is not None:
                 cond.activate()
             self._lock.release()
 
@@ -914,7 +914,7 @@ class Conditions(object):
             cond = next((c for c in self._list if c.cond_name == cond_name), None)
         if cond:
             self._lock.acquire()
-            if 'deactivate' in dir(cond):
+            if 'deactivate' in dir(cond) and watch_path_manager is not None:
                 cond.deactivate()
             self._list.remove(cond)
             cond.unlink_file()

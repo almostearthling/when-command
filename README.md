@@ -59,7 +59,7 @@ There are several types of condition available:
   - *Storage Device Connect* and *Disconnect*, which take place when the user attaches or respectively detaches a removable storage device.
   - *Join* or *Leave a Network*, these are verified whenever a network is joined or lost respectively.
   - *Command Line Trigger* is a special event type, that is triggered invoking the command line. The associated condition can be scheduled to be run at the next clock tick or immediately using the appropriate switch.
-6. **Based on File Change:** *(to be implemented)* The tasks are run when a certain file changes.
+6. **Based on File Change:** The tasks are run when a certain file changes, or when the contents of a directory or its subdirectory change, depending on what the user chose to watch - either a file or a directory. A dialog box can be opened to select what has to be watched. Please note thet this is an optional feature, and could lack on some systems: to enable this feature the `pyinotify` library must be installed, please refer to the instructions below.
 7. **Based on an User Defined Event:** The user can define system events by listening to signals emitted on the system bus and the session bus. This is an advanced feature, and the events must be defined using the procedure described below.
 
 **Warning**: because of the way applications are notified that the session is ending (first a TERM signal is sent, then a KILL if the first was unsuccessful), the *Shutdown* event is not suitable for long running tasks, such as file synchronizations, disk cleanup and similar actions. The system usually concedes a "grace time" of about one second before shutting everything down. Longer running tasks will be run if the users quits the applet through the menu, though. Same yields for *Suspend*: by specification, no more than one second is available for tasks to complete.
@@ -110,7 +110,8 @@ The options are:
   * *Max Log Size*: max size (in bytes) for the log file
   * *Number Of Log Backups*: number of backup log files (older ones are erased)
   * *Instance History Items*: max number of tasks in the event list (*History* window); this option is named `max items` in the configuration file
-  * *Enable User Defined Events*: if set, then the user can define events using DBus *(see below)*. Please note that if there are any user defined events already present, this option remains set and will not be modifiable. It corresponds to `user events` in the configuration file. Also, to make this option effective and to enable user defined events in the *Conditions* dialog box, the applet must be restarted.
+  * *Enable User Defined Events*: if set, then the user can define events using DBus *(see below)*. Please note that if there are any user defined events already present, this option remains set and will not be modifiable. It corresponds to `user events` in the configuration file. Also, to make this option effective and to enable user defined events in the *Conditions* dialog box, the applet must be restarted
+  * *Enable *File and Directory Notifications*: if set, **When** is configured to enable conditions based on file and directory changes. The option may be disabled if the required optional libraries are not installed. Changes to this setting require to restart the applet.
 
 The configuration is *immediately stored upon confirmation* to the configuration file, although some settings (such as *Notifications*, *Icon Theme*) might require a restart of the applet. The configuration file can be edited with a standard text editor, and it follows some conventions common to most configuration files. The sections in the file might slightly differ from the tabs in the *Settings* dialog, but the entries are easily recognizable.
 
@@ -129,6 +130,7 @@ notifications = true
 log level = warning
 icon theme = guess
 user events = false
+file notifications = false
 
 [Concurrency]
 max threads = 5
@@ -174,11 +176,12 @@ Please note that whenever a command line option is given, the applet will not "s
 
 ### Installation requirements and Directory structure
 
-For the applet to function and before unpacking it to the destination directory, make sure that *Python 3.x*,  *PyGObject* for *Python 3.x* and the `xprintidle` utility are installed. For example, not all of these are installed by default on Ubuntu: in this case the following commands can be used.
+For the applet to function and before unpacking it to the destination directory, make sure that *Python 3.x*,  *PyGObject* for *Python 3.x* and the `xprintidle` utility are installed. Optionally, to enable file and directory monitoring, the `pyinotify` package can be installed. For example, not all of these are installed by default on Ubuntu: in this case the following commands can be used.
 
 ```
 ~$ sudo apt-get install python3-gi
 ~$ sudo apt-get install xprintidle
+~$ sudo apt-get install python3-pyinotify   # optional (but recommended)
 ~$ cd /opt
 ~$ sudo tar xzf /path/to/when-command.tar.gz
 ```
@@ -238,6 +241,14 @@ All these values follow a precise syntax, which can be found in the DBus documen
 When all the needed fields for a tests are given, the test can be accepted by clicking the *Update* button. To remove a test line, either specify *Value #* and *Sub #* or select the line to delete, then click the *Remove* button. Tests are optional: if no test is provided, the condition will be enqueued as soon as the signal is emitted. If a test is specified in the wrong way, or a comparison is impossible (e.g. comparing a returned list against a string), or any error arises within a test, the test will evaluate to *false* and the signal will not activate any associated condition. For now the tests are pretty basic: for instance nested compound values (e.g. lists of lists) are not treated by the testing algorithm. The supported parameter types are booleans, strings, numerals, simple arrays, simple structures, and simple dictionaries. Supporting more complex tests is beyond the scope of a simple scheduler: the most common expected case for the DBus signal handler is to catch events that either do not carry parameters or carry very simple ones.
 
 **Warning:** when the system or session do not support a bus, path, interface, or signal, the signal handler registration fails: in this case the associated event never takes place and it is impossible for any associated condition to be ever verified.
+
+### File and Directory Notifications
+
+Monitoring file and directory changes can be enabled in the *Settings* dialog box. This is particularly useful to perform tasks such as file synchronizations and backups, but since file monitoring can be resource consuming, the option is disabled by default. File and directory monitoring is quite basic in **When**: a condition can be triggered by changes either on a file or on a directory, no filter can be specified for the change type, and in case of directory monitoring all files in the directory are recursively monitored. These limitations are intentional, at least for the moment, in order to keep the applet as simple as possible. Also, no more than either a file or a directory can be monitored by a condition: in order to monitor more items, multiple conditions must be specified.
+
+As said above, this feature is optional, and in order to make it available the `pyinotify` library has to be installed. On Ubuntu this can be achieved via the package manager (`sudo apt-get install python3-pyinotify`); alternatively `pip` can be used to let Python directly handle the installation: `sudo pip3 install pyinotify` (this will ensure that the latest release is installed, but package updates are left to the user).
+
+**Warning:** Conditions depending on file and directory monitoring are not synchronous, and checks occur on the next tick of the applet clock. Depending tasks should be aware that the triggering event might have occurred some time before the notified file or directory change.
 
 
 ## Developer notes and resources
