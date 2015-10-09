@@ -3,7 +3,8 @@
 ## Version 0.7.0 (beta)
 * Implement generic DBus signal handler and related toolbox
 * Some conditions can be activated from the command line
-* Conditions based on file and directory changes 
+* Conditions based on file and directory changes
+* Refactoring and code simplification
 * Bug fixes
 
 ### Compatibility break
