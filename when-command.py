@@ -4606,6 +4606,8 @@ def export_item_data(filename=None, verbose=False):
         elif condtype == IntervalBasedCondition:
             d = IntervalBasedCondition_to_dict(c)
         # TODO: add further condition type converters here
+        elif condtype == PathNotifyCondition:
+            d = PathNotifyCondition_to_dict(c)
         else:
             d = Condition_to_dict(c)
         condition_dict_list.append(d)
@@ -4661,6 +4663,8 @@ def import_item_data(filename=None, verbose=False):
             elif condtype == 'EventBasedCondition':
                 condition = dict_to_EventBasedCondition(condition_dic)
             # TODO: add further condition loaders here
+            elif condtype == 'PathNotifyCondition':
+                condition = dict_to_PathNotifyCondition(condition_dic)
             else:
                 condition = dict_to_Condition(condition_dic)
             if condition:
