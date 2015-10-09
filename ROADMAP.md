@@ -91,6 +91,7 @@ List of achievements and expectations for the When applet.
   - Join/Leave network :+1:
 * Command-line triggered conditions :ok:
 * Generic DBus signal handler conditions :ok:
+* File watch conditions :ok:
 
 
 ## 2) To *Working* Alpha Release
@@ -110,7 +111,7 @@ List of achievements and expectations for the When applet.
 
 ## 5) To 1.0 *Production* Release
 
-* File watch conditions
+**All goals for Production Release have been achieved.**
 
 
 ## 6) Desirable features
