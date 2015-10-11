@@ -74,7 +74,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.6.7-beta.8"
+APPLET_VERSION = "0.6.8-beta.1"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -173,6 +173,11 @@ NM_STATE_CONNECTED_GLOBAL = 70
 # Need everything *but* access, open, and close_nowrite thus:
 # 2 | 4 | 8 | 64 | 128 | 256 | 512 | 1024 = 1998
 FN_IN_MODIFY_EVENTS = 1998
+
+# environment variables to be set when spawning processes
+ENVVAR_NAME_TASK = 'WHEN_COMMAND_TASK'
+ENVVAR_NAME_COND = 'WHEN_COMMAND_CONDITION'
+ENVVAR_UNKNOWN_COND = '(unknown)'
 
 #############################################################################
 # global variables referenced through the code (this should be redundant)
@@ -592,6 +597,7 @@ class Config(object):
                 'icon theme': str,
                 'user events': bool_spec,
                 'file notifications': bool_spec,
+                'environment vars': bool_spec,
             },
             'Concurrency': {
                 'max threads': int,
@@ -618,6 +624,7 @@ class Config(object):
             log level = warning
             user events = false
             file notifications = false
+            environment vars = true
 
             [Concurrency]
             max threads = 5
@@ -1252,9 +1259,13 @@ class Task(object):
             self._info("[trigger: unknown] running command: %s" % self.command)
         if self.environment_vars:
             if self.include_env:
-                env = os.environ
+                env = os.environ.copy()
                 for k in self.environment_vars:
                     env[k] = self.environment_vars[k]
+                if config.get('General', 'environment vars'):
+                    env[ENVVAR_NAME_TASK] = self.task_name
+                    env[ENVVAR_NAME_COND] = (
+                        trigger_name if trigger_name else ENVVAR_UNKNOWN_COND)
             else:
                 env = self.environment_vars
         else:
@@ -1854,10 +1865,14 @@ class CommandBasedCondition(Condition):
         self._debug("checking command based condition")
         try:
             self._debug("spawning test subprocess: %s" % self.command)
+            env = os.environ.copy()
+            if config.get('General', 'environment vars'):
+                env[ENVVAR_NAME_COND] = self.cond_name
             with subprocess.Popen(self.command,
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.PIPE,
-                                  shell=True) as proc:
+                                  shell=True,
+                                  env=env) as proc:
                 stdout, stderr = proc.communicate()
                 if self.expected_status is not None:
                     self._info("checking condition command exit status")
@@ -3797,6 +3812,8 @@ class SettingsDialog(object):
         else:
             o('chkEnableWatchPaths').set_active(False)
             o('chkEnableWatchPaths').set_sensitive(False)
+        o('chkEnableEnvVars').set_active(
+            config.get('General', 'environment vars'))
 
     def run(self):
         o = self.builder.get_object
@@ -3823,6 +3840,8 @@ class SettingsDialog(object):
                        o('chkEnableUserEvents').get_active())
             config.set('General', 'file notifications',
                        o('chkEnableWatchPaths').get_active())
+            config.set('General', 'environment vars',
+                       o('chkEnableEnvVars').get_active())
             preserve_pause = o('chkPreservePause').get_active()
             config.set('Scheduler', 'preserve pause', preserve_pause)
             if not preserve_pause:
