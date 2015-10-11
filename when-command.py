@@ -74,7 +74,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.6.8-beta.1"
+APPLET_VERSION = "0.6.8-beta.2"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -1269,7 +1269,13 @@ class Task(object):
             else:
                 env = self.environment_vars
         else:
-            env = None
+            if config.get('General', 'environment vars'):
+                env = os.environ.copy()
+                env[ENVVAR_NAME_TASK] = self.task_name
+                env[ENVVAR_NAME_COND] = (
+                    trigger_name if trigger_name else ENVVAR_UNKNOWN_COND)
+            else:
+                env = None
         startup_time = time.time()
         self._process_stdout = None
         self._process_stderr = None
@@ -1865,9 +1871,11 @@ class CommandBasedCondition(Condition):
         self._debug("checking command based condition")
         try:
             self._debug("spawning test subprocess: %s" % self.command)
-            env = os.environ.copy()
             if config.get('General', 'environment vars'):
+                env = os.environ.copy()
                 env[ENVVAR_NAME_COND] = self.cond_name
+            else:
+                env = None
             with subprocess.Popen(self.command,
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.PIPE,
