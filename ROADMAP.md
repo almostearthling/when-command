@@ -20,7 +20,7 @@ List of achievements and expectations for the When applet.
   3. Command :+1:
   4. Idle :+1:
   5. Event :+1:
-  6. File Watch :-1:
+  6. File Watch :+1:
   7. Generic DBus signal :+1:
 * One time or repeated condition checks :ok:
 * Parallel or sequential task execution :ok:
@@ -91,6 +91,7 @@ List of achievements and expectations for the When applet.
   - Join/Leave network :+1:
 * Command-line triggered conditions :ok:
 * Generic DBus signal handler conditions :ok:
+* File and directory watch conditions :ok:
 
 
 ## 2) To *Working* Alpha Release
@@ -110,7 +111,7 @@ List of achievements and expectations for the When applet.
 
 ## 5) To 1.0 *Production* Release
 
-* File watch conditions
+**All goals for Production Release have been achieved.**
 
 
 ## 6) Desirable features

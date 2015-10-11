@@ -59,7 +59,7 @@ There are several types of condition available:
   - *Storage Device Connect* and *Disconnect*, which take place when the user attaches or respectively detaches a removable storage device.
   - *Join* or *Leave a Network*, these are verified whenever a network is joined or lost respectively.
   - *Command Line Trigger* is a special event type, that is triggered invoking the command line. The associated condition can be scheduled to be run at the next clock tick or immediately using the appropriate switch.
-6. **Based on File Change:** *(to be implemented)* The tasks are run when a certain file changes.
+6. **Based on Filesystem Changes:** The tasks are run when a certain file changes, or when the contents of a directory or its subdirectories change, depending on what the user chose to watch -- either a file or a directory. A dialog box can be opened to select what has to be watched. Please note thet this is an optional feature, and could lack on some systems: to enable this feature the `pyinotify` library must be installed, please refer to the instructions below.
 7. **Based on an User Defined Event:** The user can define system events by listening to signals emitted on the system bus and the session bus. This is an advanced feature, and the events must be defined using the procedure described below.
 
 **Warning**: because of the way applications are notified that the session is ending (first a TERM signal is sent, then a KILL if the first was unsuccessful), the *Shutdown* event is not suitable for long running tasks, such as file synchronizations, disk cleanup and similar actions. The system usually concedes a "grace time" of about one second before shutting everything down. Longer running tasks will be run if the users quits the applet through the menu, though. Same yields for *Suspend*: by specification, no more than one second is available for tasks to complete.
@@ -110,9 +110,10 @@ The options are:
   * *Max Log Size*: max size (in bytes) for the log file
   * *Number Of Log Backups*: number of backup log files (older ones are erased)
   * *Instance History Items*: max number of tasks in the event list (*History* window); this option is named `max items` in the configuration file
-  * *Enable User Defined Events*: if set, then the user can define events using DBus *(see below)*. Please note that if there are any user defined events already present, this option remains set and will not be modifiable. It corresponds to `user events` in the configuration file. Also, to make this option effective and to enable user defined events in the *Conditions* dialog box, the applet must be restarted.
+  * *Enable User Defined Events*: if set, then the user can define events using DBus *(see below)*. Please note that if there are any user defined events already present, this option remains set and will not be modifiable. It corresponds to `user events` in the configuration file. Also, to make this option effective and to enable user defined events in the *Conditions* dialog box, the applet must be restarted
+  * *Enable File and Directory Notifications*: if set, **When** is configured to enable conditions based on file and directory changes. The option may be disabled if the required optional libraries are not installed. Such events are enabled or disabled at next startup.
 
-The configuration is *immediately stored upon confirmation* to the configuration file, although some settings (such as *Notifications*, *Icon Theme*) might require a restart of the applet. The configuration file can be edited with a standard text editor, and it follows some conventions common to most configuration files. The sections in the file might slightly differ from the tabs in the *Settings* dialog, but the entries are easily recognizable.
+The configuration is *immediately stored upon confirmation* to the configuration file, although some settings (such as *Notifications*, *Icon Theme*, and most advanced settings) might require a restart of the applet. The configuration file can be edited with a standard text editor, and it follows some conventions common to most configuration files. The sections in the file might slightly differ from the tabs in the *Settings* dialog, but the entries are easily recognizable.
 
 By default the applet creates a file with the following configuration, which should be suitable for most setups:
 
@@ -129,6 +130,7 @@ notifications = true
 log level = warning
 icon theme = guess
 user events = false
+file notifications = false
 
 [Concurrency]
 max threads = 5
@@ -174,11 +176,12 @@ Please note that whenever a command line option is given, the applet will not "s
 
 ### Installation requirements and Directory structure
 
-For the applet to function and before unpacking it to the destination directory, make sure that *Python 3.x*,  *PyGObject* for *Python 3.x* and the `xprintidle` utility are installed. For example, not all of these are installed by default on Ubuntu: in this case the following commands can be used.
+For the applet to function and before unpacking it to the destination directory, make sure that *Python 3.x*,  *PyGObject* for *Python 3.x* and the `xprintidle` utility are installed. Optionally, to enable file and directory monitoring, the `pyinotify` package can be installed. For example, not all of these are installed by default on Ubuntu: in this case the following commands can be used.
 
 ```
 ~$ sudo apt-get install python3-gi
 ~$ sudo apt-get install xprintidle
+~$ sudo apt-get install python3-pyinotify   # optional (but recommended)
 ~$ cd /opt
 ~$ sudo tar xzf /path/to/when-command.tar.gz
 ```
@@ -239,6 +242,16 @@ When all the needed fields for a tests are given, the test can be accepted by cl
 
 **Warning:** when the system or session do not support a bus, path, interface, or signal, the signal handler registration fails: in this case the associated event never takes place and it is impossible for any associated condition to be ever verified.
 
+### File and Directory Notifications
+
+Monitoring file and directory changes can be enabled in the *Settings* dialog box. This is particularly useful to perform tasks such as file synchronizations and backups, but since file monitoring can be resource consuming, the option is disabled by default. File and directory monitoring is quite basic in **When**: a condition can be triggered by changes either on a file or on a directory, no filter can be specified for the change type, and in case of directory monitoring all files in the directory are recursively monitored. These limitations are intentional, at least for the moment, in order to keep the applet as simple as possible. Also, no more than either a file or a directory can be monitored by a condition: in order to monitor more items, multiple conditions must be specified.
+
+As said above, this feature is optional, and in order to make it available the `pyinotify` library has to be installed. On Ubuntu this can be achieved via the package manager (`sudo apt-get install python3-pyinotify`); alternatively `pip` can be used to let Python directly handle the installation: `sudo pip3 install pyinotify` (this will ensure that the latest release is installed, but package updates are left to the user).
+
+There are also some configuration steps at system level that might have to be performed if filesystem monitoring does not work properly: when a monitored directory is big enough, the default *inotify watches* may fall short so that not all file changes can be notified. When a directory is under control, all its subdirectories need to be watched as well recursively, and this implies that several watches are consumed. There are many sources of information on how to increase the amount of *inotify watches*, and as usual StackExchange is one of the most valuables: see [Kernel inotify watch limit reached](http://unix.stackexchange.com/a/13757/125979) for a detailed description. Consider that other applications and utilities, especially the ones that synchronize files across the network -- such as the cloud backup and synchronization clients -- use watches intensively.
+
+**Warning:** Conditions depending on file and directory monitoring are not synchronous, and checks occur on the next tick of the applet clock. Depending tasks should be aware that the triggering event might have occurred some time before the notified file or directory change.
+
 
 ## Developer notes and resources
 
@@ -284,6 +297,7 @@ As said above, this software is designed to run mainly on Ubuntu, so the chosen 
 * [PyGObject Documentation](https://developer.gnome.org/pygobject/stable/)
 * [GTK 3.0 Documentation](http://lazka.github.io/pgi-docs/Gtk-3.0/index.html)
 * [DBus Documentation](http://www.freedesktop.org/wiki/Software/dbus/)
+* [pyinotify Documentation](https://github.com/seb-m/pyinotify/wiki)
 
 The top panel icons and the emblems used in the application were selected within Google's [Material Design](https://materialdesignicons.com/) icon collection.
 
