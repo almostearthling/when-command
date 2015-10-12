@@ -4,12 +4,13 @@
 * Implement generic DBus signal handler and related toolbox
 * Some conditions can be activated from the command line
 * Conditions based on file and directory changes
+* Environment variables with task and condition names
 * Refactoring and code simplification
 * Bug fixes
 
 ### Compatibility break
 
-This release breaks compatibility with previous version regarding the binary format of static data (conditions), as it introduces a new condition type for file notifications. The problem only affects *downgrading* from this to previous releases, upgrades are safe and all static data is correctly loaded. Unless file notification conditions are enabled and defined, a downgrade should be safe as well.
+This release breaks compatibility with previous version regarding the binary format of static data (conditions), as it introduces a new condition type for file notifications. The problem only affects *downgrading* from this to previous releases, upgrades are safe and all static data is correctly loaded. Unless file notification conditions are enabled *and* defined, a downgrade should be safe as well.
 
 
 ## Version 0.6.0 (beta)
