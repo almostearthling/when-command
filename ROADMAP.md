@@ -38,14 +38,14 @@ List of achievements and expectations for the When applet.
 * Notifications (when activated) :ok:
 * Icon change on task failure (when notifications are active) :ok:
 * *System-wide* vs *Local* vs *User* installation (*to be tested*) :ok:
-  - *System-wide* based on `/usr` :ok:
-  - *Local* based on `/usr/local` :ok:
-  - *Local* based on `/opt` :ok:
-  - *User* based on `~/.local/share/when-command` and `~/.local/bin` :ok:
+  - *System-wide* based on `/usr` :+1:
+  - *Local* based on `/usr/local` :+1:
+  - *Local* based on `/opt` :+1:
+  - *User* based on `~/.local/share/when-command` and `~/.local/bin` :+1:
 * Generalization of resource locations :ok:
-  1. Dialog boxes :ok:
-  2. Icons and images :ok:
-  3. Theme path :ok:
+  1. Dialog boxes :+1:
+  2. Icons and images :+1:
+  3. Theme path :+1:
 * Autodetect dark or light system theme :ok:
 * Dialogs as resources :ok:
 * Delete task :ok:
@@ -58,7 +58,7 @@ List of achievements and expectations for the When applet.
     - Task name :+1:
     - Task result (success/failure) :+1:
     - Failure reason :+1:
-  2. Task output pane (changes on list selection) :ok:
+  2. Task output pane (changes on list selection) :+1:
 * Single instance application (per user) :ok:
 * Better logging :ok:
   - Remove excess and redundant cruft :+1:
@@ -70,7 +70,7 @@ List of achievements and expectations for the When applet.
 * Refactoring: instance variables instead of properties and setters :ok:
 * Move initialization calls (not variables) to the `if __name__ == "__main__"` block
 * Dialog box design and refactoring :ok:
-* Command line switches (and configuration maintenance) :+1:
+* Command line switches (and configuration maintenance) :ok:
   - Close current instance  :+1:
   - Open settings dialog  :+1:
   - Clear/Rebuild configuration directory  :+1:
@@ -92,6 +92,7 @@ List of achievements and expectations for the When applet.
 * Command-line triggered conditions :ok:
 * Generic DBus signal handler conditions :ok:
 * File and directory watch conditions :ok:
+* Export environment variables with task and condition name :ok:
 
 
 ## 2) To *Working* Alpha Release
