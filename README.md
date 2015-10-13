@@ -59,8 +59,8 @@ There are several types of condition available:
   - *Storage Device Connect* and *Disconnect*, which take place when the user attaches or respectively detaches a removable storage device.
   - *Join* or *Leave a Network*, these are verified whenever a network is joined or lost respectively.
   - *Command Line Trigger* is a special event type, that is triggered invoking the command line. The associated condition can be scheduled to be run at the next clock tick or immediately using the appropriate switch.
-6. **Based on Filesystem Changes:** The tasks are run when a certain file changes, or when the contents of a directory or its subdirectories change, depending on what the user chose to watch -- either a file or a directory. A dialog box can be opened to select what has to be watched. Please note thet this is an optional feature, and could lack on some systems: to enable this feature the `pyinotify` library must be installed, please refer to the instructions below.
-7. **Based on an User Defined Event:** The user can define system events by listening to signals emitted on the system bus and the session bus. This is an advanced feature, and the events must be defined using the procedure described below.
+6. **Based on filesystem changes:** The tasks are run when a certain file changes, or when the contents of a directory or its subdirectories change, depending on what the user chose to watch -- either a file or a directory. A dialog box can be opened to select what has to be watched. Please note thet this is an optional feature, and could lack on some systems: to enable this feature the `pyinotify` library must be installed, please refer to the instructions below.
+7. **Based on an user defined event:** The user can define system events by listening to signals emitted on the system bus and the session bus. This is an advanced feature, and the events must be defined using the procedure described below.
 
 **Warning**: because of the way applications are notified that the session is ending (first a TERM signal is sent, then a KILL if the first was unsuccessful), the *Shutdown* event is not suitable for long running tasks, such as file synchronizations, disk cleanup and similar actions. The system usually concedes a "grace time" of about one second before shutting everything down. Longer running tasks will be run if the users quits the applet through the menu, though. Same yields for *Suspend*: by specification, no more than one second is available for tasks to complete.
 
@@ -75,7 +75,7 @@ The selected condition (if any) can be deleted clicking the *Delete* button in t
 **Possibly unsupported events:** some events may not be supported on every platform, even on different Ubuntu implementations. *Screen Lock/Unlock* for instance does not follow very precise specifications, and could be disabled on some desktops. Thus one or more events might appear as *[disabled]* in the list: the user still can choose to create a condition based on a disabled event, but the corresponding tasks will never be run.
 
 
-### The History window
+### The history window
 
 Since logs aren't always easy to deal with, **When** provides an easier interface to verify the task results. Tasks failures are also notified graphically via the attention-sign icon and badge notifications, however more precise information can be found in the *History* box. This shows a list of the most recently tasks that where launched by the current applet instance (the list length can be configured), which reports:
 
@@ -83,7 +83,7 @@ Since logs aren't always easy to deal with, **When** provides an easier interfac
 * The task *unique name*
 * The *unique name* of the condition that triggered the task
 * The process *exit code* (as captured by the shell)
-* The result (green :heavy_check_mark: for success, red :x: for failure)
+* The result (green &#10004; for success, red &#10008; for failure)
 * A short hint on the failure *reason* (only in case of failure)
 
 and when the user clicks a line in the table, the tabbed box below will possibly show the output (*stdout*) and errors (*stderr*) reported by the underlying process.
@@ -176,7 +176,7 @@ Some trivial switches are also available:
 Please note that whenever a command line option is given, the applet will not "stay resident" if there is no previously running instance. On the other side, if the user invokes the applet when already running, the new instance will bail out with an error.
 
 
-### Installation requirements and Directory structure
+### Installation requirements and directory structure
 
 For the applet to function and before unpacking it to the destination directory, make sure that *Python 3.x*,  *PyGObject* for *Python 3.x* and the `xprintidle` utility are installed. Optionally, to enable file and directory monitoring, the `pyinotify` package can be installed. For example, not all of these are installed by default on Ubuntu: in this case the following commands can be used.
 
@@ -244,7 +244,7 @@ When all the needed fields for a tests are given, the test can be accepted by cl
 
 **Warning:** when the system or session do not support a bus, path, interface, or signal, the signal handler registration fails: in this case the associated event never takes place and it is impossible for any associated condition to be ever verified.
 
-### File and Directory Notifications
+### File and directory notifications
 
 Monitoring file and directory changes can be enabled in the *Settings* dialog box. This is particularly useful to perform tasks such as file synchronizations and backups, but since file monitoring can be resource consuming, the option is disabled by default. File and directory monitoring is quite basic in **When**: a condition can be triggered by changes either on a file or on a directory, no filter can be specified for the change type, and in case of directory monitoring all files in the directory are recursively monitored. These limitations are intentional, at least for the moment, in order to keep the applet as simple as possible. Also, no more than either a file or a directory can be monitored by a condition: in order to monitor more items, multiple conditions must be specified.
 
@@ -254,7 +254,7 @@ There are also some configuration steps at system level that might have to be pe
 
 **Warning:** Conditions depending on file and directory monitoring are not synchronous, and checks occur on the next tick of the applet clock. Depending tasks should be aware that the triggering event might have occurred some time before the notified file or directory change.
 
-### Environment Variables
+### Environment variables
 
 By default **When** defines one or two environment variables when it spawns subprocesses, respectively in *command based conditions* and in *tasks*. These variables are:
 
@@ -271,7 +271,7 @@ When the test subprocess of a command based condition is run, only `WHEN_COMMAND
 The applet is in fact a small utility, and I thought it also would have less features. It grew a little just because some of the features could be added almost for free, so the "*Why Not?*" part of the development process has been quite consistent for a while. The first usable version of the applet has been developed in about two weeks, most of which spent learning how to use *PyGObject* and friends, and not on a full time basis: by the 5th day I had to freeze the features (the result is the `ROADMAP.md` file) and focus on the ones I wrote down. So, being small and mostly not reusable, the single-source option seemed the most obvious, also to keep the package as self-contained as possible. However, the way the applet starts and defines its own system-wide and user directories allows for the development of modules that can be imported without cluttering and polluting the system: the `APP_DATA_FOLDER` variable defines a dedicated directory for the application where modules can be installed, and normally it points to `/opt/when-command/share` or `/usr/[local/]share/when-command` or something similar. For example, in a future version that supports translations, a translation can be implemented as a Python file that exports a `resources` object and resides in the `APP_DATA_FOLDER` directory.
 
 
-### Developer Dependencies
+### Developer dependencies
 
 Being an applet oriented mostly towards users of recent Ubuntu editions, it is developed in *Python 3.x* and uses the latest supported edition of *PyGObject* at the time. It shouldn't rely on other packages than `python3-gi` on the Python side. The *Glade* user interface designer is almost mandatory to edit the dialog boxes.
 
