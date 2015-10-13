@@ -74,6 +74,8 @@ The selected condition (if any) can be deleted clicking the *Delete* button in t
 
 **Possibly unsupported events:** some events may not be supported on every platform, even on different Ubuntu implementations. *Screen Lock/Unlock* for instance does not follow very precise specifications, and could be disabled on some desktops. Thus one or more events might appear as *[disabled]* in the list: the user still can choose to create a condition based on a disabled event, but the corresponding tasks will never be run.
 
+*Note:* If a task is triggered by more than one condition almost at the same time, only the first instance of the task will be run. This behavior is intentional, to allow the user to decide to perform a task under more than one cirumstance, and to avoid task repetition in case all triggering circumstances actually occur.
+
 
 ### The history window
 
