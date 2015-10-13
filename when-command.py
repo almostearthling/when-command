@@ -74,7 +74,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.6.8-beta.2"
+APPLET_VERSION = "0.6.8-beta.3"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -4354,7 +4354,13 @@ class AppletIndicator(Gtk.Application):
         self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
 
     def icon_dialog(self, active=True):
-        name = 'alarm-add' if active else 'alarm'
+        if active:
+            name = 'alarm-add'
+        else:
+            if periodic.stopped:
+                name = 'alarm-off'
+            else:
+                name = 'alarm'
         self.indicator.set_icon(name)
         self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
 
