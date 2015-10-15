@@ -74,7 +74,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.6.9-beta.1"
+APPLET_VERSION = "0.6.10-beta.6"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -110,6 +110,15 @@ VALIDATE_DBUS_SIGNAL_RE = re.compile(r'^[a-zA-Z_][a-zA-Z0-9_]*$')
 # user interface constants
 UI_INTERVALS_MINUTES = [1, 2, 3, 5, 15, 30, 60]
 UI_INTERVALS_HOURS = [1, 2, 3, 4, 6, 8, 12, 24]
+
+# headers for history file
+HISTORY_HEADERS = ['ITEM_ID', 'STARTUP_TIME', 'RUN_TIME', 'TASK_NAME',
+                   'TRIGGER_COND', 'SUCCESS', 'EXIT_CODE', 'FAILURE_REASON']
+HISTORY_ERR_EMPTY = -1
+HISTORY_ERR_IOERROR = -2
+HISTORY_ENTRY_SUCCESS = 'success'
+HISTORY_ENTRY_FAILURE = 'failure'
+HISTORY_SEPARATOR = ";"
 
 # folders
 USER_FOLDER = os.path.expanduser('~')
@@ -349,6 +358,7 @@ resources.COMMAND_LINE_HELP_SHOW_ICON = "show applet icon [N]"
 resources.COMMAND_LINE_HELP_CLEAR = "clear all tasks and conditions [S]"
 resources.COMMAND_LINE_HELP_INSTALL = "install application icons and autostart [S]"
 resources.COMMAND_LINE_HELP_QUERY = "query for a running instance"
+resources.COMMAND_LINE_HELP_EXPORT_HISTORY = "export task history to a text file [R]"
 resources.COMMAND_LINE_HELP_RUN_CONDITION = "run a command-line bound condition"
 resources.COMMAND_LINE_HELP_DEFER_CONDITION = "enqueue a command-line bound condition"
 resources.COMMAND_LINE_HELP_SHUTDOWN = "run shutdown tasks and close an existing istance [R]"
@@ -554,6 +564,10 @@ class AppletDBusService(dbus.service.Object):
     @dbus.service.method(APPLET_BUS_NAME)
     def run_condition(self, cond_name, deferred=False):
         return applet.start_event_condition(cond_name, deferred)
+
+    @dbus.service.method(APPLET_BUS_NAME)
+    def export_history(self, file_name):
+        return applet.export_task_history(file_name)
 
 
 #############################################################################
@@ -4328,6 +4342,32 @@ class AppletIndicator(Gtk.Application):
             sysevent_condition_check(event)
         return True
 
+    def export_task_history(self, filename):
+        try:
+            items = history.items()
+            rv = len(items)
+            if rv == 0:
+                return HISTORY_ERR_EMPTY
+            f = open(filename, 'w')
+            f.write(HISTORY_SEPARATOR.join(HISTORY_HEADERS) + "\n")
+            for x in items:
+                f.write(
+                    HISTORY_SEPARATOR.join(map(str, [
+                        x.item_id,
+                        time.strftime('%Y-%m-%d %H:%M:%S',
+                                      time.localtime(x.startup_time)),
+                        "%.4f" % x.run_time,
+                        x.task_name,
+                        x.trigger_cond,
+                        HISTORY_ENTRY_SUCCESS if x.success else HISTORY_ENTRY_FAILURE,
+                        x.exit_code,
+                        x.failure_reason if x.failure_reason else HISTORY_ENTRY_SUCCESS
+                    ])) + "\n")
+            f.close()
+            return rv
+        except IOError as e:
+            return HISTORY_ERR_IOERROR
+
     def quit(self, _):
         self.before_shutdown()
         Notify.uninit()
@@ -4580,6 +4620,25 @@ def run_condition(cond_name, deferred, verbose=False):
         oerr("condition %s could not be run" % cond_name, verbose)
         return False
     else:
+        return True
+
+
+def export_running_history(filename, verbose=False):
+    oerr("attempting to export task history to %s" % filename, verbose)
+    bus = dbus.SessionBus()
+    proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
+    rv = proxy.export_history(filename)
+    if rv < 0:
+        if rv == HISTORY_ERR_EMPTY:
+            s = "empty"
+        elif rv == HISTORY_ERR_IOERROR:
+            s = "ioerror"
+        else:
+            s = "unknown"
+        oerr("could not save task history (%s)" % s, verbose)
+        return False
+    else:
+        oerr("exported %s elements to specified file" % rv, verbose)
         return True
 
 
@@ -4882,6 +4941,11 @@ if __name__ == '__main__':
             help=resources.COMMAND_LINE_HELP_QUERY
         )
         parser.add_argument(
+            '-H', '--export-history',
+            dest='export_history', metavar='FILE', default=None,
+            help=resources.COMMAND_LINE_HELP_EXPORT_HISTORY
+        )
+        parser.add_argument(
             '-r', '--run-condition',
             dest='run_condition', metavar='CONDITION', default=None,
             help=resources.COMMAND_LINE_HELP_RUN_CONDITION
@@ -4973,6 +5037,15 @@ if __name__ == '__main__':
                 oerr("an error occurred while trying to export items", verbose)
                 sys.exit(2)
             oerr("tasks and conditions successfully exported", verbose)
+
+        if args.export_history:
+            if not running:
+                oerr("could not find a running instance, please start it first", verbose)
+                sys.exit(2)
+            else:
+                filename = os.path.realpath(args.export_history)
+                if not export_running_history(filename, verbose):
+                    sys.exit(2)
 
         if args.run_condition:
             if not running:

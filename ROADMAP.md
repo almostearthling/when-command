@@ -81,6 +81,7 @@ List of achievements and expectations for the When applet.
   - export tasks and conditions :+1:
   - import tasks and conditions  :+1:
   - export and import DBus signal handlers :+1:
+  - export task history to a text file :+1:
 * Regexp match for shell command results (in both tasks and conditions) :ok:
 * Stop task sequence upon failure (or success) of one task :ok:
 * More system and session event conditions :ok:

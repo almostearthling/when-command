@@ -6,6 +6,7 @@
 * Conditions based on file and directory changes
 * Environment variables with task and condition names
 * Refactoring and code simplification
+* Export task history to a text file
 * Bug fixes
 
 ### Compatibility break

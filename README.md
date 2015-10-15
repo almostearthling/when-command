@@ -88,7 +88,7 @@ Since logs aren't always easy to deal with, **When** provides an easier interfac
 * The result (green &#10004; for success, red &#10008; for failure)
 * A short hint on the failure *reason* (only in case of failure)
 
-and when the user clicks a line in the table, the tabbed box below will possibly show the output (*stdout*) and errors (*stderr*) reported by the underlying process.
+and when the user clicks a line in the table, the tabbed box below will possibly show the output (*stdout*) and errors (*stderr*) reported by the underlying process. The contents of the list can also be exported to a text file, by invoking the applet with the `--export-history` switch from a console window when an instance is running. The file contains exactly the same values as the history list, with the addition of a row identifier at the beginning of the row. Start time and duration are separate values. The first row of the file consists of column mnemonic titles and the value separator is a semicolon: the file can be safely imported in spreadsheets, but column conversions could be needed depending on your locale settings.
 
 
 ### Settings
@@ -162,6 +162,7 @@ By default, when the applet is invoked with no arguments, it just starts an inst
 * `-T` or `--install`: install or reinstall application icon and autostart icon, requires applet to be shut down with an appropriate switch
 * `-C` or `--clear`: clear current tasks, conditions and possibly signal handlers, requires applet to be shut down with an appropriate switch
 * `-Q` or `--query`: query for an existing instance (returns a zero exit status if an instance is running, nonzero otherwise, and prints an human-readable message if the `--verbose` switch is also specified)
+* `-H` *filename* or `--export-history` *filename*: export the current task history (the ones shown in the history box) to the file specified as argument in a CSV-like format
 * `-r` *condition* or `--run-condition` *condition*: trigger a command-line associated condition and immediately run the associated tasks; *condition* must be specified and has to be one of the *Command Line Trigger* conditions, otherwise the command will fail and no task will be run
 * `-f` *condition* or `--defer-condition` *condition*: schedule a command-line associated condition to run the associated tasks at the next clock tick; the same as above yields for *condition*
 * `--shutdown`: close a running instance performing shutdown tasks first
