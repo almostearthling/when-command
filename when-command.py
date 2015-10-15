@@ -74,7 +74,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.6.10-beta.1"
+APPLET_VERSION = "0.6.10-beta.2"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -4927,7 +4927,7 @@ if __name__ == '__main__':
         )
         parser.add_argument(
             '-H', '--export-history',
-            dest='export_history', metavar='FILE', nargs=1,
+            dest='export_history', metavar='FILE', default=None,
             help=resources.COMMAND_LINE_HELP_EXPORT_HISTORY
         )
         parser.add_argument(
