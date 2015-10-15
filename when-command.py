@@ -74,7 +74,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.6.10-beta.6"
+APPLET_VERSION = "0.6.10-beta.7"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -1325,12 +1325,12 @@ class Task(object):
                         else:
                             flags = re.IGNORECASE
                         if self.match_exact:
-                            if re.match(self.failure_stdout, self._process_stdout, flags=0) is not None:
+                            if re.match(self.failure_stdout, self._process_stdout, flags) is not None:
                                 self._warning("task failed (stdout regexp%s check)" % " nocase" if flags else "")
                                 self._process_failed = True
                                 failure_reason = 'stdout'
                         else:
-                            if re.search(self.failure_stdout, self._process_stdout, flags=0) is not None:
+                            if re.search(self.failure_stdout, self._process_stdout, flags) is not None:
                                 self._warning("task failed (stdout regexp%s check)" % " nocase" if flags else "")
                                 self._process_failed = True
                                 failure_reason = 'stdout'
@@ -1364,12 +1364,12 @@ class Task(object):
                         else:
                             flags = re.IGNORECASE
                         if self.match_exact:
-                            if re.match(self.failure_stderr, self._process_stderr, flags=0) is not None:
+                            if re.match(self.failure_stderr, self._process_stderr, flags) is not None:
                                 self._warning("task failed (stderr regexp%s check)" % " nocase" if flags else "")
                                 self._process_failed = True
                                 failure_reason = 'stderr'
                         else:
-                            if re.search(self.failure_stderr, self._process_stderr, flags=0) is not None:
+                            if re.search(self.failure_stderr, self._process_stderr, flags) is not None:
                                 self._warning("task failed (stderr regexp%s check)" % " nocase" if flags else "")
                                 self._process_failed = True
                                 failure_reason = 'stderr'
@@ -1403,12 +1403,12 @@ class Task(object):
                         else:
                             flags = re.IGNORECASE
                         if self.match_exact:
-                            if re.match(self.success_stdout, self._process_stdout, flags=0) is None:
+                            if re.match(self.success_stdout, self._process_stdout, flags) is None:
                                 self._warning("task failed (stdout regexp%s check)" % " nocase" if flags else "")
                                 self._process_failed = True
                                 failure_reason = 'stdout'
                         else:
-                            if re.search(self.success_stdout, self._process_stdout, flags=0) is None:
+                            if re.search(self.success_stdout, self._process_stdout, flags) is None:
                                 self._warning("task failed (stdout regexp%s check)" % " nocase" if flags else "")
                                 self._process_failed = True
                                 failure_reason = 'stdout'
@@ -1442,12 +1442,12 @@ class Task(object):
                         else:
                             flags = re.IGNORECASE
                         if self.match_exact:
-                            if re.match(self.success_stderr, self._process_stderr, flags=0) is None:
+                            if re.match(self.success_stderr, self._process_stderr, flags) is None:
                                 self._warning("task failed (stderr regexp%s check)" % " nocase" if flags else "")
                                 self._process_failed = True
                                 failure_reason = 'stderr'
                         else:
-                            if re.search(self.success_stderr, self._process_stderr, flags=0) is None:
+                            if re.search(self.success_stderr, self._process_stderr, flags) is None:
                                 self._warning("task failed (stderr regexp%s check)" % " nocase" if flags else "")
                                 self._process_failed = True
                                 failure_reason = 'stderr'
