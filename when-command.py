@@ -74,7 +74,7 @@ APPLET_FULLNAME = "When Gnome Scheduler"
 APPLET_SHORTNAME = "When"
 APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
 APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.6.10-beta.2"
+APPLET_VERSION = "0.6.10-beta.4"
 APPLET_ID = "it.jks.WhenCommand"
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -112,8 +112,8 @@ UI_INTERVALS_MINUTES = [1, 2, 3, 5, 15, 30, 60]
 UI_INTERVALS_HOURS = [1, 2, 3, 4, 6, 8, 12, 24]
 
 # headers for history file
-HISTORY_HEADERS = ['ITEM_ID', 'STARTUP_TIME', 'RUN_TIME', 'TASK_NAME',
-                   'TRIGGER_COND', 'SUCCESS', 'EXIT_CODE', 'FAILURE_REASON']
+HISTORY_HEADERS = ('ITEM_ID', 'STARTUP_TIME', 'RUN_TIME', 'TASK_NAME',
+                   'TRIGGER_COND', 'SUCCESS', 'EXIT_CODE', 'FAILURE_REASON')
 HISTORY_ERR_EMPTY = -1
 HISTORY_ERR_IOERROR = -2
 
@@ -4342,14 +4342,25 @@ class AppletIndicator(Gtk.Application):
     def export_task_history(self, file_name):
         try:
             items = history.items()
-            if len(items) == 0:
+            rv = len(items)
+            if rv == 0:
                 return HISTORY_ERR_EMPTY
             f = open(file_name, 'w')
             f.write("%s;%s;%s;%s;%s;%s;%s;%s\n" % HISTORY_HEADERS)
             for x in items:
-                f.write("%s;%s;%s;%s;%s;%s;%s;%s\n" % (x[0], x[1], x[3], x[4],
-                                                       x[5], x[6], x[7], x[10]))
+                f.write(
+                    "%s;%s;%s;%s;%s;%s;%s;%s\n" % (
+                        x.item_id,
+                        time.strftime('%Y-%m-%d %H:%M:%S',
+                                      time.localtime(x.startup_time)),
+                        "%.4f" % x.run_time,
+                        x.task_name,
+                        x.trigger_cond,
+                        x.success,
+                        x.exit_code,
+                        x.failure_reason if x.failure_reason else ''))
             f.close()
+            return rv
         except IOError as e:
             return HISTORY_ERR_IOERROR
 
