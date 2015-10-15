@@ -88,7 +88,7 @@ Since logs aren't always easy to deal with, **When** provides an easier interfac
 * The result (green &#10004; for success, red &#10008; for failure)
 * A short hint on the failure *reason* (only in case of failure)
 
-and when the user clicks a line in the table, the tabbed box below will possibly show the output (*stdout*) and errors (*stderr*) reported by the underlying process. The contents of the list can also be exported to a text file, by invoking the applet with the `--export-history` switch from a console window when an instance is running.
+and when the user clicks a line in the table, the tabbed box below will possibly show the output (*stdout*) and errors (*stderr*) reported by the underlying process. The contents of the list can also be exported to a text file, by invoking the applet with the `--export-history` switch from a console window when an instance is running. The file contains exactly the same values as the history list, with the addition of a row identifier at the beginning of the row. Start time and duration are separate values. The first row of the file consists of column mnemonic titles and the value separator is a semicolon: the file can be safely imported in spreadsheets, but column conversions could be needed depending on your locale settings.
 
 
 ### Settings
