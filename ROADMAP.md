@@ -94,6 +94,7 @@ List of achievements and expectations for the When applet.
 * Generic DBus signal handler conditions :ok:
 * File and directory watch conditions :ok:
 * Export environment variables with task and condition name :ok:
+* Tutorial :ok:
 
 
 ## 2) To *Working* Alpha Release

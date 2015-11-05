@@ -209,6 +209,16 @@ The **When** utility will try to recognize the way it has been set up the first 
 Please note that the full path to the command has to be used on the first run: in this way **When** can recognize the installation type and set up the icons and shortcuts properly.
 
 
+## Tutorial
+
+There is a tutorial for **When**, which illustrates how to setup the applet to do some simple tasks. The examples are very basic, but cover techniques that can be implemented for useful actions, such as:
+
+* backup files when changes occur
+* work on the filesystem when the workstation is idle.
+
+The same combinations can be used to perform more complex tasks, using simple scripts and exploiting the right conditions and monitoring system and session events. With some effort **When** can be used to automate builds, package software, process documents and images, and so on. The tutorial can be found [here](https://github.com/almostearthling/when-command-tutorial): it's a project by itself and should evolve with time.
+
+
 ## Advanced features
 
 ### DBus signal handlers
