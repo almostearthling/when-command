@@ -200,7 +200,7 @@ current_changed_path = None
 current_deferred_changed_paths = None
 
 applet_log_handler = logging.NullHandler()
-applet_log_formatter = logging.Formatter(fmt=LOG_FORMAT, datefmt="%Y-%m-%d %H:%M:%S")
+applet_log_formatter = logging.Formatter(fmt=LOG_FORMAT, datefmt='%Y-%m-%d %H:%M:%S')
 applet_log_handler.setFormatter(applet_log_formatter)
 applet_log = logging.getLogger(APPLET_NAME)
 applet_log.addHandler(applet_log_handler)
