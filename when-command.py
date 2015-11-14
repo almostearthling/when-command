@@ -70,12 +70,12 @@ except ImportError:
 
 # base constants
 APPLET_NAME = 'when-command'
-APPLET_FULLNAME = "When Gnome Scheduler"
-APPLET_SHORTNAME = "When"
-APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
-APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.9.0-beta.1"
-APPLET_ID = "it.jks.WhenCommand"
+APPLET_FULLNAME = 'When Gnome Scheduler'
+APPLET_SHORTNAME = 'When'
+APPLET_COPYRIGHT = '(c) 2015 Francesco Garosi'
+APPLET_URL = 'http://almostearthling.github.io/when-command/'
+APPLET_VERSION = '0.9.0-beta.1'
+APPLET_ID = 'it.jks.WhenCommand'
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
 
@@ -118,7 +118,7 @@ HISTORY_ERR_EMPTY = -1
 HISTORY_ERR_IOERROR = -2
 HISTORY_ENTRY_SUCCESS = 'success'
 HISTORY_ENTRY_FAILURE = 'failure'
-HISTORY_SEPARATOR = ";"
+HISTORY_SEPARATOR = ';'
 
 # folders
 USER_FOLDER = os.path.expanduser('~')
@@ -127,9 +127,9 @@ USER_LAUNCHER_FOLDER = os.path.join(USER_FOLDER, '.local', 'share', 'application
 USER_AUTOSTART_FOLDER = os.path.join(USER_FOLDER, '.config', 'autostart')
 USER_CONFIG_FOLDER = os.path.join(USER_FOLDER, '.config', APPLET_NAME)
 USER_LOG_FOLDER = os.path.join(USER_DATA_FOLDER, 'log')
-USER_LOG_FILE = os.path.join(USER_LOG_FOLDER, "%s.log" % APPLET_NAME)
-USER_CONFIG_FILE = os.path.join(USER_CONFIG_FOLDER, "%s.conf" % APPLET_NAME)
-USER_PAUSE_FILE = os.path.join(USER_CONFIG_FOLDER, "%s.pause" % APPLET_NAME)
+USER_LOG_FILE = os.path.join(USER_LOG_FOLDER, '%s.log' % APPLET_NAME)
+USER_CONFIG_FILE = os.path.join(USER_CONFIG_FOLDER, '%s.conf' % APPLET_NAME)
+USER_PAUSE_FILE = os.path.join(USER_CONFIG_FOLDER, '%s.pause' % APPLET_NAME)
 
 GRAPHIC_ENVIRONMENT = 'DISPLAY' in os.environ.keys()
 
@@ -410,7 +410,7 @@ X-GNOME-Autostart-enabled={autostart_enable}
 
 # utility to create a desktop file
 def create_desktop_file(overwrite=False):
-    filename = "%s.desktop" % APPLET_NAME
+    filename = '%s.desktop' % APPLET_NAME
     pathname = os.path.join(USER_DATA_FOLDER, filename)
     if not os.path.exists(pathname) or overwrite:
         applet_log.info("MAIN: creating desktop entries")
@@ -434,7 +434,7 @@ def create_desktop_file(overwrite=False):
 
 # utility to create the autostart file
 def create_autostart_file(overwrite=True):
-    filename = "%s-startup.desktop" % APPLET_NAME
+    filename = '%s-startup.desktop' % APPLET_NAME
     pathname = os.path.join(USER_DATA_FOLDER, filename)
     enable = 'true' if config.get('General', 'autostart') else 'false'
     if not os.path.exists(pathname) or overwrite:
@@ -1239,18 +1239,18 @@ class Task(object):
     def dump(self):
         if self.task_name is None:
             raise RuntimeError("task not initialized")
-        file_name = os.path.join(USER_CONFIG_FOLDER, "%s.task" % self.task_name)
+        file_name = os.path.join(USER_CONFIG_FOLDER, '%s.task' % self.task_name)
         with open(file_name, 'wb') as f:
             pickle.dump(self, f)
 
     def unlink_file(self):
-        file_name = os.path.join(USER_CONFIG_FOLDER, "%s.task" % self.task_name)
+        file_name = os.path.join(USER_CONFIG_FOLDER, '%s.task' % self.task_name)
         if os.path.exists(file_name):
             os.unlink(file_name)
 
     @staticmethod
     def restore(name):
-        file_name = os.path.join(USER_CONFIG_FOLDER, "%s.task" % name)
+        file_name = os.path.join(USER_CONFIG_FOLDER, '%s.task' % name)
         with open(file_name, 'rb') as f:
             o = pickle.load(f)
             o.renew_id()
@@ -1647,7 +1647,7 @@ class Condition(object):
             pickle.dump(self, f)
 
     def unlink_file(self):
-        file_name = os.path.join(USER_CONFIG_FOLDER, "%s.cond" % self.cond_name)
+        file_name = os.path.join(USER_CONFIG_FOLDER, '%s.cond' % self.cond_name)
         if os.path.exists(file_name):
             os.unlink(file_name)
 
@@ -2536,7 +2536,7 @@ class SignalHandler(object):
             self._error("exception %s raised by signal handler %s" % (e.__class__.__name__, self.handler_name))
             return
         if signal_caught:
-            event_name = EVENT_DBUS_SIGNAL_PREAMBLE + ":" + self.handler_name
+            event_name = EVENT_DBUS_SIGNAL_PREAMBLE + ':' + self.handler_name
             self._info("DBus signal caught: raising event %s" % event_name)
             if self.defer:
                 deferred_events.append(event_name)
@@ -2589,7 +2589,7 @@ class SignalHandler(object):
         self.signal_match = m
 
     def unlink_file(self):
-        file_name = os.path.join(USER_CONFIG_FOLDER, "%s.handler" % self.handler_name)
+        file_name = os.path.join(USER_CONFIG_FOLDER, '%s.handler' % self.handler_name)
         if os.path.exists(file_name):
             os.unlink(file_name)
 
@@ -3436,7 +3436,7 @@ class ConditionDialog(object):
                     return None
             elif idx == 6:
                 handler_name = o('cbDBusEvent').get_active_text()
-                event_type = EVENT_DBUS_SIGNAL_PREAMBLE + ":" + handler_name
+                event_type = EVENT_DBUS_SIGNAL_PREAMBLE + ':' + handler_name
                 c = EventBasedCondition(
                     name, event_type, True, repeat, sequence)
                 c.break_failure = break_failure
@@ -3530,11 +3530,11 @@ class SignalDialog(object):
             DBUS_CHECK_COMPARE_GREATER,
         ]
         self.all_comparisons_symdict = {
-            DBUS_CHECK_COMPARE_IS: "=",
-            DBUS_CHECK_COMPARE_CONTAINS: "CONTAINS",
-            DBUS_CHECK_COMPARE_MATCHES: "MATCHES",
-            DBUS_CHECK_COMPARE_LESS: "<",
-            DBUS_CHECK_COMPARE_GREATER: ">",
+            DBUS_CHECK_COMPARE_IS: '=',
+            DBUS_CHECK_COMPARE_CONTAINS: 'CONTAINS',
+            DBUS_CHECK_COMPARE_MATCHES: 'MATCHES',
+            DBUS_CHECK_COMPARE_LESS: '<',
+            DBUS_CHECK_COMPARE_GREATER: '>',
         }
         self.all_comparisons_revdict = {}
         for k in self.all_comparisons_symdict.keys():
@@ -3610,7 +3610,7 @@ class SignalDialog(object):
         if i is not None:
             o('txtValueNum').set_text(m[i][0])
             o('txtValueSub').set_text(m[i][1])
-            o('chkOperatorNot').set_active(m[i][2] == "NOT")
+            o('chkOperatorNot').set_active(m[i][2] == 'NOT')
             o('cbOperatorCompare').set_active(
                 self.all_comparisons.index(self.all_comparisons_revdict[m[i][3]]))
             o('txtTestValue').set_text(m[i][4])
@@ -3622,8 +3622,8 @@ class SignalDialog(object):
         for check in self.signal_param_tests:
             row = [
                 str(check.value_idx),
-                "" if not check.sub_idx else str(check.sub_idx),
-                "NOT" if check.negate else "",
+                '' if not check.sub_idx else str(check.sub_idx),
+                'NOT' if check.negate else '',
                 self.all_comparisons_symdict[check.comparison],
                 str(check.test_value),
             ]
@@ -3979,8 +3979,8 @@ class HistoryDialog(object):
             resources.LISTCOL_HISTORY_ROWID, renderer, text=6)
         c.set_visible(False)
         l.append_column(c)
-        o('txtStdOut').modify_font(Pango.FontDescription("Monospace"))
-        o('txtStdErr').modify_font(Pango.FontDescription("Monospace"))
+        o('txtStdOut').modify_font(Pango.FontDescription('Monospace'))
+        o('txtStdErr').modify_font(Pango.FontDescription('Monospace'))
 
     def choose_item(self, selected):
         o = self.builder.get_object
@@ -4087,7 +4087,7 @@ class AppletIndicator(Gtk.Application):
             applet_log.critical("MAIN: exception %s registering application" % e)
             sys.exit(2)
 
-        self.connect("activate", self.applet_activate)
+        self.connect('activate', self.applet_activate)
         self.leaving = False
 
         # The system and session bus signals give many possibilities for events
@@ -4243,7 +4243,7 @@ class AppletIndicator(Gtk.Application):
 
         if signal_handlers.not_empty:
             applet_log.info("MAIN: signal handlers found, enabling user events")
-            config.set("General", "user events", True)
+            config.set('General', 'user events', True)
             config.save()
 
         applet_log.info("MAIN: trying to run startup tasks")
@@ -4349,14 +4349,14 @@ class AppletIndicator(Gtk.Application):
             if rv == 0:
                 return HISTORY_ERR_EMPTY
             f = open(filename, 'w')
-            f.write(HISTORY_SEPARATOR.join(HISTORY_HEADERS) + "\n")
+            f.write(HISTORY_SEPARATOR.join(HISTORY_HEADERS) + '\n')
             for x in items:
                 f.write(
                     HISTORY_SEPARATOR.join(map(str, [
                         x.item_id,
                         time.strftime('%Y-%m-%d %H:%M:%S',
                                       time.localtime(x.startup_time)),
-                        "%.4f" % x.run_time,
+                        '%.4f' % x.run_time,
                         x.task_name,
                         x.trigger_cond,
                         HISTORY_ENTRY_SUCCESS if x.success else HISTORY_ENTRY_FAILURE,
@@ -4541,9 +4541,9 @@ def init_signal_handler(applet_instance):
 
     def install_glib_handler(signum):
         unix_signal_add = None
-        if hasattr(GLib, "unix_signal_add"):
+        if hasattr(GLib, 'unix_signal_add'):
             unix_signal_add = GLib.unix_signal_add
-        elif hasattr(GLib, "unix_signal_add_full"):
+        elif hasattr(GLib, 'unix_signal_add_full'):
             unix_signal_add = GLib.unix_signal_add_full
         if unix_signal_add:
             applet_log.info("SIGHANDLER: register desktop handler for signal: %r" % signum)
@@ -4571,7 +4571,7 @@ def get_applet_idle_seconds():
 
 
 def kill_existing(verbose=False, shutdown=False):
-    oerr("an existing instance will be %s" % ('shut down' if shutdown else 'killed'), verbose)
+    oerr("an existing instance will be %s" % ("shut down" if shutdown else "killed"), verbose)
     bus = dbus.SessionBus()
     interface = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
     if shutdown:
@@ -5020,7 +5020,7 @@ if __name__ == '__main__':
                 oerr("could not find a running instance, please start it first", verbose)
                 sys.exit(2)
             else:
-                if not config.get("General", "user events"):
+                if not config.get('General', 'user events'):
                     oerr("dbus signals disabled by configuration", verbose)
                     sys.exit(1)
                 show_box('dbus_signal', verbose)
