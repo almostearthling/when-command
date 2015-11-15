@@ -294,11 +294,10 @@ DIALOG_ADD_DBUS_SIGNAL = load_applet_dialog('when-command-edit-dbus-signal')
 
 
 # install the i18n module and define resource strings using the _() function
-gettext.install()
-
 class Resources(object):
     pass
 
+gettext.install()
 resources = Resources()
 resources.DLG_CONFIRM_DELETE_TASK = _("Are you sure you want to delete task %s?")
 resources.DLG_CONFIRM_DELETE_CONDITION = _("Are you sure you want to delete condition %s?")
