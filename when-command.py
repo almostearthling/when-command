@@ -347,6 +347,57 @@ resources.LISTCOL_SIGNAL_OPERATOR = "Compare"
 resources.LISTCOL_SIGNAL_VALUE = "Value"
 # resources.LISTCOL_SIGNAL_ROWID = "Row ID"
 
+resources.OERR_SHUTDOWN_BEGIN = "an existing instance will be %s"
+resources.OERR_SHUTDOWN_SHUTDOWN = "shut down"
+resources.OERR_SHUTDOWN_KILL = "killed"
+resources.OERR_SHUTDOWN_FINISH = "instance shutdown finished"
+resources.OERR_SHOW_BOX = "showing %s box of currently running instance"
+resources.OERR_RUN_CONDITION = "attempting to run condition %s"
+resources.OERR_RUN_CONDITION_FAIL = "condition %s could not be run"
+resources.OERR_EXPORT_HISTORY = "attempting to export task history to %s"
+resources.OERR_EXPORT_HISTORY_EMPTY = "empty"
+resources.OERR_EXPORT_HISTORY_IOERROR = "ioerror"
+resources.OERR_EXPORT_HISTORY_UNKNOWN = "unknown"
+resources.OERR_EXPORT_HISTORY_FAIL = "could not save task history (%s)"
+resources.OERR_EXPORT_HISTORY_FINISH = "exported %s elements to specified file"
+resources.OERR_CLEAR_DATA = "removing all items"
+resources.OERR_CLEAR_DATA_CONDFAIL = "could not remove condition list file"
+resources.OERR_CLEAR_DATA_TASKFAIL = "could not remove task list file"
+resources.OERR_CLEAR_DATA_SIGFAIL = "could not remove signal handler list file"
+resources.OERR_EXPORT_DATA_BEGIN = "exporting items:"
+resources.OERR_EXPORT_DATA_TASKS = "    %s tasks"
+resources.OERR_EXPORT_DATA_CONDITIONS = "    %s conditions"
+resources.OERR_EXPORT_DATA_SIGHANDLERS = "    %s signal handlers"
+resources.OERR_EXPORT_DATA_FINISH = "items exported to file %s"
+resources.OERR_IMPORT_DATA = "importing items from file %s"
+resources.OERR_IMPORT_DATA_FAIL = "could not import from dump file"
+resources.OERR_IMPORT_DATA_BEGIN = "restoring items:"
+resources.OERR_IMPORT_DATA_TASKS = "    %s tasks"
+resources.OERR_IMPORT_DATA_CONDITIONS = "    %s conditions"
+resources.OERR_IMPORT_DATA_SIGHANDLERS = "    %s signal handlers"
+resources.OERR_IMPORT_DATA_FINISH = "items successfully imported"
+resources.OERR_NO_INSTANCE = "no instance could be found"
+resources.OERR_FOUND_INSTANCE = "found a running instance"
+resources.OERR_EXPORT = "tasks and conditions successfully exported"
+resources.OERR_RESET = "configuration has been reset"
+resources.OERR_CLEAR = "tasks and conditions deleted"
+resources.OERR_INSTALL = "icons and data installed"
+
+resources.OERR_ERR_REQUIRE_DESKTOP = "this program requires a graphical session"
+resources.OERR_ERR_ALREADY_RUNNING = "another instance is present: leaving"
+resources.OERR_ERR_REQUIRE_INSTANCE = "could not find a running instance, please start it first"
+resources.OERR_ERR_NO_INSTANCE = "could not find a running instance"
+resources.OERR_ERR_DBUS_DISABLED = "dbus signals disabled by configuration"
+resources.OERR_ERR_EXPORT_GENERIC = "an error occurred while trying to export items"
+resources.OERR_ERR_RESET_RUNNING = "cannot reset configuration, please close instance first"
+resources.OERR_ERR_RESET_GENERIC = "an error occurred while trying to reset configuration"
+resources.OERR_ERR_CLEAR_RUNNING = "cannot clear items, please close instance first"
+resources.OERR_ERR_CLEAR_GENERIC = "an error occurred while trying to delete items"
+resources.OERR_ERR_IMPORT_RUNNING = "cannot import items, please close instance first"
+resources.OERR_ERR_IMPORT_GENERIC = "an error occurred while trying to import items"
+resources.OERR_ERR_INSTALL_RUNNING = "cannot install, please close instance first"
+resources.OERR_ERR_INSTALL_GENERIC = "an error occurred while trying to install icons"
+
 resources.COMMAND_LINE_HELP_VERSION = "show applet version"
 resources.COMMAND_LINE_HELP_SHOW_SETTINGS = "show settings dialog box for the running instance [R]"
 resources.COMMAND_LINE_HELP_SHOW_HISTORY = "show history dialog box for the running instance [R]"
@@ -366,6 +417,7 @@ resources.COMMAND_LINE_HELP_KILL = "kill an existing istance [R]"
 resources.COMMAND_LINE_HELP_EXPORT = "save tasks and conditions to a portable format"
 resources.COMMAND_LINE_HELP_IMPORT = "import tasks and conditions from saved file [S]"
 resources.COMMAND_LINE_HELP_VERBOSE = "show verbose output for some options"
+resources.COMMAND_LINE_SHOWVERSION = "%s: %s, version %s"
 resources.COMMAND_LINE_PREAMBLE = """\
 %s: %s - %s /
 When is a configurable user task scheduler for Ubuntu.
@@ -4571,14 +4623,16 @@ def get_applet_idle_seconds():
 
 
 def kill_existing(verbose=False, shutdown=False):
-    oerr("an existing instance will be %s" % ("shut down" if shutdown else "killed"), verbose)
+    oerr(resources.OERR_SHUTDOWN_BEGIN %
+         (resources.OERR_SHUTDOWN_SHUTDOWN if shutdown
+          else resources.OERR_SHUTDOWN_KILL), verbose)
     bus = dbus.SessionBus()
     interface = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
     if shutdown:
         interface.quit_instance()
     else:
         interface.kill_instance()
-    oerr("instance shutdown finished", verbose)
+    oerr(resources.OERR_SHUTDOWN_FINISH, verbose)
 
 
 def oerr(s, verbose=True):
@@ -4594,7 +4648,7 @@ def install_icons(overwrite=True):
 # the horrible hack below is because no way was found to set the timeout for
 # introspective DBus methods to infinite (that is: GObject.G_MAXINT)
 def show_box(box='about', verbose=False):
-    oerr("showing %s box of currently running instance" % box, verbose)
+    oerr(resources.OERR_SHOW_BOX % box, verbose)
     bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
     proxy = Gio.DBusProxy.new_sync(bus, Gio.DBusProxyFlags.NONE, None,
                                    APPLET_BUS_NAME, APPLET_BUS_PATH,
@@ -4613,37 +4667,37 @@ def show_icon(show=True, running=True):
 
 
 def run_condition(cond_name, deferred, verbose=False):
-    oerr("attempting to run condition %s" % cond_name, verbose)
+    oerr(resources.OERR_RUN_CONDITION % cond_name, verbose)
     bus = dbus.SessionBus()
     proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
     if not proxy.run_condition(cond_name, deferred):
-        oerr("condition %s could not be run" % cond_name, verbose)
+        oerr(resources.OERR_RUN_CONDITION_FAIL % cond_name, verbose)
         return False
     else:
         return True
 
 
 def export_running_history(filename, verbose=False):
-    oerr("attempting to export task history to %s" % filename, verbose)
+    oerr(resources.OERR_EXPORT_HISTORY % filename, verbose)
     bus = dbus.SessionBus()
     proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
     rv = proxy.export_history(filename)
     if rv < 0:
         if rv == HISTORY_ERR_EMPTY:
-            s = "empty"
+            s = resources.OERR_EXPORT_HISTORY_EMPTY
         elif rv == HISTORY_ERR_IOERROR:
-            s = "ioerror"
+            s = resources.OERR_EXPORT_HISTORY_IOERROR
         else:
-            s = "unknown"
-        oerr("could not save task history (%s)" % s, verbose)
+            s = resources.OERR_EXPORT_HISTORY_UNKNOWN
+        oerr(resources.OERR_EXPORT_HISTORY_FAIL % s, verbose)
         return False
     else:
-        oerr("exported %s elements to specified file" % rv, verbose)
+        oerr(resources.OERR_EXPORT_HISTORY_FINISH % rv, verbose)
         return True
 
 
 def clear_item_data(verbose=False):
-    oerr("removing all items", verbose)
+    oerr(resources.OERR_CLEAR_DATA, verbose)
     try:
         tasks.load()
     except FileNotFoundError:
@@ -4664,7 +4718,7 @@ def clear_item_data(verbose=False):
     try:
         os.unlink(file_name)
     except OSError:
-        oerr("could not remove condition list file", verbose)
+        oerr(resources.OERR_CLEAR_DATA_CONDFAIL, verbose)
     l = list(tasks.names)
     for x in l:
         tasks.remove(task_name=x)
@@ -4673,7 +4727,7 @@ def clear_item_data(verbose=False):
     try:
         os.unlink(file_name)
     except OSError:
-        oerr("could not remove task list file", verbose)
+        oerr(resources.OERR_CLEAR_DATA_TASKFAIL, verbose)
     l = list(signal_handlers.names)
     for x in l:
         signal_handlers.remove(handler_name=x)
@@ -4683,7 +4737,7 @@ def clear_item_data(verbose=False):
     try:
         os.unlink(file_name)
     except OSError:
-        oerr("could not remove signal handler list file", verbose)
+        oerr(resources.OERR_CLEAR_DATA_SIGFAIL, verbose)
 
 
 def export_item_data(filename=None, verbose=False):
@@ -4729,10 +4783,12 @@ def export_item_data(filename=None, verbose=False):
         t = signal_handlers.get(handler_name=name)
         d = SignalHandler_to_dict(t)
         signal_handler_dict_list.append(d)
-    oerr("exporting items:", verbose)
-    oerr("    %s tasks" % len(task_dict_list), verbose)
-    oerr("    %s conditions" % len(condition_dict_list), verbose)
-    oerr("    %s signal handlers" % len(signal_handler_dict_list), verbose)
+    oerr(resources.OERR_EXPORT_DATA_BEGIN, verbose)
+    oerr(resources.OERR_EXPORT_DATA_TASKS % len(task_dict_list), verbose)
+    oerr(resources.OERR_EXPORT_DATA_CONDITIONS
+         % len(condition_dict_list), verbose)
+    oerr(resources.OERR_EXPORT_DATA_SIGHANDLERS
+         % len(signal_handler_dict_list), verbose)
     json_dic = {
         'tasks': task_dict_list,
         'conditions': condition_dict_list,
@@ -4742,26 +4798,27 @@ def export_item_data(filename=None, verbose=False):
         filename = os.path.join(USER_CONFIG_FOLDER, '%s.dump' % APPLET_NAME)
     with open(filename, 'w') as f:
         json.dump(json_dic, f, indent=2)
-    oerr("items exported to file %s" % filename, verbose)
+    oerr(resources.OERR_EXPORT_DATA_FINISH % filename, verbose)
 
 
 def import_item_data(filename=None, verbose=False):
     if not filename:
         filename = os.path.join(USER_CONFIG_FOLDER, '%s.dump' % APPLET_NAME)
-    oerr("importing items from file %s" % filename, verbose)
+    oerr(resources.OERR_IMPORT_DATA % filename, verbose)
     try:
         with open(filename, 'r') as f:
             json_dic = json.load(f)
     except:
-        oerr("could not import from dump file")
+        oerr(resources.OERR_IMPORT_DATA_FAIL)
         sys.exit(2)
     clear_item_data(verbose)
-    oerr("restoring items:", verbose)
+    oerr(resources.OERR_IMPORT_DATA_BEGIN, verbose)
     if 'tasks' in json_dic.keys():
         for task_dic in json_dic['tasks']:
             task = dict_to_Task(task_dic)
             tasks.add(task)
-        oerr("    %s tasks" % len(json_dic['tasks']), verbose)
+        oerr(resources.OERR_IMPORT_DATA_TASKS
+             % len(json_dic['tasks']), verbose)
     if 'conditions' in json_dic.keys():
         for condition_dic in json_dic['conditions']:
             condition = None
@@ -4783,16 +4840,18 @@ def import_item_data(filename=None, verbose=False):
                 condition = dict_to_Condition(condition_dic)
             if condition:
                 conditions.add(condition)
-        oerr("    %s conditions" % len(json_dic['conditions']), verbose)
+        oerr(resources.OERR_IMPORT_DATA_CONDITIONS
+             % len(json_dic['conditions']), verbose)
     if 'signalhandlers' in json_dic.keys():
         for handler_dic in json_dic['signalhandlers']:
             handler = dict_to_SignalHandler(handler_dic)
             signal_handlers.add(handler)
-        oerr("    %s signal handlers" % len(json_dic['signalhandlers']), verbose)
+        oerr(resources.OERR_IMPORT_DATA_SIGHANDLERS
+             % len(json_dic['signalhandlers']), verbose)
     tasks.save()
     conditions.save()
     signal_handlers.save()
-    oerr("items successfully imported", verbose)
+    oerr(resources.OERR_IMPORT_DATA_FINISH, verbose)
 
 
 # Configure services and start the application
@@ -4839,11 +4898,11 @@ if __name__ == '__main__':
 
     if len(sys.argv) == 1:
         if not GRAPHIC_ENVIRONMENT:
-            oerr("this program requires a graphical session")
+            oerr(resources.OERR_ERR_REQUIRE_DESKTOP)
             sys.exit(2)
 
         if applet.get_is_remote():
-            oerr("another instance is present: leaving")
+            oerr(resources.OERR_ERR_ALREADY_RUNNING)
             sys.exit(2)
 
         applet_log.info("MAIN: starting %s version %s" % (APPLET_FULLNAME, APPLET_VERSION))
@@ -4984,7 +5043,8 @@ if __name__ == '__main__':
             running = applet.get_is_remote()
 
         if args.version:
-            print("%s: %s, version %s" % (APPLET_NAME, APPLET_FULLNAME, APPLET_VERSION))
+            print(resources.COMMAND_LINE_SHOWVERSION
+                  % (APPLET_NAME, APPLET_FULLNAME, APPLET_VERSION))
             if verbose and running:
                 show_box('about', False)
 
@@ -4993,35 +5053,35 @@ if __name__ == '__main__':
 
         if args.show_settings:
             if not running:
-                oerr("could not find a running instance, please start it first", verbose)
+                oerr(resources.OERR_ERR_REQUIRE_INSTANCE, verbose)
                 sys.exit(2)
             else:
                 show_box('settings', verbose)
         elif args.show_history:
             if not running:
-                oerr("could not find a running instance, please start it first", verbose)
+                oerr(resources.OERR_ERR_REQUIRE_INSTANCE, verbose)
                 sys.exit(2)
             else:
                 show_box('history', verbose)
         elif args.show_tasks:
             if not running:
-                oerr("could not find a running instance, please start it first", verbose)
+                oerr(resources.OERR_ERR_REQUIRE_INSTANCE, verbose)
                 sys.exit(2)
             else:
                 show_box('task', verbose)
         elif args.show_conditions:
             if not running:
-                oerr("could not find a running instance, please start it first", verbose)
+                oerr(resources.OERR_ERR_REQUIRE_INSTANCE, verbose)
                 sys.exit(2)
             else:
                 show_box('condition', verbose)
         elif args.show_dbus_signals:
             if not running:
-                oerr("could not find a running instance, please start it first", verbose)
+                oerr(resources.OERR_ERR_REQUIRE_INSTANCE, verbose)
                 sys.exit(2)
             else:
                 if not config.get('General', 'user events'):
-                    oerr("dbus signals disabled by configuration", verbose)
+                    oerr(resources.OERR_ERR_DBUS_DISABLED, verbose)
                     sys.exit(1)
                 show_box('dbus_signal', verbose)
 
@@ -5034,13 +5094,13 @@ if __name__ == '__main__':
                 export_item_data(filename, verbose)
             except Exception as e:
                 applet_log.critical("MAIN: exception %s occurred while performing 'export'" % e)
-                oerr("an error occurred while trying to export items", verbose)
+                oerr(resources.OERR_ERR_EXPORT_GENERIC, verbose)
                 sys.exit(2)
-            oerr("tasks and conditions successfully exported", verbose)
+            oerr(resources.OERR_EXPORT, verbose)
 
         if args.export_history:
             if not running:
-                oerr("could not find a running instance, please start it first", verbose)
+                oerr(resources.OERR_ERR_DBUS_DISABLED, verbose)
                 sys.exit(2)
             else:
                 filename = os.path.realpath(args.export_history)
@@ -5049,14 +5109,14 @@ if __name__ == '__main__':
 
         if args.run_condition:
             if not running:
-                oerr("could not find a running instance, please start it first", verbose)
+                oerr(resources.OERR_ERR_DBUS_DISABLED, verbose)
                 sys.exit(2)
             else:
                 if not(run_condition(args.run_condition, False, verbose)):
                     sys.exit(2)
         if args.defer_condition:
             if not running:
-                oerr("could not find a running instance, please start it first", verbose)
+                oerr(resources.OERR_ERR_DBUS_DISABLED, verbose)
                 sys.exit(2)
             else:
                 if not(run_condition(args.defer_condition, True, verbose)):
@@ -5067,19 +5127,19 @@ if __name__ == '__main__':
                 kill_existing(verbose=verbose, shutdown=True)
                 running = False
             else:
-                oerr("could not find a running instance", verbose)
+                oerr(resources.OERR_ERR_NO_INSTANCE, verbose)
                 sys.exit(1)
         elif args.kill:
             if running:
                 kill_existing(verbose=verbose, shutdown=False)
                 running = False
             else:
-                oerr("could not find a running instance", verbose)
+                oerr(resources.OERR_ERR_NO_INSTANCE, verbose)
                 sys.exit(1)
 
         if args.reset_config:
             if running:
-                oerr("cannot reset configuration, please close instance first", verbose)
+                oerr(resources.OERR_ERR_RESET_RUNNING, verbose)
                 sys.exit(2)
             else:
                 try:
@@ -5087,26 +5147,26 @@ if __name__ == '__main__':
                     unlink_pause_file()
                 except Exception as e:
                     applet_log.critical("MAIN: exception %s occurred while performing 'reset-config'" % e)
-                    oerr("an error occurred while trying to reset configuration", verbose)
+                    oerr(resources.OERR_ERR_RESET_GENERIC, verbose)
                     sys.exit(2)
-                oerr("configuration has been reset", verbose)
+                oerr(resources.OERR_RESET, verbose)
 
         if args.clear:
             if running:
-                oerr("cannot clear items, please close instance first", verbose)
+                oerr(resources.OERR_ERR_CLEAR_RUNNING, verbose)
                 sys.exit(2)
             else:
                 try:
                     clear_item_data(verbose)
                 except Exception as e:
                     applet_log.critical("MAIN: exception %s occurred while performing 'clear'" % e)
-                    oerr("an error occurred while trying to delete items", verbose)
+                    oerr(resources.OERR_ERR_CLEAR_GENERIC, verbose)
                     sys.exit(2)
-                oerr("tasks and conditions deleted", verbose)
+                oerr(resources.OERR_CLEAR, verbose)
 
         if args.import_items:
             if running:
-                oerr("cannot import items, please close instance first", verbose)
+                oerr(resources.OERR_ERR_IMPORT_RUNNING, verbose)
                 sys.exit(2)
             else:
                 if args.import_items == '*':
@@ -5117,28 +5177,28 @@ if __name__ == '__main__':
                     import_item_data(filename, verbose)
                 except Exception as e:
                     applet_log.critical("MAIN: exception %s occurred while performing 'import'" % e)
-                    oerr("an error occurred while trying to import items", verbose)
+                    oerr(resources.OERR_ERR_IMPORT_GENERIC, verbose)
                     sys.exit(2)
 
         if args.install:
             if running:
-                oerr("cannot install, please close instance first", verbose)
+                oerr(resources.OERR_ERR_INSTALL_RUNNING, verbose)
                 sys.exit(2)
             else:
                 try:
                     install_icons(True)
                 except Exception as e:
                     applet_log.critical("MAIN: exception %s occurred while performing 'install'" % e)
-                    oerr("an error occurred while trying to install icons", verbose)
+                    oerr(resources.OERR_ERR_INSTALL_GENERIC, verbose)
                     sys.exit(2)
-                oerr("configuration has been reset", verbose)
+                oerr(resources.OERR_INSTALL, verbose)
 
         if args.query:
             if running:
-                oerr("found a running instance", verbose)
+                oerr(resources.OERR_ERR_FOUND_INSTANCE, verbose)
                 sys.exit(0)
             else:
-                oerr("no instance could be found", verbose)
+                oerr(resources.OERR_ERR_NO_INSTANCE, verbose)
                 sys.exit(1)
 
 
