@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 #
 # When
 #
@@ -43,7 +44,6 @@ import argparse
 import shutil
 import re
 import locale
-# import gettext
 
 from gi.repository import GLib, Gio
 from gi.repository import GObject
@@ -295,10 +295,7 @@ def load_applet_dialog(name):
 locale.setlocale(locale.LC_ALL, locale.getlocale())
 locale.bindtextdomain(APPLET_NAME, APP_LOCALE_FOLDER)
 locale.textdomain(APPLET_NAME)
-# gettext.bindtextdomain(APPLET_NAME, APP_LOCALE_FOLDER)
-# gettext.textdomain(APPLET_NAME)
 _ = locale.gettext
-# _ = gettext.gettext
 
 
 # actual dialog box definitions (could be packed in .py files)

@@ -33,9 +33,10 @@ where `it.po` should be changed according to locale to translate.
 
 ## Create object file
 
-After editing the `.po` file, the following command
+After editing the `.po` file, the following commands create a localization file in a subtree of `share/locale` that is ready for packaging and distribution:
 
 ```
+$ mkdir -p share/locale/it/LC_MESSAGES
 $ msgfmt po/it.po -o share/locale/it/LC_MESSAGES/when-command.mo
 ```
 

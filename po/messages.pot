@@ -1,13 +1,13 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# Translation file for When.
+# Copyright (C) 2015 Francesco Garosi
 # This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Francesco Garosi <franz.g@infinito.it>, 2015.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"Report-Msgid-Bugs-To: \n"
+"Project-Id-Version: when-command 0.9.1-beta.1\n"
+"Report-Msgid-Bugs-To: franz.g@infinito.it\n"
 "POT-Creation-Date: 2015-11-15 23:52+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"

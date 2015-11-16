@@ -96,8 +96,8 @@ msgid ""
 "This feature is not enabled.\n"
 "Please check documentation for possible reasons."
 msgstr ""
-"Questa feature non è stata abilitata.Consultare la documentazione per il "
-"possibile motivo."
+"Questa feature non è abilitata. Consulta la "
+"documentazione per il possibile motivo."
 
 #: when-command.py:331
 #, python-format
@@ -151,7 +151,7 @@ msgstr "Informazioni..."
 
 #: when-command.py:345
 msgid "Quit"
-msgstr "Uscita"
+msgstr "Esci"
 
 #: when-command.py:347
 msgid "User Defined Event"
@@ -175,7 +175,7 @@ msgstr "Orario / Durata"
 
 #: when-command.py:354
 msgid "Trigger"
-msgstr "Trigger"
+msgstr "Causa"
 
 #: when-command.py:355 when-command-edit-condition.glade.h:10
 #: when-command-edit-task.glade.h:14
