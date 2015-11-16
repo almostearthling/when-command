@@ -42,7 +42,8 @@ import logging.handlers
 import argparse
 import shutil
 import re
-import gettext
+import locale
+# import gettext
 
 from gi.repository import GLib, Gio
 from gi.repository import GObject
@@ -75,7 +76,7 @@ APPLET_FULLNAME = 'When Gnome Scheduler'
 APPLET_SHORTNAME = 'When'
 APPLET_COPYRIGHT = '(c) 2015 Francesco Garosi'
 APPLET_URL = 'http://almostearthling.github.io/when-command/'
-APPLET_VERSION = '0.9.0-beta.1'
+APPLET_VERSION = '0.9.1-beta.1'
 APPLET_ID = 'it.jks.WhenCommand'
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -243,11 +244,13 @@ def verify_user_folders():
 #
 # where the first element is the invoked command, the second one is the
 # prefix of the applet data folder (where dialogs, icons and other resources
-# have to be installed); icons have their own subtree in the data folder
+# have to be installed); icons have their own subtree in the data folder;
+# locales are either in standard system folders or a subtree of data folder
 APP_BASE_FOLDER = '/usr'
 APP_BIN_FOLDER = os.path.join(APP_BASE_FOLDER, 'bin')
 APP_DATA_FOLDER = os.path.join(APP_BASE_FOLDER, 'share', APPLET_NAME)
 APP_ICON_FOLDER = os.path.join(APP_DATA_FOLDER, 'icons')
+APP_LOCALE_FOLDER = os.path.join(APP_BASE_FOLDER, 'share', 'locale')
 
 INVOKED_CMD = sys.argv[0]
 INVOKED_DIR = os.path.dirname(INVOKED_CMD)
@@ -256,21 +259,25 @@ if INVOKED_DIR == os.path.join('/opt', APPLET_NAME):
     APP_BASE_FOLDER = INVOKED_DIR
     APP_DATA_FOLDER = os.path.join(APP_BASE_FOLDER, 'share')
     APP_ICON_FOLDER = os.path.join(APP_DATA_FOLDER, 'icons')
+    APP_LOCALE_FOLDER = os.path.join(APP_DATA_FOLDER, 'locale')
 elif INVOKED_DIR == '/usr/local/bin':
-    APP_BASE_FOLDER = '/usr/local'
     APP_BIN_FOLDER = INVOKED_DIR
+    APP_BASE_FOLDER = '/usr/local'
     APP_DATA_FOLDER = os.path.join(APP_BASE_FOLDER, 'share', APPLET_NAME)
     APP_ICON_FOLDER = os.path.join(APP_DATA_FOLDER, 'icons')
+    APP_LOCALE_FOLDER = os.path.join(APP_BASE_FOLDER, 'share', 'locale')
 elif INVOKED_DIR == os.path.join(USER_FOLDER, '.local', 'bin'):
     APP_BIN_FOLDER = INVOKED_DIR
     APP_BASE_FOLDER = USER_DATA_FOLDER
     APP_DATA_FOLDER = os.path.join(USER_DATA_FOLDER)
     APP_ICON_FOLDER = os.path.join(USER_DATA_FOLDER, 'icons')
+    APP_LOCALE_FOLDER = os.path.join(USER_DATA_FOLDER, 'locale')
 elif not INVOKED_DIR.startswith('/usr'):
     APP_BIN_FOLDER = INVOKED_DIR
     APP_BASE_FOLDER = INVOKED_DIR
     APP_DATA_FOLDER = os.path.join(APP_BASE_FOLDER, 'share')
     APP_ICON_FOLDER = os.path.join(APP_DATA_FOLDER, 'icons')
+    APP_LOCALE_FOLDER = os.path.join(APP_DATA_FOLDER, 'locale')
 
 # update Python path
 sys.path.insert(0, APP_DATA_FOLDER)
@@ -284,6 +291,16 @@ def load_applet_dialog(name):
     return dialog_xml
 
 
+# setup i18n for both applet text and dialogs
+locale.setlocale(locale.LC_ALL, locale.getlocale())
+locale.bindtextdomain(APPLET_NAME, APP_LOCALE_FOLDER)
+locale.textdomain(APPLET_NAME)
+# gettext.bindtextdomain(APPLET_NAME, APP_LOCALE_FOLDER)
+# gettext.textdomain(APPLET_NAME)
+_ = locale.gettext
+# _ = gettext.gettext
+
+
 # actual dialog box definitions (could be packed in .py files)
 DIALOG_ADD_TASK = load_applet_dialog('when-command-edit-task')
 DIALOG_ADD_CONDITION = load_applet_dialog('when-command-edit-condition')
@@ -293,11 +310,10 @@ DIALOG_ABOUT = load_applet_dialog('when-command-about')
 DIALOG_ADD_DBUS_SIGNAL = load_applet_dialog('when-command-edit-dbus-signal')
 
 
-# install the i18n module and define resource strings using the _() function
+# define resource strings using the _() function for i18n
 class Resources(object):
     pass
 
-gettext.install()
 resources = Resources()
 resources.DLG_CONFIRM_DELETE_TASK = _("Are you sure you want to delete task %s?")
 resources.DLG_CONFIRM_DELETE_CONDITION = _("Are you sure you want to delete condition %s?")
@@ -2706,6 +2722,7 @@ class TaskDialog(object):
     def __init__(self):
         self.builder = Gtk.Builder().new_from_string(DIALOG_ADD_TASK, -1)
         self.builder.connect_signals(self)
+        self.builder.set_translation_domain(APPLET_NAME)
         o = self.builder.get_object
         self.dialog = o('dlgAddTask')
         self.stored_tasks = tasks.names
@@ -2992,6 +3009,7 @@ class ConditionDialog(object):
     def __init__(self):
         self.builder = Gtk.Builder().new_from_string(DIALOG_ADD_CONDITION, -1)
         self.builder.connect_signals(self)
+        self.builder.set_translation_domain(APPLET_NAME)
         o = self.builder.get_object
         self.dialog = o('dlgAddCondition')
         self.stored_conditions = conditions.names
@@ -3546,6 +3564,7 @@ class SignalDialog(object):
     def __init__(self):
         self.builder = Gtk.Builder().new_from_string(DIALOG_ADD_DBUS_SIGNAL, -1)
         self.builder.connect_signals(self)
+        self.builder.set_translation_domain(APPLET_NAME)
         o = self.builder.get_object
         self.dialog = o('dlgAddDBusSignal')
         self.stored_handlers = signal_handlers.names
@@ -3832,6 +3851,7 @@ class SettingsDialog(object):
     def __init__(self):
         self.builder = Gtk.Builder().new_from_string(DIALOG_SETTINGS, -1)
         self.builder.connect_signals(self)
+        self.builder.set_translation_domain(APPLET_NAME)
         o = self.builder.get_object
         self.dialog = o('dlgSettings')
         self.log_levels = [
@@ -3995,6 +4015,7 @@ class HistoryDialog(object):
     def __init__(self):
         self.builder = Gtk.Builder().new_from_string(DIALOG_TASK_HISTORY, -1)
         self.builder.connect_signals(self)
+        self.builder.set_translation_domain(APPLET_NAME)
         o = self.builder.get_object
         self.dialog = o('dlgHistory')
         self.image_success = Gtk.Image.new_from_file(
@@ -4096,6 +4117,7 @@ class AboutDialog(object):
             os.path.join(APP_ICON_FOLDER, 'alarmclock-128.png'))
         self.builder = Gtk.Builder().new_from_string(DIALOG_ABOUT, -1)
         self.builder.connect_signals(self)
+        self.builder.set_translation_domain(APPLET_NAME)
         o = self.builder.get_object
         self.dialog = o('dlgAbout')
         self.dialog.set_logo(self.image_logo.get_pixbuf())
