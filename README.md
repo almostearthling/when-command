@@ -304,6 +304,16 @@ To implement the "*Idle Session*" based condition (i.e. the one that lets a task
 A more general discussion about contribution can be found [here](https://help.github.com/articles/using-pull-requests/). Otherwise, just submit an issue to notify a bug, a mistake or something that could just have been implemented better. Just consider that the applet is intended to be and remain minimal in terms of code and features, so that it can stay in the background of an user session without disturbing it too much.
 
 
+### Localization
+
+As of version *0.9.1-beta.2* **When** supports the standard localization paradigm for Linux software, via `gettext` and companion functions. This means that all translation work can be done with the usual tools available on Linux, that is:
+
+* `xgettext` (for the Python source) and `intltool-extract` (for the *Glade* UI files)
+* `msginit`, `msgmerge` and `msgfmt`
+
+This should allow for easier translation of the software. In fact I provide the Italian localization (it's the easiest one for me): help is obviously welcome and really appreciated for other ones.
+
+
 ### Breaking the compatibility
 
 As long as the software can be considered in its *pre-release* state, breaking the backwards-compatibility is allowed although undesirable. **When** has actually been released as *beta* software, since it has been tested for a while and with a suite that covered all the cases it can handle. Surely there are still bugs and they will have to be corrected. Unfortunately these bugs could also pop up in the main classes that build the core of the applet, and the "form" of these classes could affect the way the stateful part of the program data (*Tasks* and *Conditions* and possibly other items) is stored permanently: when it comes to bugs, until **When** enters a *production* state (which will be the 1.0.0 release, as per the [Semantic Versioning](https://github.com/mojombo/semver/blob/master/semver.md) specification), compatibility break will be preferred to bug persistence or bad design. Also considering that starting with release *0.5.0-beta.1* a mechanism is provided to save persistent data to a portable format that would remain valid across releases (via the `--import` and `--export` command line switches); it's advisable, while **When** is still in its early development stage, to perform an export whenever the configuration changes, in order to be able to recover if the applet is unable to start due to compatibility mismatch. All users that access **When** on the host system should take care to export their data periodically, so that when the administrator updates the package they could recover in the same way.
