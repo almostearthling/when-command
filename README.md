@@ -281,7 +281,7 @@ When the test subprocess of a command based condition is run, only `WHEN_COMMAND
 
 ### Why a single source file?
 
-The applet is in fact a small utility, and I thought it also would have less features. It grew a little just because some of the features could be added almost for free, so the "*Why Not?*" part of the development process has been quite consistent for a while. The first usable version of the applet has been developed in about two weeks, most of which spent learning how to use *PyGObject* and friends, and not on a full time basis: by the 5th day I had to freeze the features (the result is the `ROADMAP.md` file) and focus on the ones I wrote down. So, being small and mostly not reusable, the single-source option seemed the most obvious, also to keep the package as self-contained as possible. However, the way the applet starts and defines its own system-wide and user directories allows for the development of modules that can be imported without cluttering and polluting the system: the `APP_DATA_FOLDER` variable defines a dedicated directory for the application where modules can be installed, and normally it points to `/opt/when-command/share` or `/usr/[local/]share/when-command` or something similar. For example, in a future version that supports translations, a translation can be implemented as a Python file that exports a `resources` object and resides in the `APP_DATA_FOLDER` directory.
+The applet is in fact a small utility, and I thought it also would have less features. It grew a little just because some of the features could be added almost for free, so the "*Why Not?*" part of the development process has been quite consistent for a while. The first usable version of the applet has been developed in about two weeks, most of which spent learning how to use *PyGObject* and friends, and not on a full time basis: by the 5th day I had to freeze the features (the result is the `ROADMAP.md` file) and focus on the ones I wrote down. So, being small and mostly not reusable, the single-source option seemed the most obvious, also to keep the package as self-contained as possible. However, the way the applet starts and defines its own system-wide and user directories allows for the development of modules that can be imported without cluttering and polluting the system: the `APP_DATA_FOLDER` variable defines a dedicated directory for the application where modules can be installed, and normally it points to `/opt/when-command/share` or `/usr/[local/]share/when-command` or something similar.
 
 
 ### Developer dependencies
@@ -302,6 +302,16 @@ To implement the "*Idle Session*" based condition (i.e. the one that lets a task
 5. Compare and submit a [Pull Request](https://github.com/almostearthling/when-command/compare)
 
 A more general discussion about contribution can be found [here](https://help.github.com/articles/using-pull-requests/). Otherwise, just submit an issue to notify a bug, a mistake or something that could just have been implemented better. Just consider that the applet is intended to be and remain minimal in terms of code and features, so that it can stay in the background of an user session without disturbing it too much.
+
+
+### Localization
+
+As of version *0.9.1-beta.2* **When** supports the standard localization paradigm for Linux software, via `gettext` and companion functions. This means that all translation work can be done with the usual tools available on Linux, that is:
+
+* `xgettext` (for the Python source) and `intltool-extract` (for the *Glade* UI files)
+* `msginit`, `msgmerge` and `msgfmt`
+
+This should allow for easier translation of the software. In fact I provide the Italian localization (it's the easiest one for me): help is obviously welcome and really appreciated for other ones.
 
 
 ### Breaking the compatibility

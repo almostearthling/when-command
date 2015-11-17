@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 #
 # When
 #
@@ -42,6 +43,7 @@ import logging.handlers
 import argparse
 import shutil
 import re
+import locale
 
 from gi.repository import GLib, Gio
 from gi.repository import GObject
@@ -70,12 +72,12 @@ except ImportError:
 
 # base constants
 APPLET_NAME = 'when-command'
-APPLET_FULLNAME = "When Gnome Scheduler"
-APPLET_SHORTNAME = "When"
-APPLET_COPYRIGHT = "(c) 2015 Francesco Garosi"
-APPLET_URL = "http://almostearthling.github.io/when-command/"
-APPLET_VERSION = "0.9.0-beta.1"
-APPLET_ID = "it.jks.WhenCommand"
+APPLET_FULLNAME = 'When Gnome Scheduler'
+APPLET_SHORTNAME = 'When'
+APPLET_COPYRIGHT = '(c) 2015 Francesco Garosi'
+APPLET_URL = 'http://almostearthling.github.io/when-command/'
+APPLET_VERSION = '0.9.1-beta.2'
+APPLET_ID = 'it.jks.WhenCommand'
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
 
@@ -118,7 +120,7 @@ HISTORY_ERR_EMPTY = -1
 HISTORY_ERR_IOERROR = -2
 HISTORY_ENTRY_SUCCESS = 'success'
 HISTORY_ENTRY_FAILURE = 'failure'
-HISTORY_SEPARATOR = ";"
+HISTORY_SEPARATOR = ';'
 
 # folders
 USER_FOLDER = os.path.expanduser('~')
@@ -127,9 +129,9 @@ USER_LAUNCHER_FOLDER = os.path.join(USER_FOLDER, '.local', 'share', 'application
 USER_AUTOSTART_FOLDER = os.path.join(USER_FOLDER, '.config', 'autostart')
 USER_CONFIG_FOLDER = os.path.join(USER_FOLDER, '.config', APPLET_NAME)
 USER_LOG_FOLDER = os.path.join(USER_DATA_FOLDER, 'log')
-USER_LOG_FILE = os.path.join(USER_LOG_FOLDER, "%s.log" % APPLET_NAME)
-USER_CONFIG_FILE = os.path.join(USER_CONFIG_FOLDER, "%s.conf" % APPLET_NAME)
-USER_PAUSE_FILE = os.path.join(USER_CONFIG_FOLDER, "%s.pause" % APPLET_NAME)
+USER_LOG_FILE = os.path.join(USER_LOG_FOLDER, '%s.log' % APPLET_NAME)
+USER_CONFIG_FILE = os.path.join(USER_CONFIG_FOLDER, '%s.conf' % APPLET_NAME)
+USER_PAUSE_FILE = os.path.join(USER_CONFIG_FOLDER, '%s.pause' % APPLET_NAME)
 
 GRAPHIC_ENVIRONMENT = 'DISPLAY' in os.environ.keys()
 
@@ -200,7 +202,7 @@ current_changed_path = None
 current_deferred_changed_paths = None
 
 applet_log_handler = logging.NullHandler()
-applet_log_formatter = logging.Formatter(fmt=LOG_FORMAT, datefmt="%Y-%m-%d %H:%M:%S")
+applet_log_formatter = logging.Formatter(fmt=LOG_FORMAT, datefmt='%Y-%m-%d %H:%M:%S')
 applet_log_handler.setFormatter(applet_log_formatter)
 applet_log = logging.getLogger(APPLET_NAME)
 applet_log.addHandler(applet_log_handler)
@@ -242,11 +244,13 @@ def verify_user_folders():
 #
 # where the first element is the invoked command, the second one is the
 # prefix of the applet data folder (where dialogs, icons and other resources
-# have to be installed); icons have their own subtree in the data folder
+# have to be installed); icons have their own subtree in the data folder;
+# locales are either in standard system folders or a subtree of data folder
 APP_BASE_FOLDER = '/usr'
 APP_BIN_FOLDER = os.path.join(APP_BASE_FOLDER, 'bin')
 APP_DATA_FOLDER = os.path.join(APP_BASE_FOLDER, 'share', APPLET_NAME)
 APP_ICON_FOLDER = os.path.join(APP_DATA_FOLDER, 'icons')
+APP_LOCALE_FOLDER = os.path.join(APP_BASE_FOLDER, 'share', 'locale')
 
 INVOKED_CMD = sys.argv[0]
 INVOKED_DIR = os.path.dirname(INVOKED_CMD)
@@ -255,21 +259,25 @@ if INVOKED_DIR == os.path.join('/opt', APPLET_NAME):
     APP_BASE_FOLDER = INVOKED_DIR
     APP_DATA_FOLDER = os.path.join(APP_BASE_FOLDER, 'share')
     APP_ICON_FOLDER = os.path.join(APP_DATA_FOLDER, 'icons')
+    APP_LOCALE_FOLDER = os.path.join(APP_DATA_FOLDER, 'locale')
 elif INVOKED_DIR == '/usr/local/bin':
-    APP_BASE_FOLDER = '/usr/local'
     APP_BIN_FOLDER = INVOKED_DIR
+    APP_BASE_FOLDER = '/usr/local'
     APP_DATA_FOLDER = os.path.join(APP_BASE_FOLDER, 'share', APPLET_NAME)
     APP_ICON_FOLDER = os.path.join(APP_DATA_FOLDER, 'icons')
+    APP_LOCALE_FOLDER = os.path.join(APP_BASE_FOLDER, 'share', 'locale')
 elif INVOKED_DIR == os.path.join(USER_FOLDER, '.local', 'bin'):
     APP_BIN_FOLDER = INVOKED_DIR
     APP_BASE_FOLDER = USER_DATA_FOLDER
     APP_DATA_FOLDER = os.path.join(USER_DATA_FOLDER)
     APP_ICON_FOLDER = os.path.join(USER_DATA_FOLDER, 'icons')
+    APP_LOCALE_FOLDER = os.path.join(USER_DATA_FOLDER, 'locale')
 elif not INVOKED_DIR.startswith('/usr'):
     APP_BIN_FOLDER = INVOKED_DIR
     APP_BASE_FOLDER = INVOKED_DIR
     APP_DATA_FOLDER = os.path.join(APP_BASE_FOLDER, 'share')
     APP_ICON_FOLDER = os.path.join(APP_DATA_FOLDER, 'icons')
+    APP_LOCALE_FOLDER = os.path.join(APP_DATA_FOLDER, 'locale')
 
 # update Python path
 sys.path.insert(0, APP_DATA_FOLDER)
@@ -283,6 +291,13 @@ def load_applet_dialog(name):
     return dialog_xml
 
 
+# setup i18n for both applet text and dialogs
+locale.setlocale(locale.LC_ALL, locale.getlocale())
+locale.bindtextdomain(APPLET_NAME, APP_LOCALE_FOLDER)
+locale.textdomain(APPLET_NAME)
+_ = locale.gettext
+
+
 # actual dialog box definitions (could be packed in .py files)
 DIALOG_ADD_TASK = load_applet_dialog('when-command-edit-task')
 DIALOG_ADD_CONDITION = load_applet_dialog('when-command-edit-condition')
@@ -292,92 +307,144 @@ DIALOG_ABOUT = load_applet_dialog('when-command-about')
 DIALOG_ADD_DBUS_SIGNAL = load_applet_dialog('when-command-edit-dbus-signal')
 
 
-# resource strings (consider making a module out of them)
+# define resource strings using the _() function for i18n
 class Resources(object):
     pass
 
 resources = Resources()
-resources.DLG_CONFIRM_DELETE_TASK = "Are you sure you want to delete task %s?"
-resources.DLG_CONFIRM_DELETE_CONDITION = "Are you sure you want to delete condition %s?"
-resources.DLG_CONFIRM_DELETE_SIGHANDLER = "Are you sure you want to delete signal handler %s?"
-resources.DLG_CANNOT_DELETE_TASK = "Task %s could not be deleted."
-resources.DLG_CANNOT_DELETE_CONDITION = "Condition %s could not be deleted."
-resources.DLG_CANNOT_DELETE_SIGHANDLER = "Signal handler %s could not be deleted."
-resources.DLG_CANNOT_FIND_TASK = "Task %s could not be found."
-resources.DLG_CANNOT_FIND_CONDITION = "Condition %s could not be found."
-resources.DLG_CANNOT_FIND_SIGHANDLER = "Signal handler %s could not be found."
-resources.DLG_CANNOT_REGISTER_SIGHANDLER = "Signal handler %s could not be registered."
-resources.DLG_PATH_NOT_SPECIFIED = "Must specify watched path: condition not created."
-resources.DLG_WRONG_EXIT_STATUS = "Invalid value for exit status specified.\nPlease consider reviewing it."
-resources.DLG_WRONG_PARAM_INDEX = "Invalid value for signal parameter index specified.\nCannot add parameter test."
-resources.DLG_NOT_IMPLEMENTED_FEATURE = "This feature has not been implemented yet."
-resources.DLG_NOT_ENABLED_FEATURE = "This feature is not enabled.\nPlease check documentation for possible reasons."
-resources.DLG_ABOUT_VERSION_STRING = "Version: %s"
-resources.DLG_ITEM_DISABLED = "[disabled]"
-resources.DLG_TITLE_CHOOSE_FILE = "Choose File"
-resources.DLG_TITLE_CHOOSE_DIR = "Choose Directory"
-resources.DLG_TITLE_CHOOSE_FILEDIR = "Choose File or Directory"
+resources.DLG_CONFIRM_DELETE_TASK = _("Are you sure you want to delete task %s?")
+resources.DLG_CONFIRM_DELETE_CONDITION = _("Are you sure you want to delete condition %s?")
+resources.DLG_CONFIRM_DELETE_SIGHANDLER = _("Are you sure you want to delete signal handler %s?")
+resources.DLG_CANNOT_DELETE_TASK = _("Task %s could not be deleted.")
+resources.DLG_CANNOT_DELETE_CONDITION = _("Condition %s could not be deleted.")
+resources.DLG_CANNOT_DELETE_SIGHANDLER = _("Signal handler %s could not be deleted.")
+resources.DLG_CANNOT_FIND_TASK = _("Task %s could not be found.")
+resources.DLG_CANNOT_FIND_CONDITION = _("Condition %s could not be found.")
+resources.DLG_CANNOT_FIND_SIGHANDLER = _("Signal handler %s could not be found.")
+resources.DLG_CANNOT_REGISTER_SIGHANDLER = _("Signal handler %s could not be registered.")
+resources.DLG_PATH_NOT_SPECIFIED = _("Must specify watched path: condition not created.")
+resources.DLG_WRONG_EXIT_STATUS = _("Invalid value for exit status specified.\nPlease consider reviewing it.")
+resources.DLG_WRONG_PARAM_INDEX = _("Invalid value for signal parameter index specified.\nCannot add parameter test.")
+resources.DLG_NOT_IMPLEMENTED_FEATURE = _("This feature has not been implemented yet.")
+resources.DLG_NOT_ENABLED_FEATURE = _("This feature is not enabled.\nPlease check documentation for possible reasons.")
+resources.DLG_ABOUT_VERSION_STRING = _("Version: %s")
+resources.DLG_ITEM_DISABLED = _("[disabled]")
+resources.DLG_TITLE_CHOOSE_FILE = _("Choose File")
+resources.DLG_TITLE_CHOOSE_DIR = _("Choose Directory")
+resources.DLG_TITLE_CHOOSE_FILEDIR = _("Choose File or Directory")
 
-resources.NOTIFY_TASK_FAILED = "Task failed: %s"
+resources.NOTIFY_TASK_FAILED = _("Task failed: %s")
 
-resources.MENU_EDIT_TASKS = "Edit Tasks..."
-resources.MENU_EDIT_CONDITIONS = "Edit Conditions..."
-resources.MENU_SETTINGS = "Settings..."
-resources.MENU_TASK_HISTORY = "Task History..."
-resources.MENU_PAUSE = "Pause"
-resources.MENU_ABOUT = "About..."
-resources.MENU_QUIT = "Quit"
+resources.MENU_EDIT_TASKS = _("Edit Tasks...")
+resources.MENU_EDIT_CONDITIONS = _("Edit Conditions...")
+resources.MENU_SETTINGS = _("Settings...")
+resources.MENU_TASK_HISTORY = _("Task History...")
+resources.MENU_PAUSE = _("Pause")
+resources.MENU_ABOUT = _("About...")
+resources.MENU_QUIT = _("Quit")
 
-resources.CBENTRY_CONDITION_DBUS_EVENTS = ["User Defined Event", '70']
+resources.CBENTRY_CONDITION_DBUS_EVENTS = [_("User Defined Event"), '70']
 
-resources.LISTCOL_ENVVARS_NAME = "Variable"
-resources.LISTCOL_ENVVARS_VALUE = "Value"
-resources.LISTCOL_TASKS_NAME = "Task Name"
-resources.LISTCOL_HISTORY_TIMESTAMP = "Time / Duration"
-resources.LISTCOL_HISTORY_TASK = "Task Name"
-resources.LISTCOL_HISTORY_TRIGGER = "Trigger"
-resources.LISTCOL_HISTORY_EXITCODE = "Exit Code"
-resources.LISTCOL_HISTORY_SUCCESS = "Result"
-resources.LISTCOL_HISTORY_REASON = "Reason"
-resources.LISTCOL_HISTORY_ROWID = "Row ID"
-resources.LISTCOL_SIGNAL_PARAMETER = "Param"
-resources.LISTCOL_SIGNAL_PARAMETER_SUB = "Sub"
-resources.LISTCOL_SIGNAL_NEGATE = "Negate"
-resources.LISTCOL_SIGNAL_OPERATOR = "Compare"
-resources.LISTCOL_SIGNAL_VALUE = "Value"
-# resources.LISTCOL_SIGNAL_ROWID = "Row ID"
+resources.LISTCOL_ENVVARS_NAME = _("Variable")
+resources.LISTCOL_ENVVARS_VALUE = _("Value")
+resources.LISTCOL_TASKS_NAME = _("Task Name")
+resources.LISTCOL_HISTORY_TIMESTAMP = _("Time / Duration")
+resources.LISTCOL_HISTORY_TASK = _("Task Name")
+resources.LISTCOL_HISTORY_TRIGGER = _("Trigger")
+resources.LISTCOL_HISTORY_EXITCODE = _("Exit Code")
+resources.LISTCOL_HISTORY_SUCCESS = _("Result")
+resources.LISTCOL_HISTORY_REASON = _("Reason")
+resources.LISTCOL_HISTORY_ROWID = _("Row ID")
+resources.LISTCOL_SIGNAL_PARAMETER = _("Param")
+resources.LISTCOL_SIGNAL_PARAMETER_SUB = _("Sub")
+resources.LISTCOL_SIGNAL_NEGATE = _("Negate")
+resources.LISTCOL_SIGNAL_OPERATOR = _("Compare")
+resources.LISTCOL_SIGNAL_VALUE = _("Value")
+# resources.LISTCOL_SIGNAL_ROWID = _("Row ID")
 
-resources.COMMAND_LINE_HELP_VERSION = "show applet version"
-resources.COMMAND_LINE_HELP_SHOW_SETTINGS = "show settings dialog box for the running instance [R]"
-resources.COMMAND_LINE_HELP_SHOW_HISTORY = "show history dialog box for the running instance [R]"
-resources.COMMAND_LINE_HELP_SHOW_TASKS = "show tasks dialog box for the running instance [R]"
-resources.COMMAND_LINE_HELP_SHOW_CONDITIONS = "show conditions box for the running instance [R]"
-resources.COMMAND_LINE_HELP_SHOW_DBUS_SIGNALS = "show dbus signals box for the running instance [R]"
-resources.COMMAND_LINE_HELP_RESET_CONFIG = "reset general configuration to default [S]"
-resources.COMMAND_LINE_HELP_SHOW_ICON = "show applet icon [N]"
-resources.COMMAND_LINE_HELP_CLEAR = "clear all tasks and conditions [S]"
-resources.COMMAND_LINE_HELP_INSTALL = "install application icons and autostart [S]"
-resources.COMMAND_LINE_HELP_QUERY = "query for a running instance"
-resources.COMMAND_LINE_HELP_EXPORT_HISTORY = "export task history to a text file [R]"
-resources.COMMAND_LINE_HELP_RUN_CONDITION = "run a command-line bound condition"
-resources.COMMAND_LINE_HELP_DEFER_CONDITION = "enqueue a command-line bound condition"
-resources.COMMAND_LINE_HELP_SHUTDOWN = "run shutdown tasks and close an existing istance [R]"
-resources.COMMAND_LINE_HELP_KILL = "kill an existing istance [R]"
-resources.COMMAND_LINE_HELP_EXPORT = "save tasks and conditions to a portable format"
-resources.COMMAND_LINE_HELP_IMPORT = "import tasks and conditions from saved file [S]"
-resources.COMMAND_LINE_HELP_VERBOSE = "show verbose output for some options"
-resources.COMMAND_LINE_PREAMBLE = """\
+resources.OERR_SHUTDOWN_BEGIN = _("an existing instance will be %s")
+resources.OERR_SHUTDOWN_SHUTDOWN = _("shut down")
+resources.OERR_SHUTDOWN_KILL = _("killed")
+resources.OERR_SHUTDOWN_FINISH = _("instance shutdown finished")
+resources.OERR_SHOW_BOX = _("showing %s box of currently running instance")
+resources.OERR_RUN_CONDITION = _("attempting to run condition %s")
+resources.OERR_RUN_CONDITION_FAIL = _("condition %s could not be run")
+resources.OERR_EXPORT_HISTORY = _("attempting to export task history to %s")
+resources.OERR_EXPORT_HISTORY_EMPTY = _("empty")
+resources.OERR_EXPORT_HISTORY_IOERROR = _("ioerror")
+resources.OERR_EXPORT_HISTORY_UNKNOWN = _("unknown")
+resources.OERR_EXPORT_HISTORY_FAIL = _("could not save task history (%s)")
+resources.OERR_EXPORT_HISTORY_FINISH = _("exported %s elements to specified file")
+resources.OERR_CLEAR_DATA = _("removing all items")
+resources.OERR_CLEAR_DATA_CONDFAIL = _("could not remove condition list file")
+resources.OERR_CLEAR_DATA_TASKFAIL = _("could not remove task list file")
+resources.OERR_CLEAR_DATA_SIGFAIL = _("could not remove signal handler list file")
+resources.OERR_EXPORT_DATA_BEGIN = _("exporting items:")
+resources.OERR_EXPORT_DATA_TASKS = _("    %s tasks")
+resources.OERR_EXPORT_DATA_CONDITIONS = _("    %s conditions")
+resources.OERR_EXPORT_DATA_SIGHANDLERS = _("    %s signal handlers")
+resources.OERR_EXPORT_DATA_FINISH = _("items exported to file %s")
+resources.OERR_IMPORT_DATA = _("importing items from file %s")
+resources.OERR_IMPORT_DATA_FAIL = _("could not import from dump file")
+resources.OERR_IMPORT_DATA_BEGIN = _("restoring items:")
+resources.OERR_IMPORT_DATA_TASKS = _("    %s tasks")
+resources.OERR_IMPORT_DATA_CONDITIONS = _("    %s conditions")
+resources.OERR_IMPORT_DATA_SIGHANDLERS = _("    %s signal handlers")
+resources.OERR_IMPORT_DATA_FINISH = _("items successfully imported")
+resources.OERR_NO_INSTANCE = _("no instance could be found")
+resources.OERR_FOUND_INSTANCE = _("found a running instance")
+resources.OERR_EXPORT = _("tasks and conditions successfully exported")
+resources.OERR_RESET = _("configuration has been reset")
+resources.OERR_CLEAR = _("tasks and conditions deleted")
+resources.OERR_INSTALL = _("icons and data installed")
+
+resources.OERR_ERR_REQUIRE_DESKTOP = _("this program requires a graphical session")
+resources.OERR_ERR_ALREADY_RUNNING = _("another instance is present: leaving")
+resources.OERR_ERR_REQUIRE_INSTANCE = _("could not find a running instance, please start it first")
+resources.OERR_ERR_NO_INSTANCE = _("could not find a running instance")
+resources.OERR_ERR_DBUS_DISABLED = _("dbus signals disabled by configuration")
+resources.OERR_ERR_EXPORT_GENERIC = _("an error occurred while trying to export items")
+resources.OERR_ERR_RESET_RUNNING = _("cannot reset configuration, please close instance first")
+resources.OERR_ERR_RESET_GENERIC = _("an error occurred while trying to reset configuration")
+resources.OERR_ERR_CLEAR_RUNNING = _("cannot clear items, please close instance first")
+resources.OERR_ERR_CLEAR_GENERIC = _("an error occurred while trying to delete items")
+resources.OERR_ERR_IMPORT_RUNNING = _("cannot import items, please close instance first")
+resources.OERR_ERR_IMPORT_GENERIC = _("an error occurred while trying to import items")
+resources.OERR_ERR_INSTALL_RUNNING = _("cannot install, please close instance first")
+resources.OERR_ERR_INSTALL_GENERIC = _("an error occurred while trying to install icons")
+
+resources.COMMAND_LINE_HELP_VERSION = _("show applet version")
+resources.COMMAND_LINE_HELP_SHOW_SETTINGS = _("show settings dialog box for the running instance [R]")
+resources.COMMAND_LINE_HELP_SHOW_HISTORY = _("show history dialog box for the running instance [R]")
+resources.COMMAND_LINE_HELP_SHOW_TASKS = _("show tasks dialog box for the running instance [R]")
+resources.COMMAND_LINE_HELP_SHOW_CONDITIONS = _("show conditions box for the running instance [R]")
+resources.COMMAND_LINE_HELP_SHOW_DBUS_SIGNALS = _("show dbus signals box for the running instance [R]")
+resources.COMMAND_LINE_HELP_RESET_CONFIG = _("reset general configuration to default [S]")
+resources.COMMAND_LINE_HELP_SHOW_ICON = _("show applet icon [N]")
+resources.COMMAND_LINE_HELP_CLEAR = _("clear all tasks and conditions [S]")
+resources.COMMAND_LINE_HELP_INSTALL = _("install application icons and autostart [S]")
+resources.COMMAND_LINE_HELP_QUERY = _("query for a running instance")
+resources.COMMAND_LINE_HELP_EXPORT_HISTORY = _("export task history to a text file [R]")
+resources.COMMAND_LINE_HELP_RUN_CONDITION = _("run a command-line bound condition")
+resources.COMMAND_LINE_HELP_DEFER_CONDITION = _("enqueue a command-line bound condition")
+resources.COMMAND_LINE_HELP_SHUTDOWN = _("run shutdown tasks and close an existing istance [R]")
+resources.COMMAND_LINE_HELP_KILL = _("kill an existing istance [R]")
+resources.COMMAND_LINE_HELP_EXPORT = _("save tasks and conditions to a portable format")
+resources.COMMAND_LINE_HELP_IMPORT = _("import tasks and conditions from saved file [S]")
+resources.COMMAND_LINE_HELP_VERBOSE = _("show verbose output for some options")
+resources.COMMAND_LINE_SHOWVERSION = _("%s: %s, version %s")
+resources.COMMAND_LINE_PREAMBLE = _("""\
 %s: %s - %s /
 When is a configurable user task scheduler for Ubuntu.
 The command line interface can be used to interact with running instances of
 When or to perform maintenance tasks. Use the --verbose option to read output
 from the command, as most operations will show no output by default.
-""" % (APPLET_NAME, APPLET_FULLNAME, APPLET_COPYRIGHT)
-resources.COMMAND_LINE_EPILOG = """\
+""") % (APPLET_NAME, APPLET_FULLNAME, APPLET_COPYRIGHT)
+resources.COMMAND_LINE_EPILOG = _("""\
 Note: options marked with [R] require an instance running in the background,
 with [S] require that no instance is running and with [N] have only effect
 after restart. Go to %s for more information.
-""" % APPLET_URL
+""") % APPLET_URL
 
 # constants for desktop entry and autostart entry
 APP_ENTRY_DESKTOP = """\
@@ -410,7 +477,7 @@ X-GNOME-Autostart-enabled={autostart_enable}
 
 # utility to create a desktop file
 def create_desktop_file(overwrite=False):
-    filename = "%s.desktop" % APPLET_NAME
+    filename = '%s.desktop' % APPLET_NAME
     pathname = os.path.join(USER_DATA_FOLDER, filename)
     if not os.path.exists(pathname) or overwrite:
         applet_log.info("MAIN: creating desktop entries")
@@ -428,13 +495,13 @@ def create_desktop_file(overwrite=False):
             try:
                 os.symlink(
                     pathname, os.path.join(USER_LAUNCHER_FOLDER, filename))
-            except Error:
+            except Exception:
                 applet_log.error("MAIN: could not create the launcher")
 
 
 # utility to create the autostart file
 def create_autostart_file(overwrite=True):
-    filename = "%s-startup.desktop" % APPLET_NAME
+    filename = '%s-startup.desktop' % APPLET_NAME
     pathname = os.path.join(USER_DATA_FOLDER, filename)
     enable = 'true' if config.get('General', 'autostart') else 'false'
     if not os.path.exists(pathname) or overwrite:
@@ -454,7 +521,7 @@ def create_autostart_file(overwrite=True):
         if os.path.isdir(USER_AUTOSTART_FOLDER) and not os.path.exists(linkname):
             try:
                 os.symlink(pathname, linkname)
-            except Error:
+            except Exception:
                 applet_log.error("MAIN: could not create the autostart launcher")
 
 
@@ -492,7 +559,7 @@ def config_loglevel(level=None):
     if level is None:
         try:
             level = config.get('General', 'log level').lower()
-        except Error:
+        except Exception:
             level = logging.WARNING
     if type(level) == str:
         try:
@@ -1239,18 +1306,18 @@ class Task(object):
     def dump(self):
         if self.task_name is None:
             raise RuntimeError("task not initialized")
-        file_name = os.path.join(USER_CONFIG_FOLDER, "%s.task" % self.task_name)
+        file_name = os.path.join(USER_CONFIG_FOLDER, '%s.task' % self.task_name)
         with open(file_name, 'wb') as f:
             pickle.dump(self, f)
 
     def unlink_file(self):
-        file_name = os.path.join(USER_CONFIG_FOLDER, "%s.task" % self.task_name)
+        file_name = os.path.join(USER_CONFIG_FOLDER, '%s.task' % self.task_name)
         if os.path.exists(file_name):
             os.unlink(file_name)
 
     @staticmethod
     def restore(name):
-        file_name = os.path.join(USER_CONFIG_FOLDER, "%s.task" % name)
+        file_name = os.path.join(USER_CONFIG_FOLDER, '%s.task' % name)
         with open(file_name, 'rb') as f:
             o = pickle.load(f)
             o.renew_id()
@@ -1647,7 +1714,7 @@ class Condition(object):
             pickle.dump(self, f)
 
     def unlink_file(self):
-        file_name = os.path.join(USER_CONFIG_FOLDER, "%s.cond" % self.cond_name)
+        file_name = os.path.join(USER_CONFIG_FOLDER, '%s.cond' % self.cond_name)
         if os.path.exists(file_name):
             os.unlink(file_name)
 
@@ -2536,7 +2603,7 @@ class SignalHandler(object):
             self._error("exception %s raised by signal handler %s" % (e.__class__.__name__, self.handler_name))
             return
         if signal_caught:
-            event_name = EVENT_DBUS_SIGNAL_PREAMBLE + ":" + self.handler_name
+            event_name = EVENT_DBUS_SIGNAL_PREAMBLE + ':' + self.handler_name
             self._info("DBus signal caught: raising event %s" % event_name)
             if self.defer:
                 deferred_events.append(event_name)
@@ -2589,7 +2656,7 @@ class SignalHandler(object):
         self.signal_match = m
 
     def unlink_file(self):
-        file_name = os.path.join(USER_CONFIG_FOLDER, "%s.handler" % self.handler_name)
+        file_name = os.path.join(USER_CONFIG_FOLDER, '%s.handler' % self.handler_name)
         if os.path.exists(file_name):
             os.unlink(file_name)
 
@@ -2652,6 +2719,7 @@ class TaskDialog(object):
     def __init__(self):
         self.builder = Gtk.Builder().new_from_string(DIALOG_ADD_TASK, -1)
         self.builder.connect_signals(self)
+        self.builder.set_translation_domain(APPLET_NAME)
         o = self.builder.get_object
         self.dialog = o('dlgAddTask')
         self.stored_tasks = tasks.names
@@ -2938,6 +3006,7 @@ class ConditionDialog(object):
     def __init__(self):
         self.builder = Gtk.Builder().new_from_string(DIALOG_ADD_CONDITION, -1)
         self.builder.connect_signals(self)
+        self.builder.set_translation_domain(APPLET_NAME)
         o = self.builder.get_object
         self.dialog = o('dlgAddCondition')
         self.stored_conditions = conditions.names
@@ -3436,7 +3505,7 @@ class ConditionDialog(object):
                     return None
             elif idx == 6:
                 handler_name = o('cbDBusEvent').get_active_text()
-                event_type = EVENT_DBUS_SIGNAL_PREAMBLE + ":" + handler_name
+                event_type = EVENT_DBUS_SIGNAL_PREAMBLE + ':' + handler_name
                 c = EventBasedCondition(
                     name, event_type, True, repeat, sequence)
                 c.break_failure = break_failure
@@ -3492,6 +3561,7 @@ class SignalDialog(object):
     def __init__(self):
         self.builder = Gtk.Builder().new_from_string(DIALOG_ADD_DBUS_SIGNAL, -1)
         self.builder.connect_signals(self)
+        self.builder.set_translation_domain(APPLET_NAME)
         o = self.builder.get_object
         self.dialog = o('dlgAddDBusSignal')
         self.stored_handlers = signal_handlers.names
@@ -3530,11 +3600,11 @@ class SignalDialog(object):
             DBUS_CHECK_COMPARE_GREATER,
         ]
         self.all_comparisons_symdict = {
-            DBUS_CHECK_COMPARE_IS: "=",
-            DBUS_CHECK_COMPARE_CONTAINS: "CONTAINS",
-            DBUS_CHECK_COMPARE_MATCHES: "MATCHES",
-            DBUS_CHECK_COMPARE_LESS: "<",
-            DBUS_CHECK_COMPARE_GREATER: ">",
+            DBUS_CHECK_COMPARE_IS: '=',
+            DBUS_CHECK_COMPARE_CONTAINS: 'CONTAINS',
+            DBUS_CHECK_COMPARE_MATCHES: 'MATCHES',
+            DBUS_CHECK_COMPARE_LESS: '<',
+            DBUS_CHECK_COMPARE_GREATER: '>',
         }
         self.all_comparisons_revdict = {}
         for k in self.all_comparisons_symdict.keys():
@@ -3610,7 +3680,7 @@ class SignalDialog(object):
         if i is not None:
             o('txtValueNum').set_text(m[i][0])
             o('txtValueSub').set_text(m[i][1])
-            o('chkOperatorNot').set_active(m[i][2] == "NOT")
+            o('chkOperatorNot').set_active(m[i][2] == 'NOT')
             o('cbOperatorCompare').set_active(
                 self.all_comparisons.index(self.all_comparisons_revdict[m[i][3]]))
             o('txtTestValue').set_text(m[i][4])
@@ -3622,8 +3692,8 @@ class SignalDialog(object):
         for check in self.signal_param_tests:
             row = [
                 str(check.value_idx),
-                "" if not check.sub_idx else str(check.sub_idx),
-                "NOT" if check.negate else "",
+                '' if not check.sub_idx else str(check.sub_idx),
+                'NOT' if check.negate else '',
                 self.all_comparisons_symdict[check.comparison],
                 str(check.test_value),
             ]
@@ -3778,6 +3848,7 @@ class SettingsDialog(object):
     def __init__(self):
         self.builder = Gtk.Builder().new_from_string(DIALOG_SETTINGS, -1)
         self.builder.connect_signals(self)
+        self.builder.set_translation_domain(APPLET_NAME)
         o = self.builder.get_object
         self.dialog = o('dlgSettings')
         self.log_levels = [
@@ -3941,6 +4012,7 @@ class HistoryDialog(object):
     def __init__(self):
         self.builder = Gtk.Builder().new_from_string(DIALOG_TASK_HISTORY, -1)
         self.builder.connect_signals(self)
+        self.builder.set_translation_domain(APPLET_NAME)
         o = self.builder.get_object
         self.dialog = o('dlgHistory')
         self.image_success = Gtk.Image.new_from_file(
@@ -3979,8 +4051,8 @@ class HistoryDialog(object):
             resources.LISTCOL_HISTORY_ROWID, renderer, text=6)
         c.set_visible(False)
         l.append_column(c)
-        o('txtStdOut').modify_font(Pango.FontDescription("Monospace"))
-        o('txtStdErr').modify_font(Pango.FontDescription("Monospace"))
+        o('txtStdOut').modify_font(Pango.FontDescription('Monospace'))
+        o('txtStdErr').modify_font(Pango.FontDescription('Monospace'))
 
     def choose_item(self, selected):
         o = self.builder.get_object
@@ -4042,6 +4114,7 @@ class AboutDialog(object):
             os.path.join(APP_ICON_FOLDER, 'alarmclock-128.png'))
         self.builder = Gtk.Builder().new_from_string(DIALOG_ABOUT, -1)
         self.builder.connect_signals(self)
+        self.builder.set_translation_domain(APPLET_NAME)
         o = self.builder.get_object
         self.dialog = o('dlgAbout')
         self.dialog.set_logo(self.image_logo.get_pixbuf())
@@ -4087,7 +4160,7 @@ class AppletIndicator(Gtk.Application):
             applet_log.critical("MAIN: exception %s registering application" % e)
             sys.exit(2)
 
-        self.connect("activate", self.applet_activate)
+        self.connect('activate', self.applet_activate)
         self.leaving = False
 
         # The system and session bus signals give many possibilities for events
@@ -4243,7 +4316,7 @@ class AppletIndicator(Gtk.Application):
 
         if signal_handlers.not_empty:
             applet_log.info("MAIN: signal handlers found, enabling user events")
-            config.set("General", "user events", True)
+            config.set('General', 'user events', True)
             config.save()
 
         applet_log.info("MAIN: trying to run startup tasks")
@@ -4349,14 +4422,14 @@ class AppletIndicator(Gtk.Application):
             if rv == 0:
                 return HISTORY_ERR_EMPTY
             f = open(filename, 'w')
-            f.write(HISTORY_SEPARATOR.join(HISTORY_HEADERS) + "\n")
+            f.write(HISTORY_SEPARATOR.join(HISTORY_HEADERS) + '\n')
             for x in items:
                 f.write(
                     HISTORY_SEPARATOR.join(map(str, [
                         x.item_id,
                         time.strftime('%Y-%m-%d %H:%M:%S',
                                       time.localtime(x.startup_time)),
-                        "%.4f" % x.run_time,
+                        '%.4f' % x.run_time,
                         x.task_name,
                         x.trigger_cond,
                         HISTORY_ENTRY_SUCCESS if x.success else HISTORY_ENTRY_FAILURE,
@@ -4541,9 +4614,9 @@ def init_signal_handler(applet_instance):
 
     def install_glib_handler(signum):
         unix_signal_add = None
-        if hasattr(GLib, "unix_signal_add"):
+        if hasattr(GLib, 'unix_signal_add'):
             unix_signal_add = GLib.unix_signal_add
-        elif hasattr(GLib, "unix_signal_add_full"):
+        elif hasattr(GLib, 'unix_signal_add_full'):
             unix_signal_add = GLib.unix_signal_add_full
         if unix_signal_add:
             applet_log.info("SIGHANDLER: register desktop handler for signal: %r" % signum)
@@ -4571,14 +4644,16 @@ def get_applet_idle_seconds():
 
 
 def kill_existing(verbose=False, shutdown=False):
-    oerr("an existing instance will be %s" % ('shut down' if shutdown else 'killed'), verbose)
+    oerr(resources.OERR_SHUTDOWN_BEGIN %
+         (resources.OERR_SHUTDOWN_SHUTDOWN if shutdown
+          else resources.OERR_SHUTDOWN_KILL), verbose)
     bus = dbus.SessionBus()
     interface = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
     if shutdown:
         interface.quit_instance()
     else:
         interface.kill_instance()
-    oerr("instance shutdown finished", verbose)
+    oerr(resources.OERR_SHUTDOWN_FINISH, verbose)
 
 
 def oerr(s, verbose=True):
@@ -4594,7 +4669,7 @@ def install_icons(overwrite=True):
 # the horrible hack below is because no way was found to set the timeout for
 # introspective DBus methods to infinite (that is: GObject.G_MAXINT)
 def show_box(box='about', verbose=False):
-    oerr("showing %s box of currently running instance" % box, verbose)
+    oerr(resources.OERR_SHOW_BOX % box, verbose)
     bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
     proxy = Gio.DBusProxy.new_sync(bus, Gio.DBusProxyFlags.NONE, None,
                                    APPLET_BUS_NAME, APPLET_BUS_PATH,
@@ -4613,37 +4688,37 @@ def show_icon(show=True, running=True):
 
 
 def run_condition(cond_name, deferred, verbose=False):
-    oerr("attempting to run condition %s" % cond_name, verbose)
+    oerr(resources.OERR_RUN_CONDITION % cond_name, verbose)
     bus = dbus.SessionBus()
     proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
     if not proxy.run_condition(cond_name, deferred):
-        oerr("condition %s could not be run" % cond_name, verbose)
+        oerr(resources.OERR_RUN_CONDITION_FAIL % cond_name, verbose)
         return False
     else:
         return True
 
 
 def export_running_history(filename, verbose=False):
-    oerr("attempting to export task history to %s" % filename, verbose)
+    oerr(resources.OERR_EXPORT_HISTORY % filename, verbose)
     bus = dbus.SessionBus()
     proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
     rv = proxy.export_history(filename)
     if rv < 0:
         if rv == HISTORY_ERR_EMPTY:
-            s = "empty"
+            s = resources.OERR_EXPORT_HISTORY_EMPTY
         elif rv == HISTORY_ERR_IOERROR:
-            s = "ioerror"
+            s = resources.OERR_EXPORT_HISTORY_IOERROR
         else:
-            s = "unknown"
-        oerr("could not save task history (%s)" % s, verbose)
+            s = resources.OERR_EXPORT_HISTORY_UNKNOWN
+        oerr(resources.OERR_EXPORT_HISTORY_FAIL % s, verbose)
         return False
     else:
-        oerr("exported %s elements to specified file" % rv, verbose)
+        oerr(resources.OERR_EXPORT_HISTORY_FINISH % rv, verbose)
         return True
 
 
 def clear_item_data(verbose=False):
-    oerr("removing all items", verbose)
+    oerr(resources.OERR_CLEAR_DATA, verbose)
     try:
         tasks.load()
     except FileNotFoundError:
@@ -4664,7 +4739,7 @@ def clear_item_data(verbose=False):
     try:
         os.unlink(file_name)
     except OSError:
-        oerr("could not remove condition list file", verbose)
+        oerr(resources.OERR_CLEAR_DATA_CONDFAIL, verbose)
     l = list(tasks.names)
     for x in l:
         tasks.remove(task_name=x)
@@ -4673,7 +4748,7 @@ def clear_item_data(verbose=False):
     try:
         os.unlink(file_name)
     except OSError:
-        oerr("could not remove task list file", verbose)
+        oerr(resources.OERR_CLEAR_DATA_TASKFAIL, verbose)
     l = list(signal_handlers.names)
     for x in l:
         signal_handlers.remove(handler_name=x)
@@ -4683,7 +4758,7 @@ def clear_item_data(verbose=False):
     try:
         os.unlink(file_name)
     except OSError:
-        oerr("could not remove signal handler list file", verbose)
+        oerr(resources.OERR_CLEAR_DATA_SIGFAIL, verbose)
 
 
 def export_item_data(filename=None, verbose=False):
@@ -4729,10 +4804,12 @@ def export_item_data(filename=None, verbose=False):
         t = signal_handlers.get(handler_name=name)
         d = SignalHandler_to_dict(t)
         signal_handler_dict_list.append(d)
-    oerr("exporting items:", verbose)
-    oerr("    %s tasks" % len(task_dict_list), verbose)
-    oerr("    %s conditions" % len(condition_dict_list), verbose)
-    oerr("    %s signal handlers" % len(signal_handler_dict_list), verbose)
+    oerr(resources.OERR_EXPORT_DATA_BEGIN, verbose)
+    oerr(resources.OERR_EXPORT_DATA_TASKS % len(task_dict_list), verbose)
+    oerr(resources.OERR_EXPORT_DATA_CONDITIONS
+         % len(condition_dict_list), verbose)
+    oerr(resources.OERR_EXPORT_DATA_SIGHANDLERS
+         % len(signal_handler_dict_list), verbose)
     json_dic = {
         'tasks': task_dict_list,
         'conditions': condition_dict_list,
@@ -4742,26 +4819,27 @@ def export_item_data(filename=None, verbose=False):
         filename = os.path.join(USER_CONFIG_FOLDER, '%s.dump' % APPLET_NAME)
     with open(filename, 'w') as f:
         json.dump(json_dic, f, indent=2)
-    oerr("items exported to file %s" % filename, verbose)
+    oerr(resources.OERR_EXPORT_DATA_FINISH % filename, verbose)
 
 
 def import_item_data(filename=None, verbose=False):
     if not filename:
         filename = os.path.join(USER_CONFIG_FOLDER, '%s.dump' % APPLET_NAME)
-    oerr("importing items from file %s" % filename, verbose)
+    oerr(resources.OERR_IMPORT_DATA % filename, verbose)
     try:
         with open(filename, 'r') as f:
             json_dic = json.load(f)
     except:
-        oerr("could not import from dump file")
+        oerr(resources.OERR_IMPORT_DATA_FAIL)
         sys.exit(2)
     clear_item_data(verbose)
-    oerr("restoring items:", verbose)
+    oerr(resources.OERR_IMPORT_DATA_BEGIN, verbose)
     if 'tasks' in json_dic.keys():
         for task_dic in json_dic['tasks']:
             task = dict_to_Task(task_dic)
             tasks.add(task)
-        oerr("    %s tasks" % len(json_dic['tasks']), verbose)
+        oerr(resources.OERR_IMPORT_DATA_TASKS
+             % len(json_dic['tasks']), verbose)
     if 'conditions' in json_dic.keys():
         for condition_dic in json_dic['conditions']:
             condition = None
@@ -4783,16 +4861,18 @@ def import_item_data(filename=None, verbose=False):
                 condition = dict_to_Condition(condition_dic)
             if condition:
                 conditions.add(condition)
-        oerr("    %s conditions" % len(json_dic['conditions']), verbose)
+        oerr(resources.OERR_IMPORT_DATA_CONDITIONS
+             % len(json_dic['conditions']), verbose)
     if 'signalhandlers' in json_dic.keys():
         for handler_dic in json_dic['signalhandlers']:
             handler = dict_to_SignalHandler(handler_dic)
             signal_handlers.add(handler)
-        oerr("    %s signal handlers" % len(json_dic['signalhandlers']), verbose)
+        oerr(resources.OERR_IMPORT_DATA_SIGHANDLERS
+             % len(json_dic['signalhandlers']), verbose)
     tasks.save()
     conditions.save()
     signal_handlers.save()
-    oerr("items successfully imported", verbose)
+    oerr(resources.OERR_IMPORT_DATA_FINISH, verbose)
 
 
 # Configure services and start the application
@@ -4839,11 +4919,11 @@ if __name__ == '__main__':
 
     if len(sys.argv) == 1:
         if not GRAPHIC_ENVIRONMENT:
-            oerr("this program requires a graphical session")
+            oerr(resources.OERR_ERR_REQUIRE_DESKTOP)
             sys.exit(2)
 
         if applet.get_is_remote():
-            oerr("another instance is present: leaving")
+            oerr(resources.OERR_ERR_ALREADY_RUNNING)
             sys.exit(2)
 
         applet_log.info("MAIN: starting %s version %s" % (APPLET_FULLNAME, APPLET_VERSION))
@@ -4984,7 +5064,8 @@ if __name__ == '__main__':
             running = applet.get_is_remote()
 
         if args.version:
-            print("%s: %s, version %s" % (APPLET_NAME, APPLET_FULLNAME, APPLET_VERSION))
+            print(resources.COMMAND_LINE_SHOWVERSION
+                  % (APPLET_NAME, APPLET_FULLNAME, APPLET_VERSION))
             if verbose and running:
                 show_box('about', False)
 
@@ -4993,35 +5074,35 @@ if __name__ == '__main__':
 
         if args.show_settings:
             if not running:
-                oerr("could not find a running instance, please start it first", verbose)
+                oerr(resources.OERR_ERR_REQUIRE_INSTANCE, verbose)
                 sys.exit(2)
             else:
                 show_box('settings', verbose)
         elif args.show_history:
             if not running:
-                oerr("could not find a running instance, please start it first", verbose)
+                oerr(resources.OERR_ERR_REQUIRE_INSTANCE, verbose)
                 sys.exit(2)
             else:
                 show_box('history', verbose)
         elif args.show_tasks:
             if not running:
-                oerr("could not find a running instance, please start it first", verbose)
+                oerr(resources.OERR_ERR_REQUIRE_INSTANCE, verbose)
                 sys.exit(2)
             else:
                 show_box('task', verbose)
         elif args.show_conditions:
             if not running:
-                oerr("could not find a running instance, please start it first", verbose)
+                oerr(resources.OERR_ERR_REQUIRE_INSTANCE, verbose)
                 sys.exit(2)
             else:
                 show_box('condition', verbose)
         elif args.show_dbus_signals:
             if not running:
-                oerr("could not find a running instance, please start it first", verbose)
+                oerr(resources.OERR_ERR_REQUIRE_INSTANCE, verbose)
                 sys.exit(2)
             else:
-                if not config.get("General", "user events"):
-                    oerr("dbus signals disabled by configuration", verbose)
+                if not config.get('General', 'user events'):
+                    oerr(resources.OERR_ERR_DBUS_DISABLED, verbose)
                     sys.exit(1)
                 show_box('dbus_signal', verbose)
 
@@ -5034,13 +5115,13 @@ if __name__ == '__main__':
                 export_item_data(filename, verbose)
             except Exception as e:
                 applet_log.critical("MAIN: exception %s occurred while performing 'export'" % e)
-                oerr("an error occurred while trying to export items", verbose)
+                oerr(resources.OERR_ERR_EXPORT_GENERIC, verbose)
                 sys.exit(2)
-            oerr("tasks and conditions successfully exported", verbose)
+            oerr(resources.OERR_EXPORT, verbose)
 
         if args.export_history:
             if not running:
-                oerr("could not find a running instance, please start it first", verbose)
+                oerr(resources.OERR_ERR_DBUS_DISABLED, verbose)
                 sys.exit(2)
             else:
                 filename = os.path.realpath(args.export_history)
@@ -5049,14 +5130,14 @@ if __name__ == '__main__':
 
         if args.run_condition:
             if not running:
-                oerr("could not find a running instance, please start it first", verbose)
+                oerr(resources.OERR_ERR_DBUS_DISABLED, verbose)
                 sys.exit(2)
             else:
                 if not(run_condition(args.run_condition, False, verbose)):
                     sys.exit(2)
         if args.defer_condition:
             if not running:
-                oerr("could not find a running instance, please start it first", verbose)
+                oerr(resources.OERR_ERR_DBUS_DISABLED, verbose)
                 sys.exit(2)
             else:
                 if not(run_condition(args.defer_condition, True, verbose)):
@@ -5067,19 +5148,19 @@ if __name__ == '__main__':
                 kill_existing(verbose=verbose, shutdown=True)
                 running = False
             else:
-                oerr("could not find a running instance", verbose)
+                oerr(resources.OERR_ERR_NO_INSTANCE, verbose)
                 sys.exit(1)
         elif args.kill:
             if running:
                 kill_existing(verbose=verbose, shutdown=False)
                 running = False
             else:
-                oerr("could not find a running instance", verbose)
+                oerr(resources.OERR_ERR_NO_INSTANCE, verbose)
                 sys.exit(1)
 
         if args.reset_config:
             if running:
-                oerr("cannot reset configuration, please close instance first", verbose)
+                oerr(resources.OERR_ERR_RESET_RUNNING, verbose)
                 sys.exit(2)
             else:
                 try:
@@ -5087,26 +5168,26 @@ if __name__ == '__main__':
                     unlink_pause_file()
                 except Exception as e:
                     applet_log.critical("MAIN: exception %s occurred while performing 'reset-config'" % e)
-                    oerr("an error occurred while trying to reset configuration", verbose)
+                    oerr(resources.OERR_ERR_RESET_GENERIC, verbose)
                     sys.exit(2)
-                oerr("configuration has been reset", verbose)
+                oerr(resources.OERR_RESET, verbose)
 
         if args.clear:
             if running:
-                oerr("cannot clear items, please close instance first", verbose)
+                oerr(resources.OERR_ERR_CLEAR_RUNNING, verbose)
                 sys.exit(2)
             else:
                 try:
                     clear_item_data(verbose)
                 except Exception as e:
                     applet_log.critical("MAIN: exception %s occurred while performing 'clear'" % e)
-                    oerr("an error occurred while trying to delete items", verbose)
+                    oerr(resources.OERR_ERR_CLEAR_GENERIC, verbose)
                     sys.exit(2)
-                oerr("tasks and conditions deleted", verbose)
+                oerr(resources.OERR_CLEAR, verbose)
 
         if args.import_items:
             if running:
-                oerr("cannot import items, please close instance first", verbose)
+                oerr(resources.OERR_ERR_IMPORT_RUNNING, verbose)
                 sys.exit(2)
             else:
                 if args.import_items == '*':
@@ -5117,28 +5198,28 @@ if __name__ == '__main__':
                     import_item_data(filename, verbose)
                 except Exception as e:
                     applet_log.critical("MAIN: exception %s occurred while performing 'import'" % e)
-                    oerr("an error occurred while trying to import items", verbose)
+                    oerr(resources.OERR_ERR_IMPORT_GENERIC, verbose)
                     sys.exit(2)
 
         if args.install:
             if running:
-                oerr("cannot install, please close instance first", verbose)
+                oerr(resources.OERR_ERR_INSTALL_RUNNING, verbose)
                 sys.exit(2)
             else:
                 try:
                     install_icons(True)
                 except Exception as e:
                     applet_log.critical("MAIN: exception %s occurred while performing 'install'" % e)
-                    oerr("an error occurred while trying to install icons", verbose)
+                    oerr(resources.OERR_ERR_INSTALL_GENERIC, verbose)
                     sys.exit(2)
-                oerr("configuration has been reset", verbose)
+                oerr(resources.OERR_INSTALL, verbose)
 
         if args.query:
             if running:
-                oerr("found a running instance", verbose)
+                oerr(resources.OERR_FOUND_INSTANCE, verbose)
                 sys.exit(0)
             else:
-                oerr("no instance could be found", verbose)
+                oerr(resources.OERR_NO_INSTANCE, verbose)
                 sys.exit(1)
 
 
