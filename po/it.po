@@ -522,8 +522,8 @@ msgid "Copyright (c) 2015 Francesco Garosi"
 msgstr "Copyright (c) 2015 Francesco Garosi"
 
 #: when-command-about.glade.h:2
-msgid "When è un gestore di attività programmate per Gnome."
-msgstr ""
+msgid "When is a configurable user scheduler for Gnome."
+msgstr "When è un gestore di attività programmate per Gnome."
 
 #: when-command-about.glade.h:3
 msgid "When's Web Page"
