@@ -76,7 +76,7 @@ APPLET_FULLNAME = 'When Gnome Scheduler'
 APPLET_SHORTNAME = 'When'
 APPLET_COPYRIGHT = '(c) 2015 Francesco Garosi'
 APPLET_URL = 'http://almostearthling.github.io/when-command/'
-APPLET_VERSION = '0.9.1-beta.1'
+APPLET_VERSION = '0.9.1-beta.2'
 APPLET_ID = 'it.jks.WhenCommand'
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
@@ -495,7 +495,7 @@ def create_desktop_file(overwrite=False):
             try:
                 os.symlink(
                     pathname, os.path.join(USER_LAUNCHER_FOLDER, filename))
-            except Error:
+            except Exception:
                 applet_log.error("MAIN: could not create the launcher")
 
 
@@ -521,7 +521,7 @@ def create_autostart_file(overwrite=True):
         if os.path.isdir(USER_AUTOSTART_FOLDER) and not os.path.exists(linkname):
             try:
                 os.symlink(pathname, linkname)
-            except Error:
+            except Exception:
                 applet_log.error("MAIN: could not create the autostart launcher")
 
 
@@ -559,7 +559,7 @@ def config_loglevel(level=None):
     if level is None:
         try:
             level = config.get('General', 'log level').lower()
-        except Error:
+        except Exception:
             level = logging.WARNING
     if type(level) == str:
         try:
