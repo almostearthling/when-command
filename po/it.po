@@ -530,12 +530,10 @@ msgid "When's Web Page"
 msgstr "Pagina Web di When"
 
 #: when-command-edit-condition.glade.h:1
-#, fuzzy
 msgid "Edit Condition"
 msgstr "Modifica Condizione"
 
 #: when-command-edit-condition.glade.h:2 when-command-edit-task.glade.h:2
-#, fuzzy
 msgid "Name"
 msgstr "Nome"
 
@@ -608,7 +606,6 @@ msgid "Startup"
 msgstr "Avvio"
 
 #: when-command-edit-condition.glade.h:21
-#, fuzzy
 msgid "Shutdown"
 msgstr "Arresto"
 
@@ -617,7 +614,6 @@ msgid "Suspend"
 msgstr "Sospensione"
 
 #: when-command-edit-condition.glade.h:23
-#, fuzzy
 msgid "Resume"
 msgstr "Ripresa"
 
@@ -762,12 +758,10 @@ msgid "Watch Files"
 msgstr "Osserva File"
 
 #: when-command-edit-condition.glade.h:59 when-command-edit-task.glade.h:5
-#, fuzzy
 msgid "Choose..."
 msgstr "Scelta..."
 
 #: when-command-edit-condition.glade.h:60
-#, fuzzy
 msgid "Select Directory"
 msgstr "Scelta Directory"
 
@@ -838,7 +832,6 @@ msgid "Bus"
 msgstr "Bus"
 
 #: when-command-edit-dbus-signal.glade.h:8
-#, fuzzy
 msgid "Session Bus"
 msgstr "Bus Sessione"
 
@@ -855,7 +848,6 @@ msgid "Signal Parameters Tests"
 msgstr "Test dei Parametri di Segnale"
 
 #: when-command-edit-dbus-signal.glade.h:12
-#, fuzzy
 msgid "Value #"
 msgstr "Val. #"
 
@@ -904,7 +896,6 @@ msgid "Activate on next clock tick"
 msgstr "Attiva al tick di clock successivo"
 
 #: when-command-edit-task.glade.h:1
-#, fuzzy
 msgid "Edit Task"
 msgstr "Modifica Task"
 
@@ -937,7 +928,6 @@ msgid "Failure"
 msgstr "Fallimento"
 
 #: when-command-settings.glade.h:1
-#, fuzzy
 msgid "Settings"
 msgstr "Impostazioni"
 
@@ -1002,7 +992,6 @@ msgid "Critical"
 msgstr "Critical"
 
 #: when-command-settings.glade.h:17
-#, fuzzy
 msgid "Error"
 msgstr "Error"
 
@@ -1035,7 +1024,6 @@ msgid "Instance History Items:"
 msgstr "Elementi Storico Istanza:"
 
 #: when-command-settings.glade.h:25
-#, fuzzy
 msgid "Enable User Defined Events (DBus)"
 msgstr "Abilita Eventi Utente (DBus)"
 
@@ -1044,7 +1032,6 @@ msgid "Enable File and Directory Notifications"
 msgstr "Abilita Notifiche File e Directory"
 
 #: when-command-settings.glade.h:27
-#, fuzzy
 msgid "Enable Task and Condition Environment Variables"
 msgstr "Abilita Variabili Ambiente di Task e Condizioni"
 
@@ -1053,7 +1040,6 @@ msgid "Advanced"
 msgstr "Avanzate"
 
 #: when-command-task-history.glade.h:1
-#, fuzzy
 msgid "Task History"
 msgstr "Storico Task"
 
@@ -1062,7 +1048,6 @@ msgid "Output"
 msgstr "Output"
 
 #: when-command-task-history.glade.h:3
-#, fuzzy
 msgid "Errors"
 msgstr "Errori"
 
