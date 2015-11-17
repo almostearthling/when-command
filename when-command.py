@@ -5216,10 +5216,10 @@ if __name__ == '__main__':
 
         if args.query:
             if running:
-                oerr(resources.OERR_ERR_FOUND_INSTANCE, verbose)
+                oerr(resources.OERR_FOUND_INSTANCE, verbose)
                 sys.exit(0)
             else:
-                oerr(resources.OERR_ERR_NO_INSTANCE, verbose)
+                oerr(resources.OERR_NO_INSTANCE, verbose)
                 sys.exit(1)
 
 
