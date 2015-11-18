@@ -1,0 +1,11 @@
+when-command.py
+*.md
+LICENSE
+share/*.glade
+share/icons/*.png
+share/icons/light/*.png
+share/icons/emblems/*.png
+share/icons/color/*.png
+share/icons/dark/*.png
+share/icons/hicolor/*/apps/when-command.png
+share/locale/*/LC_MESSAGES/when-command.mo
