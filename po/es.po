@@ -1,0 +1,1069 @@
+# Translation file for When.
+# Copyright (C) 2015 Adolfo Jayme Barrientos
+# This file is distributed under the same license as the PACKAGE package.
+# Adolfo Jayme Barrientos <fitojb@ubuntu.com>, 2015.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: when-command 0.9.1-beta.1\n"
+"Report-Msgid-Bugs-To: franz.g@infinito.it\n"
+"POT-Creation-Date: 2015-11-17 21:04-0600\n"
+"PO-Revision-Date: 2015-11-19 00:37-0600\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.8.4\n"
+"Last-Translator: Adolfo Jayme Barrientos <fitojb@ubuntu.com>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: es\n"
+
+#: when-command.py:316
+#, python-format
+msgid "Are you sure you want to delete task %s?"
+msgstr "¿Confirma que quiere eliminar la tarea «%s»?"
+
+#: when-command.py:317
+#, python-format
+msgid "Are you sure you want to delete condition %s?"
+msgstr "¿Confirma que quiere eliminar la condición «%s»?"
+
+#: when-command.py:318
+#, python-format
+msgid "Are you sure you want to delete signal handler %s?"
+msgstr "¿Confirma que quiere eliminar el manejador de señales «%s»?"
+
+#: when-command.py:319
+#, python-format
+msgid "Task %s could not be deleted."
+msgstr "No se pudo eliminar la tarea «%s»."
+
+#: when-command.py:320
+#, python-format
+msgid "Condition %s could not be deleted."
+msgstr "No se pudo eliminar la condición «%s»."
+
+#: when-command.py:321
+#, python-format
+msgid "Signal handler %s could not be deleted."
+msgstr "No se pudo eliminar el manejador de señales «%s»."
+
+#: when-command.py:322
+#, python-format
+msgid "Task %s could not be found."
+msgstr "No se encontró la tarea «%s»."
+
+#: when-command.py:323
+#, python-format
+msgid "Condition %s could not be found."
+msgstr "No se encontró la condición «%s»."
+
+#: when-command.py:324
+#, python-format
+msgid "Signal handler %s could not be found."
+msgstr "No se encontró el manejador de señales «%s»."
+
+#: when-command.py:325
+#, python-format
+msgid "Signal handler %s could not be registered."
+msgstr "No se pudo registrar el manejador de señales «%s»."
+
+#: when-command.py:326
+msgid "Must specify watched path: condition not created."
+msgstr "Debe especificarse la ruta inspeccionada. No se creó la condición."
+
+#: when-command.py:327
+msgid ""
+"Invalid value for exit status specified.\n"
+"Please consider reviewing it."
+msgstr ""
+"Se especificó un valor no válido para el código de salida.\n"
+"Considere revisarlo."
+
+#: when-command.py:328
+msgid ""
+"Invalid value for signal parameter index specified.\n"
+"Cannot add parameter test."
+msgstr ""
+"Se especificó un valor no válido para el índice de parámetros de "
+"señales.\n"
+"No se puede añadir la prueba de los parámetros."
+
+#: when-command.py:329
+msgid "This feature has not been implemented yet."
+msgstr "Todavía no se ha implementado esta funcionalidad."
+
+#: when-command.py:330
+msgid ""
+"This feature is not enabled.\n"
+"Please check documentation for possible reasons."
+msgstr ""
+"Esta funcionalidad no está activada.\n"
+"Consulte la documentación para encontrar motivos posibles."
+
+#: when-command.py:331
+#, python-format
+msgid "Version: %s"
+msgstr "Versión: %s"
+
+#: when-command.py:332
+msgid "[disabled]"
+msgstr "[desactivada]"
+
+#: when-command.py:333
+msgid "Choose File"
+msgstr "Elija un archivo"
+
+#: when-command.py:334
+msgid "Choose Directory"
+msgstr "Elija una carpeta"
+
+#: when-command.py:335
+msgid "Choose File or Directory"
+msgstr "Elija un archivo o una carpeta"
+
+#: when-command.py:337
+#, python-format
+msgid "Task failed: %s"
+msgstr "Falló la tarea: %s"
+
+#: when-command.py:339
+msgid "Edit Tasks..."
+msgstr "Editar las tareas…"
+
+#: when-command.py:340
+msgid "Edit Conditions..."
+msgstr "Editar las condiciones…"
+
+#: when-command.py:341
+msgid "Settings..."
+msgstr "Configuración…"
+
+#: when-command.py:342
+msgid "Task History..."
+msgstr "Historial de tareas…"
+
+#: when-command.py:343
+msgid "Pause"
+msgstr "Pausar"
+
+#: when-command.py:344
+msgid "About..."
+msgstr "Acerca de…"
+
+#: when-command.py:345
+msgid "Quit"
+msgstr "Salir"
+
+#: when-command.py:347
+msgid "User Defined Event"
+msgstr "Evento personalizado"
+
+#: when-command.py:349
+msgid "Variable"
+msgstr "Variable"
+
+#: when-command.py:350 when-command.py:363
+msgid "Value"
+msgstr "Valor"
+
+#: when-command.py:351 when-command.py:353
+msgid "Task Name"
+msgstr "Nombre de la tarea"
+
+#: when-command.py:352
+msgid "Time / Duration"
+msgstr "Hora / duración"
+
+#: when-command.py:354
+msgid "Trigger"
+msgstr "Desencadenador"
+
+#: when-command.py:355 when-command-edit-condition.glade.h:10
+#: when-command-edit-task.glade.h:14
+msgid "Exit Code"
+msgstr "Código de salida"
+
+#: when-command.py:356
+msgid "Result"
+msgstr "Resultado"
+
+#: when-command.py:357
+msgid "Reason"
+msgstr "Motivo"
+
+#: when-command.py:358
+msgid "Row ID"
+msgstr "Id. de fila"
+
+#: when-command.py:359
+msgid "Param"
+msgstr "Parám."
+
+#: when-command.py:360
+msgid "Sub"
+msgstr "Sub."
+
+#: when-command.py:361
+msgid "Negate"
+msgstr "Negación"
+
+#: when-command.py:362
+msgid "Compare"
+msgstr "Comparación"
+
+#: when-command.py:366
+#, python-format
+msgid "an existing instance will be %s"
+msgstr "se %s una instancia existente"
+
+#: when-command.py:367
+msgid "shut down"
+msgstr "cerrará"
+
+#: when-command.py:368
+msgid "killed"
+msgstr "forzará el cierre de"
+
+#: when-command.py:369
+msgid "instance shutdown finished"
+msgstr "ha terminado el cierre de una instancia"
+
+#: when-command.py:370
+#, python-format
+msgid "showing %s box of currently running instance"
+msgstr "se muestra el cuadro «%s» de la instancia en ejecución"
+
+#: when-command.py:371
+#, python-format
+msgid "attempting to run condition %s"
+msgstr "intentando ejecutar la condición %s"
+
+#: when-command.py:372
+#, python-format
+msgid "condition %s could not be run"
+msgstr "no se pudo ejecutar la condición %s"
+
+#: when-command.py:373
+#, python-format
+msgid "attempting to export task history to %s"
+msgstr "intentando exportar el historial de tareas a %s"
+
+#: when-command.py:374
+msgid "empty"
+msgstr "vacío"
+
+#: when-command.py:375
+msgid "ioerror"
+msgstr "error de E/S"
+
+#: when-command.py:376
+msgid "unknown"
+msgstr "desconocido"
+
+#: when-command.py:377
+#, python-format
+msgid "could not save task history (%s)"
+msgstr "no se pudo guardar el historial de tareas (%s)"
+
+#: when-command.py:378
+#, python-format
+msgid "exported %s elements to specified file"
+msgstr "se exportaron %s elementos en el archivo especificado"
+
+#: when-command.py:379
+msgid "removing all items"
+msgstr "eliminando todos los elementos"
+
+#: when-command.py:380
+msgid "could not remove condition list file"
+msgstr "no se pudo eliminar el archivo de lista de condiciones"
+
+#: when-command.py:381
+msgid "could not remove task list file"
+msgstr "no se pudo eliminar el archivo de lista de tareas"
+
+#: when-command.py:382
+msgid "could not remove signal handler list file"
+msgstr "no se pudo eliminar el archivo de lista de manejadores de señales"
+
+#: when-command.py:383
+msgid "exporting items:"
+msgstr "exportando elementos:"
+
+#: when-command.py:384 when-command.py:391
+#, python-format
+msgid "    %s tasks"
+msgstr "    %s tareas"
+
+#: when-command.py:385 when-command.py:392
+#, python-format
+msgid "    %s conditions"
+msgstr "    %s condiciones"
+
+#: when-command.py:386 when-command.py:393
+#, python-format
+msgid "    %s signal handlers"
+msgstr "    %s manejadores de señales"
+
+#: when-command.py:387
+#, python-format
+msgid "items exported to file %s"
+msgstr "elementos exportados en el archivo «%s»"
+
+#: when-command.py:388
+#, python-format
+msgid "importing items from file %s"
+msgstr "importando elementos del archivo «%s»"
+
+#: when-command.py:389
+msgid "could not import from dump file"
+msgstr "no se pudo importar desde el archivo de volcado"
+
+#: when-command.py:390
+msgid "restoring items:"
+msgstr "restaurando elementos:"
+
+#: when-command.py:394
+msgid "items successfully imported"
+msgstr "elementos importados correctamente"
+
+#: when-command.py:395
+msgid "no instance could be found"
+msgstr "no se encontró ninguna instancia"
+
+#: when-command.py:396
+msgid "found a running instance"
+msgstr "se encontró una instancia en ejecución"
+
+#: when-command.py:397
+msgid "tasks and conditions successfully exported"
+msgstr "se exportaron las tareas y las condiciones correctamente"
+
+#: when-command.py:398
+msgid "configuration has been reset"
+msgstr "se ha restablecido la configuración"
+
+#: when-command.py:399
+msgid "tasks and conditions deleted"
+msgstr "se eliminaron las tareas y las condiciones"
+
+#: when-command.py:400
+msgid "icons and data installed"
+msgstr "se instalaron los iconos y los datos"
+
+#: when-command.py:402
+msgid "this program requires a graphical session"
+msgstr "este programa necesita ejecutarse en una sesión gráfica"
+
+#: when-command.py:403
+msgid "another instance is present: leaving"
+msgstr "hay otra instancia; esta se abandonará"
+
+#: when-command.py:404
+msgid "could not find a running instance, please start it first"
+msgstr "no se encontraron instancias en ejecución; inicie una primero"
+
+#: when-command.py:405
+msgid "could not find a running instance"
+msgstr "no se encontró ninguna instancia en ejecución"
+
+#: when-command.py:406
+msgid "dbus signals disabled by configuration"
+msgstr "las señales de DBus se desactivaron en la configuración"
+
+#: when-command.py:407
+msgid "an error occurred while trying to export items"
+msgstr "se produjo un error al intentar exportar los elementos"
+
+#: when-command.py:408
+msgid "cannot reset configuration, please close instance first"
+msgstr ""
+"no se puede restablecer la configuración; cierre la instancia primero"
+
+#: when-command.py:409
+msgid "an error occurred while trying to reset configuration"
+msgstr "se produjo un error al intentar restablecer la configuración"
+
+#: when-command.py:410
+msgid "cannot clear items, please close instance first"
+msgstr "no se pueden vaciar los elementos; cierre la instancia primero"
+
+#: when-command.py:411
+msgid "an error occurred while trying to delete items"
+msgstr "se produjo un error al intentar eliminar los elementos"
+
+#: when-command.py:412
+msgid "cannot import items, please close instance first"
+msgstr "no se pueden importar los elementos; cierre la instancia primero"
+
+#: when-command.py:413
+msgid "an error occurred while trying to import items"
+msgstr "se produjo un error al intentar importar los elementos"
+
+#: when-command.py:414
+msgid "cannot install, please close instance first"
+msgstr "no se puede instalar; cierre la instancia primero"
+
+#: when-command.py:415
+msgid "an error occurred while trying to install icons"
+msgstr "se produjo un error al intentar instalar los iconos"
+
+#: when-command.py:417
+msgid "show applet version"
+msgstr "mostrar la versión de la miniaplicación"
+
+#: when-command.py:418
+msgid "show settings dialog box for the running instance [R]"
+msgstr "mostrar ventana de configuración para la instancia actual [R]"
+
+#: when-command.py:419
+msgid "show history dialog box for the running instance [R]"
+msgstr "mostrar ventana de historial para la instancia actual [R]"
+
+#: when-command.py:420
+msgid "show tasks dialog box for the running instance [R]"
+msgstr "mostrar ventana de tareas para la instancia actual [R]"
+
+#: when-command.py:421
+msgid "show conditions box for the running instance [R]"
+msgstr "mostrar ventana de condiciones para la instancia actual [R]"
+
+#: when-command.py:422
+msgid "show dbus signals box for the running instance [R]"
+msgstr "mostrar ventana de señales de DBus para la instancia actual [R]"
+
+#: when-command.py:423
+msgid "reset general configuration to default [S]"
+msgstr "restablecer configuración general a los valores predeterminados [S]"
+
+#: when-command.py:424
+msgid "show applet icon [N]"
+msgstr "mostrar icono de la miniaplicación [N]"
+
+#: when-command.py:425
+msgid "clear all tasks and conditions [S]"
+msgstr "vaciar todas las tareas y condiciones [S]"
+
+#: when-command.py:426
+msgid "install application icons and autostart [S]"
+msgstr "instalar iconos de aplicación e inicio automático [S]"
+
+#: when-command.py:427
+msgid "query for a running instance"
+msgstr "buscar una instancia en ejecución"
+
+#: when-command.py:428
+msgid "export task history to a text file [R]"
+msgstr "exportar historial de tareas en un archivo de texto [R]"
+
+#: when-command.py:429
+msgid "run a command-line bound condition"
+msgstr "ejecutar una condición ligada de consola"
+
+#: when-command.py:430
+msgid "enqueue a command-line bound condition"
+msgstr "añadir una condición ligada de consola a la cola"
+
+#: when-command.py:431
+msgid "run shutdown tasks and close an existing istance [R]"
+msgstr ""
+"ejecutar tareas de finalización y cerrar una instancia existente [R]"
+
+#: when-command.py:432
+msgid "kill an existing istance [R]"
+msgstr "forzar el cierre de una instancia existente [R]"
+
+#: when-command.py:433
+msgid "save tasks and conditions to a portable format"
+msgstr "guardar las tareas y condiciones en un formato portátil"
+
+#: when-command.py:434
+msgid "import tasks and conditions from saved file [S]"
+msgstr "importar tareas y condiciones a partir de un archivo guardado [S]"
+
+#: when-command.py:435
+msgid "show verbose output for some options"
+msgstr "mostrar salida detallada para algunas opciones"
+
+#: when-command.py:436
+#, python-format
+msgid "%s: %s, version %s"
+msgstr "%s: %s, versión %s"
+
+#: when-command.py:437
+#, python-format
+msgid ""
+"%s: %s - %s /\n"
+"When is a configurable user task scheduler for Ubuntu.\n"
+"The command line interface can be used to interact with running instances "
+"of\n"
+"When or to perform maintenance tasks. Use the --verbose option to read "
+"output\n"
+"from the command, as most operations will show no output by default.\n"
+msgstr ""
+"%s: %s - %s /\n"
+"When es un programador de tareas configurable para Ubuntu.\n"
+"La interfaz de consola puede utilizarse para interactuar con instancias "
+"en ejecución\n"
+"de When o para realizar tareas de mantenimiento. Use la opción --verbose "
+"para leer la\n"
+"salida de la orden, puesto que la mayoría de las operaciones no muestran "
+"salida de\n"
+"manera predeterminada.\n"
+
+#: when-command.py:444
+#, python-format
+msgid ""
+"Note: options marked with [R] require an instance running in the "
+"background,\n"
+"with [S] require that no instance is running and with [N] have only "
+"effect\n"
+"after restart. Go to %s for more information.\n"
+msgstr ""
+"Nota: las opciones marcadas con [R] necesitan de una instancia "
+"ejecutándose en\n"
+"segundo plano, la [S] indica que no se necesita ninguna y la [N] indica "
+"que surtirán\n"
+"efecto tras un reinicio. Consulte %s para más información.\n"
+
+#: when-command-about.glade.h:1
+msgid "Copyright (c) 2015 Francesco Garosi"
+msgstr "© 2015 Francesco Garosi"
+
+#: when-command-about.glade.h:2
+msgid "When is a configurable user scheduler for Gnome."
+msgstr "When es un programador de tareas configurable para Gnome."
+
+#: when-command-about.glade.h:3
+msgid "When's Web Page"
+msgstr "Sitio web de When"
+
+#: when-command-edit-condition.glade.h:1
+msgid "Edit Condition"
+msgstr "Editar la condición"
+
+#: when-command-edit-condition.glade.h:2 when-command-edit-task.glade.h:2
+msgid "Name"
+msgstr "Nombre"
+
+#: when-command-edit-condition.glade.h:3
+msgid "Type"
+msgstr "Tipo"
+
+#: when-command-edit-condition.glade.h:4
+msgid "Interval"
+msgstr "Intervalo"
+
+#: when-command-edit-condition.glade.h:5
+msgid "Time"
+msgstr "Hora"
+
+#: when-command-edit-condition.glade.h:6 when-command-edit-task.glade.h:3
+msgid "Command"
+msgstr "Orden"
+
+#: when-command-edit-condition.glade.h:7
+msgid "Idle Session"
+msgstr "Sesión inactiva"
+
+#: when-command-edit-condition.glade.h:8
+msgid "Event"
+msgstr "Evento"
+
+#: when-command-edit-condition.glade.h:9
+msgid "File Change"
+msgstr "Cambio en archivo"
+
+#: when-command-edit-condition.glade.h:11 when-command-edit-task.glade.h:15
+msgid "Standard Output"
+msgstr "Salida estándar"
+
+#: when-command-edit-condition.glade.h:12 when-command-edit-task.glade.h:16
+msgid "Standard Error"
+msgstr "Error estándar"
+
+#: when-command-edit-condition.glade.h:13 when-command-edit-task.glade.h:17
+msgid "0"
+msgstr "0"
+
+#: when-command-edit-condition.glade.h:14 when-command-edit-task.glade.h:18
+msgid "Exact Match"
+msgstr "Coincidencia exacta"
+
+#: when-command-edit-condition.glade.h:15 when-command-edit-task.glade.h:19
+msgid "Case Sensitive"
+msgstr "Distinguir mayúsculas y minúsculas"
+
+#: when-command-edit-condition.glade.h:16 when-command-edit-task.glade.h:20
+msgid "Regular Expression"
+msgstr "Expresión regular"
+
+#: when-command-edit-condition.glade.h:17
+msgid "Idle Minutes"
+msgstr "Minutos de inactividad"
+
+#: when-command-edit-condition.glade.h:18
+msgid "Hours"
+msgstr "Horas"
+
+#: when-command-edit-condition.glade.h:19
+msgid "Minutes"
+msgstr "Minutos"
+
+#: when-command-edit-condition.glade.h:20
+msgid "Startup"
+msgstr "Arranque"
+
+#: when-command-edit-condition.glade.h:21
+msgid "Shutdown"
+msgstr "Finalización"
+
+#: when-command-edit-condition.glade.h:22
+msgid "Suspend"
+msgstr "Suspensión"
+
+#: when-command-edit-condition.glade.h:23
+msgid "Resume"
+msgstr "Reanudar"
+
+#: when-command-edit-condition.glade.h:24
+msgid "Connect Storage Device"
+msgstr "Conectar un dispositivo de almacenamient"
+
+#: when-command-edit-condition.glade.h:25
+msgid "Disconnect Storage Device"
+msgstr "Desconectar un dispositivo de almacenamiento"
+
+#: when-command-edit-condition.glade.h:26
+msgid "Join Network"
+msgstr "Unirse a una red"
+
+#: when-command-edit-condition.glade.h:27
+msgid "Leave Network"
+msgstr "Abandonar la red"
+
+#: when-command-edit-condition.glade.h:28
+msgid "Screensaver Started"
+msgstr "Comienzo del salvapantallas"
+
+#: when-command-edit-condition.glade.h:29
+msgid "Return From Screensaver"
+msgstr "Fin del salvapantallas"
+
+#: when-command-edit-condition.glade.h:30
+msgid "Session Lock"
+msgstr "Bloqueo de sesión"
+
+#: when-command-edit-condition.glade.h:31
+msgid "Session Unlock"
+msgstr "Desbloqueo de sesión"
+
+#: when-command-edit-condition.glade.h:32
+msgid "Command Line Trigger"
+msgstr "Desencadenador de consola"
+
+#: when-command-edit-condition.glade.h:33
+msgid "Year"
+msgstr "Año"
+
+#: when-command-edit-condition.glade.h:34
+msgid "Month"
+msgstr "Mes"
+
+#: when-command-edit-condition.glade.h:35
+msgid "Day"
+msgstr "Día"
+
+#: when-command-edit-condition.glade.h:36
+msgid "Week Day"
+msgstr "Día de la semana"
+
+#: when-command-edit-condition.glade.h:37
+msgid "Hour"
+msgstr "Hora"
+
+#: when-command-edit-condition.glade.h:38
+msgid "Minute"
+msgstr "Minuto"
+
+#: when-command-edit-condition.glade.h:39
+msgid "Monday"
+msgstr "Lunes"
+
+#: when-command-edit-condition.glade.h:40
+msgid "Tuesday"
+msgstr "Martes"
+
+#: when-command-edit-condition.glade.h:41
+msgid "Wednesday"
+msgstr "Miércoles"
+
+#: when-command-edit-condition.glade.h:42
+msgid "Thursday"
+msgstr "Jueves"
+
+#: when-command-edit-condition.glade.h:43
+msgid "Friday"
+msgstr "Viernes"
+
+#: when-command-edit-condition.glade.h:44
+msgid "Saturday"
+msgstr "Sábado"
+
+#: when-command-edit-condition.glade.h:45
+msgid "Sunday"
+msgstr "Domingo"
+
+#: when-command-edit-condition.glade.h:46
+msgid "January"
+msgstr "Enero"
+
+#: when-command-edit-condition.glade.h:47
+msgid "February"
+msgstr "Febrero"
+
+#: when-command-edit-condition.glade.h:48
+msgid "March"
+msgstr "Marzo"
+
+#: when-command-edit-condition.glade.h:49
+msgid "April"
+msgstr "Abril"
+
+#: when-command-edit-condition.glade.h:50
+msgid "May"
+msgstr "Mayo"
+
+#: when-command-edit-condition.glade.h:51
+msgid "June"
+msgstr "Junio"
+
+#: when-command-edit-condition.glade.h:52
+msgid "July"
+msgstr "Julio"
+
+#: when-command-edit-condition.glade.h:53
+msgid "August"
+msgstr "Agosto"
+
+#: when-command-edit-condition.glade.h:54
+msgid "September"
+msgstr "Septiembre"
+
+#: when-command-edit-condition.glade.h:55
+msgid "October"
+msgstr "Octubre"
+
+#: when-command-edit-condition.glade.h:56
+msgid "November"
+msgstr "Noviembre"
+
+#: when-command-edit-condition.glade.h:57
+msgid "December"
+msgstr "Diciembre"
+
+#: when-command-edit-condition.glade.h:58
+msgid "Watch Files"
+msgstr "Vigilar archivos"
+
+#: when-command-edit-condition.glade.h:59 when-command-edit-task.glade.h:5
+msgid "Choose..."
+msgstr "Elegir…"
+
+#: when-command-edit-condition.glade.h:60
+msgid "Select Directory"
+msgstr "Seleccione una carpeta"
+
+#: when-command-edit-condition.glade.h:61
+msgid "User Event Identifier"
+msgstr "Identificador de evento de usuario"
+
+#: when-command-edit-condition.glade.h:62
+msgid "Tasks"
+msgstr "Tareas"
+
+#: when-command-edit-condition.glade.h:63
+msgid "Add"
+msgstr "Añador"
+
+#: when-command-edit-condition.glade.h:64
+#: when-command-edit-dbus-signal.glade.h:21
+#: when-command-edit-task.glade.h:8
+msgid "Remove"
+msgstr "Quitar"
+
+#: when-command-edit-condition.glade.h:65
+msgid "Repeat Checks"
+msgstr "Repetir las comprobaciones"
+
+#: when-command-edit-condition.glade.h:66
+msgid "Execute Sequence"
+msgstr "Ejecutar la secuencia"
+
+#: when-command-edit-condition.glade.h:67
+msgid "Ignore Task Outcome"
+msgstr "Ignorar resultado de la tarea"
+
+#: when-command-edit-condition.glade.h:68
+msgid "Break on Task Failure"
+msgstr "Interrumpir al fallar la tarea"
+
+#: when-command-edit-condition.glade.h:69
+msgid "Break on Task Success"
+msgstr "Interrumpir al realizar la tarea exitosamente"
+
+#: when-command-edit-condition.glade.h:70
+#: when-command-edit-dbus-signal.glade.h:2
+#: when-command-edit-task.glade.h:21
+msgid "Delete"
+msgstr "Eliminar"
+
+#: when-command-edit-dbus-signal.glade.h:1
+msgid "DBus Signal Handler Editor"
+msgstr "Editor de manejadores de señales de DBus"
+
+#: when-command-edit-dbus-signal.glade.h:3
+msgid "Handler Name"
+msgstr "Nombre del manejador"
+
+#: when-command-edit-dbus-signal.glade.h:4
+msgid "Unique Bus"
+msgstr "Bus único"
+
+#: when-command-edit-dbus-signal.glade.h:5
+msgid "Interface"
+msgstr "Interfaz"
+
+#: when-command-edit-dbus-signal.glade.h:6
+msgid "Path"
+msgstr "Ruta"
+
+#: when-command-edit-dbus-signal.glade.h:7
+msgid "Bus"
+msgstr "Bus"
+
+#: when-command-edit-dbus-signal.glade.h:8
+msgid "Session Bus"
+msgstr "Bus de la sesión"
+
+#: when-command-edit-dbus-signal.glade.h:9
+msgid "System Bus"
+msgstr "Bus del sistema"
+
+#: when-command-edit-dbus-signal.glade.h:10
+msgid "Signal"
+msgstr "Señal"
+
+#: when-command-edit-dbus-signal.glade.h:11
+msgid "Signal Parameters Tests"
+msgstr "Pruebas de parámetros de señales"
+
+#: when-command-edit-dbus-signal.glade.h:12
+msgid "Value #"
+msgstr "Valor n.º"
+
+#: when-command-edit-dbus-signal.glade.h:13
+msgid "Sub #"
+msgstr "Sub. n.º"
+
+#: when-command-edit-dbus-signal.glade.h:14
+msgid "Not"
+msgstr "Not"
+
+#: when-command-edit-dbus-signal.glade.h:15
+msgid "="
+msgstr "="
+
+#: when-command-edit-dbus-signal.glade.h:16
+msgid "CONTAINS"
+msgstr "CONTAINS"
+
+#: when-command-edit-dbus-signal.glade.h:17
+msgid "MATCHES"
+msgstr "MATCHES"
+
+#: when-command-edit-dbus-signal.glade.h:18
+msgid "<"
+msgstr "<"
+
+#: when-command-edit-dbus-signal.glade.h:19
+msgid ">"
+msgstr ">"
+
+#: when-command-edit-dbus-signal.glade.h:20
+#: when-command-edit-task.glade.h:7
+msgid "Update"
+msgstr "Actualizar"
+
+#: when-command-edit-dbus-signal.glade.h:22
+msgid "All above tests must be True"
+msgstr "Todas las pruebas anteriores deben ser verdaderas"
+
+#: when-command-edit-dbus-signal.glade.h:23
+msgid "Any of the above tests can be True"
+msgstr "Cualquier prueba puede ser verdadera"
+
+#: when-command-edit-dbus-signal.glade.h:24
+msgid "Activate on next clock tick"
+msgstr "Activar al próximo pulso del reloj"
+
+#: when-command-edit-task.glade.h:1
+msgid "Edit Task"
+msgstr "Editar la tarea"
+
+#: when-command-edit-task.glade.h:4
+msgid "Working Folder"
+msgstr "Carpeta de trabajo"
+
+#: when-command-edit-task.glade.h:6
+msgid "Environment Variables"
+msgstr "Variables de entorno"
+
+#: when-command-edit-task.glade.h:9
+msgid "Import Environment"
+msgstr "Entorno de importación"
+
+#: when-command-edit-task.glade.h:10
+msgid "Check for"
+msgstr "Qué comprobar"
+
+#: when-command-edit-task.glade.h:11
+msgid "Nothing"
+msgstr "Nada"
+
+#: when-command-edit-task.glade.h:12
+msgid "Success"
+msgstr "Éxito"
+
+#: when-command-edit-task.glade.h:13
+msgid "Failure"
+msgstr "Fallo"
+
+#: when-command-settings.glade.h:1
+msgid "Settings"
+msgstr "Configuración"
+
+#: when-command-settings.glade.h:2
+msgid "Show Icon"
+msgstr "Mostrar el icono"
+
+#: when-command-settings.glade.h:3
+msgid "Autostart"
+msgstr "Inicio automático"
+
+#: when-command-settings.glade.h:4
+msgid "Notifications"
+msgstr "Notificaciones"
+
+#: when-command-settings.glade.h:5
+msgid "Icon Theme:"
+msgstr "Tema de iconos:"
+
+#: when-command-settings.glade.h:6
+msgid "Light Background"
+msgstr "Fondo claro"
+
+#: when-command-settings.glade.h:7
+msgid "Dark Background"
+msgstr "Fondo oscuro"
+
+#: when-command-settings.glade.h:8
+msgid "Color Icons"
+msgstr "Iconos de colores"
+
+#: when-command-settings.glade.h:9
+msgid "Guess"
+msgstr "Adivinar"
+
+#: when-command-settings.glade.h:10
+msgid "General"
+msgstr "General"
+
+#: when-command-settings.glade.h:11
+msgid "Application clock tick time (seconds):"
+msgstr "Tiempo de pulso del reloj de la aplicación (s):"
+
+#: when-command-settings.glade.h:12
+msgid "Condition check skip time (seconds):"
+msgstr "Tiempo de omisión de comprobación de condiciones (s):"
+
+#: when-command-settings.glade.h:13
+msgid "Preserve Pause Across Sessions"
+msgstr "Conservar la pausa entre sesiones"
+
+#: when-command-settings.glade.h:14
+msgid "Scheduler"
+msgstr "Programador"
+
+#: when-command-settings.glade.h:15
+msgid "Max Concurrent Tasks:"
+msgstr "Máximo de tareas simultáneas:"
+
+#: when-command-settings.glade.h:16
+msgid "Critical"
+msgstr "Crítica"
+
+#: when-command-settings.glade.h:17
+msgid "Error"
+msgstr "Error"
+
+#: when-command-settings.glade.h:18
+msgid "Warning"
+msgstr "Aviso"
+
+#: when-command-settings.glade.h:19
+msgid "Info"
+msgstr "Información"
+
+#: when-command-settings.glade.h:20
+msgid "Debug"
+msgstr "Depurar"
+
+#: when-command-settings.glade.h:21
+msgid "Log Level:"
+msgstr "Nivel del registro:"
+
+#: when-command-settings.glade.h:22
+msgid "Max Log Size (bytes):"
+msgstr "Tamaño máximo del registro (bytes):"
+
+#: when-command-settings.glade.h:23
+msgid "Number Of Log Backups:"
+msgstr "N.º de copias de respaldo del registro:"
+
+#: when-command-settings.glade.h:24
+msgid "Instance History Items:"
+msgstr "Elementos del historial de la instancia:"
+
+#: when-command-settings.glade.h:25
+msgid "Enable User Defined Events (DBus)"
+msgstr "Activar eventos del usuario (DBus)"
+
+#: when-command-settings.glade.h:26
+msgid "Enable File and Directory Notifications"
+msgstr "Activar notificaciones de archivos y carpetas"
+
+#: when-command-settings.glade.h:27
+msgid "Enable Task and Condition Environment Variables"
+msgstr "Activar variables de entorno de tareas y condiciones"
+
+#: when-command-settings.glade.h:28
+msgid "Advanced"
+msgstr "Avanzadas"
+
+#: when-command-task-history.glade.h:1
+msgid "Task History"
+msgstr "Historial de tareas"
+
+#: when-command-task-history.glade.h:2
+msgid "Output"
+msgstr "Salida"
+
+#: when-command-task-history.glade.h:3
+msgid "Errors"
+msgstr "Errores"
+
+#: when-command-task-history.glade.h:4
+msgid "Reload"
+msgstr "Cargar de nuevo"
