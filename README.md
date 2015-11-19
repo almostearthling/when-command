@@ -186,6 +186,7 @@ For the applet to function and before unpacking it to the destination directory,
 ```
 ~$ sudo apt-get install python3-gi
 ~$ sudo apt-get install xprintidle
+~$ sudo apt-get install gir1.2-appindicator3-0.1  # may be required
 ~$ sudo apt-get install python3-pyinotify   # optional (but recommended)
 ~$ cd /opt
 ~$ sudo tar xzf /path/to/when-command.tar.gz
