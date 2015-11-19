@@ -4,6 +4,7 @@
 ## Version 0.9.1 (beta)
 * Support localization and translations using portable objects
 * Italian localization provided (also as an example)
+* Spanish localization (thanks @fitojb)
 * Bug fixes
 
 
