@@ -334,6 +334,15 @@ Whenever a new feature is added, that affects the *background* part of **When** 
 It has to be noted that, at least for now, the test suite is only concerned about *function* and not *performance*: since **When** is a rather lazy applet, performance in terms of speed is not a top requirement.
 
 
+### Credits
+
+Open Source Software relies on collaboration, and more than I'm happy to receive help from other developers. Here I'll list the main contributions.
+
+* Adolfo Jayme-Barrientos, aka [fitojb](https://github.com/fitojb), for the Spanish translation
+
+Also, I'd like to thank everyone who contributes to the development of **When** by commenting, filing bugs, suggesting features and testing. Every kind of help is welcome.
+
+
 ### Resources
 
 As said above, this software is designed to run mainly on Ubuntu, so the chosen framework is *Python 3.x* with *PyGObject* (*GTK 3.0*); the interface is developed using the *Glade* interface designer. The used resources are:
