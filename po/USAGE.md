@@ -9,7 +9,7 @@ The following commands are needed for the program and the UI files:
 
 ```
 $ for x in share/*.glade ; do intltool-extract --type=gettext/glade $x ; done
-$ xgettext -k_ -kN_ -o po/messages.pot -D . -D share -f po/messages.list
+$ xgettext -k_ -kN_ -o po/messages.pot -D . -D share -f po/translate.list
 ```
 
 
