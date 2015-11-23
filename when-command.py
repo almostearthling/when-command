@@ -4876,7 +4876,7 @@ def import_item_data(filename=None, verbose=False):
 
 
 # Configure services and start the application
-def main():
+def gui_applet_main():
     init_signal_handler(applet)
     # signal.signal(signal.SIGINT, signal.SIG_DFL)
     preserve_pause = config.get('Scheduler', 'preserve pause')
@@ -4898,8 +4898,20 @@ def main():
         periodic.stop()
 
 
-# Build the applet and start
-if __name__ == '__main__':
+# the main() function enables running the applet via an import
+def main():
+    global config
+    global tasks
+    global conditions
+    global signal_handlers
+    global history
+    global applet
+    global periodic
+    global main_dbus_loop
+    global watch_path_manager
+    global watch_path_notifier
+    global deferred_events
+    global deferred_watch_paths
 
     if GRAPHIC_ENVIRONMENT:
         main_dbus_loop = DBusGMainLoop(set_as_default=True)
@@ -4952,7 +4964,7 @@ if __name__ == '__main__':
         deferred_watch_paths = DeferredWatchPaths()
         create_desktop_file(False)
         create_autostart_file(False)
-        main()
+        gui_applet_main()
 
     else:
         parser = argparse.ArgumentParser(
@@ -5221,6 +5233,11 @@ if __name__ == '__main__':
             else:
                 oerr(resources.OERR_NO_INSTANCE, verbose)
                 sys.exit(1)
+
+
+# Build the applet and start
+if __name__ == '__main__':
+    main()
 
 
 # end.
