@@ -8,6 +8,7 @@ This text is here to just remind how to use the files in the `po` directory, unt
 The following commands are needed for the program and the UI files:
 
 ```
+$ mkdir po/temp
 $ for x in share/*.glade ; do
 >   intltool-extract --type=gettext/glade $x
 >   mv -f $x.h po/temp
