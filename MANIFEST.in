@@ -1,0 +1,8 @@
+include *.py
+include *.md
+include LICENSE
+include share/*.glade
+include share/*.py
+recursive-include share/icons/*
+recursive-include share/locale/*
+recursive-include share/when-command/*
