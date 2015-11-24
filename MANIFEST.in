@@ -1,8 +1,7 @@
-include *.py
 include README.md
 include LICENSE
 include share/*.glade
-include share/*.py
+include share/when-command.py
 recursive-include share/icons/*
 recursive-include share/locale/*
 recursive-include share/doc/*
