@@ -247,8 +247,11 @@ def verify_user_folders():
 # prefix of the applet data folder (where dialogs, icons and other resources
 # have to be installed); icons have their own subtree in the data folder;
 # locales are either in standard system folders or a subtree of data folder.
-# In the $HOME generic case the files have to be manually copied to the
-# appropriate folders.
+# In the $HOME and /opt cases the files have to be manually copied to the
+# appropriate folders (that is, contents of the share/when-command directory
+# in the source tree have to be moved to the ~/.local/when-command/share
+# and /opt/when-command/share folders, and in the $HOME case possibly the
+# documentation files and license text should be moved there).
 APP_BASE_FOLDER = '/usr'
 APP_BIN_FOLDER = os.path.join(APP_BASE_FOLDER, 'bin')
 APP_DATA_FOLDER = os.path.join(APP_BASE_FOLDER, 'share', APPLET_NAME)
@@ -260,7 +263,7 @@ INVOKED_DIR = os.path.dirname(INVOKED_CMD)
 if INVOKED_DIR == os.path.join('/opt', APPLET_NAME):
     APP_BIN_FOLDER = INVOKED_DIR
     APP_BASE_FOLDER = INVOKED_DIR
-    APP_DATA_FOLDER = os.path.join(APP_BASE_FOLDER, 'share', APPLET_NAME)
+    APP_DATA_FOLDER = os.path.join(APP_BASE_FOLDER, 'share')
     APP_ICON_FOLDER = os.path.join(APP_DATA_FOLDER, 'icons')
     APP_LOCALE_FOLDER = os.path.join(APP_DATA_FOLDER, 'locale')
 elif INVOKED_DIR == '/usr/local/bin':
@@ -278,9 +281,9 @@ elif INVOKED_DIR == os.path.join(USER_FOLDER, '.local', 'bin'):
 elif not INVOKED_DIR.startswith('/usr'):
     APP_BIN_FOLDER = INVOKED_DIR
     APP_BASE_FOLDER = INVOKED_DIR
-    APP_DATA_FOLDER = os.path.join(APP_BASE_FOLDER, 'share')
+    APP_DATA_FOLDER = os.path.join(APP_BASE_FOLDER, 'share', APPLET_NAME)
     APP_ICON_FOLDER = os.path.join(APP_DATA_FOLDER, 'icons')
-    APP_LOCALE_FOLDER = os.path.join(APP_DATA_FOLDER, 'locale')
+    APP_LOCALE_FOLDER = os.path.join(APP_BASE_FOLDER, 'share', 'locale')
 
 # update Python path
 sys.path.insert(0, APP_DATA_FOLDER)
