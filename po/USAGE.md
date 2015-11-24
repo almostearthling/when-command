@@ -9,7 +9,7 @@ The following commands are needed for the program and the UI files:
 
 ```
 $ mkdir po/temp
-$ for x in share/*.glade ; do
+$ for x in share/when-command/*.glade ; do
 >   intltool-extract --type=gettext/glade $x
 >   mv -f $x.h po/temp
 > done
