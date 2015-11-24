@@ -237,16 +237,18 @@ def verify_user_folders():
 #############################################################################
 # Support these installation schemes:
 #
-# * default: LSB standard (/usr/bin/when-command, /usr/share/when-command/*)
-# * /opt based (/opt/when-command/when-command, /opt/when-command/share/*)
-# * LSB local (/usr/local/bin/when-command, /usr/local/share/when-command/*)
-# * $HOME generic (~/.local/bin/when-command, ~/.local/when-command/share/*)
-# * own folder ($FOLDER/when-command, $FOLDER/share/*)
+# * default: LSB standard (/usr/bin, /usr/share/when-command/*)
+# * /opt based (/opt/when-command, /opt/when-command/share/when-command/*)
+# * LSB local (/usr/local/bin, /usr/local/share/when-command/*)
+# * $HOME generic (~/.local/bin, ~/.local/when-command/share/*)
+# * own folder ($FOLDER, $FOLDER/share/when-command/*)
 #
-# where the first element is the invoked command, the second one is the
+# where first element is the invoked command directory, second one is the
 # prefix of the applet data folder (where dialogs, icons and other resources
 # have to be installed); icons have their own subtree in the data folder;
-# locales are either in standard system folders or a subtree of data folder
+# locales are either in standard system folders or a subtree of data folder.
+# In the $HOME generic case the files have to be manually copied to the
+# appropriate folders.
 APP_BASE_FOLDER = '/usr'
 APP_BIN_FOLDER = os.path.join(APP_BASE_FOLDER, 'bin')
 APP_DATA_FOLDER = os.path.join(APP_BASE_FOLDER, 'share', APPLET_NAME)
@@ -258,7 +260,7 @@ INVOKED_DIR = os.path.dirname(INVOKED_CMD)
 if INVOKED_DIR == os.path.join('/opt', APPLET_NAME):
     APP_BIN_FOLDER = INVOKED_DIR
     APP_BASE_FOLDER = INVOKED_DIR
-    APP_DATA_FOLDER = os.path.join(APP_BASE_FOLDER, 'share')
+    APP_DATA_FOLDER = os.path.join(APP_BASE_FOLDER, 'share', APPLET_NAME)
     APP_ICON_FOLDER = os.path.join(APP_DATA_FOLDER, 'icons')
     APP_LOCALE_FOLDER = os.path.join(APP_DATA_FOLDER, 'locale')
 elif INVOKED_DIR == '/usr/local/bin':
