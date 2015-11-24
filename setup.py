@@ -50,9 +50,6 @@ setup(
     author_email='franz.g@no-spam-please.infinito.it',
     license='BSD',
     platform='linux',
-    packages=find_packages(),
-    include_package_data=True,
-    install_requires=[],
 
     classifiers=[
         ('Development Status :: 4 - Beta'
@@ -68,10 +65,13 @@ setup(
     ],
     keywords='applet desktop gnome task-scheduler ubuntu unity',
 
-    entry_points={
-        # 'gui_scripts': 'when-command=when-command:main',
-        'console_scripts': 'when-command=when-command:main',
-    },
+    # entry_points={
+    #     # 'gui_scripts': 'when-command=when-command:main',
+    #     'console_scripts': 'when-command=when-command:main',
+    # },
+    scripts=[
+        'when-command.py',
+    ],
 
 )
 
