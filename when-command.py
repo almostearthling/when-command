@@ -80,6 +80,7 @@ APPLET_VERSION = '0.9.1-beta.3'
 APPLET_ID = 'it.jks.WhenCommand'
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
+APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -435,7 +436,7 @@ resources.COMMAND_LINE_HELP_VERBOSE = _("show verbose output for some options")
 resources.COMMAND_LINE_SHOWVERSION = _("%s: %s, version %s")
 resources.COMMAND_LINE_PREAMBLE = _("""\
 %s: %s - %s /
-When is a configurable user task scheduler for Ubuntu.
+When is a configurable user task scheduler for Gnome.
 The command line interface can be used to interact with running instances of
 When or to perform maintenance tasks. Use the --verbose option to read output
 from the command, as most operations will show no output by default.

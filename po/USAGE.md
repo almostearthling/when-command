@@ -8,9 +8,14 @@ This text is here to just remind how to use the files in the `po` directory, unt
 The following commands are needed for the program and the UI files:
 
 ```
-$ for x in share/*.glade ; do intltool-extract --type=gettext/glade $x ; done
-$ xgettext -k_ -kN_ -o po/messages.pot -D . -D share -f po/messages.list
+$ for x in share/*.glade ; do
+>   intltool-extract --type=gettext/glade $x
+>   mv -f $x.h po/temp
+> done
+$ xgettext -k_ -kN_ -o po/messages.pot -D . -D po/temp -f po/translate.list
 ```
+
+The reason to move the generated `.h` files to `po/temp` is to keep the `share` directory tidy, as it is used later to build the package.
 
 
 ## Create and update translations
