@@ -65,9 +65,6 @@ for key in DATA_DIC:
             (key, [os.path.join(key, s) for s in DATA_DIC[key]]))
 DATA_TUPLES.append(('share/doc/when-command', ['LICENSE', 'README.md']))
 
-for x in DATA_TUPLES:
-    print(x)
-
 # try to keep identifiers as single-sourced as possible
 HERE = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(HERE, 'share/when-command/when-command.py')) as f:
