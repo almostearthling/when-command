@@ -1,5 +1,14 @@
 # Changelog
 
+## Version 0.9.2 (beta)
+* New directory structure following LSB FHS
+* Standard Python setup script
+* Debian and Ubuntu compatible package
+
+### Directory structure
+
+The new directory structure is more compliant with the LSB FHS, in order to simplify the production of Debian and Ubuntu compatible packages. To keep things tidy, the main script has been moved to the `share/when-command` directory, and has to be linked by the installation utilities in `/usr/bin` under the name `when-command` (without the `.py` suffix). The *"old style"* `/opt` based installation is still possible: the script in https://gist.github.com/almostearthling/009fbbe27ea5ca921452#file-makepkg-sh can be used for this purpose.
+
 
 ## Version 0.9.1 (beta)
 * Support localization and translations using portable objects

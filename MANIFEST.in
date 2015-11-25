@@ -1,8 +1,6 @@
 include README.md
 include LICENSE
-include share/*.glade
-include share/when-command.py
-recursive-include share/icons/*
-recursive-include share/locale/*
-recursive-include share/doc/*
-recursive-include share/when-command/*
+recursive-include share/icons *
+recursive-include share/locale *
+recursive-include share/doc *
+recursive-include share/when-command *

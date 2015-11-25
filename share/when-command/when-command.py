@@ -247,11 +247,7 @@ def verify_user_folders():
 # prefix of the applet data folder (where dialogs, icons and other resources
 # have to be installed); icons have their own subtree in the data folder;
 # locales are either in standard system folders or a subtree of data folder.
-# In the $HOME and /opt cases the files have to be manually copied to the
-# appropriate folders (that is, contents of the share/when-command directory
-# in the source tree have to be moved to the ~/.local/when-command/share
-# and /opt/when-command/share folders, and in the $HOME case possibly the
-# documentation files and license text should be moved there).
+# TODO: explain directory structure and installation procedure in README.md
 APP_BASE_FOLDER = '/usr'
 APP_BIN_FOLDER = os.path.join(APP_BASE_FOLDER, 'bin')
 APP_DATA_FOLDER = os.path.join(APP_BASE_FOLDER, 'share', APPLET_NAME)

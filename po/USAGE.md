@@ -5,18 +5,18 @@ This text is here to just remind how to use the files in the `po` directory, unt
 
 ## Extract translatables
 
-The following commands are needed for the program and the UI files:
+The following commands are needed for the program and the UI files (from the source tree base):
 
 ```
-$ mkdir po/temp
+$ mkdir temp
 $ for x in share/when-command/*.glade ; do
 >   intltool-extract --type=gettext/glade $x
->   mv -f $x.h po/temp
+>   mv -f $x.h temp
 > done
-$ xgettext -k_ -kN_ -o po/messages.pot -D . -D po/temp -f po/translate.list
+$ xgettext -k_ -kN_ -o po/messages.pot -D . -D temp -f po/translate.list
 ```
 
-The reason to move the generated `.h` files to `po/temp` is to keep the `share` directory tidy, as it is used later to build the package.
+The reason to move the generated `.h` files to `temp` is to keep the `share` directory tidy, as it is used later to build the package.
 
 
 ## Create and update translations
