@@ -21,6 +21,8 @@ README.md
 share/when-command/when-command.py
 share/doc/when-command/CHANGELOG.md
 share/doc/when-command/ROADMAP.md
+share/doc/when-command/TRANSLATE.md
+share/doc/when-command/PACKAGE.md
 share/icons/hicolor/128x128/apps/when-command.png
 share/icons/hicolor/256x256/apps/when-command.png
 share/icons/hicolor/32x32/apps/when-command.png
