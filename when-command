@@ -1,0 +1,18 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# When
+#
+# Copyright (c) 2015 Francesco Garosi
+# Released under the BSD License (see LICENSE.md)
+#
+# Small startup applet that runs tasks when particular conditions are met.
+# NOTE: This is a stub script that loads the main when-command applet.
+
+from importlib.machinery import SourceFileLoader
+
+run = SourceFileLoader("when_command",
+                       "/usr/share/when-command/when-command.py").load_module()
+run.main()
+
+# end.
