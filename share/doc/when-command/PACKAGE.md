@@ -13,7 +13,7 @@ In order to build a package that is compatible with the Linux FHS and LSB, many 
 
 Other changes involve the code itself: parts of the script has been modified in order to allow better recognition of the *LSB-based* installation (the one that expects the entry point to be installed in `/usr/bin` and data files in `/usr/share`), even though the possibility has been kept to build a package that installs **When** in `/opt` as it has been usual until now. From now on the preferred installation mode will be the *LSB-based* one, the `/opt` based package is supported on a "best effort" basis for whoever would want to keep **When** separated from the Linux installation.
 
-Unfortunately the new directory setup could require some more effort to allow for local installations (eg. in the user's home directory), although I'll try to do my best to make this process as easy as possible.
+Unfortunately the new directory setup could require some more effort to allow for local installations (e.g. in the user's home directory), although I'll try to do my best to make this process as easy as possible.
 
 
 ## Requirements for packaging
