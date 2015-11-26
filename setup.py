@@ -70,24 +70,20 @@ DATA_TUPLES.append(('share/doc/when-command', ['LICENSE', 'README.md']))
 
 # try to keep identifiers as single-sourced as possible
 HERE = os.path.abspath(os.path.dirname(__file__))
+METADATA = """
+    APPLET_VERSION
+    APPLET_NAME
+    APPLET_FULLNAME
+    APPLET_SHORTNAME
+    APPLET_COPYRIGHT
+    APPLET_URL
+    APPLET_LONGDESC
+""".strip().split()
 with open(os.path.join(HERE, 'share/when-command/when-command.py')) as f:
     for line in f:
         words = line.strip().split()
-        if words:
-            if words[0] == 'APPLET_VERSION':
-                exec(line)
-            elif words[0] == 'APPLET_NAME':
-                exec(line)
-            elif words[0] == 'APPLET_FULLNAME':
-                exec(line)
-            elif words[0] == 'APPLET_SHORTNAME':
-                exec(line)
-            elif words[0] == 'APPLET_COPYRIGHT':
-                exec(line)
-            elif words[0] == 'APPLET_URL':
-                exec(line)
-            elif words[0] == 'APPLET_LONGDESC':
-                exec(line)
+        if words and words[0] in METADATA:
+            exec(line)
 
 
 # this and the MANIFEST.in file should be enough for a suitable sdist
@@ -106,7 +102,7 @@ setup(
 
     classifiers=[
         ('Development Status :: 4 - Beta'
-         if '-beta.' in APPLET_VERSION or '.b' in APPLET_VERSION
+         if 'beta.' in APPLET_VERSION or '.b' in APPLET_VERSION
          else 'Development Status :: 5 - Production/Stable'),
         'Environment :: X11 Applications :: Gnome',
         'Intended Audience :: End Users/Desktop',
@@ -118,7 +114,6 @@ setup(
     ],
     keywords='applet desktop gnome task-scheduler ubuntu unity',
 
-    # package_data={'': DATA_FILES},
     data_files=DATA_TUPLES,
     scripts=[
         'when-command',

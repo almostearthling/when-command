@@ -18,13 +18,13 @@ Unfortunately the new directory setup could require some more effort to allow fo
 
 ## Requirements for packaging
 
-**When** uses Python 3.x `setuptools` to create the source distribution used bu the packaging system. Most information about how to package an application has been retrieved in [Packaging and Distributing Projects](http://python-packaging-user-guide.readthedocs.org/en/latest/distributing/), in [Introduction to Debian Packaging](https://wiki.debian.org/IntroDebianPackaging) and [Python libraries/application packaging](https://wiki.debian.org/Python/Packaging), as well as in the [setuptools documentation](http://pythonhosted.org/setuptools/). Especially, the `stdeb` for Python 3.x has been used: this package is not provided by the standard repository in *Ubuntu 14.04*, so a *pip* installation may be required:
+**When** uses Python 3.x `setuptools` (package `python3-setuptools`, it is possibly already installed on the system) to create the source distribution used bu the packaging system. Most information about how to package an application has been retrieved in [Packaging and Distributing Projects](http://python-packaging-user-guide.readthedocs.org/en/latest/distributing/), in [Introduction to Debian Packaging](https://wiki.debian.org/IntroDebianPackaging) and [Python libraries/application packaging](https://wiki.debian.org/Python/Packaging), as well as in the [setuptools documentation](http://pythonhosted.org/setuptools/). Especially, the `stdeb` for Python 3.x has been used: this package is not provided by the standard repository in *Ubuntu 14.04*, so a *pip* installation may be required:
 
 ```
 $ pip3 install --user stdeb
 ```
 
-Also, to build a `.deb` package, the standard `debhelper`, `build-essential` packages and tasks are needed. I also installed `python-all`, `python3-all`, `python-all-dev`, `python3-all-dev` and `python-stdeb` (which is available, but it is for Python 2.x and quite old), but they might be not needed.
+Also, to build a `.deb` package, the standard `debhelper`, `build-essential` and `fakeroot` packages and tasks are needed. I also installed `python-all`, `python3-all`, `python-all-dev`, `python3-all-dev` and `python-stdeb` (which is available, but it is for Python 2.x and quite old), but they might be not needed.
 
 
 ## Package creation
@@ -62,7 +62,7 @@ $ py2dsc -m 'Francesco Garosi <franz.g@no-spam-please.infinito.it>' when-command
 $ cd deb_dist/when-command-<version_identifier>
 ```
 
-The guide in [Python libraries/application packaging](https://wiki.debian.org/Python/Packaging) suggests then to edit some files in the `debian` subdirectory, namely `control`, `rules` and `links`. The files should read as follows:
+The guide in [Python libraries/application packaging](https://wiki.debian.org/Python/Packaging) suggests then to edit some files in the `debian` subdirectory, namely `control` and `rules` (since we use a stub file, no `links` specification is actually necessary). The files should read as follows:
 
 **control:**
 ```
@@ -96,26 +96,23 @@ override_dh_auto_build:
 #	python3 setup.py build --force
 
 override_dh_auto_install:
-	python3 setup.py install --force --root=debian/when-command --install-layout=deb --install-lib=/usr/share/when-command --install-scripts=/usr/share/when-command
+	python3 setup.py install --force --root=debian/when-command --install-layout=deb --install-lib=/usr/share/when-command --install-scripts=/usr/bin
 
 override_dh_python3:
 	dh_python3 --shebang=/usr/bin/python3
 ```
 
-**links**: *(has to be created)*
-```
-/usr/share/when-command/when-command /usr/bin/when-command
-```
-
 ### 3. Build the package
 
-To build the package the standard Debian utilities can be used, in the following way, when in the `debian` directory:
+To build the package the standard Debian utilities can be used, in the following way, when in the `deb_dist/when-command-<version_identifier>` directory:
 
 ```
 debuild
 ```
 
 The package is in the `deb_dist` directory.
+
+**TODO: Insert information about the source package files.**
 
 
 ## The old way
