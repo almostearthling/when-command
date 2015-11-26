@@ -184,32 +184,52 @@ Please note that whenever a command line option is given, the applet will not "s
 For the applet to function and before unpacking it to the destination directory, make sure that *Python 3.x*,  *PyGObject* for *Python 3.x* and the `xprintidle` utility are installed. Optionally, to enable file and directory monitoring, the `pyinotify` package can be installed. For example, not all of these are installed by default on Ubuntu: in this case the following commands can be used.
 
 ```
-~$ sudo apt-get install python3-gi
-~$ sudo apt-get install xprintidle
-~$ sudo apt-get install gir1.2-appindicator3-0.1  # may be required
-~$ sudo apt-get install python3-pyinotify   # optional (but recommended)
-~$ cd /opt
-~$ sudo tar xzf /path/to/when-command.tar.gz
+$ sudo apt-get install python3-gi
+$ sudo apt-get install xprintidle
+$ sudo apt-get install gir1.2-appindicator3-0.1  # may be required
+$ sudo apt-get install python3-pyinotify   # optional (but recommended)
 ```
 
-**TODO: explain installation steps with the new directory structure.**
+To install the package using the source archive (called `when-command-master.zip` for simplicity, as it reflects the format of a downloaded GitHub repository) in a directory of choice, the required steps are as simple as:
 
-If the zip file was downloaded from the master branch of the repository, the user might want to `mv when-command-master when-command` in the directory where the files have been unzipped. Also, it's advisable to `cd` to the installation directory and `ln -s when-command.py when-command` in order to have a setup more similar to the one provided by the package and to be able to invoke the command omitting the `.py` extension. In the case of a system-wide installation, this has to be done using `sudo`.
+```
+$ cd <install-base>
+$ unzip ~/Downloads/when-command-master.zip
+$ mv when-command-master when-command
+$ cd when-command
+$ rm -Rf po share/icons when-command
+$ chmod a+x share/when-command/when-command.py
+$ ln -s share/when-command/when-command.py when-command
+```
 
-If the Debian/Ubuntu package is available for the desired release, the unzip/extract step can be replaced by `sudo dpkg --install when-command-VERSION_INFO.deb` where `VERSION_INFO` is the version suffix of the downloaded package: this will install the applet in `/opt/when-command`. The instructions given below will complete the installation for the current user and the applet icon will be activated at every login. Also please note that if the package installation was chosen, the command to invoke the applet from the command line can be shortened to `/opt/when-command/when-command` instead of `python3 /opt/when-command/when-command.py` -- although this is not mandatory.
+where removing `po` and the `share/icons` directories is optional, only required to unclutter the application base folder, while the `when-command` stub *must* be removed because it's only used in package-based installations. The package destination base directory can also be within the user's home: this in fact allows per-user installations. To invoke the command line without using the full path, the installation directory (`<install-base>/when-command`) should be added to the path -- that is, symbolic links other than the created one should be avoided. In the documentation `when-command` is assumed to be in the path: if not, the full path should be used instead.
 
-The **When** utility will try to recognize the way it has been set up the first time it's invoked. Since there is no application icon, it has to be invoked from the command line. Assuming that it has been unarchived in `/opt` (possibly in the `/opt/when-command` directory), it's advisable to run it for the first time using the command
+If the Debian/Ubuntu package is available for the desired release, the unzip/extract step can be replaced by `sudo dpkg --install when-command-VERSION_INFO.deb` where `VERSION_INFO` is the version suffix of the downloaded package: this will install the applet either in `/opt/when-command` or in a spread installation similarly to other Linux applications, depending on which package was chosen. The instructions given below will complete the installation for the current user and the applet icon will be activated at every login. Also please note that if the package installation was chosen, the command to invoke the applet is simply `when-command` instead of the full path.
+
+The **When** utility will try to recognize the way it has been set up the first time it's invoked. Since there is no system-wide application icon, it has to be invoked from the command line to install it for the user. Assuming that it has been unarchived in `<install-base>` using the procedure shown above, it's advisable to run it for the first time using the command
 
  ```
- ~$ python3 /opt/when-command/when-command.py --install
+ $ when-command --install
  ```
 
- (or just `/opt/when-command/when-command --install` if the package distribution was used) so that it can create the desktop entry and icon (available in *Dash*), an active autostart entry as well as all the needed directory structure in the user folder, and notably:
+ (or `<install-base>/when-command/when-command --install` if the package was unzipped and prepared using the above described procedure) so that it can create the desktop entry and icon (available in *Dash*), an active autostart entry as well as all the needed directory structure in the user folder, and notably:
 
 * `~/.config/when-command` where it will store all configuration
 * `~/.local/share/when-command` where it stores resources and logs (in the `log` subdirectory)
 
 Please note that the full path to the command has to be used on the first run: in this way **When** can recognize the installation type and set up the icons and shortcuts properly.
+
+
+### Uninstallation
+
+**When** can be uninstalled via `apt-get remove when-command` if the package distribution was used, or by removing the `<install-base>/when-command` directory if the source was unpacked as explained above. Also, user data has to be removed as follows:
+
+```
+$ rm -Rf ~/.config/when-command
+$ rm -Rf ~/.local/share/when-command
+```
+
+Of course it has to be shut down before, for example by killing it via `when-command --kill`.
 
 
 ## Tutorial
@@ -229,7 +249,7 @@ The same combinations can be used to perform more complex tasks, using simple sc
 Recent versions of the applet support the possibility to define system and session events using [DBus](http://dbus.freedesktop.org/). Such events can activate conditions which in turn trigger task sequences, just like any other condition. However, since this is not a common use for the **When** scheduler as it assumes a good knowledge of the DBus interprocess communication system and the related tools, this feature is intentionally inaccessible from the applet menu and disabled by default in the configuration. To access the *DBus Signal Handler Editor* dialog, the user must invoke the applet from the command line with the appropriate switch, while an instance is running in the same session:
 
 ```
-~$ python3 /opt/when-command/when-command.py --show-signals
+$ when-command --show-signals
 ```
 
 This is actually the only way to expose this dialog box. Unless the user defines one or more signal handlers, there will be no *User Defined Events* in the corresponding box and pane in the *Conditions* dialog box, and **When** will not listen to any other system and session events than the ones available in the *Events* list that can be found in the *Conditions* dialog box. The possibility to define such events must be enabled in the *Settings* dialog box, and **When** has to be restarted to make the option effective: before restart the user events are not available in the *Conditions* box, although it becomes possible to show the *DBus Signal Handler Editor* using the command shown above. If the appropriate setting is disabled, the above command exits without showing the editor dialog.
@@ -284,7 +304,7 @@ When the test subprocess of a command based condition is run, only `WHEN_COMMAND
 
 ### Why a single source file?
 
-The applet is in fact a small utility, and I thought it also would have less features. It grew a little just because some of the features could be added almost for free, so the "*Why Not?*" part of the development process has been quite consistent for a while. The first usable version of the applet has been developed in about two weeks, most of which spent learning how to use *PyGObject* and friends, and not on a full time basis: by the 5th day I had to freeze the features (the result is the `ROADMAP.md` file) and focus on the ones I wrote down. So, being small and mostly not reusable, the single-source option seemed the most obvious, also to keep the package as self-contained as possible. However, the way the applet starts and defines its own system-wide and user directories allows for the development of modules that can be imported without cluttering and polluting the system: the `APP_DATA_FOLDER` variable defines a dedicated directory for the application where modules can be installed, and normally it points to `/opt/when-command/share` or `/usr/[local/]share/when-command` or something similar.
+The applet is in fact a small utility, and I thought it also would have less features. It grew a little just because some of the features could be added almost for free, so the "*Why Not?*" part of the development process has been quite consistent for a while. The first usable version of the applet has been developed in about two weeks, most of which spent learning how to use *PyGObject* and friends, and not on a full time basis: by the 5th day I had to freeze the features (the result is the `ROADMAP.md` file) and focus on the ones I wrote down. So, being small and mostly not reusable, the single-source option seemed the most obvious, also to keep the package as self-contained as possible. However, the way the applet starts and defines its own system-wide and user directories allows for the development of modules that can be imported without cluttering and polluting the system: the `APP_DATA_FOLDER` variable defines a dedicated directory for the application where modules can be installed, and normally it points to `<install-base>/when-command/share` or `/usr/[local/]share/when-command` or something similar.
 
 
 ### Developer dependencies
