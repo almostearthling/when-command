@@ -58,7 +58,7 @@ $ tar xzf when-command*.tar.gz
 Then use the `py2dsc` tool to create the structure suitable for packaging:
 
 ```
-$ py2dsc -m 'Francesco Garosi <franz.g@no-spam-please.infinito.it>' when-command-<version_identifier>.tar.gz
+$ py2dsc -m "$DEBFULLNAME <$DEBEMAIL>" when-command-<version_identifier>.tar.gz
 $ cd deb_dist/when-command-<version_identifier>
 ```
 
@@ -115,9 +115,9 @@ To build the package the standard Debian utilities can be used, in the following
 debuild
 ```
 
-The package is in the `deb_dist` directory.
+The package is in the `deb_dist` directory. This directory also contains source packages, in the form of `.tar.gz`, `.dsc` and `.changes` files.
 
-**TODO: Insert information about the source package files.**
+To build the package, the `DEBFULLNAME` and `DEBEMAIL` environment variables are required, and must match the name and e-mail address provided when the *GPG key* used to sign packages has been generated: see the [Ubuntu Packaging Guide](http://packaging.ubuntu.com/html/getting-set-up.html#create-your-gpg-key) for details.
 
 
 ## The old way

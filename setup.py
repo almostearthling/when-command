@@ -86,6 +86,12 @@ with open(os.path.join(HERE, 'share/when-command/when-command.py')) as f:
             exec(line)
 
 
+# extract packaging author metadata from environment if present, so that it
+# becomes easier to correctly sign the source packages
+AUTHOR = os.environ['DEBFULLNAME'] if 'DEBFULLNAME' in os.environ else None
+AUTHOR_EMAIL = os.environ['DEBEMAIL'] if 'DEBEMAIL' in os.environ else None
+
+
 # this and the MANIFEST.in file should be enough for a suitable sdist
 setup(
     name=APPLET_NAME,
@@ -94,8 +100,8 @@ setup(
     long_description=APPLET_LONGDESC,
     url=APPLET_URL,
     download_url='https://github.com/almostearthling/when-command',
-    author='Francesco Garosi',
-    author_email='franz.g@no-spam-please.infinito.it',
+    author=AUTHOR,
+    author_email=AUTHOR_EMAIL,
     license='BSD',
     platforms=['Linux'],
     include_package_data=True,
