@@ -306,13 +306,11 @@ When the test subprocess of a command based condition is run, only `WHEN_COMMAND
 
 The applet is in fact a small utility, and I thought it also would have less features. It grew a little just because some of the features could be added almost for free, so the "*Why Not?*" part of the development process has been quite consistent for a while. The first usable version of the applet has been developed in about two weeks, most of which spent learning how to use *PyGObject* and friends, and not on a full time basis: by the 5th day I had to freeze the features (the result is the `ROADMAP.md` file) and focus on the ones I wrote down. So, being small and mostly not reusable, the single-source option seemed the most obvious, also to keep the package as self-contained as possible. However, the way the applet starts and defines its own system-wide and user directories allows for the development of modules that can be imported without cluttering and polluting the system: the `APP_DATA_FOLDER` variable defines a dedicated directory for the application where modules can be installed, and normally it points to `<install-base>/when-command/share` or `/usr/[local/]share/when-command` or something similar.
 
-
 ### Developer dependencies
 
 Being an applet oriented mostly towards users of recent Ubuntu editions, it is developed in *Python 3.x* and uses the latest supported edition of *PyGObject* at the time. It shouldn't rely on other packages than `python3-gi` on the Python side. The *Glade* user interface designer is almost mandatory to edit the dialog boxes.
 
 To implement the "*Idle Session*" based condition (i.e. the one that lets a task run when the session has been idle for a while), however, the external `xprintidle` command is used that is not installed by default on Ubuntu: at this time the DBus idle time detection function is still imperfect and crashes the applet, so it still relies on the external command. Also, by doing this, the "*Idle Session*" based condition is not much more than a *Command* based condition, and this simplified the development a lot.
-
 
 ### Contributing
 
@@ -326,6 +324,10 @@ To implement the "*Idle Session*" based condition (i.e. the one that lets a task
 
 A more general discussion about contribution can be found [here](https://help.github.com/articles/using-pull-requests/). Otherwise, just submit an issue to notify a bug, a mistake or something that could just have been implemented better. Just consider that the applet is intended to be and remain minimal in terms of code and features, so that it can stay in the background of an user session without disturbing it too much.
 
+There is additional documentation that might be useful for contributions:
+
+* [TRANSLATE.md](share/doc/when-command/TRANSLATE.md) contains some hints on how to use the tools described below for localization
+* [PACKAGE.md](share/doc/when-command/PACKAGE.md) describes how to package **When** for Debian and Ubuntu.
 
 ### Localization
 
@@ -336,13 +338,11 @@ As of version *0.9.1-beta.2* **When** supports the standard localization paradig
 
 This should allow for easier translation of the software. In fact I provide the Italian localization (it's the easiest one for me): help is obviously welcome and really appreciated for other ones.
 
-
 ### Breaking the compatibility
 
 As long as the software can be considered in its *pre-release* state, breaking the backwards-compatibility is allowed although undesirable. **When** has actually been released as *beta* software, since it has been tested for a while and with a suite that covered all the cases it can handle. Surely there are still bugs and they will have to be corrected. Unfortunately these bugs could also pop up in the main classes that build the core of the applet, and the "form" of these classes could affect the way the stateful part of the program data (*Tasks* and *Conditions* and possibly other items) is stored permanently: when it comes to bugs, until **When** enters a *production* state (which will be the 1.0.0 release, as per the [Semantic Versioning](https://github.com/mojombo/semver/blob/master/semver.md) specification), compatibility break will be preferred to bug persistence or bad design. Also considering that starting with release *0.5.0-beta.1* a mechanism is provided to save persistent data to a portable format that would remain valid across releases (via the `--import` and `--export` command line switches); it's advisable, while **When** is still in its early development stage, to perform an export whenever the configuration changes, in order to be able to recover if the applet is unable to start due to compatibility mismatch. All users that access **When** on the host system should take care to export their data periodically, so that when the administrator updates the package they could recover in the same way.
 
 There have been some early changes that actually broke the backwards compatibility, without the possibility to recover: explicit variables are now used instead of properties and setters/getters in the main classes, to improve readability and clarity of code. *Tasks* and *Conditions* (and other configuration parts) created with the 0.1.x releases are not compatible with the ones that are created with version 0.2.x (and further). Releases *0.2.0* through *0.5.0-beta.1* are compatible with each other.
-
 
 ### Test suite
 
@@ -356,7 +356,6 @@ Whenever a new feature is added, that affects the *background* part of **When** 
 
 It has to be noted that, at least for now, the test suite is only concerned about *function* and not *performance*: since **When** is a rather lazy applet, performance in terms of speed is not a top requirement.
 
-
 ### Credits
 
 Open Source Software relies on collaboration, and more than I'm happy to receive help from other developers. Here I'll list the main contributions.
@@ -364,7 +363,6 @@ Open Source Software relies on collaboration, and more than I'm happy to receive
 * Adolfo Jayme-Barrientos, aka [fitojb](https://github.com/fitojb), for the Spanish translation
 
 Also, I'd like to thank everyone who contributes to the development of **When** by commenting, filing bugs, suggesting features and testing. Every kind of help is welcome.
-
 
 ### Resources
 
