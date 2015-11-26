@@ -2154,9 +2154,9 @@ def dict_to_IdleTimeBasedCondition(d):
 
 
 # current_system_event is for events that are not queued and are directly
-# triggered by something external (eg. startup, shutdown, other signals),
+# triggered by something external (e.g. startup, shutdown, other signals),
 # while current_deferred_events is a copy of the events that have been
-# more gently enqueued by other triggers (eg. via DBus or services)
+# more gently enqueued by other triggers (e.g. via DBus or services)
 class EventBasedCondition(Condition):
 
     def _check_condition(self):
