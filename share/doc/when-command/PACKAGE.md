@@ -62,12 +62,12 @@ $ py2dsc -m 'Francesco Garosi <franz.g@no-spam-please.infinito.it>' when-command
 $ cd deb_dist/when-command-<version_identifier>
 ```
 
-The guide in [Python libraries/application packaging](https://wiki.debian.org/Python/Packaging) suggests then to edit some files in the `debian` subdirectory, namely `control` and `rules` (since we use a stub file, no `links` specification is actually necessary). The files should read as follows:
+The guide in [Python libraries/application packaging](https://wiki.debian.org/Python/Packaging) suggests then to edit some files in the `debian` subdirectory, namely `control` and `rules`. The files should read as follows:
 
 **control:**
 ```
 Source: when-command
-Maintainer: Francesco Garosi <franz.g@infinito.it>
+Maintainer: Francesco Garosi (AlmostEarthling) <franz.g@no-spam-please.infinito.it>
 Section: base
 Priority: optional
 Build-Depends: python3-setuptools, python3, debhelper (>= 7.4.3)
@@ -78,10 +78,13 @@ Package: when-command
 Architecture: all
 Depends: ${misc:Depends}, ${python3:Depends}, python3-gi, xprintidle, gir1.2-appindicator3-0.1, python3-pyinotify
 Description: When Gnome Scheduler
- When is a configurable user task scheduler for Gnome.
-```
+ When is a configurable user task scheduler, designed with Ubuntu
+ in mind. It interacts with the user through a GUI, where the user
+ can define tasks and conditions, as well as relationships of
+ causality that bind conditions to tasks.
+ ```
 
-**rules**:
+**rules:**
 ```
 #!/usr/bin/make -f
 
@@ -102,6 +105,8 @@ override_dh_python3:
 	dh_python3 --shebang=/usr/bin/python3
 ```
 
+Since we use a stub file, no `links` specification is actually necessary. This actually differs from the advices given in the aforementioned guide: instead of specifying the target directory for *scripts* as `/usr/share/when-command` (same as the main script) in the package creation `rules`, we let the package install the stub in `/usr/bin` directly and don't rely on symbolic links. This simplifies a little the package creation procedure and provides an even more clean installation.
+
 ### 3. Build the package
 
 To build the package the standard Debian utilities can be used, in the following way, when in the `deb_dist/when-command-<version_identifier>` directory:
@@ -117,4 +122,4 @@ The package is in the `deb_dist` directory.
 
 ## The old way
 
-As suggested above, a way to build the old `/opt` based package is still available. I use a script that moves all files in the former positions, removes extra and unused files and scripts, and then builds a `.deb` that can be used to install the applet in `/opt/when-command`. This file can be found in a GitHub [gist](https://gist.github.com/almostearthling/009fbbe27ea5ca921452), together with the `control_template` file that it needs to build the package. It has to be copied to a suitable build directory, made executable using `chmod a+x makepkg.sh`, modified regarding the variables at the top of the file and launched.
+As suggested above, a way to build the old `/opt` based package is still available. I use a script that moves all files in the former positions, removes extra and unused files and scripts, and then builds a `.deb` that can be used to install the applet in `/opt/when-command`. This file can be found in a GitHub [gist](https://gist.github.com/almostearthling/009fbbe27ea5ca921452), together with the `control_template` file that it needs to build the package. It has to be copied to a suitable build directory, made executable using `chmod a+x makepkg.sh` together with `control_template`, modified regarding the variables at the top of the file and launched.
