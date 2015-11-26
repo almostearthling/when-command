@@ -271,9 +271,9 @@ elif INVOKED_DIR == '/usr/local/bin':
 elif INVOKED_DIR == os.path.join(USER_FOLDER, '.local', 'bin'):
     APP_BIN_FOLDER = INVOKED_DIR
     APP_BASE_FOLDER = USER_DATA_FOLDER
-    APP_DATA_FOLDER = os.path.join(USER_DATA_FOLDER)
-    APP_ICON_FOLDER = os.path.join(USER_DATA_FOLDER, 'icons')
-    APP_LOCALE_FOLDER = os.path.join(USER_DATA_FOLDER, 'locale')
+    APP_DATA_FOLDER = USER_DATA_FOLDER
+    APP_ICON_FOLDER = os.path.join(APP_DATA_FOLDER, 'icons')
+    APP_LOCALE_FOLDER = os.path.join(APP_DATA_FOLDER, 'locale')
 elif not INVOKED_DIR.startswith('/usr'):
     APP_BIN_FOLDER = INVOKED_DIR
     APP_BASE_FOLDER = INVOKED_DIR
