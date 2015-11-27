@@ -203,6 +203,8 @@ Of course using a package is the quickest and easiest way to have a working inst
 
 To install a downloaded package, the command `sudo dpkg --install when-command_VERSIONSPEC-N_all.deb` or `sudo dpkg --install when-command-opt-VERSIONSPEC.deb` for the latter case. After installation, each user who needs to run **When** has to launch `when-command --install` (or `/opt/when-command/when-command --install` if the second method was chosen) in order to find the applet icon in *Dash* and to be able to set it up as a startup application (via the *Settings* dialog box). The first method is the preferred one, and it is referred to throughout the documentation: `when-command` is expected to be in the path and in the examples and instructions is invoked directly, without prefixing the full path.
 
+**Warning:** The two package types are seen as different by *apt* and *dpkg*: this means that one package type will not be installed *over* the other. When switching package type, the old package *must* be uninstalled before. This also yields when upgrading from packages up to release *0.9.1*, however removal of user data and desktop shortcuts is not required. After a package type switch or an upgrade from release *0.9.1* or older, `when-command --install` should be invoked again, using the full path to the command if appropriate.
+
 ### Installation from a source archive or a repository clone
 
 To install the package using the source archive in a directory of choice, the required steps are somewhat more difficult. However this can be done almost mechanically. For the example we will supposed that the source has been downloaded from GitHub (but it could have been cloned, and the steps would be similar) in the form of a `when-command-master.zip` archive located in `~/Downloads`, and that the user wants to install **When** in `~/Applications/When`. The required operations are the following:
@@ -212,13 +214,13 @@ $ cd ~/Applications
 $ unzip ~/Downloads/when-command-master.zip
 $ mv when-command-master When
 $ cd When
-$ rm -Rf po temp scripts .git* setup.* MANIFEST.in share/icons when-command
+$ rm -Rf po temp scripts .git* setup.* MANIFEST.in share/icons
 $ chmod a+x share/when-command/when-command.py
 $ ln -s share/when-command/when-command.py when-command
 $ $HOME/Applications/When/when-command --install
 ```
 
-The `rm` step is only required to remove files that are not used by the installed applet and to avoid a cluttered setup. Also, with this installation procedure, **When** can only be invoked from the command line using the full path (`$HOME/Applications/When/when-command` in the example): to use the `when-command` shortcut, `$HOME/Applications/When` has to be included in the `PATH` variable in `.bashrc`. This means for instance that a symbolic link in a directory already in the user path can cause malfunctions to **When** upon command line invocation.
+The `rm` step is *not* mandatory: it is only required to remove files that are not used by the installed applet and to avoid a cluttered setup. Also, with this installation procedure, **When** can only be invoked from the command line using the full path (`$HOME/Applications/When/when-command` in the example): to use the `when-command` shortcut, `$HOME/Applications/When` has to be included in the `PATH` variable in `.bashrc`. This means for instance that a symbolic link in a directory already in the user path can cause malfunctions to **When** upon command line invocation.
 
 This installation method is useful in several cases: it can be used for testing purposes (it can supersede an existing installation, using the `--install` switch with the appropriate script), to run the applet directly from a cloned repository or to restrict installation to a single user.
 
@@ -231,9 +233,9 @@ This installation method is useful in several cases: it can be used for testing 
 
 Please note that the full path to the command has to be used on the first run if the `/opt` based package or the manual installation were chosen: in this way **When** can recognize the installation type and set up the icons and shortcuts properly.
 
-### Uninstallation
+### Removal
 
-**When** can be uninstalled via `apt-get remove when-command` or `apt-get remove when-command-opt` if a package distribution was used, or by removing the newly created applet directory (`~/Applications/When` in the above example) if the source was unpacked as explained above. Also, user data and the desktop shortcut symbolic links should be removed as follows:
+**When** can be uninstalled via `apt-get remove when-command` or `apt-get remove when-command-opt` if a package distribution was used, or by deleting the newly created applet directory (`~/Applications/When` in the above example) if the source was unpacked as explained above. Also, user data and the desktop shortcut symbolic links should be removed as follows:
 
 ```
 $ rm -f ~/.local/share/applications/when-command.desktop
@@ -243,7 +245,7 @@ $ rm -Rf ~/.config/when-command
 $ rm -Rf ~/.local/share/when-command
 ```
 
-Of course it has to be shut down before, for example by killing it via `when-command --kill`.
+Of course it has to be shut down before, for example by killing it via `when-command --kill`. Removal of user data and desktop shortcuts is *not required* when switching package type or changing installation style, provided that the newly installed `when-command` is invoked with the `--install` switch before using the applet.
 
 
 ## Tutorial

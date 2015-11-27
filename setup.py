@@ -11,10 +11,14 @@
 
 import os
 import os.path
+import glob
 
-# Always prefer setuptools over distutils
+# always prefer setuptools over distutils
 from setuptools import setup, find_packages
 
+# build a complete list of package files
+LOCALE_FILES = glob.glob('share/locale/*/LC_MESSAGES/when-command.mo')
+DTICON_FILES = glob.glob('share/icons/hicolor/*/apps/when-command.png')
 DATA_FILES = """
 LICENSE
 README.md
@@ -24,12 +28,6 @@ share/doc/when-command/ROADMAP.md
 share/doc/when-command/TRANSLATE.md
 share/doc/when-command/PACKAGE.md
 share/doc/when-command/copyright
-share/icons/hicolor/128x128/apps/when-command.png
-share/icons/hicolor/256x256/apps/when-command.png
-share/icons/hicolor/32x32/apps/when-command.png
-share/icons/hicolor/64x64/apps/when-command.png
-share/locale/es/LC_MESSAGES/when-command.mo
-share/locale/it/LC_MESSAGES/when-command.mo
 share/when-command/when-command-about.glade
 share/when-command/when-command-edit-condition.glade
 share/when-command/when-command-edit-dbus-signal.glade
@@ -52,7 +50,7 @@ share/when-command/icons/light/alarm-add.png
 share/when-command/icons/light/alarm-off.png
 share/when-command/icons/light/alarm.png
 share/when-command/icons/light/warning.png
-""".strip().split("\n")
+""".strip().split("\n") + LOCALE_FILES + DTICON_FILES
 
 DATA_DIC = {}
 DATA_TUPLES = []
