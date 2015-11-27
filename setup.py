@@ -86,8 +86,10 @@ with open(os.path.join(HERE, 'share/when-command/when-command.py')) as f:
 
 # extract packaging author metadata from environment if present, so that it
 # becomes easier to correctly sign the source packages
-AUTHOR = os.environ['DEBFULLNAME'] if 'DEBFULLNAME' in os.environ else None
-AUTHOR_EMAIL = os.environ['DEBEMAIL'] if 'DEBEMAIL' in os.environ else None
+AUTHOR = (os.environ['DEBFULLNAME'] if 'DEBFULLNAME' in os.environ
+          else "Francesco Garosi (AlmostEarthling)")
+AUTHOR_EMAIL = (os.environ['DEBEMAIL'] if 'DEBEMAIL' in os.environ
+                else "franz.g@no-spam-please.infinito.it")
 
 
 # this and the MANIFEST.in file should be enough for a suitable sdist
