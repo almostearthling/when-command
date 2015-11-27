@@ -13,7 +13,7 @@ $ for x in share/when-command/*.glade ; do
 >   intltool-extract --type=gettext/glade $x
 >   mv -f $x.h temp
 > done
-$ xgettext -k_ -kN_ -o po/messages.pot -D . -D temp -f po/translate.list
+$ xgettext -k_ -kN_ -o po/messages.pot -D share/when-command -D temp -f po/translate.list
 ```
 
 The reason to move the generated `.h` files to `temp` is to keep the `share` directory tidy, as it is used later to build the package.
