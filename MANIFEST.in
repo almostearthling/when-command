@@ -1,0 +1,6 @@
+include README.md
+include LICENSE
+recursive-include share/icons *
+recursive-include share/locale *
+recursive-include share/doc *
+recursive-include share/when-command *

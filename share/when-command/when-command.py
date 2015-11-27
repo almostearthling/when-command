@@ -76,10 +76,11 @@ APPLET_FULLNAME = 'When Gnome Scheduler'
 APPLET_SHORTNAME = 'When'
 APPLET_COPYRIGHT = '(c) 2015 Francesco Garosi'
 APPLET_URL = 'http://almostearthling.github.io/when-command/'
-APPLET_VERSION = '0.9.1-beta.3'
+APPLET_VERSION = '0.9.1~beta.4'
 APPLET_ID = 'it.jks.WhenCommand'
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
+APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -236,16 +237,17 @@ def verify_user_folders():
 #############################################################################
 # Support these installation schemes:
 #
-# * default: LSB standard (/usr/bin/when-command, /usr/share/when-command/*)
-# * /opt based (/opt/when-command/when-command, /opt/when-command/share/*)
-# * LSB local (/usr/local/bin/when-command, /usr/local/share/when-command/*)
-# * $HOME generic (~/.local/bin/when-command, ~/.local/when-command/share/*)
-# * own folder ($FOLDER/when-command, $FOLDER/share/*)
+# * default: LSB standard (/usr/bin, /usr/share/when-command/*)
+# * /opt based (/opt/when-command, /opt/when-command/share/when-command/*)
+# * LSB local (/usr/local/bin, /usr/local/share/when-command/*)
+# * $HOME generic (~/.local/bin, ~/.local/when-command/share/*)
+# * own folder ($FOLDER, $FOLDER/share/when-command/*)
 #
-# where the first element is the invoked command, the second one is the
+# where first element is the invoked command directory, second one is the
 # prefix of the applet data folder (where dialogs, icons and other resources
 # have to be installed); icons have their own subtree in the data folder;
-# locales are either in standard system folders or a subtree of data folder
+# locales are either in standard system folders or a subtree of data folder.
+# TODO: explain directory structure and installation procedure in README.md
 APP_BASE_FOLDER = '/usr'
 APP_BIN_FOLDER = os.path.join(APP_BASE_FOLDER, 'bin')
 APP_DATA_FOLDER = os.path.join(APP_BASE_FOLDER, 'share', APPLET_NAME)
@@ -269,15 +271,15 @@ elif INVOKED_DIR == '/usr/local/bin':
 elif INVOKED_DIR == os.path.join(USER_FOLDER, '.local', 'bin'):
     APP_BIN_FOLDER = INVOKED_DIR
     APP_BASE_FOLDER = USER_DATA_FOLDER
-    APP_DATA_FOLDER = os.path.join(USER_DATA_FOLDER)
-    APP_ICON_FOLDER = os.path.join(USER_DATA_FOLDER, 'icons')
-    APP_LOCALE_FOLDER = os.path.join(USER_DATA_FOLDER, 'locale')
+    APP_DATA_FOLDER = USER_DATA_FOLDER
+    APP_ICON_FOLDER = os.path.join(APP_DATA_FOLDER, 'icons')
+    APP_LOCALE_FOLDER = os.path.join(APP_DATA_FOLDER, 'locale')
 elif not INVOKED_DIR.startswith('/usr'):
     APP_BIN_FOLDER = INVOKED_DIR
     APP_BASE_FOLDER = INVOKED_DIR
-    APP_DATA_FOLDER = os.path.join(APP_BASE_FOLDER, 'share')
+    APP_DATA_FOLDER = os.path.join(APP_BASE_FOLDER, 'share', APPLET_NAME)
     APP_ICON_FOLDER = os.path.join(APP_DATA_FOLDER, 'icons')
-    APP_LOCALE_FOLDER = os.path.join(APP_DATA_FOLDER, 'locale')
+    APP_LOCALE_FOLDER = os.path.join(APP_BASE_FOLDER, 'share', 'locale')
 
 # update Python path
 sys.path.insert(0, APP_DATA_FOLDER)
@@ -435,7 +437,7 @@ resources.COMMAND_LINE_HELP_VERBOSE = _("show verbose output for some options")
 resources.COMMAND_LINE_SHOWVERSION = _("%s: %s, version %s")
 resources.COMMAND_LINE_PREAMBLE = _("""\
 %s: %s - %s /
-When is a configurable user task scheduler for Ubuntu.
+When is a configurable user task scheduler for Gnome.
 The command line interface can be used to interact with running instances of
 When or to perform maintenance tasks. Use the --verbose option to read output
 from the command, as most operations will show no output by default.
@@ -2152,9 +2154,9 @@ def dict_to_IdleTimeBasedCondition(d):
 
 
 # current_system_event is for events that are not queued and are directly
-# triggered by something external (eg. startup, shutdown, other signals),
+# triggered by something external (e.g. startup, shutdown, other signals),
 # while current_deferred_events is a copy of the events that have been
-# more gently enqueued by other triggers (eg. via DBus or services)
+# more gently enqueued by other triggers (e.g. via DBus or services)
 class EventBasedCondition(Condition):
 
     def _check_condition(self):
@@ -4876,7 +4878,7 @@ def import_item_data(filename=None, verbose=False):
 
 
 # Configure services and start the application
-def main():
+def gui_applet_main():
     init_signal_handler(applet)
     # signal.signal(signal.SIGINT, signal.SIG_DFL)
     preserve_pause = config.get('Scheduler', 'preserve pause')
@@ -4898,8 +4900,20 @@ def main():
         periodic.stop()
 
 
-# Build the applet and start
-if __name__ == '__main__':
+# the main() function enables running the applet via an import
+def main():
+    global config
+    global tasks
+    global conditions
+    global signal_handlers
+    global history
+    global applet
+    global periodic
+    global main_dbus_loop
+    global watch_path_manager
+    global watch_path_notifier
+    global deferred_events
+    global deferred_watch_paths
 
     if GRAPHIC_ENVIRONMENT:
         main_dbus_loop = DBusGMainLoop(set_as_default=True)
@@ -4952,7 +4966,7 @@ if __name__ == '__main__':
         deferred_watch_paths = DeferredWatchPaths()
         create_desktop_file(False)
         create_autostart_file(False)
-        main()
+        gui_applet_main()
 
     else:
         parser = argparse.ArgumentParser(
@@ -5221,6 +5235,11 @@ if __name__ == '__main__':
             else:
                 oerr(resources.OERR_NO_INSTANCE, verbose)
                 sys.exit(1)
+
+
+# Build the applet and start
+if __name__ == '__main__':
+    main()
 
 
 # end.

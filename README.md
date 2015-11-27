@@ -179,35 +179,73 @@ Some trivial switches are also available:
 Please note that whenever a command line option is given, the applet will not "stay resident" if there is no previously running instance. On the other side, if the user invokes the applet when already running, the new instance will bail out with an error.
 
 
-### Installation requirements and directory structure
+## Installation and removal
+
+### Requirements
 
 For the applet to function and before unpacking it to the destination directory, make sure that *Python 3.x*,  *PyGObject* for *Python 3.x* and the `xprintidle` utility are installed. Optionally, to enable file and directory monitoring, the `pyinotify` package can be installed. For example, not all of these are installed by default on Ubuntu: in this case the following commands can be used.
 
 ```
-~$ sudo apt-get install python3-gi
-~$ sudo apt-get install xprintidle
-~$ sudo apt-get install gir1.2-appindicator3-0.1  # may be required
-~$ sudo apt-get install python3-pyinotify   # optional (but recommended)
-~$ cd /opt
-~$ sudo tar xzf /path/to/when-command.tar.gz
+$ sudo apt-get install python3-gi
+$ sudo apt-get install xprintidle
+$ sudo apt-get install gir1.2-appindicator3-0.1  # may be required
+$ sudo apt-get install python3-pyinotify   # optional (but recommended)
 ```
 
-If the zip file was downloaded from the master branch of the repository, the user might want to `mv when-command-master when-command` in the directory where the files have been unzipped. Also, it's advisable to `cd` to the installation directory and `ln -s when-command.py when-command` in order to have a setup more similar to the one provided by the package and to be able to invoke the command omitting the `.py` extension. In the case of a system-wide installation, this has to be done using `sudo`.
+After the requirements have been satisfied, there are several options for installation.
 
-If the Debian/Ubuntu package is available for the desired release, the unzip/extract step can be replaced by `sudo dpkg --install when-command-VERSION_INFO.deb` where `VERSION_INFO` is the version suffix of the downloaded package: this will install the applet in `/opt/when-command`. The instructions given below will complete the installation for the current user and the applet icon will be activated at every login. Also please note that if the package installation was chosen, the command to invoke the applet from the command line can be shortened to `/opt/when-command/when-command` instead of `python3 /opt/when-command/when-command.py` -- although this is not mandatory.
+### Package based installation
 
-The **When** utility will try to recognize the way it has been set up the first time it's invoked. Since there is no application icon, it has to be invoked from the command line. Assuming that it has been unarchived in `/opt` (possibly in the `/opt/when-command` directory), it's advisable to run it for the first time using the command
+Of course using a package is the quickest and easiest way to have a working installation of **When**. Packages are provided for Ubuntu, although they might work (at least partially) with other Debian based Linux distributions. **When** packages come in two flavors:
 
- ```
- ~$ python3 /opt/when-command/when-command.py --install
- ```
+1. `when-command`: this is a LSB structured package, especially suitable for Ubuntu and derivatives, that installs the applet in a way similar to other standard Ubuntu packages. The actual file name has the form `when-command_VERSIONSPEC-N_all.deb` where `VERSIONSPEC` is a version specification, and `N` is a number. Pros of this package are mostly that it blends with the rest of the operating environment and that the `when-command` command-line utility is available on the system path by default. Cons are that this setup may conflict with environments that are very different from Ubuntu.
+2. `when-command-opt`: this version installs **When** in `/opt/when-command`, and should be suitable for `.deb` based distributions that differ from Ubuntu. The advantage of this method is that the applet is installed separately from the rest of the operating environment and does not clutter the host system. The main drawback is that the `when-command` utility is not in the system path by default and, unless the `PATH` variable is modified, it has to be invoked using the full path, that is `/opt/when-command/when-command`. The package file name has the form `when-command-opt-VERSIONSPEC.deb`.
 
- (or just `/opt/when-command/when-command --install` if the package distribution was used) so that it can create the desktop entry and icon (available in *Dash*), an active autostart entry as well as all the needed directory structure in the user folder, and notably:
+To install a downloaded package, the command `sudo dpkg --install when-command_VERSIONSPEC-N_all.deb` or `sudo dpkg --install when-command-opt-VERSIONSPEC.deb` for the latter case. After installation, each user who needs to run **When** has to launch `when-command --install` (or `/opt/when-command/when-command --install` if the second method was chosen) in order to find the applet icon in *Dash* and to be able to set it up as a startup application (via the *Settings* dialog box). The first method is the preferred one, and it is referred to throughout the documentation: `when-command` is expected to be in the path and in the examples and instructions is invoked directly, without prefixing the full path.
+
+**Warning:** The two package types are seen as different by *apt* and *dpkg*: this means that one package type will not be installed *over* the other. When switching package type, the old package *must* be uninstalled before. This also yields when upgrading from packages up to release *0.9.1*, however removal of user data and desktop shortcuts is not required. After a package type switch or an upgrade from release *0.9.1* or older, `when-command --install` should be invoked again, using the full path to the command if appropriate.
+
+### Installation from a source archive or a repository clone
+
+To install the package using the source archive in a directory of choice, the required steps are somewhat more difficult. However this can be done almost mechanically. For the example we will supposed that the source has been downloaded from GitHub (but it could have been cloned, and the steps would be similar) in the form of a `when-command-master.zip` archive located in `~/Downloads`, and that the user wants to install **When** in `~/Applications/When`. The required operations are the following:
+
+```
+$ cd ~/Applications
+$ unzip ~/Downloads/when-command-master.zip
+$ mv when-command-master When
+$ cd When
+$ rm -Rf po temp scripts .git* setup.* MANIFEST.in share/icons
+$ chmod a+x share/when-command/when-command.py
+$ ln -s share/when-command/when-command.py when-command
+$ $HOME/Applications/When/when-command --install
+```
+
+The `rm` step is *not* mandatory: it is only required to remove files that are not used by the installed applet and to avoid a cluttered setup. Also, with this installation procedure, **When** can only be invoked from the command line using the full path (`$HOME/Applications/When/when-command` in the example): to use the `when-command` shortcut, `$HOME/Applications/When` has to be included in the `PATH` variable in `.bashrc`. This means for instance that a symbolic link in a directory already in the user path can cause malfunctions to **When** upon command line invocation.
+
+This installation method is useful in several cases: it can be used for testing purposes (it can supersede an existing installation, using the `--install` switch with the appropriate script), to run the applet directly from a cloned repository or to restrict installation to a single user.
+
+### The --install switch
+
+**When** will try to recognize the way it has been set up the first time it's invoked: the `--install` switch creates the desktop entries and icons for each user that opts in to use the applet, as well as the required directories that **When** needs to run correctly and an active autostart entry, that is:
 
 * `~/.config/when-command` where it will store all configuration
-* `~/.local/share/when-command` where it stores resources and logs (in the `log` subdirectory)
+* `~/.local/share/when-command` where it stores resources and logs (in the `log` subdirectory).
 
-Please note that the full path to the command has to be used on the first run: in this way **When** can recognize the installation type and set up the icons and shortcuts properly.
+Please note that the full path to the command has to be used on the first run if the `/opt` based package or the manual installation were chosen: in this way **When** can recognize the installation type and set up the icons and shortcuts properly.
+
+### Removal
+
+**When** can be uninstalled via `apt-get remove when-command` or `apt-get remove when-command-opt` if a package distribution was used, or by deleting the newly created applet directory (`~/Applications/When` in the above example) if the source was unpacked as explained above. Also, user data and the desktop shortcut symbolic links should be removed as follows:
+
+```
+$ rm -f ~/.local/share/applications/when-command.desktop
+$ rm -f ~/.config/autostart/when-command-startup.desktop
+$ rm -f ~/.local/bin/when-command
+$ rm -Rf ~/.config/when-command
+$ rm -Rf ~/.local/share/when-command
+```
+
+Of course it has to be shut down before, for example by killing it via `when-command --kill`. Removal of user data and desktop shortcuts is *not required* when switching package type or changing installation style, provided that the newly installed `when-command` is invoked with the `--install` switch before using the applet.
 
 
 ## Tutorial
@@ -227,7 +265,7 @@ The same combinations can be used to perform more complex tasks, using simple sc
 Recent versions of the applet support the possibility to define system and session events using [DBus](http://dbus.freedesktop.org/). Such events can activate conditions which in turn trigger task sequences, just like any other condition. However, since this is not a common use for the **When** scheduler as it assumes a good knowledge of the DBus interprocess communication system and the related tools, this feature is intentionally inaccessible from the applet menu and disabled by default in the configuration. To access the *DBus Signal Handler Editor* dialog, the user must invoke the applet from the command line with the appropriate switch, while an instance is running in the same session:
 
 ```
-~$ python3 /opt/when-command/when-command.py --show-signals
+$ when-command --show-signals
 ```
 
 This is actually the only way to expose this dialog box. Unless the user defines one or more signal handlers, there will be no *User Defined Events* in the corresponding box and pane in the *Conditions* dialog box, and **When** will not listen to any other system and session events than the ones available in the *Events* list that can be found in the *Conditions* dialog box. The possibility to define such events must be enabled in the *Settings* dialog box, and **When** has to be restarted to make the option effective: before restart the user events are not available in the *Conditions* box, although it becomes possible to show the *DBus Signal Handler Editor* using the command shown above. If the appropriate setting is disabled, the above command exits without showing the editor dialog.
@@ -282,15 +320,13 @@ When the test subprocess of a command based condition is run, only `WHEN_COMMAND
 
 ### Why a single source file?
 
-The applet is in fact a small utility, and I thought it also would have less features. It grew a little just because some of the features could be added almost for free, so the "*Why Not?*" part of the development process has been quite consistent for a while. The first usable version of the applet has been developed in about two weeks, most of which spent learning how to use *PyGObject* and friends, and not on a full time basis: by the 5th day I had to freeze the features (the result is the `ROADMAP.md` file) and focus on the ones I wrote down. So, being small and mostly not reusable, the single-source option seemed the most obvious, also to keep the package as self-contained as possible. However, the way the applet starts and defines its own system-wide and user directories allows for the development of modules that can be imported without cluttering and polluting the system: the `APP_DATA_FOLDER` variable defines a dedicated directory for the application where modules can be installed, and normally it points to `/opt/when-command/share` or `/usr/[local/]share/when-command` or something similar.
-
+The applet is in fact a small utility, and I thought it also would have less features. It grew a little just because some of the features could be added almost for free, so the "*Why Not?*" part of the development process has been quite consistent for a while. The first usable version of the applet has been developed in about two weeks, most of which spent learning how to use *PyGObject* and friends, and not on a full time basis: by the 5th day I had to freeze the features (the result is the `ROADMAP.md` file) and focus on the ones I wrote down. So, being small and mostly not reusable, the single-source option seemed the most obvious, also to keep the package as self-contained as possible. However, the way the applet starts and defines its own system-wide and user directories allows for the development of modules that can be imported without cluttering and polluting the system: the `APP_DATA_FOLDER` variable defines a dedicated directory for the application where modules can be installed, and normally it points to `<install-base>/when-command/share` or `/usr/[local/]share/when-command` or something similar.
 
 ### Developer dependencies
 
 Being an applet oriented mostly towards users of recent Ubuntu editions, it is developed in *Python 3.x* and uses the latest supported edition of *PyGObject* at the time. It shouldn't rely on other packages than `python3-gi` on the Python side. The *Glade* user interface designer is almost mandatory to edit the dialog boxes.
 
 To implement the "*Idle Session*" based condition (i.e. the one that lets a task run when the session has been idle for a while), however, the external `xprintidle` command is used that is not installed by default on Ubuntu: at this time the DBus idle time detection function is still imperfect and crashes the applet, so it still relies on the external command. Also, by doing this, the "*Idle Session*" based condition is not much more than a *Command* based condition, and this simplified the development a lot.
-
 
 ### Contributing
 
@@ -304,6 +340,10 @@ To implement the "*Idle Session*" based condition (i.e. the one that lets a task
 
 A more general discussion about contribution can be found [here](https://help.github.com/articles/using-pull-requests/). Otherwise, just submit an issue to notify a bug, a mistake or something that could just have been implemented better. Just consider that the applet is intended to be and remain minimal in terms of code and features, so that it can stay in the background of an user session without disturbing it too much.
 
+There is additional documentation that might be useful for contributions:
+
+* [TRANSLATE.md](share/doc/when-command/TRANSLATE.md) contains some hints on how to use the tools described below for localization
+* [PACKAGE.md](share/doc/when-command/PACKAGE.md) describes how to package **When** for Debian and Ubuntu.
 
 ### Localization
 
@@ -314,13 +354,11 @@ As of version *0.9.1-beta.2* **When** supports the standard localization paradig
 
 This should allow for easier translation of the software. In fact I provide the Italian localization (it's the easiest one for me): help is obviously welcome and really appreciated for other ones.
 
-
 ### Breaking the compatibility
 
 As long as the software can be considered in its *pre-release* state, breaking the backwards-compatibility is allowed although undesirable. **When** has actually been released as *beta* software, since it has been tested for a while and with a suite that covered all the cases it can handle. Surely there are still bugs and they will have to be corrected. Unfortunately these bugs could also pop up in the main classes that build the core of the applet, and the "form" of these classes could affect the way the stateful part of the program data (*Tasks* and *Conditions* and possibly other items) is stored permanently: when it comes to bugs, until **When** enters a *production* state (which will be the 1.0.0 release, as per the [Semantic Versioning](https://github.com/mojombo/semver/blob/master/semver.md) specification), compatibility break will be preferred to bug persistence or bad design. Also considering that starting with release *0.5.0-beta.1* a mechanism is provided to save persistent data to a portable format that would remain valid across releases (via the `--import` and `--export` command line switches); it's advisable, while **When** is still in its early development stage, to perform an export whenever the configuration changes, in order to be able to recover if the applet is unable to start due to compatibility mismatch. All users that access **When** on the host system should take care to export their data periodically, so that when the administrator updates the package they could recover in the same way.
 
 There have been some early changes that actually broke the backwards compatibility, without the possibility to recover: explicit variables are now used instead of properties and setters/getters in the main classes, to improve readability and clarity of code. *Tasks* and *Conditions* (and other configuration parts) created with the 0.1.x releases are not compatible with the ones that are created with version 0.2.x (and further). Releases *0.2.0* through *0.5.0-beta.1* are compatible with each other.
-
 
 ### Test suite
 
@@ -334,15 +372,13 @@ Whenever a new feature is added, that affects the *background* part of **When** 
 
 It has to be noted that, at least for now, the test suite is only concerned about *function* and not *performance*: since **When** is a rather lazy applet, performance in terms of speed is not a top requirement.
 
-
 ### Credits
 
-Open Source Software relies on collaboration, and more than I'm happy to receive help from other developers. Here I'll list the main contributions.
+Open Source Software relies on collaboration, and I'm more than happy to receive help from other developers. Here I'll list the main contributions.
 
 * Adolfo Jayme-Barrientos, aka [fitojb](https://github.com/fitojb), for the Spanish translation
 
 Also, I'd like to thank everyone who contributes to the development of **When** by commenting, filing bugs, suggesting features and testing. Every kind of help is welcome.
-
 
 ### Resources
 
