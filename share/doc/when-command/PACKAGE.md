@@ -29,7 +29,7 @@ Also, to build a `.deb` package, the standard `debhelper`, `build-essential` and
 
 ## Package creation
 
-As far as I'm concerned, this step can be considered black magic. I expected packaging to be a relatively simple thing to do, something more similar to stuffing files into a tarball and then adding some metadata to the archive to allow for the installation tools to figure out how things have to be done. Apparently there is much more than that, especially when it comes to Python applications. And when the main entry point of such a Python application contains a dash, things get worse: none of the standard installation methods that use the `setup.py` script seems to work. That is why, for instance, the `when-command.py` script is considered  a data file in the whole process, whereas a stub script named `when-command` (with no extension) is marked as *script*.
+As far as I'm concerned, this step can be considered black magic. I expected packaging to be a relatively simple thing to do, something more similar to stuffing files into a tarball and then adding some metadata to the archive to allow for the installation tools to figure out how things have to be done. Apparently there is much more than that, especially when it comes to Python applications. And when the main entry point of such a Python application contains a dash, things get worse: none of the standard installation methods that use the `setup.py` script seems to be suitable. That is why, for instance, the `when-command.py` script is considered  a data file in the whole process, whereas a stub script named `when-command` (with no extension) is marked as *script*: we will not use the `entry_points` setup keyword, because we don't absolutely want `setup.py` to generate the stub script for us, since the *supposed-to-be-library* file contains a dash and could be not imported in an easy way.
 
 However, here are the steps I perform to build a `.deb` package.
 
@@ -105,7 +105,7 @@ override_dh_python3:
 	dh_python3 --shebang=/usr/bin/python3
 ```
 
-Since we use a stub file, no `links` specification is actually necessary. This actually differs from the advices given in the aforementioned guide: instead of specifying the target directory for *scripts* as `/usr/share/when-command` (same as the main script) in the package creation `rules`, we let the package install the stub in `/usr/bin` directly and don't rely on symbolic links. This simplifies a little the package creation procedure and provides an even more clean installation.
+Since we use a stub file, no `links` specification is actually necessary. This in fact differs from the advices given in the aforementioned guide: instead of specifying the target directory for *scripts* as `/usr/share/when-command` (same as the main script) in the package creation `rules`, we let the package install the stub in `/usr/bin` directly and don't rely on symbolic links. This simplifies a little the package creation procedure and provides an even more clean installation.
 
 ### 3. Build the package
 
