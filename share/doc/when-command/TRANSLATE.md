@@ -46,4 +46,4 @@ $ mkdir -p share/locale/it/LC_MESSAGES
 $ msgfmt po/it.po -o share/locale/it/LC_MESSAGES/when-command.mo
 ```
 
-Also here, `it.po` and the `/it/` part in the folder has to be changed according to the translated locale. In the `/opt/when-command/` based setup , the `share` directory will be copied as it is, in standard setups the package will take care to copy the appropriate files to the standard localization directory.
+Also here, `it.po` and the `/it/` part in the folder have to be changed according to the translated locale. In the `/opt/when-command/` based setup , the `share` directory will be copied as it is, in standard setups the package will take care to copy the appropriate files to the standard localization directory.

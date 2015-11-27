@@ -372,7 +372,7 @@ It has to be noted that, at least for now, the test suite is only concerned abou
 
 ### Credits
 
-Open Source Software relies on collaboration, and more than I'm happy to receive help from other developers. Here I'll list the main contributions.
+Open Source Software relies on collaboration, and I'm more than happy to receive help from other developers. Here I'll list the main contributions.
 
 * Adolfo Jayme-Barrientos, aka [fitojb](https://github.com/fitojb), for the Spanish translation
 
