@@ -122,7 +122,7 @@ setup(
 
     data_files=DATA_TUPLES,
     scripts=[
-        'when-command',
+        'scripts/when-command',
     ],
 )
 
