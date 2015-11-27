@@ -212,16 +212,15 @@ $ cd ~/Applications
 $ unzip ~/Downloads/when-command-master.zip
 $ mv when-command-master When
 $ cd When
-$ rm -f when-command
 $ rm -Rf po temp scripts .git* setup.* MANIFEST.in share/icons when-command
 $ chmod a+x share/when-command/when-command.py
 $ ln -s share/when-command/when-command.py when-command
 $ $HOME/Applications/When/when-command --install
 ```
 
-Please note that `rm -f when-command` is *strictly* needed in order to allow creation of the `when-command` symbolic link, whereas the second `rm` is only required to remove files that are not used by the installed applet and to avoid a cluttered setup. Also, with this setup, **When** can only be invoked from the command line using the full path (`$HOME/Applications/When/when-command` in the example): to use the `when-command` shortcut, `$HOME/Applications/When` has to be included in the `PATH` variable in `.bashrc`. This means for instance that a symbolic link in a directory already in the user path can cause malfunctions to **When** upon command line invocation.
+The `rm` step is only required to remove files that are not used by the installed applet and to avoid a cluttered setup. Also, with this installation procedure, **When** can only be invoked from the command line using the full path (`$HOME/Applications/When/when-command` in the example): to use the `when-command` shortcut, `$HOME/Applications/When` has to be included in the `PATH` variable in `.bashrc`. This means for instance that a symbolic link in a directory already in the user path can cause malfunctions to **When** upon command line invocation.
 
-This installation method is useful in several cases: it can be used for testing purposes (it can supersede an existing installation), to run the applet directly from a cloned repository or to restrict installation to a single user.
+This installation method is useful in several cases: it can be used for testing purposes (it can supersede an existing installation, using the `--install` switch with the appropriate script), to run the applet directly from a cloned repository or to restrict installation to a single user.
 
 ### The --install switch
 
