@@ -76,7 +76,7 @@ X-Python3-Version: >= 3.4
 
 Package: when-command
 Architecture: all
-Depends: ${misc:Depends}, ${python3:Depends}, python3-gi, xprintidle, gir1.2-appindicator3-0.1, python3-pyinotify
+Depends: ${misc:Depends}, ${python3:Depends}, python-support (>= 0.90.0), python3-gi, xprintidle, gir1.2-appindicator3-0.1, python3-pyinotify
 Description: When Gnome Scheduler
  When is a configurable user task scheduler, designed with Ubuntu
  in mind. It interacts with the user through a GUI, where the user
