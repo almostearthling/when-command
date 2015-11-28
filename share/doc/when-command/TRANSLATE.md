@@ -76,7 +76,7 @@ These guidelines should also help to recognize where a string is used when trans
 $ when-command --help
 ```
 
-to locate text that belongs to brief command help. Please note that the word *usage* at the beginning and the help text for the `-h` switch cannot be modified: they are directly handled by the Python interpreter. Some more detailed instruction follow:
+to locate text that belongs to brief command help. Please note that some words in the help text for the `-h` switch cannot be modified: they are directly handled by the Python interpreter. Some more detailed instructions follow:
 
 1. help text for switches should remain *below 55 characters*
 2. letters inside brackets in help text should not be changed
