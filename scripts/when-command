@@ -9,15 +9,30 @@
 # Small startup applet that runs tasks when particular conditions are met.
 # NOTE: This is a stub script that loads the main when-command applet.
 
+
 from importlib.machinery import SourceFileLoader
+
 
 _m = SourceFileLoader("when_command",
                       "/usr/share/when-command/when-command.py").load_module()
 
-# make all loaded module symbols top level
-for _attr in dir(_m):
-    if not _attr.startswith('_'):
-        globals()[_attr] = getattr(_m, _attr)
-main()
+# bring pickleable objects to top level
+Resources = _m.Resources
+Tasks = _m.Tasks
+Conditions = _m.Conditions
+SignalHandlers = _m.SignalHandlers
+Task = _m.Task
+Condition = _m.Condition
+IntervalBasedCondition = _m.IntervalBasedCondition
+TimeBasedCondition = _m.TimeBasedCondition
+CommandBasedCondition = _m.CommandBasedCondition
+IdleTimeBasedCondition = _m.IdleTimeBasedCondition
+EventBasedCondition = _m.EventBasedCondition
+PathNotifyBasedCondition = _m.PathNotifyBasedCondition
+SignalHandler = _m.SignalHandler
+
+# run the applet module entry point
+_m.main()
+
 
 # end.
