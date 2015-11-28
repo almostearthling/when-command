@@ -11,8 +11,13 @@
 
 from importlib.machinery import SourceFileLoader
 
-run = SourceFileLoader("when_command",
-                       "/usr/share/when-command/when-command.py").load_module()
-run.main()
+_m = SourceFileLoader("when_command",
+                      "/usr/share/when-command/when-command.py").load_module()
+
+# make all loaded module symbols top level
+for _attr in dir(_m):
+    if not attr.startswith('_'):
+        globals()[_attr] = getattr(_m, _attr)
+main()
 
 # end.
