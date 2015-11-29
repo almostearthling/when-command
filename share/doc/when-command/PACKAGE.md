@@ -68,7 +68,7 @@ The guide in [Python libraries/application packaging](https://wiki.debian.org/Py
 ```
 Source: when-command
 Maintainer: Francesco Garosi (AlmostEarthling) <franz.g@no-spam-please.infinito.it>
-Section: base
+Section: misc
 Priority: optional
 Build-Depends: python3-setuptools, python3, debhelper (>= 7.4.3)
 Standards-Version: 3.9.1
