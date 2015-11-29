@@ -117,6 +117,15 @@ debuild
 
 The package is in the `deb_dist` directory. This directory also contains source packages, in the form of `.tar.gz`, `.dsc` and `.changes` files.
 
+For `lintian` to complain somewhat less during the build process, the copyright file can be copied in the `debian` directory in `deb_dist/when-command-<version_identifier>`, issuing something like
+
+```
+pkgdir=deb_dist/when-command-<version_identifier>
+cp $pkgdir/share/doc/when-command/copyright $pkgdir/debian
+```
+
+*before* launching `debuild`.
+
 To build the package, the `DEBFULLNAME` and `DEBEMAIL` environment variables are required, and must match the name and e-mail address provided when the *GPG key* used to sign packages has been generated: see the [Ubuntu Packaging Guide](http://packaging.ubuntu.com/html/getting-set-up.html#create-your-gpg-key) for details.
 
 
