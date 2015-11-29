@@ -14,7 +14,7 @@ import os.path
 import glob
 
 # always prefer setuptools over distutils
-from setuptools import setup, find_packages
+from setuptools import setup
 
 # build a complete list of package files
 LOCALE_FILES = glob.glob('share/locale/*/LC_MESSAGES/when-command.mo')
