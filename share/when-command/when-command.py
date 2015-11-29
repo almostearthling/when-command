@@ -76,11 +76,17 @@ APPLET_FULLNAME = 'When Gnome Scheduler'
 APPLET_SHORTNAME = 'When'
 APPLET_COPYRIGHT = '(c) 2015 Francesco Garosi'
 APPLET_URL = 'http://almostearthling.github.io/when-command/'
-APPLET_VERSION = '0.9.2~beta.2'
 APPLET_ID = 'it.jks.WhenCommand'
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
 APPLET_BUS_PATH = '/' + APPLET_BUS_NAME.replace('.', '/')
 APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
+
+# NOTE: the following lines *must both* be edited at each release increment
+# * the first holds the version ID that build utilities can extract
+# * the second one includes a message that is used both as a commit message
+#   and as a tag-associated message (in `git tag -m`)
+APPLET_VERSION = '0.9.2~beta.2'
+APPLET_TAGDESC = 'Automatic tagging based on version info extraction'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
