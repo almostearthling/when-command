@@ -1,7 +1,3 @@
 tags
 .tags
-temp/*
-po/temp/*
-build
-dist
-when_command.egg-info
+.temp/*

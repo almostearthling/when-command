@@ -17,15 +17,15 @@ Basically the necessary tools are:
 When in the source tree base, the following commands can be used to generate the template without cluttering the rest of the source tree:
 
 ```
-$ mkdir temp
+$ mkdir .temp
 $ for x in share/when-command/*.glade ; do
 >   intltool-extract --type=gettext/glade $x
->   mv -f $x.h temp
+>   mv -f $x.h .temp
 > done
-$ xgettext -k_ -kN_ -o po/messages.pot -D share/when-command -D temp -f po/translate.list
+$ xgettext -k_ -kN_ -o po/messages.pot -D share/when-command -D .temp -f po/translate.list
 ```
 
-After template generation, which is stored in `po/messages.pot`, the `temp` directory can be safely deleted. If `po/messages.pot` already exists and is up to date, this step can be skipped.
+After template generation, which is stored in `po/messages.pot`, the `.temp` directory can be safely deleted. If `po/messages.pot` already exists and is up to date, this step can be skipped.
 
 ### 2. Create and update translations
 
