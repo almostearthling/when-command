@@ -30,6 +30,7 @@ IdleTimeBasedCondition = _m.IdleTimeBasedCondition
 EventBasedCondition = _m.EventBasedCondition
 PathNotifyBasedCondition = _m.PathNotifyBasedCondition
 SignalHandler = _m.SignalHandler
+param_check = _m.param_check
 
 # run the applet module entry point
 _m.main()
