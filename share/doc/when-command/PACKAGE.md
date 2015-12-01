@@ -27,7 +27,7 @@ $ pip3 install --user stdeb
 Also, to build a `.deb` package, the standard `debhelper`, `build-essential` and `fakeroot` packages and tasks are needed. I also installed `python-all`, `python3-all`, `python-all-dev`, `python3-all-dev` and `python-stdeb` (which is available, but it is for Python 2.x and quite old), but they might be not needed.
 
 
-## Package creation
+## Package creation: LSB packages
 
 As far as I'm concerned, this step can be considered black magic. I expected packaging to be a relatively simple thing to do, something more similar to stuffing files into a tarball and then adding some metadata to the archive to allow for the installation tools to figure out how things have to be done. Apparently there is much more than that, especially when it comes to Python applications. And when the main entry point of such a Python application contains a dash, things get worse: none of the standard installation methods that use the `setup.py` script seems to be suitable. That is why, for instance, the `when-command.py` script is considered  a data file in the whole process, whereas a stub script named `when-command` (with no extension) is marked as *script*: we will not use the `entry_points` setup keyword, because we don't absolutely want `setup.py` to generate the stub script for us, since the *supposed-to-be-library* file contains a dash and could be not imported in an easy way.
 
@@ -35,18 +35,18 @@ However, here are the steps I perform to build a `.deb` package.
 
 ### The easy way with setup.py
 
-After unpacking the source tree, the following commands can be used to build a suitable source distribution:
+After unpacking the source tree, the following commands can be used to easily build the `.deb` package:
 
 ```
 $ cd <when-source-tree>
 $ python3 setup.py --command-packages=stdeb.command bdist_deb
 ```
 
-The `python3 setup.py --command-packages=stdeb.command bdist_deb` actually builds a `.deb` file in the `deb_dist` directory. This package is already suitable for installation: it has been built using all the needed parameters and flags necessary for the package to correctly install.
+The `python3 setup.py ... bdist_deb` actually builds a `.deb` file in the `deb_dist` directory: this package is suitable to install **When**. The same `deb_dist` directory also contains a source package, in the form of a `.dsc` file, `.orig.tar.gz` and `.debian.tar.gz` archives, and `.changes` files. However the `.dsc` and `changes` files are not signed: to upload the package to a *PPA*, for instance, they need to be signed using `gpg --clearsign`.
 
-### Using the dh-tools
+### Using the packaging utilities directly
 
-First a source distribution has to be created: the `setup.py` script comes handy because it can do this job automatically. After the source tree has been unpacked or cloned, the following commands will create a proper source distribution of **When**:
+First a source distribution has to be created: the `setup.py` script comes handy because it can do this job automatically using the `sdist` command. After the source tree has been unpacked or cloned, the following operations will create a proper source distribution of **When** and move it to the top of the source tree:
 
 ```
 $ cd <source-directory>
@@ -104,28 +104,25 @@ override_dh_python3:
 	dh_python3 --shebang=/usr/bin/python3
 ```
 
-Since we use a stub file, no `links` specification is actually necessary. This in fact differs from the advices given in the aforementioned guide: instead of specifying the target directory for *scripts* as `/usr/share/when-command` (same as the main script) in the package creation `rules`, we let the package install the stub in `/usr/bin` directly and don't rely on symbolic links. This simplifies a little the package creation procedure and provides an even more clean installation.
+Since we use a stub file, no `links` specification is actually necessary. This in fact differs from the advices given in the aforementioned guide: instead of specifying the target directory for *scripts* as `/usr/share/when-command` (same as the main script) in the package creation `rules`, we let the package install the stub in `/usr/bin` directly and don't rely on symbolic links. The package creation procedure is slightly simplified in this way, and provides a tidier setup. Also, the comment in the `override_dh_auto_build` rule is intentional, and better explained in the guide.
 
-To build the package the standard Debian utilities can be used, in the following way, when in the `deb_dist/when-command-<version_identifier>` directory:
-
-```
-debuild
-```
-
-The package is in the `deb_dist` directory. This directory also contains source packages, in the form of `.tar.gz`, `.dsc` and `.changes` files.
-
-For `lintian` to complain somewhat less during the build process, the copyright file can be copied in the `debian` directory in `deb_dist/when-command-<version_identifier>`, issuing something like
+To build the package the standard Debian utilities can be used in the following way:
 
 ```
-pkgdir=deb_dist/when-command-<version_identifier>
-cp $pkgdir/share/doc/when-command/copyright $pkgdir/debian
+$ cd <source-directory>
+$ pkgdir=deb_dist/when-command-<version_identifier>
+$ cp $pkgdir/share/doc/when-command/copyright $pkgdir/debian
+$ cd deb_dist/when-command-<version_identifier>
+$ debuild
 ```
 
-*before* launching `debuild`.
+The package is in the `deb_dist` directory. After entering the source directory, the first two lines just synchronize the `copyright` file from the unpacked source tree to the `debian` "service" directory just to avoid some of the complaints that `lintian` shows during the build process, while the last two lines are the commands that actually build the Debian package.
 
-To build the package, the `DEBFULLNAME` and `DEBEMAIL` environment variables are required, and must match the name and e-mail address provided when the *GPG key* used to sign packages has been generated: see the [Ubuntu Packaging Guide](http://packaging.ubuntu.com/html/getting-set-up.html#create-your-gpg-key) for details.
+This process also creates a source package in the same form as above, with the exception that the `.dsc` and `.changes` files should be already signed after the process if the environment is correctly configured. In fact, to build the package, the `DEBFULLNAME` and `DEBEMAIL` environment variables are required, and must match the name and e-mail address provided when the *GPG key* used to sign packages has been generated: see the [Ubuntu Packaging Guide](http://packaging.ubuntu.com/html/getting-set-up.html#create-your-gpg-key) for details.
+
+At a small price in terms of complexity, this method has one main advantage over the "easy" one as it allows some more control on packaging by allowing to review and edit all the package control files before creation.
 
 
-## The old way
+## Package creation: the old way
 
 As suggested above, a way to build the old `/opt` based package is still available. I use a script that moves all files in the former positions, removes extra and unused files and scripts, and then builds a `.deb` that can be used to install the applet in `/opt/when-command`. This file can be found in a GitHub [gist](https://gist.github.com/almostearthling/009fbbe27ea5ca921452), together with the `control_template` file that it needs to build the package. It has to be copied to a suitable build directory together with `control_template`, made executable using `chmod a+x makepkg.sh`, modified regarding the variables at the top of the file and launched.
