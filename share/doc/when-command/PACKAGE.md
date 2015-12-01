@@ -39,11 +39,10 @@ After unpacking the source tree, the following commands can be used to build a s
 
 ```
 $ cd <when-source-tree>
-$ python3 setup.py --command-packages=stdeb.command debianize
 $ python3 setup.py --command-packages=stdeb.command bdist_deb
 ```
 
-The first is preparatory, while the second actually builds a `.deb` file. However this is not the `.deb` file we are looking for: we are more interested in the tarball byproduct that is created in the top directory of the source tree. The generated `.deb` file is suitable for Python libraries (namely *packages*) and would install both the applet and data in the wrong places.
+The `python3 setup.py --command-packages=stdeb.command bdist_deb` actually builds a `.deb` file. However this is not the `.deb` file we are looking for: we are more interested in the tarball byproduct that is created in the top directory of the source tree for the moment being, to gain some more control over package creation.
 
 ### 2. Create a packaging directory
 
@@ -71,7 +70,7 @@ Maintainer: Francesco Garosi (AlmostEarthling) <franz.g@no-spam-please.infinito.
 Section: misc
 Priority: optional
 Build-Depends: python3-setuptools, python3, debhelper (>= 7.4.3)
-Standards-Version: 3.9.1
+Standards-Version: 3.9.5
 X-Python3-Version: >= 3.4
 
 Package: when-command
