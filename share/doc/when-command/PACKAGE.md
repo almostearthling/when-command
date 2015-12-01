@@ -49,7 +49,7 @@ The `python3 setup.py ... bdist_deb` actually builds a `.deb` file in the `deb_d
 First a source distribution has to be created: the `setup.py` script comes handy because it can do this job automatically using the `sdist` command. After the source tree has been unpacked or cloned, the following operations will create a proper source distribution of **When** and move it to the top of the source tree:
 
 ```
-$ cd <source-directory>
+$ cd <when-source-tree>
 $ python3 setup.py sdist
 $ mv dist/when-command-<version_identifier>.tar.gz .
 ```
