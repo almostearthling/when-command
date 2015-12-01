@@ -33,7 +33,7 @@ As far as I'm concerned, this step can be considered black magic. I expected pac
 
 However, here are the steps I perform to build a `.deb` package.
 
-### 1. Build a source distribution
+### The easy way with setup.py
 
 After unpacking the source tree, the following commands can be used to build a suitable source distribution:
 
@@ -42,19 +42,19 @@ $ cd <when-source-tree>
 $ python3 setup.py --command-packages=stdeb.command bdist_deb
 ```
 
-The `python3 setup.py --command-packages=stdeb.command bdist_deb` actually builds a `.deb` file. However this is not the `.deb` file we are looking for: we are more interested in the tarball byproduct that is created in the top directory of the source tree for the moment being, to gain some more control over package creation.
+The `python3 setup.py --command-packages=stdeb.command bdist_deb` actually builds a `.deb` file in the `deb_dist` directory. This package is already suitable for installation: it has been built using all the needed parameters and flags necessary for the package to correctly install.
 
-### 2. Create a packaging directory
+### Using the dh-tools
 
-The formerly created tarball should be moved to an empty directory and unpacked:
+First a source distribution has to be created: the `setup.py` script comes handy because it can do this job automatically. After the source tree has been unpacked or cloned, the following commands will create a proper source distribution of **When**:
 
 ```
-$ cd <new-directory>
-$ cp <when-source-tree>/when-command*.tar.gz .
-$ tar xzf when-command*.tar.gz
+$ cd <source-directory>
+$ python3 setup.py sdist
+$ mv dist/when-command-<version_identifier>.tar.gz .
 ```
 
-Then use the `py2dsc` tool to create the structure suitable for packaging:
+where `<version-identifier>` is the suffix of the newly created archive in `dist` subdirectory. Then use the `py2dsc` tool to create the structure suitable for packaging :
 
 ```
 $ py2dsc -m "$DEBFULLNAME <$DEBEMAIL>" when-command-<version_identifier>.tar.gz
@@ -105,8 +105,6 @@ override_dh_python3:
 ```
 
 Since we use a stub file, no `links` specification is actually necessary. This in fact differs from the advices given in the aforementioned guide: instead of specifying the target directory for *scripts* as `/usr/share/when-command` (same as the main script) in the package creation `rules`, we let the package install the stub in `/usr/bin` directly and don't rely on symbolic links. This simplifies a little the package creation procedure and provides an even more clean installation.
-
-### 3. Build the package
 
 To build the package the standard Debian utilities can be used, in the following way, when in the `deb_dist/when-command-<version_identifier>` directory:
 
