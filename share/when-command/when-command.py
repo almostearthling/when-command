@@ -2303,6 +2303,64 @@ def dict_to_PathNotifyBasedCondition(d):
 
 
 #############################################################################
+# abstract class for conditions based on generically collected data: derived
+# implementations should override data_collector and check_data; a failure
+# in data_collector prevents condition trigger anyway, while success allows
+# check_data to decide whether to trigger or not depending on retrieved data
+class DataCollectorBasedCondition(Condition):
+
+    def _check_condition(self):
+        self._debug("checking data collector based condition")
+        try:
+            current_data = self.data_collector()
+            rv = self.check_data(current_data)
+            self.data = current_data
+            return bool(rv)
+        except Exception as e:
+            self._debug("error %s checking data collector based condition %s" % (e, self.cond_name))
+            return False
+
+    def __init__(self, name=None, no_skip=False, repeat=True, exec_sequence=True):
+        if self.__class__.__name__ == 'DataCollectorBasedCondition':
+            raise NotImplementedError("abstract class")
+        Condition.__init__(self, name, repeat, exec_sequence)
+        if no_skip:
+            self.skip_seconds = 0
+
+    # this virtual function should collect data somehow and return it
+    def data_collector(self):
+        return None
+
+    # this virtual function should verify submitted data and return a
+    # boolean, possibly comparing it with already stored data
+    def check_data(self, collected):
+        return False
+
+
+def DataCollectorBasedCondition_to_dict(c):
+    d = Condition_to_dict(c)
+    d['subtype'] = 'DataCollectorBasedCondition'
+    d['no_skip'] = bool(c.skip_seconds == 0)
+    return d
+
+
+def dict_to_DataCollectorBasedCondition(d, c=None):
+    if d['type'] != 'condition' or d['subtype'] != 'DataCollectorBasedCondition':
+        raise ValueError("incorrect dictionary type")
+    name = d['cond_name']
+    no_skip = d['no_skip']
+    # TODO: if there are more parameters, use d.get('key', default_val)
+    # the following will raise an error
+    if c is None:
+        applet_log.critical("MAIN: NTBS: attempt to restore base DataCollectorBasedCondition")
+        c = DataCollectorBasedCondition(name, no_skip)
+    if no_skip:
+        c.skip_seconds = 0
+    c = dict_to_Condition(d, c)
+    return c
+
+
+#############################################################################
 # a class to build DBus signal handlers: related conditions are event based
 # conditions with a special event (dbus_signal:SigHandlerName) to reuse code
 param_check = namedtuple('param_check', ['value_idx', 'sub_idx',
