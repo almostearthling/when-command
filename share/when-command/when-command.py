@@ -156,6 +156,9 @@ EVENT_SESSION_SCREENSAVER_EXIT = 'screensaver_exit'
 EVENT_SESSION_LOCK = 'session_lock'
 EVENT_SESSION_UNLOCK = 'session_unlock'
 EVENT_COMMAND_LINE = 'command_line'
+EVENT_SYSTEM_BATTERY_CHARGE = 'battery_charge'
+EVENT_SYSTEM_BATTERY_DISCHARGING = 'battery_discharging'
+EVENT_SYSTEM_BATTERY_LOW = 'battery_low'
 
 EVENT_COMMAND_LINE_PREAMBLE = 'command_line'
 EVENT_DBUS_SIGNAL_PREAMBLE = 'dbus_signal'
@@ -3110,6 +3113,9 @@ class ConditionDialog(object):
             EVENT_SESSION_SCREENSAVER_EXIT,
             EVENT_SESSION_LOCK,
             EVENT_SESSION_UNLOCK,
+            EVENT_SYSTEM_BATTERY_CHARGE,
+            EVENT_SYSTEM_BATTERY_DISCHARGING,
+            EVENT_SYSTEM_BATTERY_LOW,
 
             # the following should be the last one
             EVENT_COMMAND_LINE
@@ -4314,6 +4320,19 @@ class AppletIndicator(Gtk.Application):
             enabled_events.append(EVENT_SYSTEM_NETWORK_JOIN)
             enabled_events.append(EVENT_SYSTEM_NETWORK_LEAVE)
 
+        self.battery_mgr = _signal_manager(
+            self.system_bus,
+            'org.freedesktop.UPower', '/org/freedesktop/UPower',
+            'org.freedesktop.UPower',
+            [
+                ('Changed', self.battery_manager),
+            ]
+        )
+        if self.MANAGER:
+            enabled_events.append(EVENT_SYSTEM_BATTERY_CHARGE)
+            enabled_events.append(EVENT_SYSTEM_BATTERY_DISCHARGING)
+            enabled_events.append(EVENT_SYSTEM_BATTERY_LOW)
+
         # Template for standard (not custom DBus) signal handlers
         # self.MANAGER = _signal_manager(
         #     self.TYPE_BUS,
@@ -4451,7 +4470,8 @@ class AppletIndicator(Gtk.Application):
         applet_log.debug("MAIN: network state changed")
         try:
             state = self.network_mgr.state()
-            if state in [NM_STATE_CONNECTED_LOCAL, NM_STATE_CONNECTED_SITE, NM_STATE_CONNECTED_GLOBAL]:
+            if state in [NM_STATE_CONNECTED_LOCAL, NM_STATE_CONNECTED_SITE,
+                         NM_STATE_CONNECTED_GLOBAL]:
                 applet_log.debug("MAIN: joined network")
                 deferred_events.append(EVENT_SYSTEM_NETWORK_JOIN)
             elif state in [NM_STATE_DISCONNECTED]:
@@ -4459,6 +4479,23 @@ class AppletIndicator(Gtk.Application):
                 deferred_events.append(EVENT_SYSTEM_NETWORK_LEAVE)
         except dbus.exceptions.DBusException:
             applet_log.warning("MAIN: network state query failed")
+
+    def battery_manager(self, *args):
+        applet_log.debug("MAIN: battery state changed")
+        try:
+            discharging = self.battery_mgr.Get('OnBattery')
+            low = self.battery_mgr.Get('OnBatteryLow')
+            if low:
+                applet_log.debug("MAIN: battery low")
+                deferred_events.append(EVENT_SYSTEM_BATTERY_LOW)
+            elif discharging:
+                applet_log.debug("MAIN: battery discharging")
+                deferred_events.append(EVENT_SYSTEM_BATTERY_DISCHARGING)
+            else:
+                applet_log.debug("MAIN: battery charging or charged")
+                deferred_events.append(EVENT_SYSTEM_BATTERY_CHARGE)
+        except:
+            applet_log.warning("MAIN: battery state query failed")
 
     def before_shutdown(self, *args):
         if not self.leaving:
