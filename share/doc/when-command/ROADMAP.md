@@ -95,6 +95,7 @@ List of achievements and expectations for the When applet.
 * File and directory watch conditions :ok:
 * Export environment variables with task and condition name :ok:
 * Tutorial :ok:
+* Battery related events
 
 
 ## 2) To *Working* Alpha Release
@@ -114,7 +115,6 @@ List of achievements and expectations for the When applet.
 
 ## 5) To 1.0 *Production* Release
 
-* Battery related events
 * Standardization and refactoring of documentation
 
 
