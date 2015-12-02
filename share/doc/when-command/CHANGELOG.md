@@ -1,4 +1,9 @@
-# Changelog
+# Changes
+
+## Version 0.9.3 (beta)
+* Battery status related events
+* Minor fixes
+
 
 ## Version 0.9.2 (beta)
 * New directory structure following LSB FHS
