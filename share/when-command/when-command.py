@@ -4328,7 +4328,7 @@ class AppletIndicator(Gtk.Application):
                 ('Changed', self.battery_manager),
             ]
         )
-        if self.MANAGER:
+        if self.battery_mgr:
             enabled_events.append(EVENT_SYSTEM_BATTERY_CHARGE)
             enabled_events.append(EVENT_SYSTEM_BATTERY_DISCHARGING)
             enabled_events.append(EVENT_SYSTEM_BATTERY_LOW)
