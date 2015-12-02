@@ -114,7 +114,8 @@ List of achievements and expectations for the When applet.
 
 ## 5) To 1.0 *Production* Release
 
-**All goals for Production Release have been achieved.**
+* Battery related events
+* Standardization and refactoring of documentation
 
 
 ## 6) Desirable features
