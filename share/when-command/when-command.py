@@ -4483,12 +4483,15 @@ class AppletIndicator(Gtk.Application):
     def battery_manager(self, *args):
         applet_log.debug("MAIN: battery state changed")
         try:
-            discharging = self.battery_mgr.Get('OnBattery')
-            low = self.battery_mgr.Get('OnBatteryLow')
+            proxy = self.battery_mgr.proxy_object
+            drain = proxy.Get('org.freedesktop.UPower', 'OnBattery',
+                              dbus_interface='org.freedesktop.DBus.Properties')
+            low = proxy.Get('org.freedesktop.UPower', 'OnLowBattery',
+                            dbus_interface='org.freedesktop.DBus.Properties')
             if low:
                 applet_log.debug("MAIN: battery low")
                 deferred_events.append(EVENT_SYSTEM_BATTERY_LOW)
-            elif discharging:
+            elif drain:
                 applet_log.debug("MAIN: battery discharging")
                 deferred_events.append(EVENT_SYSTEM_BATTERY_DISCHARGING)
             else:
