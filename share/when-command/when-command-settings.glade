@@ -206,7 +206,7 @@
                         <property name="halign">start</property>
                         <property name="margin_right">10</property>
                         <property name="ypad">10</property>
-                        <property name="label" translatable="yes">Application clock tick time (seconds):</property>
+                        <property name="label" translatable="yes">Application Clock Tick Time (seconds):</property>
                       </object>
                       <packing>
                         <property name="left_attach">0</property>
@@ -236,7 +236,7 @@
                         <property name="halign">start</property>
                         <property name="margin_right">10</property>
                         <property name="ypad">10</property>
-                        <property name="label" translatable="yes">Condition check skip time (seconds):</property>
+                        <property name="label" translatable="yes">Condition Check Skip Time (seconds):</property>
                       </object>
                       <packing>
                         <property name="left_attach">0</property>

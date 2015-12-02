@@ -156,6 +156,9 @@ EVENT_SESSION_SCREENSAVER_EXIT = 'screensaver_exit'
 EVENT_SESSION_LOCK = 'session_lock'
 EVENT_SESSION_UNLOCK = 'session_unlock'
 EVENT_COMMAND_LINE = 'command_line'
+EVENT_SYSTEM_BATTERY_CHARGE = 'battery_charge'
+EVENT_SYSTEM_BATTERY_DISCHARGING = 'battery_discharging'
+EVENT_SYSTEM_BATTERY_LOW = 'battery_low'
 
 EVENT_COMMAND_LINE_PREAMBLE = 'command_line'
 EVENT_DBUS_SIGNAL_PREAMBLE = 'dbus_signal'
@@ -2303,6 +2306,64 @@ def dict_to_PathNotifyBasedCondition(d):
 
 
 #############################################################################
+# abstract class for conditions based on generically collected data: derived
+# implementations should override data_collector and check_data; a failure
+# in data_collector prevents condition trigger anyway, while success allows
+# check_data to decide whether to trigger or not depending on retrieved data
+class DataCollectorBasedCondition(Condition):
+
+    def _check_condition(self):
+        self._debug("checking data collector based condition")
+        try:
+            current_data = self.data_collector()
+            rv = self.check_data(current_data)
+            self.data = current_data
+            return bool(rv)
+        except Exception as e:
+            self._debug("error %s checking data collector based condition %s" % (e, self.cond_name))
+            return False
+
+    def __init__(self, name=None, no_skip=False, repeat=True, exec_sequence=True):
+        if self.__class__.__name__ == 'DataCollectorBasedCondition':
+            raise NotImplementedError("abstract class")
+        Condition.__init__(self, name, repeat, exec_sequence)
+        if no_skip:
+            self.skip_seconds = 0
+
+    # this virtual function should collect data somehow and return it
+    def data_collector(self):
+        return None
+
+    # this virtual function should verify submitted data and return a
+    # boolean, possibly comparing it with already stored data
+    def check_data(self, collected):
+        return False
+
+
+def DataCollectorBasedCondition_to_dict(c):
+    d = Condition_to_dict(c)
+    d['subtype'] = 'DataCollectorBasedCondition'
+    d['no_skip'] = bool(c.skip_seconds == 0)
+    return d
+
+
+def dict_to_DataCollectorBasedCondition(d, c=None):
+    if d['type'] != 'condition' or d['subtype'] != 'DataCollectorBasedCondition':
+        raise ValueError("incorrect dictionary type")
+    name = d['cond_name']
+    no_skip = d['no_skip']
+    # TODO: if there are more parameters, use d.get('key', default_val)
+    # the following will raise an error
+    if c is None:
+        applet_log.critical("MAIN: NTBS: attempt to restore base DataCollectorBasedCondition")
+        c = DataCollectorBasedCondition(name, no_skip)
+    if no_skip:
+        c.skip_seconds = 0
+    c = dict_to_Condition(d, c)
+    return c
+
+
+#############################################################################
 # a class to build DBus signal handlers: related conditions are event based
 # conditions with a special event (dbus_signal:SigHandlerName) to reuse code
 param_check = namedtuple('param_check', ['value_idx', 'sub_idx',
@@ -3052,6 +3113,9 @@ class ConditionDialog(object):
             EVENT_SESSION_SCREENSAVER_EXIT,
             EVENT_SESSION_LOCK,
             EVENT_SESSION_UNLOCK,
+            EVENT_SYSTEM_BATTERY_CHARGE,
+            EVENT_SYSTEM_BATTERY_DISCHARGING,
+            EVENT_SYSTEM_BATTERY_LOW,
 
             # the following should be the last one
             EVENT_COMMAND_LINE
@@ -4256,6 +4320,19 @@ class AppletIndicator(Gtk.Application):
             enabled_events.append(EVENT_SYSTEM_NETWORK_JOIN)
             enabled_events.append(EVENT_SYSTEM_NETWORK_LEAVE)
 
+        self.battery_mgr = _signal_manager(
+            self.system_bus,
+            'org.freedesktop.UPower', '/org/freedesktop/UPower',
+            'org.freedesktop.UPower',
+            [
+                ('Changed', self.battery_manager),
+            ]
+        )
+        if self.battery_mgr:
+            enabled_events.append(EVENT_SYSTEM_BATTERY_CHARGE)
+            enabled_events.append(EVENT_SYSTEM_BATTERY_DISCHARGING)
+            enabled_events.append(EVENT_SYSTEM_BATTERY_LOW)
+
         # Template for standard (not custom DBus) signal handlers
         # self.MANAGER = _signal_manager(
         #     self.TYPE_BUS,
@@ -4393,7 +4470,8 @@ class AppletIndicator(Gtk.Application):
         applet_log.debug("MAIN: network state changed")
         try:
             state = self.network_mgr.state()
-            if state in [NM_STATE_CONNECTED_LOCAL, NM_STATE_CONNECTED_SITE, NM_STATE_CONNECTED_GLOBAL]:
+            if state in [NM_STATE_CONNECTED_LOCAL, NM_STATE_CONNECTED_SITE,
+                         NM_STATE_CONNECTED_GLOBAL]:
                 applet_log.debug("MAIN: joined network")
                 deferred_events.append(EVENT_SYSTEM_NETWORK_JOIN)
             elif state in [NM_STATE_DISCONNECTED]:
@@ -4401,6 +4479,26 @@ class AppletIndicator(Gtk.Application):
                 deferred_events.append(EVENT_SYSTEM_NETWORK_LEAVE)
         except dbus.exceptions.DBusException:
             applet_log.warning("MAIN: network state query failed")
+
+    def battery_manager(self, *args):
+        applet_log.debug("MAIN: battery state changed")
+        try:
+            proxy = self.battery_mgr.proxy_object
+            drain = proxy.Get('org.freedesktop.UPower', 'OnBattery',
+                              dbus_interface='org.freedesktop.DBus.Properties')
+            low = proxy.Get('org.freedesktop.UPower', 'OnLowBattery',
+                            dbus_interface='org.freedesktop.DBus.Properties')
+            if low:
+                applet_log.debug("MAIN: battery low")
+                deferred_events.append(EVENT_SYSTEM_BATTERY_LOW)
+            elif drain:
+                applet_log.debug("MAIN: battery discharging")
+                deferred_events.append(EVENT_SYSTEM_BATTERY_DISCHARGING)
+            else:
+                applet_log.debug("MAIN: battery charging or charged")
+                deferred_events.append(EVENT_SYSTEM_BATTERY_CHARGE)
+        except:
+            applet_log.warning("MAIN: battery state query failed")
 
     def before_shutdown(self, *args):
         if not self.leaving:

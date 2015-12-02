@@ -463,7 +463,10 @@
                               <item id="10" translatable="yes">Return From Screensaver</item>
                               <item id="11" translatable="yes">Session Lock</item>
                               <item id="12" translatable="yes">Session Unlock</item>
-                              <item id="13" translatable="yes">Command Line Trigger</item>
+                              <item id="13" translatable="yes">Battery Charging</item>
+                              <item id="14" translatable="yes">Battery Discharging</item>
+                              <item id="15" translatable="yes">Battery Low</item>
+                              <item id="16" translatable="yes">Command Line Trigger</item>
                             </items>
                           </object>
                           <packing>
