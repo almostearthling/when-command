@@ -20,13 +20,9 @@ from setuptools import setup
 LOCALE_FILES = glob.glob('share/locale/*/LC_MESSAGES/when-command.mo')
 DTICON_FILES = glob.glob('share/icons/hicolor/*/apps/when-command.png')
 DATA_FILES = """
-LICENSE
 README.md
 share/when-command/when-command.py
-share/doc/when-command/CHANGELOG.md
-share/doc/when-command/ROADMAP.md
-share/doc/when-command/TRANSLATE.md
-share/doc/when-command/PACKAGE.md
+share/man/man1/when-command.1
 share/doc/when-command/copyright
 share/when-command/when-command-about.glade
 share/when-command/when-command-edit-condition.glade
