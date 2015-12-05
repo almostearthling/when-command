@@ -4,7 +4,7 @@
 
 ![Screenshot](https://raw.githubusercontent.com/almostearthling/when-command-docs/master/_static/when_screenshot_part.png)
 
-The purpose of this small utility is to provide the user, possibly without administrative credentials, the ability to define conditions that do not only depend on time, but also on particular states of the session, result of commands run in a shell or other events that may occur when the system is being used. The scheduler runs in the background, and it displays an indicator applet icon for user interaction.
+The purpose of this small utility is to provide the user, possibly without administrative credentials, the ability to define conditions that do not only depend on time, but also on particular states of the session, result of commands run in a shell or other events that may occur when the system is being used. The scheduler runs in the background, and displays an indicator applet icon for user interaction.
 
 It is not generally intended as a replacement to [*cron*](https://en.wikipedia.org/wiki/Cron) and the [Gnome Task Scheduler](http://gnome-schedule.sourceforge.net/), although to some extent these utilities might overlap. **When** is intended to be more flexible, although less precise, and to provide an alternative to more complicated solutions -- such as the implementation of *cron* jobs that check for a particular condition and execute commands when the condition is verified. In such spirit, **When** is not as fine-grained in terms of doing things on a strict time schedule: the **When** approach is that "*when* a certain condition is met, *then* something has to be done". The condition is checked periodically, and the "countermeasure" is taken *subsequently* -- although not *immediately* in most cases.
 
