@@ -1,10 +1,10 @@
 # When (*when-command*)
 
-**When** is a configurable user task scheduler for modern Gnome environments. It interacts with the user through a GUI, where the user can define tasks and conditions, as well as relationships of causality that bind conditions to tasks. When a condition is bound to a task, it is said to trigger a task.
+**When** is a configurable user task scheduler for modern Gnome environments. It interacts with the user through a GUI, where the user can define tasks and conditions, as well as relationships of causality that bind conditions to tasks.
 
 ![Screenshot](https://raw.githubusercontent.com/almostearthling/when-command-docs/master/_static/when_screenshot_part.png)
 
-The purpose of this small utility is to provide the user, possibly without administrative credentials, the ability to define conditions that do not only depend on time, but also on a particular state of the session (e.g. the result of a command run in a shell). The same result could be achieved with scripts that periodically run commands, check the results and react accordingly, but such a simple task could result in complex sets of scripts and settings that would be harder to maintain. The scheduler runs in the background, and it displays an indicator applet icon for user interaction.
+The purpose of this small utility is to provide the user, possibly without administrative credentials, the ability to define conditions that do not only depend on time, but also on particular states of the session, result of commands run in a shell or other events that may occur when the system is being used. The scheduler runs in the background, and it displays an indicator applet icon for user interaction.
 
 It is not generally intended as a replacement to [*cron*](https://en.wikipedia.org/wiki/Cron) and the [Gnome Task Scheduler](http://gnome-schedule.sourceforge.net/), although to some extent these utilities might overlap. **When** is intended to be more flexible, although less precise, and to provide an alternative to more complicated solutions -- such as the implementation of *cron* jobs that check for a particular condition and execute commands when the condition is verified. In such spirit, **When** is not as fine-grained in terms of doing things on a strict time schedule: the **When** approach is that "*when* a certain condition is met, *then* something has to be done". The condition is checked periodically, and the "countermeasure" is taken *subsequently* -- although not *immediately* in most cases.
 
