@@ -60,7 +60,7 @@ for key in DATA_DIC:
     if key:
         DATA_TUPLES.append(
             (key, [os.path.join(key, s) for s in DATA_DIC[key]]))
-DATA_TUPLES.append(('share/doc/when-command', ['LICENSE', 'README.md']))
+DATA_TUPLES.append(('share/doc/when-command', ['README.md']))
 
 # try to keep identifiers as single-sourced as possible
 HERE = os.path.abspath(os.path.dirname(__file__))
