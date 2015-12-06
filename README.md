@@ -8,7 +8,7 @@ The purpose of this small utility is to provide the user, possibly without admin
 
 It is not generally intended as a replacement to [*cron*](https://en.wikipedia.org/wiki/Cron) and the [Gnome Task Scheduler](http://gnome-schedule.sourceforge.net/), although to some extent these utilities might overlap. **When** is intended to be more flexible, although less precise, and to provide an alternative to more complicated solutions -- such as the implementation of *cron* jobs that check for a particular condition and execute commands when the condition is verified. In such spirit, **When** is not as fine-grained in terms of doing things on a strict time schedule: the **When** approach is that "*when* a certain condition is met, *then* something has to be done". The condition is checked periodically, and the "countermeasure" is taken *subsequently* -- although not *immediately* in most cases.
 
-The complete documentation for **When** can be found online [here](http://when-documentation.readthedocs.org/).
+The complete documentation for **When** can be found online [here](http://when-documentation.readthedocs.org/). [![Documentation Status](https://readthedocs.org/projects/when-documentation/badge/?version=latest)](http://when-documentation.readthedocs.org/en/latest/?badge=latest)
 
 
 ## Credits
