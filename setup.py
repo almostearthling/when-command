@@ -114,7 +114,7 @@ setup(
         'Topic :: Desktop Environment :: Gnome',
         'Topic :: Utilities',
     ],
-    keywords='applet desktop gnome task-scheduler ubuntu unity',
+    keywords='ubuntu, when-command, when, task-scheduler, gnome, task, scheduler',
 
     data_files=DATA_TUPLES,
     scripts=[
