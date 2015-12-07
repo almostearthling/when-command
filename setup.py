@@ -114,7 +114,7 @@ setup(
         'Topic :: Desktop Environment :: Gnome',
         'Topic :: Utilities',
     ],
-    keywords='ubuntu, when-command, when, task-scheduler, gnome, task, scheduler',
+    keywords='ubuntu when-command when task-scheduler gnome task scheduler',
 
     data_files=DATA_TUPLES,
     scripts=[
