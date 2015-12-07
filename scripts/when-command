@@ -4,7 +4,7 @@
 # When
 #
 # Copyright (c) 2015 Francesco Garosi
-# Released under the BSD License (see LICENSE.md)
+# Released under the BSD License (see LICENSE file)
 #
 # Small startup applet that runs tasks when particular conditions are met.
 # NOTE: This is a stub script that loads the main when-command applet.

@@ -4,10 +4,10 @@
 # When (setup script)
 #
 # Copyright (c) 2015 Francesco Garosi
-# Released under the BSD License (see LICENSE.md)
+# Released under the BSD License (see LICENSE file)
 #
 # This script is used to install When in a Debian-compatible way.
-#
+
 
 import os
 import os.path

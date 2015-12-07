@@ -4,29 +4,10 @@
 # When
 #
 # Copyright (c) 2015 Francesco Garosi
-# Released under the BSD License (see LICENSE.md)
+# Released under the BSD License (see LICENSE file)
 #
 # Small startup applet that runs tasks when particular conditions are met.
-#
-#############################################################################
-# SOME NOTES ABOUT THE CODE
-# The code tries to follow the usual guidelines for Python 3.x, and takes
-# inspiration from other Gnome applets that sit in the indicator tray.
-# I tried to reduce the comments to the very least, and let the code speak
-# for itself. Some of the conventions here are the following:
-#
-# * system wide constants are spelled in all uppercase (as usual in C/C++)
-# * variables tend to be all lowercase, both globals and locals
-# * class names start with an uppercase letter and are in camelcase
-# * global instances of classes are lowercase
-# * private members start, as usual, with an underscore
-# * function names are all lowercase with underscores
-# * transitional (or debug) functions start with underscores
-# * the core classes implement their own loggers, borrowing from global
-# * user interaction strings (as log messages) use double quotes
-# * program internal strings use single quotes
-# * log messages mostly sport a prefix to determine what part generated them
-# * log messages containing the NTBS strings are *never to be seen*
+
 
 import os
 import sys
