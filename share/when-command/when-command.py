@@ -66,8 +66,8 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.3~beta.1'
-APPLET_TAGDESC = 'New documentation style'
+APPLET_VERSION = '0.9.3~beta.2'
+APPLET_TAGDESC = 'System-wide application launcher'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -467,9 +467,13 @@ X-GNOME-Autostart-enabled={autostart_enable}
 """
 
 
-# utility to create a desktop file
+# utility to create a desktop file if not installed system-wide
 def create_desktop_file(overwrite=False):
     filename = '%s.desktop' % APPLET_NAME
+    if APP_BASE_FOLDER == '/usr':
+        if os.path.exists(os.path.join(APP_BASE_FOLDER, 'share',
+                                       'applications', filename)):
+            return
     pathname = os.path.join(USER_DATA_FOLDER, filename)
     if not os.path.exists(pathname) or overwrite:
         applet_log.info("MAIN: creating desktop entries")

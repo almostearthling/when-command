@@ -23,6 +23,7 @@ DATA_FILES = """
 README.md
 share/when-command/when-command.py
 share/man/man1/when-command.1
+share/applications/when-command.desktop
 share/doc/when-command/copyright
 share/when-command/when-command-about.glade
 share/when-command/when-command-edit-condition.glade

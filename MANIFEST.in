@@ -1,6 +1,7 @@
 include README.md
 recursive-include share/icons *
 recursive-include share/locale *
+recursive-include share/applications *
 recursive-include share/doc *
 recursive-include share/man *
 recursive-include share/when-command *
