@@ -48,6 +48,10 @@ except ImportError:
     FILE_NOTIFY_ENABLED = False
 
 
+# this innocent hack is for compatibility between different layouts
+sys.modules['when_command'] = sys.modules[__name__]
+
+
 #############################################################################
 # constants
 
@@ -85,6 +89,17 @@ DBUS_CHECK_COMPARE_CONTAINS = 'contains'
 DBUS_CHECK_COMPARE_MATCHES = 'matches'
 DBUS_CHECK_COMPARE_GREATER = 'gt'
 DBUS_CHECK_COMPARE_LESS = 'lt'
+
+# item types for CLI arguments
+ITEMSPEC_TYPE_TASKS = 'tasks'
+ITEMSPEC_TYPE_CONDITIONS = 'conditions'
+ITEMSPEC_TYPE_SIGNAL_HANDLERS = 'sighandlers'
+
+# item operation error codes
+ITEM_OPERATION_OK = 0
+ITEM_OPERATION_ERR_TYPE = 1
+ITEM_OPERATION_ERR_NOTFOUND = 2
+ITEM_OPERATION_ERR_UNKNOWN = -1
 
 # validation constants
 VALIDATE_TASK_RE = re.compile(r'^[a-zA-Z0-9][a-zA-Z0-9_-]*$')
@@ -404,6 +419,8 @@ resources.OERR_ERR_IMPORT_RUNNING = _("cannot import items, please close instanc
 resources.OERR_ERR_IMPORT_GENERIC = _("an error occurred while trying to import items")
 resources.OERR_ERR_INSTALL_RUNNING = _("cannot install, please close instance first")
 resources.OERR_ERR_INSTALL_GENERIC = _("an error occurred while trying to install icons")
+resources.OERR_ERR_ITEMOPS_TYPE = _("unknown item type in item specification")
+resources.OERR_ERR_ITEMOPS_GENERIC = _("an error occurred while performing item operations")
 
 resources.COMMAND_LINE_HELP_VERSION = _("show applet version")
 resources.COMMAND_LINE_HELP_SHOW_SETTINGS = _("show settings dialog box for the running instance [R]")
@@ -423,6 +440,9 @@ resources.COMMAND_LINE_HELP_SHUTDOWN = _("run shutdown tasks and close an existi
 resources.COMMAND_LINE_HELP_KILL = _("kill an existing istance [R]")
 resources.COMMAND_LINE_HELP_EXPORT = _("save tasks and conditions to a portable format")
 resources.COMMAND_LINE_HELP_IMPORT = _("import tasks and conditions from saved file [S]")
+resources.COMMAND_LINE_HELP_ITEM_LIST = _("list items of the given type to console")
+resources.COMMAND_LINE_HELP_ITEM_ADD = _("add items from specified file or standard input")
+resources.COMMAND_LINE_HELP_ITEM_DELETE = _("delete the item specified as [type:]NAME")
 resources.COMMAND_LINE_HELP_VERBOSE = _("show verbose output for some options")
 resources.COMMAND_LINE_SHOWVERSION = _("%s: %s, version %s")
 resources.COMMAND_LINE_PREAMBLE = _("""\
@@ -631,6 +651,14 @@ class AppletDBusService(dbus.service.Object):
     @dbus.service.method(APPLET_BUS_NAME)
     def export_history(self, file_name):
         return applet.export_task_history(file_name)
+
+    @dbus.service.method(APPLET_BUS_NAME)
+    def add_items(self, item_data):
+        return applet.add_items(item_data)
+
+    @dbus.service.method(APPLET_BUS_NAME)
+    def del_item(self, item_type, item_name):
+        return applet.del_item(item_type, item_name)
 
 
 #############################################################################
@@ -4532,6 +4560,14 @@ class AppletIndicator(Gtk.Application):
         except IOError as e:
             return HISTORY_ERR_IOERROR
 
+    def add_items(self, item_data):
+        # TODO: insert code that calls the main add function here
+        pass
+
+    def del_item(self, item_type, item_name):
+        # TODO: insert code that calls the main deletion function here
+        pass
+
     def quit(self, _):
         self.before_shutdown()
         Notify.uninit()
@@ -4806,6 +4842,39 @@ def export_running_history(filename, verbose=False):
     else:
         oerr(resources.OERR_EXPORT_HISTORY_FINISH % rv, verbose)
         return True
+
+
+def print_items(item_type=None):
+    if item_type is not None:
+        if item_type == ITEMSPEC_TYPE_TASKS:
+            tasks.load()
+            for name in tasks.names:
+                sys.stdout.write("%s:%s\n" % (ITEMSPEC_TYPE_TASKS, name))
+            return ITEM_OPERATION_OK
+        elif item_type == ITEMSPEC_TYPE_CONDITIONS:
+            conditions.load()
+            for name in conditions.names:
+                sys.stdout.write("%s:%s\n" % (ITEMSPEC_TYPE_CONDITIONS, name))
+            return ITEM_OPERATION_OK
+        elif item_type == ITEMSPEC_TYPE_SIGNAL_HANDLERS:
+            signal_handlers.load()
+            for name in signal_handlers.names:
+                sys.stdout.write(
+                    "%s:%s\n" % (ITEMSPEC_TYPE_SIGNAL_HANDLERS, name))
+            return ITEM_OPERATION_OK
+        else:
+            return ITEM_OPERATION_ERR_TYPE
+    else:
+        tasks.load()
+        for name in tasks.names:
+            sys.stdout.write("%s:%s\n" % (ITEMSPEC_TYPE_TASKS, name))
+        conditions.load()
+        for name in conditions.names:
+            sys.stdout.write("%s:%s\n" % (ITEMSPEC_TYPE_CONDITIONS, name))
+        signal_handlers.load()
+        for name in signal_handlers.names:
+            sys.stdout.write("%s:%s\n" % (ITEMSPEC_TYPE_SIGNAL_HANDLERS, name))
+        return ITEM_OPERATION_OK
 
 
 def clear_item_data(verbose=False):
@@ -5139,14 +5208,19 @@ def main():
             help=resources.COMMAND_LINE_HELP_DEFER_CONDITION
         )
         parser.add_argument(
-            '--shutdown',
-            dest='shutdown', action='store_true',
-            help=resources.COMMAND_LINE_HELP_SHUTDOWN
+            '--item-list',
+            dest='item_list', metavar='ITEMTYPE', nargs='?', const='*',
+            help=resources.COMMAND_LINE_HELP_ITEM_LIST
         )
         parser.add_argument(
-            '--kill',
-            dest='kill', action='store_true',
-            help=resources.COMMAND_LINE_HELP_KILL
+            '--item-del',
+            dest='item_delete', metavar='ITEMSPEC', default=None,
+            help=resources.COMMAND_LINE_HELP_ITEM_DELETE
+        )
+        parser.add_argument(
+            '--item-add',
+            dest='item_add', metavar='FILE', nargs='?', const='-',
+            help=resources.COMMAND_LINE_HELP_ITEM_ADD
         )
         parser.add_argument(
             '--export',
@@ -5157,6 +5231,16 @@ def main():
             '--import',
             dest='import_items', metavar='FILE', nargs='?', const='*',
             help=resources.COMMAND_LINE_HELP_IMPORT
+        )
+        parser.add_argument(
+            '--shutdown',
+            dest='shutdown', action='store_true',
+            help=resources.COMMAND_LINE_HELP_SHUTDOWN
+        )
+        parser.add_argument(
+            '--kill',
+            dest='kill', action='store_true',
+            help=resources.COMMAND_LINE_HELP_KILL
         )
 
         args = parser.parse_args()
@@ -5244,6 +5328,24 @@ def main():
                 sys.exit(2)
             else:
                 if not(run_condition(args.defer_condition, True, verbose)):
+                    sys.exit(2)
+
+        if args.item_list:
+            if args.item_list == '*':
+                print_items()
+            else:
+                s = args.item_list.lower()
+                if ITEMSPEC_TYPE_TASKS.startswith(s):
+                    s = ITEMSPEC_TYPE_TASKS
+                elif ITEMSPEC_TYPE_CONDITIONS.startswith(s):
+                    s = ITEMSPEC_TYPE_CONDITIONS
+                elif ITEMSPEC_TYPE_SIGNAL_HANDLERS.startswith(s):
+                    s = ITEMSPEC_TYPE_SIGNAL_HANDLERS
+                else:
+                    oerr(resources.OERR_ERR_ITEMOPS_TYPE, verbose)
+                    sys.exit(1)
+                if print_items(s) != ITEM_OPERATION_OK:
+                    oerr(resources.OERR_ERR_ITEMOPS_GENERIC, verbose)
                     sys.exit(2)
 
         if args.shutdown:
