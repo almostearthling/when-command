@@ -416,6 +416,7 @@ resources.OERR_ERR_ALREADY_RUNNING = _("another instance is present: leaving")
 resources.OERR_ERR_REQUIRE_INSTANCE = _("could not find a running instance, please start it first")
 resources.OERR_ERR_NO_INSTANCE = _("could not find a running instance")
 resources.OERR_ERR_DBUS_DISABLED = _("dbus signals disabled by configuration")
+resources.OERR_ERR_DBUS_SERVICE = _("error in communication with running applet")
 resources.OERR_ERR_EXPORT_GENERIC = _("an error occurred while trying to export items")
 resources.OERR_ERR_RESET_RUNNING = _("cannot reset configuration, please close instance first")
 resources.OERR_ERR_RESET_GENERIC = _("an error occurred while trying to reset configuration")
@@ -616,6 +617,120 @@ def config_loghandler(max_size=None, max_backups=None):
     applet_log.removeHandler(applet_log_handler)
     applet_log_handler = handler
     applet_log.addHandler(applet_log_handler)
+
+
+#############################################################################
+# item operations functions
+
+# wrapper around removal function, accepts list of '[type:]name' or single str
+def remove_item_specs(item_specs):
+    if type(item_specs) == str:
+        item_specs = [item_specs]
+    to_delete = []
+    not_deleted = []
+    for item in item_specs:
+        if ITEM_SPEC_SEPARATOR in item:
+            t, n = item.split(ITEM_SPEC_SEPARATOR)
+            t = t.lower()
+            if ITEM_TYPE_CONDITIONS.startswith(t):
+                to_delete.append(ITEM_TYPE_CONDITIONS, n)
+            elif ITEM_TYPE_SIGNAL_HANDLERS.startswith(t):
+                to_delete.append(ITEM_TYPE_SIGNAL_HANDLERS, n)
+            elif ITEM_TYPE_TASKS.startswith(t):
+                to_delete.append(ITEM_TYPE_TASKS, n)
+            else:
+                applet_log.warning("MAIN: incorrect type %s specified for item %s" % (t, n))
+                not_deleted.append(t, n, ITEM_OPERATION_ERR_TYPE)
+        else:
+            if item in conditions.names:
+                if item in tasks.names or item in signal_handlers.names:
+                    applet_log.warning("MAIN: cannot delete item %s: name conflict" % item)
+                    not_deleted.append(ITEM_TYPE_CONDITIONS, item,
+                                       ITEM_OPERATION_ERR_CONFLICT)
+                else:
+                    to_delete.append(ITEM_TYPE_CONDITIONS, item)
+            elif item in tasks.names:
+                if item in conditions.names or item in signal_handlers.names:
+                    applet_log.warning("MAIN: cannot delete item %s: name conflict" % item)
+                    not_deleted.append(ITEM_TYPE_TASKS, item,
+                                       ITEM_OPERATION_ERR_CONFLICT)
+                else:
+                    to_delete.append(ITEM_TYPE_TASKS, item)
+            elif item in signal_handlers.names:
+                if item in conditions.names or item in tasks.names:
+                    applet_log.warning("MAIN: cannot delete item %s: name conflict" % item)
+                    not_deleted.append(ITEM_TYPE_SIGNAL_HANDLERS, item,
+                                       ITEM_OPERATION_ERR_CONFLICT)
+                else:
+                    to_delete.append(ITEM_TYPE_SIGNAL_HANDLERS, item)
+            else:
+                applet_log.warning("MAIN: cannot delete item %s: item not found" % item)
+                not_deleted.append(ITEM_TYPE_UNKNOWN, item,
+                                   ITEM_OPERATION_ERR_NOTFOUND)
+    not_deleted += remove_items(to_delete)
+    if not_deleted:
+        return not_deleted
+
+
+# this function deletes items as provided as a list of (itemtype, name) pairs
+# as long as this doesn't create dependency problems with conditions; expects
+# all item collections to be loaded and can be called from within the applet
+def remove_items(item_list):
+    applet_log.info("MAIN: requesting deletion of possibly multiple items")
+    not_deleted = []
+    items = [e[1] for e in item_list if e[0] == ITEM_TYPE_CONDITIONS]
+    removed = False
+    for item_name in items:
+        if item_name not in conditions.names:
+            applet_log.warning("MAIN: condition %s specified for removal but not found" % item_name)
+            not_deleted.append(
+                (ITEM_TYPE_CONDITIONS, item_name, ITEM_OPERATION_ERR_NOTFOUND))
+        else:
+            if not conditions.remove(cond_name=item_name):
+                applet_log.warning("MAIN: could not remove condition %s" % item_name)
+                not_deleted.append(
+                    (ITEM_TYPE_CONDITIONS, item_name,
+                     ITEM_OPERATION_ERR_UNKNOWN))
+            else:
+                removed = True
+    if removed:
+        conditions.save()
+    items = [e[1] for e in item_list if e[0] == ITEM_TYPE_SIGNAL_HANDLERS]
+    removed = False
+    for item_name in items:
+        if item_name not in signal_handlers.names:
+            applet_log.warning("MAIN: signal handler %s specified for removal but not found" % item_name)
+            not_deleted.append(
+                (ITEM_TYPE_SIGNAL_HANDLERS, item_name,
+                 ITEM_OPERATION_ERR_NOTFOUND))
+        else:
+            if not signal_handlers.remove(handler_name=item_name):
+                applet_log.warning("MAIN: could not remove signal handler %s" % item_name)
+                not_deleted.append(
+                    (ITEM_TYPE_SIGNAL_HANDLERS, item_name,
+                     ITEM_OPERATION_ERR_UNKNOWN))
+            else:
+                removed = True
+    if removed:
+        signal_handlers.save()
+    items = [e[1] for e in item_list if e[0] == ITEM_TYPE_TASKS]
+    removed = False
+    for item_name in items:
+        if item_name not in tasks.names:
+            applet_log.warning("MAIN: task %s specified for removal but not found" % item_name)
+            not_deleted.append(
+                (ITEM_TYPE_TASKS, item_name, ITEM_OPERATION_ERR_NOTFOUND))
+        else:
+            if not tasks.remove(task_name=item_name):
+                applet_log.warning("MAIN: could not remove task %s" % item_name)
+                not_deleted.append(
+                    (ITEM_TYPE_TASKS, item_name, ITEM_OPERATION_ERR_UNKNOWN))
+            else:
+                removed = True
+    if removed:
+        tasks.save()
+    if not_deleted:
+        return not_deleted
 
 
 #############################################################################
@@ -4820,12 +4935,15 @@ def kill_existing(verbose=False, shutdown=False):
          (resources.OERR_SHUTDOWN_SHUTDOWN if shutdown
           else resources.OERR_SHUTDOWN_KILL), verbose)
     bus = dbus.SessionBus()
-    interface = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
-    if shutdown:
-        interface.quit_instance()
-    else:
-        interface.kill_instance()
-    oerr(resources.OERR_SHUTDOWN_FINISH, verbose)
+    proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
+    try:
+        if shutdown:
+            proxy.quit_instance()
+        else:
+            proxy.kill_instance()
+        oerr(resources.OERR_SHUTDOWN_FINISH, verbose)
+    except dbus.exceptions.DBusException:
+        oerr(resources.OERR_ERR_DBUS_SERVICE, verbose)
 
 
 def oerr(s, verbose=True):
@@ -4846,15 +4964,21 @@ def show_box(box='about', verbose=False):
     proxy = Gio.DBusProxy.new_sync(bus, Gio.DBusProxyFlags.NONE, None,
                                    APPLET_BUS_NAME, APPLET_BUS_PATH,
                                    APPLET_BUS_NAME, None)
-    proxy.call_sync('show_dialog', GLib.Variant('(s)', (box,)),
-                    Gio.DBusCallFlags.NONE, GObject.G_MAXINT, None)
+    try:
+        proxy.call_sync('show_dialog', GLib.Variant('(s)', (box,)),
+                        Gio.DBusCallFlags.NONE, GObject.G_MAXINT, None)
+    except dbus.exceptions.DBusException:
+        oerr(resources.OERR_ERR_DBUS_SERVICE, verbose)
 
 
 def show_icon(show=True, running=True):
     if running:
         bus = dbus.SessionBus()
         proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
-        proxy.show_icon(show)
+        try:
+            proxy.show_icon(show)
+        except dbus.exceptions.DBusException:
+            oerr(resources.OERR_ERR_DBUS_SERVICE, verbose)
     config.set('General', 'show icon', show)
     config.save()
 
@@ -4874,7 +4998,11 @@ def export_running_history(filename, verbose=False):
     oerr(resources.OERR_EXPORT_HISTORY % filename, verbose)
     bus = dbus.SessionBus()
     proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
-    rv = proxy.export_history(filename)
+    try:
+        rv = proxy.export_history(filename)
+    except dbus.exceptions.DBusException:
+        oerr(resources.OERR_EXPORT_HISTORY_UNKNOWN, verbose)
+        return False
     if rv < 0:
         if rv == HISTORY_ERR_EMPTY:
             s = resources.OERR_EXPORT_HISTORY_EMPTY
@@ -4893,7 +5021,11 @@ def call_remove_item(item_spec, verbose=False):
     # TODO: the symbols should be converted to constants
     bus = dbus.SessionBus()
     proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
-    rv = proxy.del_item(item_spec)
+    try:
+        rv = proxy.del_item(item_spec)
+    except dbus.exceptions.DBusException:
+        oerr(resources.OERR_ERR_ITEMOPS_DBUS, verbose)
+        return False
     if rv:
         li = rv.split('/')
         if len(li) > 1:
@@ -5013,117 +5145,6 @@ def print_items(item_type=None):
         except FileNotFoundError:
             pass
         return ITEM_OPERATION_OK
-
-
-# this function deletes items as provided as a list of (itemtype, name) pairs
-# as long as this doesn't create dependency problems with conditions; expects
-# all item collections to be loaded and can be called from within the applet
-def remove_items(item_list):
-    applet_log.info("MAIN: requesting deletion of possibly multiple items")
-    not_deleted = []
-    items = [e[1] for e in item_list if e[0] == ITEM_TYPE_CONDITIONS]
-    removed = False
-    for item_name in items:
-        if item_name not in conditions.names:
-            applet_log.warning("MAIN: condition %s specified for removal but not found" % item_name)
-            not_deleted.append(
-                (ITEM_TYPE_CONDITIONS, item_name, ITEM_OPERATION_ERR_NOTFOUND))
-        else:
-            if not conditions.remove(cond_name=item_name):
-                applet_log.warning("MAIN: could not remove condition %s" % item_name)
-                not_deleted.append(
-                    (ITEM_TYPE_CONDITIONS, item_name,
-                     ITEM_OPERATION_ERR_UNKNOWN))
-            else:
-                removed = True
-    if removed:
-        conditions.save()
-    items = [e[1] for e in item_list if e[0] == ITEM_TYPE_SIGNAL_HANDLERS]
-    removed = False
-    for item_name in items:
-        if item_name not in signal_handlers.names:
-            applet_log.warning("MAIN: signal handler %s specified for removal but not found" % item_name)
-            not_deleted.append(
-                (ITEM_TYPE_SIGNAL_HANDLERS, item_name,
-                 ITEM_OPERATION_ERR_NOTFOUND))
-        else:
-            if not signal_handlers.remove(handler_name=item_name):
-                applet_log.warning("MAIN: could not remove signal handler %s" % item_name)
-                not_deleted.append(
-                    (ITEM_TYPE_SIGNAL_HANDLERS, item_name,
-                     ITEM_OPERATION_ERR_UNKNOWN))
-            else:
-                removed = True
-    if removed:
-        signal_handlers.save()
-    items = [e[1] for e in item_list if e[0] == ITEM_TYPE_TASKS]
-    removed = False
-    for item_name in items:
-        if item_name not in tasks.names:
-            applet_log.warning("MAIN: task %s specified for removal but not found" % item_name)
-            not_deleted.append(
-                (ITEM_TYPE_TASKS, item_name, ITEM_OPERATION_ERR_NOTFOUND))
-        else:
-            if not tasks.remove(task_name=item_name):
-                applet_log.warning("MAIN: could not remove task %s" % item_name)
-                not_deleted.append(
-                    (ITEM_TYPE_TASKS, item_name, ITEM_OPERATION_ERR_UNKNOWN))
-            else:
-                removed = True
-    if removed:
-        tasks.save()
-    if not_deleted:
-        return not_deleted
-
-
-# wrapper around the removal function, accepts list of '[type:]name' or single str
-def remove_item_specs(item_specs):
-    if type(item_specs) == str:
-        item_specs = [item_specs]
-    to_delete = []
-    not_deleted = []
-    for item in item_specs:
-        if ITEM_SPEC_SEPARATOR in item:
-            t, n = item.split(ITEM_SPEC_SEPARATOR)
-            t = t.lower()
-            if ITEM_TYPE_CONDITIONS.startswith(t):
-                to_delete.append(ITEM_TYPE_CONDITIONS, n)
-            elif ITEM_TYPE_SIGNAL_HANDLERS.startswith(t):
-                to_delete.append(ITEM_TYPE_SIGNAL_HANDLERS, n)
-            elif ITEM_TYPE_TASKS.startswith(t):
-                to_delete.append(ITEM_TYPE_TASKS, n)
-            else:
-                applet_log.warning("MAIN: incorrect type %s specified for item %s" % (t, n))
-                not_deleted.append(t, n, ITEM_OPERATION_ERR_TYPE)
-        else:
-            if item in conditions.names:
-                if item in tasks.names or item in signal_handlers.names:
-                    applet_log.warning("MAIN: cannot delete item %s: name conflict" % item)
-                    not_deleted.append(ITEM_TYPE_CONDITIONS, item,
-                                       ITEM_OPERATION_ERR_CONFLICT)
-                else:
-                    to_delete.append(ITEM_TYPE_CONDITIONS, item)
-            elif item in tasks.names:
-                if item in conditions.names or item in signal_handlers.names:
-                    applet_log.warning("MAIN: cannot delete item %s: name conflict" % item)
-                    not_deleted.append(ITEM_TYPE_TASKS, item,
-                                       ITEM_OPERATION_ERR_CONFLICT)
-                else:
-                    to_delete.append(ITEM_TYPE_TASKS, item)
-            elif item in signal_handlers.names:
-                if item in conditions.names or item in tasks.names:
-                    applet_log.warning("MAIN: cannot delete item %s: name conflict" % item)
-                    not_deleted.append(ITEM_TYPE_SIGNAL_HANDLERS, item,
-                                       ITEM_OPERATION_ERR_CONFLICT)
-                else:
-                    to_delete.append(ITEM_TYPE_SIGNAL_HANDLERS, item)
-            else:
-                applet_log.warning("MAIN: cannot delete item %s: item not found" % item)
-                not_deleted.append(ITEM_TYPE_UNKNOWN, item,
-                                   ITEM_OPERATION_ERR_NOTFOUND)
-    not_deleted += remove_items(to_delete)
-    if not_deleted:
-        return not_deleted
 
 
 def clear_item_data(verbose=False):
@@ -5579,12 +5600,12 @@ def main():
                 if not(run_condition(args.defer_condition, True, verbose)):
                     sys.exit(2)
 
-        if args.del_item:
+        if args.item_delete:
             if running:
-                if not call_remove_item(args.del_item, verbose):
+                if not call_remove_item(args.item_delete, verbose):
                     sys.exit(2)
             else:
-                if not do_remove_item(args.del_item, verbose):
+                if not do_remove_item(args.item_delete, verbose):
                     sys.exit(2)
 
         if args.item_list:
