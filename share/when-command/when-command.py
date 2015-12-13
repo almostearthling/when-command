@@ -26,6 +26,8 @@ import shutil
 import re
 import locale
 
+import traceback
+
 from gi.repository import GLib, Gio
 from gi.repository import GObject
 from gi.repository import Gtk
@@ -431,7 +433,7 @@ resources.OERR_ERR_ITEMOPS_TYPE = _("unknown item type")
 resources.OERR_ERR_ITEMOPS_CONFLICT = _("item name conflict")
 resources.OERR_ERR_ITEMOPS_NOTFOUND = _("item not found")
 resources.OERR_ERR_ITEMOPS_DBUS = _("error communicating with applet")
-resources.OERR_ERR_ITEMOPS_GENERIC = _("unknown error")
+resources.OERR_ERR_ITEMOPS_GENERIC = _("unknown error or dependency conflict")
 
 resources.COMMAND_LINE_HELP_VERSION = _("show applet version")
 resources.COMMAND_LINE_HELP_SHOW_SETTINGS = _("show settings dialog box for the running instance [R]")
@@ -624,7 +626,7 @@ def config_loghandler(max_size=None, max_backups=None):
 
 # wrapper around removal function, accepts list of '[type:]name' or single str
 def remove_item_specs(item_specs):
-    if type(item_specs) == str:
+    if not isinstance(item_specs, list):
         item_specs = [item_specs]
     to_delete = []
     not_deleted = []
@@ -633,43 +635,42 @@ def remove_item_specs(item_specs):
             t, n = item.split(ITEM_SPEC_SEPARATOR)
             t = t.lower()
             if ITEM_TYPE_CONDITIONS.startswith(t):
-                to_delete.append(ITEM_TYPE_CONDITIONS, n)
+                to_delete.append((ITEM_TYPE_CONDITIONS, n))
             elif ITEM_TYPE_SIGNAL_HANDLERS.startswith(t):
-                to_delete.append(ITEM_TYPE_SIGNAL_HANDLERS, n)
+                to_delete.append((ITEM_TYPE_SIGNAL_HANDLERS, n))
             elif ITEM_TYPE_TASKS.startswith(t):
-                to_delete.append(ITEM_TYPE_TASKS, n)
+                to_delete.append((ITEM_TYPE_TASKS, n))
             else:
                 applet_log.warning("MAIN: incorrect type %s specified for item %s" % (t, n))
-                not_deleted.append(t, n, ITEM_OPERATION_ERR_TYPE)
+                not_deleted.append((t, n, ITEM_OPERATION_ERR_TYPE))
         else:
             if item in conditions.names:
                 if item in tasks.names or item in signal_handlers.names:
                     applet_log.warning("MAIN: cannot delete item %s: name conflict" % item)
-                    not_deleted.append(ITEM_TYPE_CONDITIONS, item,
-                                       ITEM_OPERATION_ERR_CONFLICT)
+                    not_deleted.append((ITEM_TYPE_CONDITIONS, item,
+                                        ITEM_OPERATION_ERR_CONFLICT))
                 else:
-                    to_delete.append(ITEM_TYPE_CONDITIONS, item)
+                    to_delete.append((ITEM_TYPE_CONDITIONS, item))
             elif item in tasks.names:
                 if item in conditions.names or item in signal_handlers.names:
                     applet_log.warning("MAIN: cannot delete item %s: name conflict" % item)
-                    not_deleted.append(ITEM_TYPE_TASKS, item,
-                                       ITEM_OPERATION_ERR_CONFLICT)
+                    not_deleted.append((ITEM_TYPE_TASKS, item,
+                                        ITEM_OPERATION_ERR_CONFLICT))
                 else:
-                    to_delete.append(ITEM_TYPE_TASKS, item)
+                    to_delete.append((ITEM_TYPE_TASKS, item))
             elif item in signal_handlers.names:
                 if item in conditions.names or item in tasks.names:
                     applet_log.warning("MAIN: cannot delete item %s: name conflict" % item)
-                    not_deleted.append(ITEM_TYPE_SIGNAL_HANDLERS, item,
-                                       ITEM_OPERATION_ERR_CONFLICT)
+                    not_deleted.append((ITEM_TYPE_SIGNAL_HANDLERS, item,
+                                        ITEM_OPERATION_ERR_CONFLICT))
                 else:
-                    to_delete.append(ITEM_TYPE_SIGNAL_HANDLERS, item)
+                    to_delete.append((ITEM_TYPE_SIGNAL_HANDLERS, item))
             else:
                 applet_log.warning("MAIN: cannot delete item %s: item not found" % item)
-                not_deleted.append(ITEM_TYPE_UNKNOWN, item,
-                                   ITEM_OPERATION_ERR_NOTFOUND)
+                not_deleted.append((ITEM_TYPE_UNKNOWN, item,
+                                    ITEM_OPERATION_ERR_NOTFOUND))
     not_deleted += remove_items(to_delete)
-    if not_deleted:
-        return not_deleted
+    return not_deleted
 
 
 # this function deletes items as provided as a list of (itemtype, name) pairs
@@ -729,8 +730,7 @@ def remove_items(item_list):
                 removed = True
     if removed:
         tasks.save()
-    if not_deleted:
-        return not_deleted
+    return not_deleted
 
 
 #############################################################################
@@ -784,9 +784,9 @@ class AppletDBusService(dbus.service.Object):
     @dbus.service.method(APPLET_BUS_NAME)
     def del_item(self, item_spec):
         # TODO: separator symbols should be converted to constants
-        li = applet.del_item(item_spec)
+        li = remove_item_specs(item_spec)
         if len(li) > 1:
-            applet.log_error("SERVICE: NTBS: too many items not deleted than expected (%s)" % len(li))
+            applet_log.error("SERVICE: NTBS: too many items not deleted than expected (%s)" % len(li))
             for x in li:
                 if x[2] == ITEM_OPERATION_OK:
                     reason = "no error"
@@ -798,7 +798,7 @@ class AppletDBusService(dbus.service.Object):
                     reason = "name conflict"
                 else:
                     reason = "unknown error"
-                applet.log_error("SERVICE: NTBS: item specification %s:%s marked as not removed (%s)" % (x[0], x[1], reason))
+                applet_log.error("SERVICE: NTBS: item specification %s:%s marked as not removed (%s)" % (x[0], x[1], reason))
             rv = '/'.join(['%s:%s:%s' % t for t in li])
         else:
             if li:
@@ -813,10 +813,10 @@ class AppletDBusService(dbus.service.Object):
                     reason = "name conflict"
                 else:
                     reason = "unknown error"
-                applet.log_warning("SERVICE: item specification %s:%s could not be deleted (%s)" % (x[0], x[1], reason))
+                applet_log.warning("SERVICE: item specification %s:%s could not be deleted (%s)" % (x[0], x[1], reason))
                 rv = '%s:%s:%s' % li[0]
             else:
-                applet.log_info("SERVICE: item specification %s has been removed" % item_spec)
+                applet_log.info("SERVICE: item specification %s has been removed" % item_spec)
                 rv = None
         return rv
 
@@ -4725,9 +4725,6 @@ class AppletIndicator(Gtk.Application):
         # TODO: insert code that calls the main add function here
         pass
 
-    def del_item(self, item_spec):
-        return remove_item_specs(item_spec)
-
     def quit(self, _):
         self.before_shutdown()
         Notify.uninit()
@@ -5036,13 +5033,13 @@ def call_remove_item(item_spec, verbose=False):
             try:
                 item_type, item_name, errcode = li[0].split(':')
                 errcode = int(errcode)
-                if x[2] == ITEM_OPERATION_OK:
+                if errcode == ITEM_OPERATION_OK:
                     reason = resources.OERR_ERR_ITEMOPS_OK
-                elif x[2] == ITEM_OPERATION_ERR_TYPE:
+                elif errcode == ITEM_OPERATION_ERR_TYPE:
                     reason = resources.OERR_ERR_ITEMOPS_OK
-                elif x[2] == ITEM_OPERATION_ERR_NOTFOUND:
+                elif errcode == ITEM_OPERATION_ERR_NOTFOUND:
                     reason = resources.OERR_ERR_ITEMOPS_NOTFOUND
-                elif x[2] == ITEM_OPERATION_ERR_CONFLICT:
+                elif errcode == ITEM_OPERATION_ERR_CONFLICT:
                     reason = resources.OERR_ERR_ITEMOPS_CONFLICT
                 else:
                     reason = resources.OERR_ERR_ITEMOPS_GENERIC
@@ -5051,7 +5048,7 @@ def call_remove_item(item_spec, verbose=False):
             oerr(resources.OERR_ITEMOPS_DEL_FAIL % reason, verbose)
             return False
     else:
-        oerr(resources.OERR_ITEMOPS_DEL_FINISH, verbose)
+        oerr(resources.OERR_ITEMOPS_DEL_FINISH % item_spec, verbose)
         return True
 
 
@@ -5075,15 +5072,15 @@ def do_remove_item(item_spec, verbose=False):
         return False
     elif len(li) == 1:
         try:
-            item_type, item_name, errcode = li[0].split(':')
+            item_type, item_name, errcode = li[0]
             errcode = int(errcode)
-            if x[2] == ITEM_OPERATION_OK:
+            if errcode == ITEM_OPERATION_OK:
                 reason = resources.OERR_ERR_ITEMOPS_OK
-            elif x[2] == ITEM_OPERATION_ERR_TYPE:
+            elif errcode == ITEM_OPERATION_ERR_TYPE:
                 reason = resources.OERR_ERR_ITEMOPS_OK
-            elif x[2] == ITEM_OPERATION_ERR_NOTFOUND:
+            elif errcode == ITEM_OPERATION_ERR_NOTFOUND:
                 reason = resources.OERR_ERR_ITEMOPS_NOTFOUND
-            elif x[2] == ITEM_OPERATION_ERR_CONFLICT:
+            elif errcode == ITEM_OPERATION_ERR_CONFLICT:
                 reason = resources.OERR_ERR_ITEMOPS_CONFLICT
             else:
                 reason = resources.OERR_ERR_ITEMOPS_GENERIC
@@ -5092,7 +5089,7 @@ def do_remove_item(item_spec, verbose=False):
         oerr(resources.OERR_ITEMOPS_DEL_FAIL % reason, verbose)
         return False
     else:
-        oerr(resources.OERR_ITEMOPS_DEL_FINISH, verbose)
+        oerr(resources.OERR_ITEMOPS_DEL_FINISH % item_spec, verbose)
         return True
 
 
