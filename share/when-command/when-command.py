@@ -91,14 +91,18 @@ DBUS_CHECK_COMPARE_GREATER = 'gt'
 DBUS_CHECK_COMPARE_LESS = 'lt'
 
 # item types for CLI arguments
-ITEMSPEC_TYPE_TASKS = 'tasks'
-ITEMSPEC_TYPE_CONDITIONS = 'conditions'
-ITEMSPEC_TYPE_SIGNAL_HANDLERS = 'sighandlers'
+ITEM_TYPE_TASKS = 'tasks'
+ITEM_TYPE_CONDITIONS = 'conditions'
+ITEM_TYPE_SIGNAL_HANDLERS = 'sighandlers'
+ITEM_TYPE_UNKNOWN = 'unknown'
+
+ITEM_SPEC_SEPARATOR = ':'
 
 # item operation error codes
 ITEM_OPERATION_OK = 0
 ITEM_OPERATION_ERR_TYPE = 1
 ITEM_OPERATION_ERR_NOTFOUND = 2
+ITEM_OPERATION_ERR_CONFLICT = 3
 ITEM_OPERATION_ERR_UNKNOWN = -1
 
 # validation constants
@@ -398,6 +402,8 @@ resources.OERR_IMPORT_DATA_TASKS = _("    %s tasks")
 resources.OERR_IMPORT_DATA_CONDITIONS = _("    %s conditions")
 resources.OERR_IMPORT_DATA_SIGHANDLERS = _("    %s signal handlers")
 resources.OERR_IMPORT_DATA_FINISH = _("items successfully imported")
+resources.OERR_ITEMOPS_DEL_FINISH = _("item %s successfully deleted")
+resources.OERR_ITEMOPS_DEL_FAIL = _("cannot delete item: %s")
 resources.OERR_NO_INSTANCE = _("no instance could be found")
 resources.OERR_FOUND_INSTANCE = _("found a running instance")
 resources.OERR_EXPORT = _("tasks and conditions successfully exported")
@@ -419,8 +425,12 @@ resources.OERR_ERR_IMPORT_RUNNING = _("cannot import items, please close instanc
 resources.OERR_ERR_IMPORT_GENERIC = _("an error occurred while trying to import items")
 resources.OERR_ERR_INSTALL_RUNNING = _("cannot install, please close instance first")
 resources.OERR_ERR_INSTALL_GENERIC = _("an error occurred while trying to install icons")
-resources.OERR_ERR_ITEMOPS_TYPE = _("unknown item type in item specification")
-resources.OERR_ERR_ITEMOPS_GENERIC = _("an error occurred while performing item operations")
+resources.OERR_ERR_ITEMOPS_OK = _("no error found")
+resources.OERR_ERR_ITEMOPS_TYPE = _("unknown item type")
+resources.OERR_ERR_ITEMOPS_CONFLICT = _("item name conflict")
+resources.OERR_ERR_ITEMOPS_NOTFOUND = _("item not found")
+resources.OERR_ERR_ITEMOPS_DBUS = _("error communicating with applet")
+resources.OERR_ERR_ITEMOPS_GENERIC = _("unknown error")
 
 resources.COMMAND_LINE_HELP_VERSION = _("show applet version")
 resources.COMMAND_LINE_HELP_SHOW_SETTINGS = _("show settings dialog box for the running instance [R]")
@@ -657,8 +667,43 @@ class AppletDBusService(dbus.service.Object):
         return applet.add_items(item_data)
 
     @dbus.service.method(APPLET_BUS_NAME)
-    def del_item(self, item_type, item_name):
-        return applet.del_item(item_type, item_name)
+    def del_item(self, item_spec):
+        # TODO: separator symbols should be converted to constants
+        li = applet.del_item(item_spec)
+        if len(li) > 1:
+            applet.log_error("SERVICE: NTBS: too many items not deleted than expected (%s)" % len(li))
+            for x in li:
+                if x[2] == ITEM_OPERATION_OK:
+                    reason = "no error"
+                elif x[2] == ITEM_OPERATION_ERR_TYPE:
+                    reason = "invalid or unknown type"
+                elif x[2] == ITEM_OPERATION_ERR_NOTFOUND:
+                    reason = "item not found"
+                elif x[2] == ITEM_OPERATION_ERR_CONFLICT:
+                    reason = "name conflict"
+                else:
+                    reason = "unknown error"
+                applet.log_error("SERVICE: NTBS: item specification %s:%s marked as not removed (%s)" % (x[0], x[1], reason))
+            rv = '/'.join(['%s:%s:%s' % t for t in li])
+        else:
+            if li:
+                x = li[0]
+                if x[2] == ITEM_OPERATION_OK:
+                    reason = "no error"
+                elif x[2] == ITEM_OPERATION_ERR_TYPE:
+                    reason = "invalid or unknown type"
+                elif x[2] == ITEM_OPERATION_ERR_NOTFOUND:
+                    reason = "item not found"
+                elif x[2] == ITEM_OPERATION_ERR_CONFLICT:
+                    reason = "name conflict"
+                else:
+                    reason = "unknown error"
+                applet.log_warning("SERVICE: item specification %s:%s could not be deleted (%s)" % (x[0], x[1], reason))
+                rv = '%s:%s:%s' % li[0]
+            else:
+                applet.log_info("SERVICE: item specification %s has been removed" % item_spec)
+                rv = None
+        return rv
 
 
 #############################################################################
@@ -943,6 +988,7 @@ class Tasks(object):
             for c in conditions:
                 if task.task_name in c.task_names:
                     removable = False
+                    applet_log.warning("GLOBAL: cannot delete task %s used in condition %s" % (task_name, c.cond_name))
                     break
             if removable:
                 self._lock.acquire()
@@ -4564,9 +4610,8 @@ class AppletIndicator(Gtk.Application):
         # TODO: insert code that calls the main add function here
         pass
 
-    def del_item(self, item_type, item_name):
-        # TODO: insert code that calls the main deletion function here
-        pass
+    def del_item(self, item_spec):
+        return remove_item_specs(item_spec)
 
     def quit(self, _):
         self.before_shutdown()
@@ -4844,37 +4889,241 @@ def export_running_history(filename, verbose=False):
         return True
 
 
+def call_remove_item(item_spec, verbose=False):
+    # TODO: the symbols should be converted to constants
+    bus = dbus.SessionBus()
+    proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
+    rv = proxy.del_item(item_spec)
+    if rv:
+        li = rv.split('/')
+        if len(li) > 1:
+            oerr(resources.OERR_ITEMOPS_DEL_FAIL %
+                 resources.OERR_ERR_ITEMOPS_DBUS, verbose)
+            return False
+        elif len(li) == 1:
+            try:
+                item_type, item_name, errcode = li[0].split(':')
+                errcode = int(errcode)
+                if x[2] == ITEM_OPERATION_OK:
+                    reason = resources.OERR_ERR_ITEMOPS_OK
+                elif x[2] == ITEM_OPERATION_ERR_TYPE:
+                    reason = resources.OERR_ERR_ITEMOPS_OK
+                elif x[2] == ITEM_OPERATION_ERR_NOTFOUND:
+                    reason = resources.OERR_ERR_ITEMOPS_NOTFOUND
+                elif x[2] == ITEM_OPERATION_ERR_CONFLICT:
+                    reason = resources.OERR_ERR_ITEMOPS_CONFLICT
+                else:
+                    reason = resources.OERR_ERR_ITEMOPS_GENERIC
+            except ValueError:
+                reason = resources.OERR_ERR_ITEMOPS_DBUS
+            oerr(resources.OERR_ITEMOPS_DEL_FAIL % reason, verbose)
+            return False
+    else:
+        oerr(resources.OERR_ITEMOPS_DEL_FINISH, verbose)
+        return True
+
+
+def do_remove_item(item_spec, verbose=False):
+    try:
+        tasks.load()
+    except FileNotFoundError:
+        pass
+    try:
+        conditions.load()
+    except FileNotFoundError:
+        pass
+    try:
+        signal_handlers.load()
+    except FileNotFoundError:
+        pass
+    li = remove_item_specs(item_spec)
+    if len(li) > 1:
+        oerr(resources.OERR_ITEMOPS_DEL_FAIL %
+             resources.OERR_ERR_ITEMOPS_DBUS, verbose)
+        return False
+    elif len(li) == 1:
+        try:
+            item_type, item_name, errcode = li[0].split(':')
+            errcode = int(errcode)
+            if x[2] == ITEM_OPERATION_OK:
+                reason = resources.OERR_ERR_ITEMOPS_OK
+            elif x[2] == ITEM_OPERATION_ERR_TYPE:
+                reason = resources.OERR_ERR_ITEMOPS_OK
+            elif x[2] == ITEM_OPERATION_ERR_NOTFOUND:
+                reason = resources.OERR_ERR_ITEMOPS_NOTFOUND
+            elif x[2] == ITEM_OPERATION_ERR_CONFLICT:
+                reason = resources.OERR_ERR_ITEMOPS_CONFLICT
+            else:
+                reason = resources.OERR_ERR_ITEMOPS_GENERIC
+        except ValueError:
+            reason = resources.OERR_ERR_ITEMOPS_DBUS
+        oerr(resources.OERR_ITEMOPS_DEL_FAIL % reason, verbose)
+        return False
+    else:
+        oerr(resources.OERR_ITEMOPS_DEL_FINISH, verbose)
+        return True
+
+
 def print_items(item_type=None):
     if item_type is not None:
-        if item_type == ITEMSPEC_TYPE_TASKS:
-            tasks.load()
-            for name in tasks.names:
-                sys.stdout.write("%s:%s\n" % (ITEMSPEC_TYPE_TASKS, name))
+        if item_type == ITEM_TYPE_TASKS:
+            try:
+                tasks.load()
+                for name in tasks.names:
+                    sys.stdout.write("%s:%s\n" % (ITEM_TYPE_TASKS, name))
+            except FileNotFoundError:
+                pass
             return ITEM_OPERATION_OK
-        elif item_type == ITEMSPEC_TYPE_CONDITIONS:
-            conditions.load()
-            for name in conditions.names:
-                sys.stdout.write("%s:%s\n" % (ITEMSPEC_TYPE_CONDITIONS, name))
+        elif item_type == ITEM_TYPE_CONDITIONS:
+            try:
+                conditions.load()
+                for name in conditions.names:
+                    sys.stdout.write("%s:%s\n" % (ITEM_TYPE_CONDITIONS, name))
+            except FileNotFoundError:
+                pass
             return ITEM_OPERATION_OK
-        elif item_type == ITEMSPEC_TYPE_SIGNAL_HANDLERS:
-            signal_handlers.load()
-            for name in signal_handlers.names:
-                sys.stdout.write(
-                    "%s:%s\n" % (ITEMSPEC_TYPE_SIGNAL_HANDLERS, name))
+        elif item_type == ITEM_TYPE_SIGNAL_HANDLERS:
+            try:
+                signal_handlers.load()
+                for name in signal_handlers.names:
+                    sys.stdout.write(
+                        "%s:%s\n" % (ITEM_TYPE_SIGNAL_HANDLERS, name))
+            except FileNotFoundError:
+                pass
             return ITEM_OPERATION_OK
         else:
             return ITEM_OPERATION_ERR_TYPE
     else:
-        tasks.load()
-        for name in tasks.names:
-            sys.stdout.write("%s:%s\n" % (ITEMSPEC_TYPE_TASKS, name))
-        conditions.load()
-        for name in conditions.names:
-            sys.stdout.write("%s:%s\n" % (ITEMSPEC_TYPE_CONDITIONS, name))
-        signal_handlers.load()
-        for name in signal_handlers.names:
-            sys.stdout.write("%s:%s\n" % (ITEMSPEC_TYPE_SIGNAL_HANDLERS, name))
+        try:
+            tasks.load()
+            for name in tasks.names:
+                sys.stdout.write("%s:%s\n" % (ITEM_TYPE_TASKS, name))
+        except FileNotFoundError:
+            pass
+        try:
+            conditions.load()
+            for name in conditions.names:
+                sys.stdout.write("%s:%s\n" % (ITEM_TYPE_CONDITIONS, name))
+        except FileNotFoundError:
+            pass
+        try:
+            signal_handlers.load()
+            for name in signal_handlers.names:
+                sys.stdout.write("%s:%s\n" % (ITEM_TYPE_SIGNAL_HANDLERS, name))
+        except FileNotFoundError:
+            pass
         return ITEM_OPERATION_OK
+
+
+# this function deletes items as provided as a list of (itemtype, name) pairs
+# as long as this doesn't create dependency problems with conditions; expects
+# all item collections to be loaded and can be called from within the applet
+def remove_items(item_list):
+    applet_log.info("MAIN: requesting deletion of possibly multiple items")
+    not_deleted = []
+    items = [e[1] for e in item_list if e[0] == ITEM_TYPE_CONDITIONS]
+    removed = False
+    for item_name in items:
+        if item_name not in conditions.names:
+            applet_log.warning("MAIN: condition %s specified for removal but not found" % item_name)
+            not_deleted.append(
+                (ITEM_TYPE_CONDITIONS, item_name, ITEM_OPERATION_ERR_NOTFOUND))
+        else:
+            if not conditions.remove(cond_name=item_name):
+                applet_log.warning("MAIN: could not remove condition %s" % item_name)
+                not_deleted.append(
+                    (ITEM_TYPE_CONDITIONS, item_name,
+                     ITEM_OPERATION_ERR_UNKNOWN))
+            else:
+                removed = True
+    if removed:
+        conditions.save()
+    items = [e[1] for e in item_list if e[0] == ITEM_TYPE_SIGNAL_HANDLERS]
+    removed = False
+    for item_name in items:
+        if item_name not in signal_handlers.names:
+            applet_log.warning("MAIN: signal handler %s specified for removal but not found" % item_name)
+            not_deleted.append(
+                (ITEM_TYPE_SIGNAL_HANDLERS, item_name,
+                 ITEM_OPERATION_ERR_NOTFOUND))
+        else:
+            if not signal_handlers.remove(handler_name=item_name):
+                applet_log.warning("MAIN: could not remove signal handler %s" % item_name)
+                not_deleted.append(
+                    (ITEM_TYPE_SIGNAL_HANDLERS, item_name,
+                     ITEM_OPERATION_ERR_UNKNOWN))
+            else:
+                removed = True
+    if removed:
+        signal_handlers.save()
+    items = [e[1] for e in item_list if e[0] == ITEM_TYPE_TASKS]
+    removed = False
+    for item_name in items:
+        if item_name not in tasks.names:
+            applet_log.warning("MAIN: task %s specified for removal but not found" % item_name)
+            not_deleted.append(
+                (ITEM_TYPE_TASKS, item_name, ITEM_OPERATION_ERR_NOTFOUND))
+        else:
+            if not tasks.remove(task_name=item_name):
+                applet_log.warning("MAIN: could not remove task %s" % item_name)
+                not_deleted.append(
+                    (ITEM_TYPE_TASKS, item_name, ITEM_OPERATION_ERR_UNKNOWN))
+            else:
+                removed = True
+    if removed:
+        tasks.save()
+    if not_deleted:
+        return not_deleted
+
+
+# wrapper around the removal function, accepts list of '[type:]name' or single str
+def remove_item_specs(item_specs):
+    if type(item_specs) == str:
+        item_specs = [item_specs]
+    to_delete = []
+    not_deleted = []
+    for item in item_specs:
+        if ITEM_SPEC_SEPARATOR in item:
+            t, n = item.split(ITEM_SPEC_SEPARATOR)
+            t = t.lower()
+            if ITEM_TYPE_CONDITIONS.startswith(t):
+                to_delete.append(ITEM_TYPE_CONDITIONS, n)
+            elif ITEM_TYPE_SIGNAL_HANDLERS.startswith(t):
+                to_delete.append(ITEM_TYPE_SIGNAL_HANDLERS, n)
+            elif ITEM_TYPE_TASKS.startswith(t):
+                to_delete.append(ITEM_TYPE_TASKS, n)
+            else:
+                applet_log.warning("MAIN: incorrect type %s specified for item %s" % (t, n))
+                not_deleted.append(t, n, ITEM_OPERATION_ERR_TYPE)
+        else:
+            if item in conditions.names:
+                if item in tasks.names or item in signal_handlers.names:
+                    applet_log.warning("MAIN: cannot delete item %s: name conflict" % item)
+                    not_deleted.append(ITEM_TYPE_CONDITIONS, item,
+                                       ITEM_OPERATION_ERR_CONFLICT)
+                else:
+                    to_delete.append(ITEM_TYPE_CONDITIONS, item)
+            elif item in tasks.names:
+                if item in conditions.names or item in signal_handlers.names:
+                    applet_log.warning("MAIN: cannot delete item %s: name conflict" % item)
+                    not_deleted.append(ITEM_TYPE_TASKS, item,
+                                       ITEM_OPERATION_ERR_CONFLICT)
+                else:
+                    to_delete.append(ITEM_TYPE_TASKS, item)
+            elif item in signal_handlers.names:
+                if item in conditions.names or item in tasks.names:
+                    applet_log.warning("MAIN: cannot delete item %s: name conflict" % item)
+                    not_deleted.append(ITEM_TYPE_SIGNAL_HANDLERS, item,
+                                       ITEM_OPERATION_ERR_CONFLICT)
+                else:
+                    to_delete.append(ITEM_TYPE_SIGNAL_HANDLERS, item)
+            else:
+                applet_log.warning("MAIN: cannot delete item %s: item not found" % item)
+                not_deleted.append(ITEM_TYPE_UNKNOWN, item,
+                                   ITEM_OPERATION_ERR_NOTFOUND)
+    not_deleted += remove_items(to_delete)
+    if not_deleted:
+        return not_deleted
 
 
 def clear_item_data(verbose=False):
@@ -5330,17 +5579,25 @@ def main():
                 if not(run_condition(args.defer_condition, True, verbose)):
                     sys.exit(2)
 
+        if args.del_item:
+            if running:
+                if not call_remove_item(args.del_item, verbose):
+                    sys.exit(2)
+            else:
+                if not do_remove_item(args.del_item, verbose):
+                    sys.exit(2)
+
         if args.item_list:
             if args.item_list == '*':
                 print_items()
             else:
                 s = args.item_list.lower()
-                if ITEMSPEC_TYPE_TASKS.startswith(s):
-                    s = ITEMSPEC_TYPE_TASKS
-                elif ITEMSPEC_TYPE_CONDITIONS.startswith(s):
-                    s = ITEMSPEC_TYPE_CONDITIONS
-                elif ITEMSPEC_TYPE_SIGNAL_HANDLERS.startswith(s):
-                    s = ITEMSPEC_TYPE_SIGNAL_HANDLERS
+                if ITEM_TYPE_TASKS.startswith(s):
+                    s = ITEM_TYPE_TASKS
+                elif ITEM_TYPE_CONDITIONS.startswith(s):
+                    s = ITEM_TYPE_CONDITIONS
+                elif ITEM_TYPE_SIGNAL_HANDLERS.startswith(s):
+                    s = ITEM_TYPE_SIGNAL_HANDLERS
                 else:
                     oerr(resources.OERR_ERR_ITEMOPS_TYPE, verbose)
                     sys.exit(1)
