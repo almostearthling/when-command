@@ -101,6 +101,9 @@ ITEM_TYPE_UNKNOWN = 'unknown'
 
 ITEM_SPEC_SEPARATOR = ':'
 
+# force to True to allow adding only self-contained item files
+ITEM_ADD_SELF_CONTAINED = False
+
 # item operation error codes
 ITEM_OPERATION_OK = 0
 ITEM_OPERATION_ERR_TYPE = 1
@@ -313,6 +316,14 @@ locale.textdomain(APPLET_NAME)
 _ = locale.gettext
 
 
+# format an exception for logging purposes
+def _x(e):
+    t, v, tb = sys.exc_info()
+    if t is None:
+        return ''
+    return '[%s: %s]' % (t, v)
+
+
 # actual dialog box definitions (could be packed in .py files)
 DIALOG_ADD_TASK = load_applet_dialog('when-command-edit-task')
 DIALOG_ADD_CONDITION = load_applet_dialog('when-command-edit-condition')
@@ -408,6 +419,8 @@ resources.OERR_IMPORT_DATA_SIGHANDLERS = _("    %s signal handlers")
 resources.OERR_IMPORT_DATA_FINISH = _("items successfully imported")
 resources.OERR_ITEMOPS_DEL_FINISH = _("item %s successfully deleted")
 resources.OERR_ITEMOPS_DEL_FAIL = _("cannot delete item: %s")
+resources.OERR_ITEMOPS_ADD_NOREAD = _("cannot add items from provided file")
+resources.OERR_ITEMOPS_ADD_FAIL = _("cannot add items: malformed item file")
 resources.OERR_NO_INSTANCE = _("no instance could be found")
 resources.OERR_FOUND_INSTANCE = _("found a running instance")
 resources.OERR_EXPORT = _("tasks and conditions successfully exported")
@@ -858,7 +871,7 @@ class ItemDataFileInterpreter(object):
                     'event': 'EventBasedCondition',
                     'file_change': 'PathNotifyBasedCondition',
                     'user_event': 'EventBasedCondition',
-                    # TODO: add other possible type associations here
+                    # TODO: add more type associations here
                 }
                 if value not in subtype_map:
                     raise ValueError("incorrect condition type specified: '%s'" % value)
@@ -975,6 +988,7 @@ class ItemDataFileInterpreter(object):
                         'discharging': (EVENT_SYSTEM_BATTERY_DISCHARGING, False),
                         'battery_low': (EVENT_SYSTEM_BATTERY_LOW, False),
                         'command_line': (EVENT_COMMAND_LINE, False),
+                        # TODO: add more predefined events here
                     }
                     if value not in event_map:
                         raise ValueError("invalid event type")
@@ -1088,16 +1102,55 @@ class ItemDataFileInterpreter(object):
         # still to be made are that conditions rely on existing items
         task_names = [d['name'] for d in store if d['type'] == 'task']
         sighandler_names = [d['name'] for d in store if d['type'] == 'dbus_signal_handler']
+        if not ITEM_ADD_SELF_CONTAINED:
+            task_names += tasks.names
+            sighandler_names += signal_handlers.names
         for cond in [d for d in store if d['type'] == 'condition']:
             for name in cond['task_names']:
-                if name not in task_names and name not in tasks.names:
+                if name not in task_names:
                     raise ValueError("unknown task name: '%s'" % name)
-            if cond['type'] == 'event' and cond['event'].startswith(EVENT_DBUS_SIGNAL_PREAMBLE + ':'):
+            if 'event' in cond and cond['event'].startswith(EVENT_DBUS_SIGNAL_PREAMBLE + ':'):
                 name = cond['event'].split(':')[1]
-                if name not in sighandler_names and name not in signal_handlers.names:
+                if name not in sighandler_names:
                     raise ValueError("unknown signal handler name: '%s'" % name)
         # all tests passed
         return store
+
+    def create_items(self):
+        if not self._data:
+            raise ValueError("items not loaded")
+        new_tasks = []
+        new_signal_handlers = []
+        new_conditions = []
+        for item_dict in self._data:
+            item_type = item_dict['type']
+            if item_type == 'condition':
+                subtype = item_dict['subtype']
+                if subtype == 'IntervalBasedCondition':
+                    item = dict_to_IntervalBasedCondition(item_dict)
+                elif subtype == 'TimeBasedCondition':
+                    item = dict_to_TimeBasedCondition(item_dict)
+                elif subtype == 'CommandBasedCondition':
+                    item = dict_to_CommandBasedCondition(item_dict)
+                elif subtype == 'IdleTimeBasedCondition':
+                    item = dict_to_IdleTimeBasedCondition(item_dict)
+                elif subtype == 'EventBasedCondition':
+                    item = dict_to_EventBasedCondition(item_dict)
+                elif subtype == 'PathNotifyBasedCondition':
+                    item = dict_to_PathNotifyBasedCondition(item_dict)
+                new_conditions.append(item)
+            elif item_type == 'task':
+                item = dict_to_Task(item_dict)
+                new_tasks.append(item)
+            elif item_type = 'dbus_signal_handler':
+                item = dict_to_SignalHandler(item_dict)
+                new_signal_handlers.append(item)
+        for item in new_signal_handlers:
+            signal_handlers.add(item)
+        for item in new_tasks:
+            tasks.add(item)
+        for item in new_conditions:
+            conditions.add(item)
 
 
 #############################################################################
@@ -1144,13 +1197,13 @@ class AppletDBusService(dbus.service.Object):
     def export_history(self, file_name):
         return applet.export_task_history(file_name)
 
+    # NOTE: to self/to remove: rv is None on OK or error string on failure
     @dbus.service.method(APPLET_BUS_NAME)
     def add_items(self, item_data):
         return applet.add_items(item_data)
 
     @dbus.service.method(APPLET_BUS_NAME)
     def del_item(self, item_spec):
-        # TODO: separator symbols should be converted to constants
         li = remove_item_specs(item_spec)
         if len(li) > 1:
             applet_log.error("SERVICE: NTBS: too many items not deleted than expected (%s)" % len(li))
@@ -5089,8 +5142,15 @@ class AppletIndicator(Gtk.Application):
             return HISTORY_ERR_IOERROR
 
     def add_items(self, item_data):
-        # TODO: insert code that calls the main add function here
-        pass
+        try:
+            interpreter = ItemDataFileInterpreter(item_data)
+            interpreter.create_items()
+        except Exception as e:
+            return _x(e)
+        tasks.save()
+        conditions.save()
+        signal_handlers.save()
+        return None
 
     def quit(self, _):
         self.before_shutdown()
@@ -5379,6 +5439,72 @@ def export_running_history(filename, verbose=False):
     else:
         oerr(resources.OERR_EXPORT_HISTORY_FINISH % rv, verbose)
         return True
+
+
+def call_add_items(filename, verbose=False):
+    bus = dbus.SessionBus()
+    proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
+    if filename == '-':
+        applet_log.info("MAIN: reading items from standard input")
+        data = sys.stdin.read()
+    else:
+        applet_log.info("MAIN: reading items from %s" % filename)
+        try:
+            with open(filename) as f:
+                data = f.read()
+        except Exception as e:
+            oerr(resources.OERR_ITEMOPS_ADD_NOREAD, verbose)
+            return False
+    try:
+        rv = proxy.add_items(data)
+    except dbus.exceptions.DBusException:
+        oerr(resources.OERR_ERR_ITEMOPS_DBUS, verbose)
+        return False
+    if rv:
+        applet_log.error("MAIN: failed to add items: %s" % rv)
+        oerr(resources.OERR_ITEMOPS_ADD_FAIL)
+        return False
+    else:
+        applet_log.info("MAIN: items added successfully")
+        return True
+
+
+def do_add_items(filename, verbose=False):
+    if filename == '-':
+        applet_log.info("MAIN: reading items from standard input")
+        data = sys.stdin.read()
+    else:
+        applet_log.info("MAIN: reading items from %s" % filename)
+        try:
+            with open(filename) as f:
+                data = f.read()
+        except Exception as e:
+            oerr(resources.OERR_ITEMOPS_ADD_NOREAD, verbose)
+            return False
+    try:
+        tasks.load()
+    except FileNotFoundError:
+        pass
+    try:
+        conditions.load()
+    except FileNotFoundError:
+        pass
+    try:
+        signal_handlers.load()
+    except FileNotFoundError:
+        pass
+    try:
+        interpreter = ItemDataFileInterpreter(data)
+        interpreter.create_items()
+    except Exception as e:
+        applet_log.error("MAIN: failed to add items: %s" % _x(e))
+        oerr(resources.OERR_ITEMOPS_ADD_FAIL, verbose)
+        return False
+    tasks.save()
+    conditions.save()
+    signal_handlers.save()
+    applet_log.info("MAIN: items added successfully")
+    return True
 
 
 def call_remove_item(item_spec, verbose=False):
@@ -5970,6 +6096,14 @@ def main():
                     sys.exit(2)
             else:
                 if not do_remove_item(args.item_delete, verbose):
+                    sys.exit(2)
+
+        if args.item_add:
+            if running:
+                if not call_add_items(args.item_add, verbose):
+                    sys.exit(2)
+            else:
+                if not do_add_items(args.item_add, verbose):
                     sys.exit(2)
 
         if args.item_list:
