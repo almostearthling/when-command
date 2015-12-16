@@ -51,7 +51,8 @@ except ImportError:
 
 
 # this innocent hack is for compatibility between different layouts
-sys.modules['when_command'] = sys.modules[__name__]
+if 'when_command' not in sys.modules:
+    sys.modules['when_command'] = sys.modules[__name__]
 
 
 #############################################################################
@@ -111,6 +112,7 @@ ITEM_OPERATION_ERR_UNKNOWN = -1
 VALIDATE_TASK_RE = re.compile(r'^[a-zA-Z0-9][a-zA-Z0-9_-]*$')
 VALIDATE_CONDITION_RE = re.compile(r'^[a-zA-Z0-9][a-zA-Z0-9_-]*$')
 VALIDATE_SIGNAL_HANDLER_RE = re.compile(r'^[a-zA-Z0-9][a-zA-Z0-9_-]*$')
+VALIDATE_ENVVAR_RE = re.compile(r'^[a-zA-Z][a-zA-Z0-9_]*$')
 
 # see http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names
 VALIDATE_DBUS_NAME_RE = re.compile(r'^[-a-zA-Z_][-a-zA-Z0-9_]*(\.[-a-zA-Z_][-a-zA-Z0-9_]*)+\.?$')
@@ -731,6 +733,371 @@ def remove_items(item_list):
     if removed:
         tasks.save()
     return not_deleted
+
+
+#############################################################################
+# this class can create items by interpreting an .ini like file
+class ItemDataFileInterpreter(object):
+    _data_parser = None
+
+    def __init__(self, data=None):
+        self._data = None
+        self._data_parser = configparser.ConfigParser()
+        if data:
+            if isinstance(data, file):
+                self._data = self.load_data(data.read())
+            elif isinstance(data, str):
+                self._data = self.load_data(data)
+            else:
+                if data is not None:
+                    raise TypeError("data should be either string or file")
+
+    # will not partially load a file even if a single item is incorrect
+    # NOTE: entry names are hard-coded here as with the configuration file
+    def load_data(self, data):
+        try:
+            self._data_parser.read_string(data)
+        except configparser.Error:
+            raise ValueError("bad item data file structure")
+        store = []
+        for item_name in self._data_parser.sections():
+            values = self._data_parser[item_name]
+            if 'type' not in values:
+                raise ValueError("type not specified for item '%s'" % item_name)
+            item_type = values['type'].lower()
+            if item_type == 'task':
+                if not VALIDATE_TASK_RE.match(item_name):
+                    raise ValueError("invalid name for task: '%s'" % item_name)
+                if 'command' not in values:
+                    raise ValueError("command not specified for task '%s'" % item_name)
+                d = {
+                    'type': 'task',
+                    'task_name': item_name,
+                    'task_id': 0,
+                    'environment_vars': [],
+                    'include_env': True,
+                    'success_stdout': None,
+                    'success_stderr': None,
+                    'success_status': 0,
+                    'failure_stdout': None,
+                    'failure_stderr': None,
+                    'failure_status': None,
+                    'match_exact': False,
+                    'match_regexp': False,
+                    'case_sensitive': False,
+                    'startup_dir': None,
+                    'command': values['command'],
+                }
+                if 'environment variables' in values:
+                    li = values['environment variables'].split('\n')
+                    value = []
+                    for x in li:
+                        var, val = x.split('=', 1)
+                        if not VALIDATE_ENVVAR_RE.match(var):
+                            raise ValueError("invalid variable name '%s'" % var)
+                        value.append(var, val)
+                    d['environment_vars'] = value
+                if 'import environment' in values:
+                    d['include_env'] = values.getboolean('import environment')
+                # TODO: report in documentation that 'check for' has a
+                # strict form: "nothing|(<outcome>,<source>,<value>)" where
+                # - outcome --> {success|failure}
+                # - source --> {stdout|stderr|status}
+                # - value --> {<number>|<string>}
+                # this comment might self-destruct at any moment
+                if 'check for' in values:
+                    value = values['check for']
+                    if value.lower() == 'nothing':
+                        d['success_status'] = None
+                    else:
+                        outcome, source, value = map(str.strip, value.split(',', 2))
+                        if source.lower() == 'status':
+                            value = int(value)
+                            if outcome.lower() == 'success':
+                                d['success_status'] = value
+                            elif outcome.lower() == 'failure':
+                                d['success_status'] = None
+                                d['failure_status'] = value
+                            else:
+                                raise ValueError("invalid outcome specification '%s'" % outcome)
+                        else:
+                            d['success_status'] = None
+                            if source.lower() == 'stdout':
+                                if outcome.lower() == 'success':
+                                    d['success_stdout'] = value
+                                elif outcome.lower() == 'failure':
+                                    d['failure_stdout'] = value
+                                else:
+                                    raise ValueError("invalid outcome specification '%s'" % outcome)
+                            elif source.lower() == 'stderr':
+                                if outcome.lower() == 'success':
+                                    d['success_stderr'] = value
+                                elif outcome.lower() == 'failure':
+                                    d['failure_stderr'] = value
+                                else:
+                                    raise ValueError("invalid outcome specification '%s'" % outcome)
+                        if 'exact match' in values:
+                            d['match_exact'] = values.getboolean('exact match')
+                        if 'regexp match' in values:
+                            d['match_regexp'] = values.getboolean('regexp match')
+                        if 'case sensitive' in values:
+                            d['case_sensitive'] = values.getboolean('case sensitive')
+                if 'startup directory' in values:
+                    value = values['startup directory']
+                    d['startup_dir'] = value
+                store.append((item_type, item_name, d))
+            elif item_type == 'condition':
+                if 'based on' not in values:
+                    raise ValueError("type not specified for condition '%s'" % item_name)
+                value = values['based on'].lower()
+                subtype_map = {
+                    'interval': 'IntervalBasedCondition',
+                    'time': 'TimeBasedCondition',
+                    'command': 'CommandBasedCondition',
+                    'idle_session': 'IdleTimeBasedCondition',
+                    'event': 'EventBasedCondition',
+                    'file_change': 'PathNotifyBasedCondition',
+                    'user_event': 'EventBasedCondition',
+                    # TODO: add other possible type associations here
+                }
+                if value not in subtype_map:
+                    raise ValueError("incorrect condition type specified: '%s'" % value)
+                subtype = subtype_map[value]
+                task_list = []
+                if 'task names' in values:
+                    task_list = map(str.strip, values['task names'].split(','))
+                    for x in task_list:
+                        if not VALIDATE_TASK_RE.match(x):
+                            raise ValueError("incorrect task name: '%s'" % x)
+                d = {
+                    'type': 'condition',
+                    'cond_name': item_name,
+                    'cond_id': 0,
+                    'subtype': subtype,
+                    'task_names': task_list,
+                    'repeat': True,
+                    'exec_sequence': True,
+                    'suspended': False,
+                    'break_failure': False,
+                    'break_success': False,
+                }
+                if subtype == 'interval':
+                    if 'interval minutes' in values:
+                        d['interval'] = values.getinteger('interval minutes')
+                    else:
+                        raise ValueError("interval minutes must be specified")
+                elif subtype == 'time':
+                    d['year'] = None
+                    d['month'] = None
+                    d['day'] = None
+                    d['hour'] = 0
+                    d['minute'] = 0
+                    d['weekday'] = None
+                    if 'year' in values:
+                        d['year'] = values.getinteger('year')
+                    if 'month' in values:
+                        d['month'] = values.getinteger('month')
+                    if 'day' in values:
+                        d['day'] = values.getinteger('day')
+                    if 'hour' in values:
+                        d['hour'] = values.getinteger('hour')
+                    if 'minute' in values:
+                        d['minute'] = values.getinteger('minute')
+                    if 'day of week' in values:
+                        value = values['day of week'].lower()
+                        if value in (1, 'monday'):
+                            d['weekday'] = 0
+                        elif value in (2, 'tuesday'):
+                            d['weekday'] = 1
+                        elif value in (3, 'wednesday'):
+                            d['weekday'] = 2
+                        elif value in (4, 'thursday'):
+                            d['weekday'] = 3
+                        elif value in (5, 'friday'):
+                            d['weekday'] = 4
+                        elif value in (6, 'saturday'):
+                            d['weekday'] = 5
+                        elif value in (7, 'sunday'):
+                            d['weekday'] = 6
+                        else:
+                            raise ValueError("incorrect weekday value: '%s'" % value)
+                elif subtype == 'command':
+                    if 'command' not in values:
+                        raise ValueError("command must be specified")
+                    d['command'] = values['command']
+                    d['match_exact'] = False
+                    d['match_regexp'] = False
+                    d['case_sensitive'] = False
+                    d['expected_status'] = 0
+                    d['expected_stdout'] = None
+                    d['expected_stderr'] = None
+                    if 'exact match' in values:
+                        d['match_exact'] = values.getboolean('exact match')
+                    if 'regexp match' in values:
+                        d['match_regexp'] = values.getboolean('regexp match')
+                    if 'case sensitive' in values:
+                        d['case_sensitive'] = values.getboolean('case sensitive')
+                    if 'check for' in values:
+                        value = values['check for']
+                        source, value = map(str.strip, value.split(',', 1))
+                        if source == 'status':
+                            d['expected_status'] = int(value)
+                        else:
+                            d['expected_status'] = None
+                            if source == 'stdout':
+                                d['expected_stdout'] = value
+                            elif source == 'stderr':
+                                d['expected_stderr'] = value
+                            else:
+                                raise ValueError("invalid source for outcome check: '%s'" % source)
+                elif subtype == 'idle_session':
+                    if 'idle minutes' not in values:
+                        raise ValueError("idle minutes must be specified")
+                    d['idle_secs'] = int(values['idle minutes']) * 60
+                elif subtype == 'event':
+                    if 'event type' not in values:
+                        raise ValueError("event type must be specified")
+                    value = values['event type'].lower()
+                    event_map = {
+                        'startup': (EVENT_APPLET_STARTUP, False),
+                        'shutdown': (EVENT_APPLET_SHUTDOWN, True),
+                        'suspend': (EVENT_SYSTEM_SUSPEND, True),
+                        'resume': (EVENT_SYSTEM_RESUME, False),
+                        'connect_storage': (EVENT_SYSTEM_DEVICE_ATTACH, False),
+                        'disconnect_storage': (EVENT_SYSTEM_DEVICE_DETACH, False),
+                        'join_network': (EVENT_SYSTEM_NETWORK_JOIN, False),
+                        'leave_network': (EVENT_SYSTEM_NETWORK_LEAVE, False),
+                        'screensaver': (EVENT_SESSION_SCREENSAVER, False),
+                        'exit_screensaver': (EVENT_SESSION_SCREENSAVER_EXIT, False),
+                        'lock': (EVENT_SESSION_LOCK, False),
+                        'unlock': (EVENT_SESSION_UNLOCK, False),
+                        'charging': (EVENT_SYSTEM_BATTERY_CHARGE, False),
+                        'discharging': (EVENT_SYSTEM_BATTERY_DISCHARGING, False),
+                        'battery_low': (EVENT_SYSTEM_BATTERY_LOW, False),
+                        'command_line': (EVENT_COMMAND_LINE, False),
+                    }
+                    if value not in event_map:
+                        raise ValueError("invalid event type")
+                    event, no_skip = event_map[value]
+                    if value == 'command_line':
+                        event = EVENT_COMMAND_LINE_PREAMBLE + ':' + item_name
+                    d['event'] = event
+                    d['no_skip'] = no_skip
+                elif subtype == 'file_change':
+                    if 'watched path' not in values:
+                        raise ValueError("watched path must be specified")
+                    value = values['watched path']
+                    d['watched_paths'] = [value]
+                    d['no_skip'] = False
+                elif subtype == 'user_event':
+                    if 'event name' not in values:
+                        raise ValueError("event name must be specified")
+                    value = values['event name']
+                    if not VALIDATE_DBUS_NAME_RE.match(value):
+                        raise ValueError("invalid name for user event: '%s'" % value)
+                    d['type'] = 'event'
+                    d['event'] = EVENT_DBUS_SIGNAL_PREAMBLE + ':' + value
+                    d['no_skip'] = False
+            elif item_type == 'signal_handler':
+                if 'bus name' not in values or not VALIDATE_DBUS_NAME_RE.match(values['bus name']):
+                    raise ValueError("bus name must be correctly specified")
+                if 'object path' not in values or not VALIDATE_DBUS_PATH_RE.match(values['object path']):
+                    raise ValueError("object path must be correctly specified")
+                if 'interface' not in values or not VALIDATE_DBUS_INTERFACE_RE.match(values['interface']):
+                    raise ValueError("interface must be correctly specified")
+                if 'signal' not in values or not VALIDATE_DBUS_SIGNAL_RE.match(values['signal']):
+                    raise ValueError("signal must be correctly specified")
+                d = {
+                    'type': 'dbus_signal_handler',
+                    'handler_name': item_name,
+                    'bus': 'session',
+                    'bus_name': values['bus name'],
+                    'bus_path': values['object path'],
+                    'interface': values['interface'],
+                    'signal': values['signal'],
+                    'param_checks': [],
+                    'verify_all_checks': False,
+                    'defer': True,
+                }
+                if 'bus' in values:
+                    value = values['bus']
+                    if value in ('session', 'system'):
+                        d['bus'] = value
+                    else:
+                        raise ValueError("incorrect value for bus: '%s'" % value)
+                if 'defer' in values:
+                    d['defer'] = values.getboolean('defer')
+                # to specify in documentation:
+                # parameters have the form
+                #  num[:sub],[not]operator,value
+                # where
+                # num is an int, sub either int or [a-zA-Z][0-9a-zA-Z_]+
+                # operator is a mnemonic: EQUAL, GT, LT, CONTAINS, MATCHES
+                # operator may be preceded by NOT
+                # operator and not are case insensitive
+                if 'parameters' in values:
+                    param_list = values['parameters'].split('\n')
+                    param_checks = []
+                    for p in param_list:
+                        elem, oper, value = map(str.strip, p.split(',', 2))
+                        oper = oper.lower()
+                        t = elem.split(':', 1)
+                        if len(t) == 1:
+                            v, sub = int(elem), None
+                        else:
+                            v = int(t[0])
+                            try:
+                                sub = int(t[1])
+                            except ValueError:
+                                sub = t[1]
+                                if not re.match(r'^[a-zA-Z][a-zA-Z0-9_]*$', sub):
+                                    raise ValueError("invalid value for parameter subindex: '%s'" % sub)
+                        t = oper.split()
+                        neg = False
+                        if len t == 2:
+                            if t[0] == 'not':
+                                neg = True
+                            else:
+                                raise ValueError("incorrect operator: '%s'" % oper)
+                            oper = t[1]
+                        elif t > 2:
+                            raise ValueError("incorrect operator: '%s'" % oper)
+                        oper_map = {
+                            'equal': DBUS_CHECK_COMPARE_IS,
+                            'gt': DBUS_CHECK_COMPARE_GREATER,
+                            'lt': DBUS_CHECK_COMPARE_LESS,
+                            'contains': DBUS_CHECK_COMPARE_CONTAINS,
+                            'matches': DBUS_CHECK_COMPARE_MATCHES,
+                        }
+                        if oper not in oper_map:
+                            raise ValueError("incorrect operator: '%s'" % oper)
+                        o = oper_map[oper]
+                        param_checks.append(param_check(v, sub, o, neg, value))
+                    d['param_checks'] = param_checks
+                    if 'verify' in values:
+                        value = values['verify'].lower()
+                        if value == 'all':
+                            d['verify_all_checks'] = True
+                        elif value == 'any':
+                            d['verify_all_checks'] = False
+                        else:
+                            raise ValueError("incorrect verify value: '%s'" % value)
+            # add the item dictionary to the temporary store
+            store.append(d)
+        # if we are here without raising exceptions, the only checks
+        # still to be made are that conditions rely on existing items
+        task_names = [d['name'] for d in store if d['type'] == 'task']
+        sighandler_names = [d['name'] for d in store if d['type'] == 'dbus_signal_handler']
+        for cond in [d for d in store if d['type'] == 'condition']:
+            for name in cond['task_names']:
+                if name not in task_names and name not in tasks.names:
+                    raise ValueError("unknown task name: '%s'" % name)
+            if cond['type'] == 'event' and cond['event'].startswith(EVENT_DBUS_SIGNAL_PREAMBLE + ':'):
+                name = cond['event'].split(':')[1]
+                if name not in sighandler_names and name not in signal_handlers.names:
+                    raise ValueError("unknown signal handler name: '%s'" % name)
+        # all tests passed
+        return store
 
 
 #############################################################################
@@ -1446,11 +1813,11 @@ class Task(object):
         self.match_exact = False
         self.match_regexp = False
         self.case_sensitive = False
-        self.command = ""
+        self.command = ''
         self.startup_dir = None
         self.running = False
-        self._process_stdout = ""
-        self._process_stderr = ""
+        self._process_stdout = ''
+        self._process_stderr = ''
         self._process_status = 0
         self._process_failed = False
         if name is None:
