@@ -903,10 +903,12 @@ class ItemDataFileInterpreter(object):
                     elif value != 'nothing':
                         raise ValueError("condition break cause incorrect: '%s'" % value)
                 if subtype == 'interval':
-                    if 'interval minutes' in values:
-                        d['interval'] = values.getinteger('interval minutes')
-                    else:
+                    if 'interval minutes' not in values:
                         raise ValueError("interval minutes must be specified")
+                    value = values.getinteger('interval minutes')
+                    if value <= 0:
+                        raise ValueError("invalid idle minutes: %s" % value)
+                    d['interval'] = value
                 elif subtype == 'time':
                     d['year'] = None
                     d['month'] = None
@@ -917,13 +919,29 @@ class ItemDataFileInterpreter(object):
                     if 'year' in values:
                         d['year'] = values.getinteger('year')
                     if 'month' in values:
-                        d['month'] = values.getinteger('month')
+                        value = values.getinteger('month')
+                        if 1 <= value <= 12:
+                            d['month'] = value
+                        else:
+                            raise ValueError("invalid month: %s" % value)
                     if 'day' in values:
-                        d['day'] = values.getinteger('day')
+                        value = values.getinteger('day')
+                        if 1 <= value <= 31:
+                            d['day'] = value
+                        else:
+                            raise ValueError("invalid day: %s" % value)
                     if 'hour' in values:
-                        d['hour'] = values.getinteger('hour')
+                        value = values.getinteger('hour')
+                        if 0 <= value <= 23:
+                            d['hour'] = value
+                        else:
+                            raise ValueError("invalid hour: %s" % value)
                     if 'minute' in values:
-                        d['minute'] = values.getinteger('minute')
+                        value = values.getinteger('minute')
+                        if 0 <= value <= 59:
+                            d['minute'] = value
+                        else:
+                            raise ValueError("invalid minute: %s" % value)
                     if 'day of week' in values:
                         value = values['day of week'].lower()
                         if value in (1, 'monday'):
@@ -952,12 +970,6 @@ class ItemDataFileInterpreter(object):
                     d['expected_status'] = 0
                     d['expected_stdout'] = None
                     d['expected_stderr'] = None
-                    if 'exact match' in values:
-                        d['match_exact'] = values.getboolean('exact match')
-                    if 'regexp match' in values:
-                        d['match_regexp'] = values.getboolean('regexp match')
-                    if 'case sensitive' in values:
-                        d['case_sensitive'] = values.getboolean('case sensitive')
                     if 'check for' in values:
                         value = values['check for']
                         source, value = map(str.strip, value.split(',', 1))
@@ -971,10 +983,19 @@ class ItemDataFileInterpreter(object):
                                 d['expected_stderr'] = value
                             else:
                                 raise ValueError("invalid source for outcome check: '%s'" % source)
+                            if 'exact match' in values:
+                                d['match_exact'] = values.getboolean('exact match')
+                            if 'regexp match' in values:
+                                d['match_regexp'] = values.getboolean('regexp match')
+                            if 'case sensitive' in values:
+                                d['case_sensitive'] = values.getboolean('case sensitive')
                 elif subtype == 'idle_session':
                     if 'idle minutes' not in values:
                         raise ValueError("idle minutes must be specified")
-                    d['idle_secs'] = int(values['idle minutes']) * 60
+                    value = values.getinteger('idle minutes') * 60
+                    if value <= 0:
+                        raise ValueError("invalid idle minutes: %s" % value)
+                    d['idle_secs'] = value
                 elif subtype == 'event':
                     if 'event type' not in values:
                         raise ValueError("event type must be specified")
