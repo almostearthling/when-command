@@ -812,12 +812,6 @@ class ItemDataFileInterpreter(object):
                     d['environment_vars'] = value
                 if 'import environment' in values:
                     d['include_env'] = values.getboolean('import environment')
-                # TODO: report in documentation that 'check for' has a
-                # strict form: "nothing|(<outcome>,<source>,<value>)" where
-                # - outcome --> {success|failure}
-                # - source --> {stdout|stderr|status}
-                # - value --> {<number>|<string>}
-                # this comment might self-destruct at any moment
                 if 'check for' in values:
                     value = values['check for']
                     if value.lower() == 'nothing':
@@ -849,12 +843,12 @@ class ItemDataFileInterpreter(object):
                                     d['failure_stderr'] = value
                                 else:
                                     raise ValueError("invalid outcome specification '%s'" % outcome)
-                        if 'exact match' in values:
-                            d['match_exact'] = values.getboolean('exact match')
-                        if 'regexp match' in values:
-                            d['match_regexp'] = values.getboolean('regexp match')
-                        if 'case sensitive' in values:
-                            d['case_sensitive'] = values.getboolean('case sensitive')
+                            if 'exact match' in values:
+                                d['match_exact'] = values.getboolean('exact match')
+                            if 'regexp match' in values:
+                                d['match_regexp'] = values.getboolean('regexp match')
+                            if 'case sensitive' in values:
+                                d['case_sensitive'] = values.getboolean('case sensitive')
                 if 'startup directory' in values:
                     value = values['startup directory']
                     d['startup_dir'] = value
@@ -894,6 +888,20 @@ class ItemDataFileInterpreter(object):
                     'break_failure': False,
                     'break_success': False,
                 }
+                if 'repeat checks' in values:
+                    d['repeat'] = values.getboolean('repeat checks')
+                if 'sequential' in values:
+                    d['exec_sequence'] = values.getboolean('sequential')
+                if 'suspended' in values:
+                    d['suspended'] = values.getboolean('suspended')
+                if 'break on' in values:
+                    value = values['break on'].lower()
+                    if value == 'success':
+                        d['break_success'] = True
+                    elif value == 'failure':
+                        d['break_failure'] = True
+                    elif value != 'nothing':
+                        raise ValueError("condition break cause incorrect: '%s'" % value)
                 if subtype == 'interval':
                     if 'interval minutes' in values:
                         d['interval'] = values.getinteger('interval minutes')
@@ -1004,6 +1012,8 @@ class ItemDataFileInterpreter(object):
                     d['watched_paths'] = [value]
                     d['no_skip'] = False
                 elif subtype == 'user_event':
+                    if not config.get('General', 'user events'):
+                        raise ValueError("signal handlers are not enabled")
                     if 'event name' not in values:
                         raise ValueError("event name must be specified")
                     value = values['event name']
@@ -1013,6 +1023,8 @@ class ItemDataFileInterpreter(object):
                     d['event'] = EVENT_DBUS_SIGNAL_PREAMBLE + ':' + value
                     d['no_skip'] = False
             elif item_type == 'signal_handler':
+                if not config.get('General', 'user events'):
+                    raise ValueError("signal handlers are not enabled")
                 if 'bus name' not in values or not VALIDATE_DBUS_NAME_RE.match(values['bus name']):
                     raise ValueError("bus name must be correctly specified")
                 if 'object path' not in values or not VALIDATE_DBUS_PATH_RE.match(values['object path']):
