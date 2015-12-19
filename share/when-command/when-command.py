@@ -1175,7 +1175,7 @@ class ItemDataFileInterpreter(object):
             elif item_type == 'task':
                 item = dict_to_Task(item_dict)
                 new_tasks.append(item)
-            elif item_type = 'dbus_signal_handler':
+            elif item_type == 'dbus_signal_handler':
                 item = dict_to_SignalHandler(item_dict)
                 new_signal_handlers.append(item)
         for item in new_signal_handlers:
