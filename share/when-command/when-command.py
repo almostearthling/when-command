@@ -1101,13 +1101,13 @@ class ItemDataFileInterpreter(object):
                                     raise ValueError("invalid value for parameter subindex: '%s'" % sub)
                         t = oper.split()
                         neg = False
-                        if len t == 2:
+                        if len(t) == 2:
                             if t[0] == 'not':
                                 neg = True
                             else:
                                 raise ValueError("incorrect operator: '%s'" % oper)
                             oper = t[1]
-                        elif t > 2:
+                        elif len(t) > 2:
                             raise ValueError("incorrect operator: '%s'" % oper)
                         oper_map = {
                             'equal': DBUS_CHECK_COMPARE_IS,
