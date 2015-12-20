@@ -122,6 +122,7 @@ VALIDATE_DBUS_NAME_RE = re.compile(r'^[-a-zA-Z_][-a-zA-Z0-9_]*(\.[-a-zA-Z_][-a-z
 VALIDATE_DBUS_PATH_RE = re.compile(r'^\/[a-zA-Z0-9_]+(\/[a-zA-Z0-9_]+)+$')
 VALIDATE_DBUS_INTERFACE_RE = re.compile(r'^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)+\.?$')
 VALIDATE_DBUS_SIGNAL_RE = re.compile(r'^[a-zA-Z_][a-zA-Z0-9_]*$')
+VALIDATE_DBUS_SUBPARAM_RE = re.compile(r'^[a-zA-Z_][a-zA-Z0-9_]*$')
 
 # user interface constants
 UI_INTERVALS_MINUTES = [1, 2, 3, 5, 15, 30, 60]
@@ -776,7 +777,8 @@ class ItemDataFileInterpreter(object):
                 if not VALIDATE_TASK_RE.match(item_name):
                     raise ValueError("invalid name for task: '%s'" % item_name)
                 if 'command' not in values:
-                    raise ValueError("command not specified for task '%s'" % item_name)
+                    raise ValueError("command not specified for task '%s'"
+                                     % item_name)
                 d = {
                     'type': 'task',
                     'task_name': item_name,
@@ -803,7 +805,8 @@ class ItemDataFileInterpreter(object):
                         if x and '=' in x:
                             var, val = x.split('=', 1)
                             if not VALIDATE_ENVVAR_RE.match(var):
-                                raise ValueError("invalid variable name '%s'" % var)
+                                raise ValueError("invalid variable name '%s'"
+                                                 % var)
                             value[var] = val
                     d['environment_vars'] = value
                 if 'import environment' in values:
@@ -813,7 +816,8 @@ class ItemDataFileInterpreter(object):
                     if value.lower() == 'nothing':
                         d['success_status'] = None
                     else:
-                        outcome, source, value = map(str.strip, value.split(',', 2))
+                        outcome, source, value = map(str.strip,
+                                                     value.split(',', 2))
                         if source.lower() == 'status':
                             value = int(value)
                             if outcome.lower() == 'success':
@@ -822,7 +826,9 @@ class ItemDataFileInterpreter(object):
                                 d['success_status'] = None
                                 d['failure_status'] = value
                             else:
-                                raise ValueError("invalid outcome specification '%s'" % outcome)
+                                raise ValueError(
+                                    "invalid outcome specification '%s'"
+                                    % outcome)
                         else:
                             d['success_status'] = None
                             if source.lower() == 'stdout':
@@ -831,14 +837,18 @@ class ItemDataFileInterpreter(object):
                                 elif outcome.lower() == 'failure':
                                     d['failure_stdout'] = value
                                 else:
-                                    raise ValueError("invalid outcome specification '%s'" % outcome)
+                                    raise ValueError(
+                                        "invalid outcome specification '%s'"
+                                        % outcome)
                             elif source.lower() == 'stderr':
                                 if outcome.lower() == 'success':
                                     d['success_stderr'] = value
                                 elif outcome.lower() == 'failure':
                                     d['failure_stderr'] = value
                                 else:
-                                    raise ValueError("invalid outcome specification '%s'" % outcome)
+                                    raise ValueError(
+                                        "invalid outcome specification '%s'"
+                                        % outcome)
                             if 'exact match' in values:
                                 d['match_exact'] = values.getboolean('exact match')
                             if 'regexp match' in values:
@@ -850,7 +860,8 @@ class ItemDataFileInterpreter(object):
                     d['startup_dir'] = value
             elif item_type == 'condition':
                 if 'based on' not in values:
-                    raise ValueError("type not specified for condition '%s'" % item_name)
+                    raise ValueError("type not specified for condition '%s'"
+                                     % item_name)
                 deftype = values['based on'].lower()
                 subtype_map = {
                     'interval': 'IntervalBasedCondition',
@@ -863,11 +874,13 @@ class ItemDataFileInterpreter(object):
                     # TODO: add more type associations here
                 }
                 if deftype not in subtype_map:
-                    raise ValueError("incorrect condition type specified: '%s'" % deftype)
+                    raise ValueError("incorrect condition type specified: '%s'"
+                                     % deftype)
                 subtype = subtype_map[deftype]
                 task_list = []
                 if 'task names' in values:
-                    task_list = list(map(str.strip, values['task names'].split(',')))
+                    task_list = list(map(str.strip,
+                                         values['task names'].split(',')))
                     for x in task_list:
                         if not VALIDATE_TASK_RE.match(x):
                             raise ValueError("incorrect task name: '%s'" % x)
@@ -896,7 +909,8 @@ class ItemDataFileInterpreter(object):
                     elif value == 'failure':
                         d['break_failure'] = True
                     elif value != 'nothing':
-                        raise ValueError("condition break cause incorrect: '%s'" % value)
+                        raise ValueError("condition break cause incorrect: '%s'"
+                                         % value)
                 if deftype == 'interval':
                     if 'interval minutes' not in values:
                         raise ValueError("interval minutes must be specified")
@@ -954,7 +968,8 @@ class ItemDataFileInterpreter(object):
                         elif value in (7, 'sunday'):
                             d['weekday'] = 6
                         else:
-                            raise ValueError("incorrect weekday value: '%s'" % value)
+                            raise ValueError("incorrect weekday value: '%s'"
+                                             % value)
                 elif deftype == 'command':
                     if 'command' not in values:
                         raise ValueError("command must be specified")
@@ -977,7 +992,9 @@ class ItemDataFileInterpreter(object):
                             elif source == 'stderr':
                                 d['expected_stderr'] = value
                             else:
-                                raise ValueError("invalid source for outcome check: '%s'" % source)
+                                raise ValueError(
+                                    "invalid source for outcome check: '%s'"
+                                    % source)
                             if 'exact match' in values:
                                 d['match_exact'] = values.getboolean('exact match')
                             if 'regexp match' in values:
@@ -989,7 +1006,8 @@ class ItemDataFileInterpreter(object):
                         raise ValueError("idle minutes must be specified")
                     value = values.getint('idle minutes') * 60
                     if value <= 0:
-                        raise ValueError("invalid idle time: %s seconds" % value)
+                        raise ValueError("invalid idle time: %s seconds"
+                                         % value)
                     d['idle_secs'] = value
                 elif deftype == 'event':
                     if 'event type' not in values:
@@ -1001,15 +1019,18 @@ class ItemDataFileInterpreter(object):
                         'suspend': (EVENT_SYSTEM_SUSPEND, True),
                         'resume': (EVENT_SYSTEM_RESUME, False),
                         'connect_storage': (EVENT_SYSTEM_DEVICE_ATTACH, False),
-                        'disconnect_storage': (EVENT_SYSTEM_DEVICE_DETACH, False),
+                        'disconnect_storage': (EVENT_SYSTEM_DEVICE_DETACH,
+                                               False),
                         'join_network': (EVENT_SYSTEM_NETWORK_JOIN, False),
                         'leave_network': (EVENT_SYSTEM_NETWORK_LEAVE, False),
                         'screensaver': (EVENT_SESSION_SCREENSAVER, False),
-                        'exit_screensaver': (EVENT_SESSION_SCREENSAVER_EXIT, False),
+                        'exit_screensaver': (EVENT_SESSION_SCREENSAVER_EXIT,
+                                             False),
                         'lock': (EVENT_SESSION_LOCK, False),
                         'unlock': (EVENT_SESSION_UNLOCK, False),
                         'charging': (EVENT_SYSTEM_BATTERY_CHARGE, False),
-                        'discharging': (EVENT_SYSTEM_BATTERY_DISCHARGING, False),
+                        'discharging': (EVENT_SYSTEM_BATTERY_DISCHARGING,
+                                        False),
                         'battery_low': (EVENT_SYSTEM_BATTERY_LOW, False),
                         'command_line': (EVENT_COMMAND_LINE, False),
                         # TODO: add more predefined events here
@@ -1034,7 +1055,8 @@ class ItemDataFileInterpreter(object):
                         raise ValueError("event name must be specified")
                     value = values['event name']
                     if not VALIDATE_DBUS_NAME_RE.match(value):
-                        raise ValueError("invalid name for user event: '%s'" % value)
+                        raise ValueError("invalid name for user event: '%s'"
+                                         % value)
                     d['type'] = 'event'
                     d['event'] = EVENT_DBUS_SIGNAL_PREAMBLE + ':' + value
                     d['no_skip'] = False
@@ -1066,17 +1088,10 @@ class ItemDataFileInterpreter(object):
                     if value in ('session', 'system'):
                         d['bus'] = value
                     else:
-                        raise ValueError("incorrect value for bus: '%s'" % value)
+                        raise ValueError("incorrect value for bus: '%s'"
+                                         % value)
                 if 'defer' in values:
                     d['defer'] = values.getboolean('defer')
-                # to specify in documentation:
-                # parameters have the form
-                #  num[:sub],[not]operator,value
-                # where
-                # num is an int, sub either int or [a-zA-Z][0-9a-zA-Z_]+
-                # operator is a mnemonic: EQUAL, GT, LT, CONTAINS, MATCHES
-                # operator may be preceded by NOT
-                # operator and not are case insensitive
                 if 'parameters' in values:
                     param_list = values['parameters'].split('\n')
                     param_checks = []
@@ -1094,18 +1109,22 @@ class ItemDataFileInterpreter(object):
                                     sub = int(t[1])
                                 except ValueError:
                                     sub = t[1]
-                                    if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', sub):
-                                        raise ValueError("invalid value for parameter subindex: '%s'" % sub)
+                                    if not VALIDATE_DBUS_SUBPARAM_RE.match(sub):
+                                        raise ValueError(
+                                            "invalid value for parameter subindex: '%s'"
+                                            % sub)
                             t = oper.split()
                             neg = False
                             if len(t) == 2:
                                 if t[0] == 'not':
                                     neg = True
                                 else:
-                                    raise ValueError("incorrect operator: '%s'" % oper)
+                                    raise ValueError("incorrect operator: '%s'"
+                                                     % oper)
                                 oper = t[1]
                             elif len(t) > 2:
-                                raise ValueError("incorrect operator: '%s'" % oper)
+                                raise ValueError("incorrect operator: '%s'"
+                                                 % oper)
                             oper_map = {
                                 'equal': DBUS_CHECK_COMPARE_IS,
                                 'gt': DBUS_CHECK_COMPARE_GREATER,
@@ -1114,9 +1133,11 @@ class ItemDataFileInterpreter(object):
                                 'matches': DBUS_CHECK_COMPARE_MATCHES,
                             }
                             if oper not in oper_map:
-                                raise ValueError("incorrect operator: '%s'" % oper)
+                                raise ValueError("incorrect operator: '%s'"
+                                                 % oper)
                             o = oper_map[oper]
-                            param_checks.append(param_check(v, sub, o, neg, value))
+                            param_checks.append(param_check(v, sub, o, neg,
+                                                            value))
                     d['param_checks'] = param_checks
                     if 'verify' in values:
                         value = values['verify'].lower()
@@ -1125,13 +1146,15 @@ class ItemDataFileInterpreter(object):
                         elif value == 'any':
                             d['verify_all_checks'] = False
                         else:
-                            raise ValueError("incorrect verify value: '%s'" % value)
+                            raise ValueError("incorrect verify value: '%s'"
+                                             % value)
             # add the item dictionary to the temporary store
             store.append(d)
         # if we are here without raising exceptions, the only checks
         # still to be made are that conditions rely on existing items
         task_names = [d['task_name'] for d in store if 'task_name' in d]
-        sighandler_names = [d['handler_name'] for d in store if 'handler_name' in d]
+        sighandler_names = [
+            d['handler_name'] for d in store if 'handler_name' in d]
         if not ITEM_ADD_SELF_CONTAINED:
             task_names += tasks.names
             sighandler_names += signal_handlers.names
