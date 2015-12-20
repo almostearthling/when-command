@@ -917,7 +917,7 @@ class ItemDataFileInterpreter(object):
                     value = values.getint('interval minutes')
                     if value <= 0:
                         raise ValueError("invalid interval minutes: %s" % value)
-                    d['interval'] = value
+                    d['interval'] = value * 60
                 elif deftype == 'time':
                     d['year'] = None
                     d['month'] = None
@@ -1054,12 +1054,12 @@ class ItemDataFileInterpreter(object):
                     if 'event name' not in values:
                         raise ValueError("event name must be specified")
                     value = values['event name']
-                    if not VALIDATE_DBUS_NAME_RE.match(value):
+                    if not VALIDATE_SIGNAL_HANDLER_RE.match(value):
                         raise ValueError("invalid name for user event: '%s'"
                                          % value)
-                    d['type'] = 'event'
                     d['event'] = EVENT_DBUS_SIGNAL_PREAMBLE + ':' + value
                     d['no_skip'] = False
+                    print(d)
             elif item_type == 'signal_handler':
                 if not config.get('General', 'user events'):
                     raise ValueError("signal handlers are not enabled")
@@ -1194,6 +1194,7 @@ class ItemDataFileInterpreter(object):
                     item = dict_to_EventBasedCondition(item_dict)
                 elif subtype == 'PathNotifyBasedCondition':
                     item = dict_to_PathNotifyBasedCondition(item_dict)
+                print(item_dict)
                 new_conditions.append(item)
             elif item_type == 'task':
                 item = dict_to_Task(item_dict)
@@ -3939,11 +3940,11 @@ class ConditionDialog(object):
                 if cond.year:
                     o('txtYear').set_text(str(cond.year))
                 if cond.month:
-                    o('cbMonth').set_active_item(cond.month - 1)
+                    o('cbMonth').set_active(cond.month - 1)
                 if cond.day:
                     o('txtDay').set_text(str(cond.day))
                 if cond.weekday:
-                    o('cbWeekday').set_active_item(cond.weekday)
+                    o('cbWeekday').set_active(cond.weekday)
                 if cond.hour:
                     o('txtHour').set_text(str(cond.hour))
                 if cond.minute:
