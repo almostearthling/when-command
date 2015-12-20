@@ -916,7 +916,7 @@ class ItemDataFileInterpreter(object):
                         raise ValueError("interval minutes must be specified")
                     value = values.getint('interval minutes')
                     if value <= 0:
-                        raise ValueError("invalid idle minutes: %s" % value)
+                        raise ValueError("invalid interval minutes: %s" % value)
                     d['interval'] = value
                 elif deftype == 'time':
                     d['year'] = None
