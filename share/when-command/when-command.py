@@ -1059,7 +1059,6 @@ class ItemDataFileInterpreter(object):
                                          % value)
                     d['event'] = EVENT_DBUS_SIGNAL_PREAMBLE + ':' + value
                     d['no_skip'] = False
-                    print(d)
             elif item_type == 'signal_handler':
                 if not config.get('General', 'user events'):
                     raise ValueError("signal handlers are not enabled")
@@ -1194,7 +1193,6 @@ class ItemDataFileInterpreter(object):
                     item = dict_to_EventBasedCondition(item_dict)
                 elif subtype == 'PathNotifyBasedCondition':
                     item = dict_to_PathNotifyBasedCondition(item_dict)
-                print(item_dict)
                 new_conditions.append(item)
             elif item_type == 'task':
                 item = dict_to_Task(item_dict)
