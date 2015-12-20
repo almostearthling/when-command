@@ -2293,7 +2293,7 @@ def dict_to_Task(d):
     t.startup_dir = d['startup_dir']
     # TODO: if there are more parameters, use d.get('key', default_val)
     t.match_regexp = d.get('match_regexp', False)
-    applet_log.info("MAIN: task %s restored" % t.task_name)
+    applet_log.info("MAIN: task %s loaded" % t.task_name)
     return t
 
 
@@ -2489,7 +2489,7 @@ def dict_to_Condition(d, c=None):
         raise ValueError("incorrect dictionary type")
     # this will raise an error
     if c is None:
-        applet_log.critical("MAIN: NTBS: attempt to restore base Condition")
+        applet_log.critical("MAIN: NTBS: attempt to load base Condition")
         c = Condition()
     applet_log.debug("MAIN: trying to load condition %s" % c.cond_name)
     c.cond_id = d['cond_id']
@@ -2538,7 +2538,7 @@ def dict_to_IntervalBasedCondition(d):
     # TODO: if there are more parameters, use d.get('key', default_val)
     c = IntervalBasedCondition(name, interval)
     c = dict_to_Condition(d, c)
-    applet_log.info("MAIN: restored interval based condition %s" % c.cond_name)
+    applet_log.info("MAIN: loaded interval based condition %s" % c.cond_name)
     return c
 
 
@@ -2602,7 +2602,7 @@ def dict_to_TimeBasedCondition(d):
     # TODO: if there are more parameters, use d.get('key', default_val)
     c = TimeBasedCondition(name, d)
     c = dict_to_Condition(d, c)
-    applet_log.info("MAIN: restored time based condition %s" % c.cond_name)
+    applet_log.info("MAIN: loaded time based condition %s" % c.cond_name)
     return c
 
 
@@ -2757,7 +2757,7 @@ def dict_to_CommandBasedCondition(d):
     c.match_regexp = match_regexp
     c.case_sensitive = case_sensitive
     c = dict_to_Condition(d, c)
-    applet_log.info("MAIN: restored command based condition %s" % c.cond_name)
+    applet_log.info("MAIN: loaded command based condition %s" % c.cond_name)
     return c
 
 
@@ -2807,7 +2807,7 @@ def dict_to_IdleTimeBasedCondition(d):
     # TODO: if there are more parameters, use d.get('key', default_val)
     c = IdleTimeBasedCondition(name, idle_secs)
     c = dict_to_Condition(d, c)
-    applet_log.info("MAIN: restored idle time based condition %s" % c.cond_name)
+    applet_log.info("MAIN: loaded idle time based condition %s" % c.cond_name)
     return c
 
 
@@ -2851,7 +2851,7 @@ def dict_to_EventBasedCondition(d):
     # TODO: if there are more parameters, use d.get('key', default_val)
     c = EventBasedCondition(name, event, no_skip)
     c = dict_to_Condition(d, c)
-    applet_log.info("MAIN: restored event based condition %s" % c.cond_name)
+    applet_log.info("MAIN: loaded event based condition %s" % c.cond_name)
     return c
 
 
@@ -2950,7 +2950,7 @@ def dict_to_PathNotifyBasedCondition(d):
     # TODO: if there are more parameters, use d.get('key', default_val)
     c = PathNotifyBasedCondition(name, event, no_skip)
     c = dict_to_Condition(d, c)
-    applet_log.info("MAIN: restored file change based condition %s" % c.cond_name)
+    applet_log.info("MAIN: loaded file change based condition %s" % c.cond_name)
     return c
 
 
@@ -3004,7 +3004,7 @@ def dict_to_DataCollectorBasedCondition(d, c=None):
     # TODO: if there are more parameters, use d.get('key', default_val)
     # the following will raise an error
     if c is None:
-        applet_log.critical("MAIN: NTBS: attempt to restore base DataCollectorBasedCondition")
+        applet_log.critical("MAIN: NTBS: attempt to load base DataCollectorBasedCondition")
         c = DataCollectorBasedCondition(name, no_skip)
     if no_skip:
         c.skip_seconds = 0
@@ -3422,7 +3422,7 @@ def dict_to_SignalHandler(d):
     h.verify_all_checks = d['verify_all_checks']
     h.defer = d['defer']
     # TODO: if there are more parameters, use d.get('key', default_val)
-    applet_log.info("MAIN: DBus signal handler %s restored" % h.handler_name)
+    applet_log.info("MAIN: DBus signal handler %s loaded" % h.handler_name)
     return h
 
 
