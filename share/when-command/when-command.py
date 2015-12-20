@@ -1014,40 +1014,37 @@ class ItemDataFileInterpreter(object):
                         raise ValueError("event type must be specified")
                     value = values['event type'].lower()
                     event_map = {
-                        'startup': (EVENT_APPLET_STARTUP, False),
-                        'shutdown': (EVENT_APPLET_SHUTDOWN, True),
-                        'suspend': (EVENT_SYSTEM_SUSPEND, True),
-                        'resume': (EVENT_SYSTEM_RESUME, False),
-                        'connect_storage': (EVENT_SYSTEM_DEVICE_ATTACH, False),
-                        'disconnect_storage': (EVENT_SYSTEM_DEVICE_DETACH,
-                                               False),
-                        'join_network': (EVENT_SYSTEM_NETWORK_JOIN, False),
-                        'leave_network': (EVENT_SYSTEM_NETWORK_LEAVE, False),
-                        'screensaver': (EVENT_SESSION_SCREENSAVER, False),
-                        'exit_screensaver': (EVENT_SESSION_SCREENSAVER_EXIT,
-                                             False),
-                        'lock': (EVENT_SESSION_LOCK, False),
-                        'unlock': (EVENT_SESSION_UNLOCK, False),
-                        'charging': (EVENT_SYSTEM_BATTERY_CHARGE, False),
-                        'discharging': (EVENT_SYSTEM_BATTERY_DISCHARGING,
-                                        False),
-                        'battery_low': (EVENT_SYSTEM_BATTERY_LOW, False),
-                        'command_line': (EVENT_COMMAND_LINE, False),
+                        'startup': EVENT_APPLET_STARTUP,
+                        'shutdown': EVENT_APPLET_SHUTDOWN,
+                        'suspend': EVENT_SYSTEM_SUSPEND,
+                        'resume': EVENT_SYSTEM_RESUME,
+                        'connect_storage': EVENT_SYSTEM_DEVICE_ATTACH,
+                        'disconnect_storage': EVENT_SYSTEM_DEVICE_DETACH,
+                        'join_network': EVENT_SYSTEM_NETWORK_JOIN,
+                        'leave_network': EVENT_SYSTEM_NETWORK_LEAVE,
+                        'screensaver': EVENT_SESSION_SCREENSAVER,
+                        'exit_screensaver': EVENT_SESSION_SCREENSAVER_EXIT,
+                        'lock': EVENT_SESSION_LOCK,
+                        'unlock': EVENT_SESSION_UNLOCK,
+                        'charging': EVENT_SYSTEM_BATTERY_CHARGE,
+                        'discharging': EVENT_SYSTEM_BATTERY_DISCHARGING,
+                        'battery_low': EVENT_SYSTEM_BATTERY_LOW,
+                        'command_line': EVENT_COMMAND_LINE,
                         # TODO: add more predefined events here
                     }
                     if value not in event_map:
                         raise ValueError("invalid event type")
-                    event, no_skip = event_map[value]
+                    event = event_map[value]
                     if value == 'command_line':
                         event = EVENT_COMMAND_LINE_PREAMBLE + ':' + item_name
                     d['event'] = event
-                    d['no_skip'] = no_skip
+                    d['no_skip'] = True
                 elif deftype == 'file_change':
                     if 'watched path' not in values:
                         raise ValueError("watched path must be specified")
                     value = values['watched path']
                     d['watched_paths'] = [value]
-                    d['no_skip'] = False
+                    d['no_skip'] = True
                 elif deftype == 'user_event':
                     if not config.get('General', 'user events'):
                         raise ValueError("signal handlers are not enabled")
@@ -1058,7 +1055,7 @@ class ItemDataFileInterpreter(object):
                         raise ValueError("invalid name for user event: '%s'"
                                          % value)
                     d['event'] = EVENT_DBUS_SIGNAL_PREAMBLE + ':' + value
-                    d['no_skip'] = False
+                    d['no_skip'] = True
             elif item_type == 'signal_handler':
                 if not config.get('General', 'user events'):
                     raise ValueError("signal handlers are not enabled")
