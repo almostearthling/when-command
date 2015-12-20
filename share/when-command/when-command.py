@@ -322,7 +322,7 @@ def _x(e):
     t, v, tb = sys.exc_info()
     if t is None:
         return ''
-    return '[%s: %s]' % (t.__name__, v)
+    return '%s: %s' % (t.__name__, v)
 
 
 # actual dialog box definitions (could be packed in .py files)
@@ -1113,6 +1113,10 @@ class ItemDataFileInterpreter(object):
                                         raise ValueError(
                                             "invalid value for parameter subindex: '%s'"
                                             % sub)
+                            if v < 0 or (type(sub) == int and sub < 0):
+                                raise ValueError(
+                                    "invalid value for parameter index or subindex: %s, %s"
+                                    % (v, sub))
                             t = oper.split()
                             neg = False
                             if len(t) == 2:
@@ -1136,8 +1140,7 @@ class ItemDataFileInterpreter(object):
                                 raise ValueError("incorrect operator: '%s'"
                                                  % oper)
                             o = oper_map[oper]
-                            param_checks.append(param_check(v, sub, o, neg,
-                                                            value))
+                            param_checks.append((v, sub, o, neg, value))
                     d['param_checks'] = param_checks
                     if 'verify' in values:
                         value = values['verify'].lower()
@@ -4349,15 +4352,26 @@ class SignalDialog(object):
             applet_log.debug("DLGSIG: not adding signal check with bad param index")
             msgbox = Gtk.MessageDialog(type=Gtk.MessageType.ERROR,
                                        buttons=Gtk.ButtonsType.OK)
-            msgbox.set_markup(resources.DLG_WRONG_PARAM_INDEX % name)
+            msgbox.set_markup(resources.DLG_WRONG_PARAM_INDEX)
             msgbox.run()
             msgbox.hide()
             return
         sub_idx = o('txtValueSub').get_text()
-        if not sub_idx:
+        if sub_idx == '':
             sub_idx = None
+        elif self.validate_int(sub_idx, min_value=0) is not None:
+            sub_idx = int(sub_idx)
+        else:
+            if not VALIDATE_DBUS_SUBPARAM_RE.match(sub_idx):
+                applet_log.debug("DLGSIG: not adding signal check with bad subparam index")
+                msgbox = Gtk.MessageDialog(type=Gtk.MessageType.ERROR,
+                                           buttons=Gtk.ButtonsType.OK)
+                msgbox.set_markup(resources.DLG_WRONG_PARAM_INDEX)
+                msgbox.run()
+                msgbox.hide()
+                return
         l = [x for x in self.signal_param_tests
-             if x.value_idx != value_idx and x.sub_idx != sub_idx]
+             if x.value_idx != value_idx or x.sub_idx != sub_idx]
         check = param_check(
             value_idx,
             sub_idx,
@@ -4382,14 +4396,20 @@ class SignalDialog(object):
             return
         try:
             value_idx = int(s)
+            if value_idx < 0:
+                applet_log.debug("DLGSIG: not removing signal check with bad param index")
+                return
         except:
             applet_log.debug("DLGSIG: not removing signal check with bad param index")
             return
         sub_idx = o('txtValueSub').get_text()
-        if not sub_idx:
+        if sub_idx == '':
             sub_idx = None
+        else:
+            if self.validate_int(sub_idx, min_value=0) is not None:
+                sub_idx = int(sub_idx)
         l = [x for x in self.signal_param_tests
-             if x.value_idx != value_idx and x.sub_idx != sub_idx]
+             if x.value_idx != value_idx or x.sub_idx != sub_idx]
         self.signal_param_tests = l
         self.update_listTests()
 
@@ -4411,7 +4431,7 @@ class SignalDialog(object):
         for check in self.signal_param_tests:
             row = [
                 str(check.value_idx),
-                '' if not check.sub_idx else str(check.sub_idx),
+                '' if check.sub_idx is None else str(check.sub_idx),
                 'NOT' if check.negate else '',
                 self.all_comparisons_symdict[check.comparison],
                 str(check.test_value),
