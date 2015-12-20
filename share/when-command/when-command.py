@@ -26,6 +26,8 @@ import shutil
 import re
 import locale
 
+import traceback
+
 from gi.repository import GLib, Gio
 from gi.repository import GObject
 from gi.repository import Gtk
@@ -48,6 +50,11 @@ except ImportError:
     FILE_NOTIFY_ENABLED = False
 
 
+# this innocent hack is for compatibility between different layouts
+if 'when_command' not in sys.modules:
+    sys.modules['when_command'] = sys.modules[__name__]
+
+
 #############################################################################
 # constants
 
@@ -66,8 +73,8 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.3~beta.2'
-APPLET_TAGDESC = 'System-wide application launcher'
+APPLET_VERSION = '0.9.4~beta.1'
+APPLET_TAGDESC = 'Command line item handling'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -86,16 +93,36 @@ DBUS_CHECK_COMPARE_MATCHES = 'matches'
 DBUS_CHECK_COMPARE_GREATER = 'gt'
 DBUS_CHECK_COMPARE_LESS = 'lt'
 
+# item types for CLI arguments
+ITEM_TYPE_TASKS = 'tasks'
+ITEM_TYPE_CONDITIONS = 'conditions'
+ITEM_TYPE_SIGNAL_HANDLERS = 'sighandlers'
+ITEM_TYPE_UNKNOWN = 'unknown'
+
+ITEM_SPEC_SEPARATOR = ':'
+
+# force to True to allow adding only self-contained item files
+ITEM_ADD_SELF_CONTAINED = False
+
+# item operation error codes
+ITEM_OPERATION_OK = 0
+ITEM_OPERATION_ERR_TYPE = 1
+ITEM_OPERATION_ERR_NOTFOUND = 2
+ITEM_OPERATION_ERR_CONFLICT = 3
+ITEM_OPERATION_ERR_UNKNOWN = -1
+
 # validation constants
 VALIDATE_TASK_RE = re.compile(r'^[a-zA-Z0-9][a-zA-Z0-9_-]*$')
 VALIDATE_CONDITION_RE = re.compile(r'^[a-zA-Z0-9][a-zA-Z0-9_-]*$')
 VALIDATE_SIGNAL_HANDLER_RE = re.compile(r'^[a-zA-Z0-9][a-zA-Z0-9_-]*$')
+VALIDATE_ENVVAR_RE = re.compile(r'^[a-zA-Z][a-zA-Z0-9_]*$')
 
 # see http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names
 VALIDATE_DBUS_NAME_RE = re.compile(r'^[-a-zA-Z_][-a-zA-Z0-9_]*(\.[-a-zA-Z_][-a-zA-Z0-9_]*)+\.?$')
 VALIDATE_DBUS_PATH_RE = re.compile(r'^\/[a-zA-Z0-9_]+(\/[a-zA-Z0-9_]+)+$')
 VALIDATE_DBUS_INTERFACE_RE = re.compile(r'^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)+\.?$')
 VALIDATE_DBUS_SIGNAL_RE = re.compile(r'^[a-zA-Z_][a-zA-Z0-9_]*$')
+VALIDATE_DBUS_SUBPARAM_RE = re.compile(r'^[a-zA-Z_][a-zA-Z0-9_]*$')
 
 # user interface constants
 UI_INTERVALS_MINUTES = [1, 2, 3, 5, 15, 30, 60]
@@ -290,6 +317,14 @@ locale.textdomain(APPLET_NAME)
 _ = locale.gettext
 
 
+# format an exception for logging purposes
+def _x(e):
+    t, v, tb = sys.exc_info()
+    if t is None:
+        return ''
+    return '%s: %s' % (t.__name__, v)
+
+
 # actual dialog box definitions (could be packed in .py files)
 DIALOG_ADD_TASK = load_applet_dialog('when-command-edit-task')
 DIALOG_ADD_CONDITION = load_applet_dialog('when-command-edit-condition')
@@ -383,6 +418,10 @@ resources.OERR_IMPORT_DATA_TASKS = _("    %s tasks")
 resources.OERR_IMPORT_DATA_CONDITIONS = _("    %s conditions")
 resources.OERR_IMPORT_DATA_SIGHANDLERS = _("    %s signal handlers")
 resources.OERR_IMPORT_DATA_FINISH = _("items successfully imported")
+resources.OERR_ITEMOPS_DEL_FINISH = _("item %s successfully deleted")
+resources.OERR_ITEMOPS_DEL_FAIL = _("cannot delete item: %s")
+resources.OERR_ITEMOPS_ADD_NOREAD = _("cannot add items from provided file")
+resources.OERR_ITEMOPS_ADD_FAIL = _("cannot add items: malformed item file")
 resources.OERR_NO_INSTANCE = _("no instance could be found")
 resources.OERR_FOUND_INSTANCE = _("found a running instance")
 resources.OERR_EXPORT = _("tasks and conditions successfully exported")
@@ -395,6 +434,7 @@ resources.OERR_ERR_ALREADY_RUNNING = _("another instance is present: leaving")
 resources.OERR_ERR_REQUIRE_INSTANCE = _("could not find a running instance, please start it first")
 resources.OERR_ERR_NO_INSTANCE = _("could not find a running instance")
 resources.OERR_ERR_DBUS_DISABLED = _("dbus signals disabled by configuration")
+resources.OERR_ERR_DBUS_SERVICE = _("error in communication with running applet")
 resources.OERR_ERR_EXPORT_GENERIC = _("an error occurred while trying to export items")
 resources.OERR_ERR_RESET_RUNNING = _("cannot reset configuration, please close instance first")
 resources.OERR_ERR_RESET_GENERIC = _("an error occurred while trying to reset configuration")
@@ -404,6 +444,12 @@ resources.OERR_ERR_IMPORT_RUNNING = _("cannot import items, please close instanc
 resources.OERR_ERR_IMPORT_GENERIC = _("an error occurred while trying to import items")
 resources.OERR_ERR_INSTALL_RUNNING = _("cannot install, please close instance first")
 resources.OERR_ERR_INSTALL_GENERIC = _("an error occurred while trying to install icons")
+resources.OERR_ERR_ITEMOPS_OK = _("no error found")
+resources.OERR_ERR_ITEMOPS_TYPE = _("unknown item type")
+resources.OERR_ERR_ITEMOPS_CONFLICT = _("item name conflict")
+resources.OERR_ERR_ITEMOPS_NOTFOUND = _("item not found")
+resources.OERR_ERR_ITEMOPS_DBUS = _("error communicating with applet")
+resources.OERR_ERR_ITEMOPS_GENERIC = _("unknown error or dependency conflict")
 
 resources.COMMAND_LINE_HELP_VERSION = _("show applet version")
 resources.COMMAND_LINE_HELP_SHOW_SETTINGS = _("show settings dialog box for the running instance [R]")
@@ -423,6 +469,9 @@ resources.COMMAND_LINE_HELP_SHUTDOWN = _("run shutdown tasks and close an existi
 resources.COMMAND_LINE_HELP_KILL = _("kill an existing istance [R]")
 resources.COMMAND_LINE_HELP_EXPORT = _("save tasks and conditions to a portable format")
 resources.COMMAND_LINE_HELP_IMPORT = _("import tasks and conditions from saved file [S]")
+resources.COMMAND_LINE_HELP_ITEM_LIST = _("list items of the given type to console")
+resources.COMMAND_LINE_HELP_ITEM_ADD = _("add items from specified file or standard input")
+resources.COMMAND_LINE_HELP_ITEM_DELETE = _("delete the item specified as [type:]NAME")
 resources.COMMAND_LINE_HELP_VERBOSE = _("show verbose output for some options")
 resources.COMMAND_LINE_SHOWVERSION = _("%s: %s, version %s")
 resources.COMMAND_LINE_PREAMBLE = _("""\
@@ -589,6 +638,574 @@ def config_loghandler(max_size=None, max_backups=None):
 
 
 #############################################################################
+# item operations functions
+
+# wrapper around removal function, accepts list of '[type:]name' or single str
+def remove_item_specs(item_specs):
+    if not isinstance(item_specs, list):
+        item_specs = [item_specs]
+    to_delete = []
+    not_deleted = []
+    for item in item_specs:
+        if ITEM_SPEC_SEPARATOR in item:
+            t, n = item.split(ITEM_SPEC_SEPARATOR)
+            t = t.lower()
+            if ITEM_TYPE_CONDITIONS.startswith(t):
+                to_delete.append((ITEM_TYPE_CONDITIONS, n))
+            elif ITEM_TYPE_SIGNAL_HANDLERS.startswith(t):
+                to_delete.append((ITEM_TYPE_SIGNAL_HANDLERS, n))
+            elif ITEM_TYPE_TASKS.startswith(t):
+                to_delete.append((ITEM_TYPE_TASKS, n))
+            else:
+                applet_log.warning("MAIN: incorrect type %s specified for item %s" % (t, n))
+                not_deleted.append((t, n, ITEM_OPERATION_ERR_TYPE))
+        else:
+            if item in conditions.names:
+                if item in tasks.names or item in signal_handlers.names:
+                    applet_log.warning("MAIN: cannot delete item %s: name conflict" % item)
+                    not_deleted.append((ITEM_TYPE_CONDITIONS, item,
+                                        ITEM_OPERATION_ERR_CONFLICT))
+                else:
+                    to_delete.append((ITEM_TYPE_CONDITIONS, item))
+            elif item in tasks.names:
+                if item in conditions.names or item in signal_handlers.names:
+                    applet_log.warning("MAIN: cannot delete item %s: name conflict" % item)
+                    not_deleted.append((ITEM_TYPE_TASKS, item,
+                                        ITEM_OPERATION_ERR_CONFLICT))
+                else:
+                    to_delete.append((ITEM_TYPE_TASKS, item))
+            elif item in signal_handlers.names:
+                if item in conditions.names or item in tasks.names:
+                    applet_log.warning("MAIN: cannot delete item %s: name conflict" % item)
+                    not_deleted.append((ITEM_TYPE_SIGNAL_HANDLERS, item,
+                                        ITEM_OPERATION_ERR_CONFLICT))
+                else:
+                    to_delete.append((ITEM_TYPE_SIGNAL_HANDLERS, item))
+            else:
+                applet_log.warning("MAIN: cannot delete item %s: item not found" % item)
+                not_deleted.append((ITEM_TYPE_UNKNOWN, item,
+                                    ITEM_OPERATION_ERR_NOTFOUND))
+    not_deleted += remove_items(to_delete)
+    return not_deleted
+
+
+# this function deletes items as provided as a list of (itemtype, name) pairs
+# as long as this doesn't create dependency problems with conditions; expects
+# all item collections to be loaded and can be called from within the applet
+def remove_items(item_list):
+    applet_log.info("MAIN: requesting deletion of possibly multiple items")
+    not_deleted = []
+    items = [e[1] for e in item_list if e[0] == ITEM_TYPE_CONDITIONS]
+    removed = False
+    for item_name in items:
+        if item_name not in conditions.names:
+            applet_log.warning("MAIN: condition %s specified for removal but not found" % item_name)
+            not_deleted.append(
+                (ITEM_TYPE_CONDITIONS, item_name, ITEM_OPERATION_ERR_NOTFOUND))
+        else:
+            if not conditions.remove(cond_name=item_name):
+                applet_log.warning("MAIN: could not remove condition %s" % item_name)
+                not_deleted.append(
+                    (ITEM_TYPE_CONDITIONS, item_name,
+                     ITEM_OPERATION_ERR_UNKNOWN))
+            else:
+                removed = True
+    if removed:
+        conditions.save()
+    items = [e[1] for e in item_list if e[0] == ITEM_TYPE_SIGNAL_HANDLERS]
+    removed = False
+    for item_name in items:
+        if item_name not in signal_handlers.names:
+            applet_log.warning("MAIN: signal handler %s specified for removal but not found" % item_name)
+            not_deleted.append(
+                (ITEM_TYPE_SIGNAL_HANDLERS, item_name,
+                 ITEM_OPERATION_ERR_NOTFOUND))
+        else:
+            if not signal_handlers.remove(handler_name=item_name):
+                applet_log.warning("MAIN: could not remove signal handler %s" % item_name)
+                not_deleted.append(
+                    (ITEM_TYPE_SIGNAL_HANDLERS, item_name,
+                     ITEM_OPERATION_ERR_UNKNOWN))
+            else:
+                removed = True
+    if removed:
+        signal_handlers.save()
+    items = [e[1] for e in item_list if e[0] == ITEM_TYPE_TASKS]
+    removed = False
+    for item_name in items:
+        if item_name not in tasks.names:
+            applet_log.warning("MAIN: task %s specified for removal but not found" % item_name)
+            not_deleted.append(
+                (ITEM_TYPE_TASKS, item_name, ITEM_OPERATION_ERR_NOTFOUND))
+        else:
+            if not tasks.remove(task_name=item_name):
+                applet_log.warning("MAIN: could not remove task %s" % item_name)
+                not_deleted.append(
+                    (ITEM_TYPE_TASKS, item_name, ITEM_OPERATION_ERR_UNKNOWN))
+            else:
+                removed = True
+    if removed:
+        tasks.save()
+    return not_deleted
+
+
+#############################################################################
+# this class can create items by interpreting an .ini like file
+class ItemDataFileInterpreter(object):
+    _data_parser = None
+
+    def __init__(self, data=None):
+        self._data = None
+        self._data_parser = configparser.ConfigParser()
+        if data:
+            self._data = self.load_data(data)
+
+    # will not partially load a file even if a single item is incorrect
+    # NOTE: entry names are hard-coded here as with the configuration file
+    def load_data(self, data):
+        try:
+            self._data_parser.read_string(data)
+        except configparser.Error:
+            raise ValueError("bad item data file structure")
+        store = []
+        for item_name in self._data_parser.sections():
+            values = self._data_parser[item_name]
+            if 'type' not in values:
+                raise ValueError("type not specified for item '%s'" % item_name)
+            item_type = values['type'].lower()
+            if item_type == 'task':
+                if not VALIDATE_TASK_RE.match(item_name):
+                    raise ValueError("invalid name for task: '%s'" % item_name)
+                if 'command' not in values:
+                    raise ValueError("command not specified for task '%s'"
+                                     % item_name)
+                d = {
+                    'type': 'task',
+                    'task_name': item_name,
+                    'task_id': tasks.get_id(),
+                    'environment_vars': {},
+                    'include_env': True,
+                    'success_stdout': None,
+                    'success_stderr': None,
+                    'success_status': 0,
+                    'failure_stdout': None,
+                    'failure_stderr': None,
+                    'failure_status': None,
+                    'match_exact': False,
+                    'match_regexp': False,
+                    'case_sensitive': False,
+                    'startup_dir': '',
+                    'command': values['command'],
+                }
+                if 'environment variables' in values:
+                    li = values['environment variables'].split('\n')
+                    value = {}
+                    for x in li:
+                        x = x.strip()
+                        if x and '=' in x:
+                            var, val = x.split('=', 1)
+                            if not VALIDATE_ENVVAR_RE.match(var):
+                                raise ValueError("invalid variable name '%s'"
+                                                 % var)
+                            value[var] = val
+                    d['environment_vars'] = value
+                if 'import environment' in values:
+                    d['include_env'] = values.getboolean('import environment')
+                if 'check for' in values:
+                    value = values['check for'].strip()
+                    if value.lower() == 'nothing':
+                        d['success_status'] = None
+                    else:
+                        outcome, source, value = map(str.strip,
+                                                     value.split(',', 2))
+                        if source.lower() == 'status':
+                            value = int(value)
+                            if outcome.lower() == 'success':
+                                d['success_status'] = value
+                            elif outcome.lower() == 'failure':
+                                d['success_status'] = None
+                                d['failure_status'] = value
+                            else:
+                                raise ValueError(
+                                    "invalid outcome specification '%s'"
+                                    % outcome)
+                        else:
+                            d['success_status'] = None
+                            if source.lower() == 'stdout':
+                                if outcome.lower() == 'success':
+                                    d['success_stdout'] = value
+                                elif outcome.lower() == 'failure':
+                                    d['failure_stdout'] = value
+                                else:
+                                    raise ValueError(
+                                        "invalid outcome specification '%s'"
+                                        % outcome)
+                            elif source.lower() == 'stderr':
+                                if outcome.lower() == 'success':
+                                    d['success_stderr'] = value
+                                elif outcome.lower() == 'failure':
+                                    d['failure_stderr'] = value
+                                else:
+                                    raise ValueError(
+                                        "invalid outcome specification '%s'"
+                                        % outcome)
+                            if 'exact match' in values:
+                                d['match_exact'] = values.getboolean('exact match')
+                            if 'regexp match' in values:
+                                d['match_regexp'] = values.getboolean('regexp match')
+                            if 'case sensitive' in values:
+                                d['case_sensitive'] = values.getboolean('case sensitive')
+                if 'startup directory' in values:
+                    value = values['startup directory'].strip()
+                    d['startup_dir'] = value
+            elif item_type == 'condition':
+                if 'based on' not in values:
+                    raise ValueError("type not specified for condition '%s'"
+                                     % item_name)
+                deftype = values['based on'].lower()
+                subtype_map = {
+                    'interval': 'IntervalBasedCondition',
+                    'time': 'TimeBasedCondition',
+                    'command': 'CommandBasedCondition',
+                    'idle_session': 'IdleTimeBasedCondition',
+                    'event': 'EventBasedCondition',
+                    'file_change': 'PathNotifyBasedCondition',
+                    'user_event': 'EventBasedCondition',
+                    # TODO: add more type associations here
+                }
+                if deftype not in subtype_map:
+                    raise ValueError("incorrect condition type specified: '%s'"
+                                     % deftype)
+                subtype = subtype_map[deftype]
+                task_list = []
+                if 'task names' in values:
+                    task_list = list(map(str.strip,
+                                         values['task names'].split(',')))
+                    for x in task_list:
+                        if not VALIDATE_TASK_RE.match(x):
+                            raise ValueError("incorrect task name: '%s'" % x)
+                d = {
+                    'type': 'condition',
+                    'cond_name': item_name,
+                    'cond_id': conditions.get_id(),
+                    'subtype': subtype,
+                    'task_names': task_list,
+                    'repeat': True,
+                    'exec_sequence': True,
+                    'suspended': False,
+                    'break_failure': False,
+                    'break_success': False,
+                }
+                if 'repeat checks' in values:
+                    d['repeat'] = values.getboolean('repeat checks')
+                if 'sequential' in values:
+                    d['exec_sequence'] = values.getboolean('sequential')
+                if 'suspended' in values:
+                    d['suspended'] = values.getboolean('suspended')
+                if 'break on' in values:
+                    value = values['break on'].lower()
+                    if value == 'success':
+                        d['break_success'] = True
+                    elif value == 'failure':
+                        d['break_failure'] = True
+                    elif value != 'nothing':
+                        raise ValueError("condition break cause incorrect: '%s'"
+                                         % value)
+                if deftype == 'interval':
+                    if 'interval minutes' not in values:
+                        raise ValueError("interval minutes must be specified")
+                    value = values.getint('interval minutes')
+                    if value <= 0:
+                        raise ValueError("invalid interval minutes: %s" % value)
+                    d['interval'] = value * 60
+                elif deftype == 'time':
+                    d['year'] = None
+                    d['month'] = None
+                    d['day'] = None
+                    d['hour'] = 0
+                    d['minute'] = 0
+                    d['weekday'] = None
+                    if 'year' in values:
+                        d['year'] = values.getint('year')
+                    if 'month' in values:
+                        value = values.getint('month')
+                        if 1 <= value <= 12:
+                            d['month'] = value
+                        else:
+                            raise ValueError("invalid month: %s" % value)
+                    if 'day' in values:
+                        value = values.getint('day')
+                        if 1 <= value <= 31:
+                            d['day'] = value
+                        else:
+                            raise ValueError("invalid day: %s" % value)
+                    if 'hour' in values:
+                        value = values.getint('hour')
+                        if 0 <= value <= 23:
+                            d['hour'] = value
+                        else:
+                            raise ValueError("invalid hour: %s" % value)
+                    if 'minute' in values:
+                        value = values.getint('minute')
+                        if 0 <= value <= 59:
+                            d['minute'] = value
+                        else:
+                            raise ValueError("invalid minute: %s" % value)
+                    if 'day of week' in values:
+                        value = values['day of week'].lower()
+                        if value in (1, 'monday'):
+                            d['weekday'] = 0
+                        elif value in (2, 'tuesday'):
+                            d['weekday'] = 1
+                        elif value in (3, 'wednesday'):
+                            d['weekday'] = 2
+                        elif value in (4, 'thursday'):
+                            d['weekday'] = 3
+                        elif value in (5, 'friday'):
+                            d['weekday'] = 4
+                        elif value in (6, 'saturday'):
+                            d['weekday'] = 5
+                        elif value in (7, 'sunday'):
+                            d['weekday'] = 6
+                        else:
+                            raise ValueError("incorrect weekday value: '%s'"
+                                             % value)
+                elif deftype == 'command':
+                    if 'command' not in values:
+                        raise ValueError("command must be specified")
+                    d['command'] = values['command']
+                    d['match_exact'] = False
+                    d['match_regexp'] = False
+                    d['case_sensitive'] = False
+                    d['expected_status'] = 0
+                    d['expected_stdout'] = None
+                    d['expected_stderr'] = None
+                    if 'check for' in values:
+                        value = values['check for']
+                        source, value = map(str.strip, value.split(',', 1))
+                        if source == 'status':
+                            d['expected_status'] = int(value)
+                        else:
+                            d['expected_status'] = None
+                            if source == 'stdout':
+                                d['expected_stdout'] = value
+                            elif source == 'stderr':
+                                d['expected_stderr'] = value
+                            else:
+                                raise ValueError(
+                                    "invalid source for outcome check: '%s'"
+                                    % source)
+                            if 'exact match' in values:
+                                d['match_exact'] = values.getboolean('exact match')
+                            if 'regexp match' in values:
+                                d['match_regexp'] = values.getboolean('regexp match')
+                            if 'case sensitive' in values:
+                                d['case_sensitive'] = values.getboolean('case sensitive')
+                elif deftype == 'idle_session':
+                    if 'idle minutes' not in values:
+                        raise ValueError("idle minutes must be specified")
+                    value = values.getint('idle minutes') * 60
+                    if value <= 0:
+                        raise ValueError("invalid idle time: %s seconds"
+                                         % value)
+                    d['idle_secs'] = value
+                elif deftype == 'event':
+                    if 'event type' not in values:
+                        raise ValueError("event type must be specified")
+                    value = values['event type'].lower()
+                    event_map = {
+                        'startup': EVENT_APPLET_STARTUP,
+                        'shutdown': EVENT_APPLET_SHUTDOWN,
+                        'suspend': EVENT_SYSTEM_SUSPEND,
+                        'resume': EVENT_SYSTEM_RESUME,
+                        'connect_storage': EVENT_SYSTEM_DEVICE_ATTACH,
+                        'disconnect_storage': EVENT_SYSTEM_DEVICE_DETACH,
+                        'join_network': EVENT_SYSTEM_NETWORK_JOIN,
+                        'leave_network': EVENT_SYSTEM_NETWORK_LEAVE,
+                        'screensaver': EVENT_SESSION_SCREENSAVER,
+                        'exit_screensaver': EVENT_SESSION_SCREENSAVER_EXIT,
+                        'lock': EVENT_SESSION_LOCK,
+                        'unlock': EVENT_SESSION_UNLOCK,
+                        'charging': EVENT_SYSTEM_BATTERY_CHARGE,
+                        'discharging': EVENT_SYSTEM_BATTERY_DISCHARGING,
+                        'battery_low': EVENT_SYSTEM_BATTERY_LOW,
+                        'command_line': EVENT_COMMAND_LINE,
+                        # TODO: add more predefined events here
+                    }
+                    if value not in event_map:
+                        raise ValueError("invalid event type")
+                    event = event_map[value]
+                    if value == 'command_line':
+                        event = EVENT_COMMAND_LINE_PREAMBLE + ':' + item_name
+                    d['event'] = event
+                    d['no_skip'] = True
+                elif deftype == 'file_change':
+                    if 'watched path' not in values:
+                        raise ValueError("watched path must be specified")
+                    value = values['watched path']
+                    d['watched_paths'] = [value]
+                    d['no_skip'] = True
+                elif deftype == 'user_event':
+                    if not config.get('General', 'user events'):
+                        raise ValueError("signal handlers are not enabled")
+                    if 'event name' not in values:
+                        raise ValueError("event name must be specified")
+                    value = values['event name']
+                    if not VALIDATE_SIGNAL_HANDLER_RE.match(value):
+                        raise ValueError("invalid name for user event: '%s'"
+                                         % value)
+                    d['event'] = EVENT_DBUS_SIGNAL_PREAMBLE + ':' + value
+                    d['no_skip'] = True
+            elif item_type == 'signal_handler':
+                if not config.get('General', 'user events'):
+                    raise ValueError("signal handlers are not enabled")
+                if 'bus name' not in values or not VALIDATE_DBUS_NAME_RE.match(values['bus name']):
+                    raise ValueError("bus name must be correctly specified")
+                if 'object path' not in values or not VALIDATE_DBUS_PATH_RE.match(values['object path']):
+                    raise ValueError("object path must be correctly specified")
+                if 'interface' not in values or not VALIDATE_DBUS_INTERFACE_RE.match(values['interface']):
+                    raise ValueError("interface must be correctly specified")
+                if 'signal' not in values or not VALIDATE_DBUS_SIGNAL_RE.match(values['signal']):
+                    raise ValueError("signal must be correctly specified")
+                d = {
+                    'type': 'dbus_signal_handler',
+                    'handler_name': item_name,
+                    'bus': 'session',
+                    'bus_name': values['bus name'],
+                    'bus_path': values['object path'],
+                    'interface': values['interface'],
+                    'signal': values['signal'],
+                    'param_checks': [],
+                    'verify_all_checks': False,
+                    'defer': True,
+                }
+                if 'bus' in values:
+                    value = values['bus']
+                    if value in ('session', 'system'):
+                        d['bus'] = value
+                    else:
+                        raise ValueError("incorrect value for bus: '%s'"
+                                         % value)
+                if 'defer' in values:
+                    d['defer'] = values.getboolean('defer')
+                if 'parameters' in values:
+                    param_list = values['parameters'].split('\n')
+                    param_checks = []
+                    for p in param_list:
+                        p = p.strip()
+                        if p:
+                            elem, oper, value = map(str.strip, p.split(',', 2))
+                            oper = oper.lower()
+                            t = elem.split(':', 1)
+                            if len(t) == 1:
+                                v, sub = int(elem), None
+                            else:
+                                v = int(t[0])
+                                try:
+                                    sub = int(t[1])
+                                except ValueError:
+                                    sub = t[1]
+                                    if not VALIDATE_DBUS_SUBPARAM_RE.match(sub):
+                                        raise ValueError(
+                                            "invalid value for parameter subindex: '%s'"
+                                            % sub)
+                            if v < 0 or (type(sub) == int and sub < 0):
+                                raise ValueError(
+                                    "invalid value for parameter index or subindex: %s, %s"
+                                    % (v, sub))
+                            t = oper.split()
+                            neg = False
+                            if len(t) == 2:
+                                if t[0] == 'not':
+                                    neg = True
+                                else:
+                                    raise ValueError("incorrect operator: '%s'"
+                                                     % oper)
+                                oper = t[1]
+                            elif len(t) > 2:
+                                raise ValueError("incorrect operator: '%s'"
+                                                 % oper)
+                            oper_map = {
+                                'equal': DBUS_CHECK_COMPARE_IS,
+                                'gt': DBUS_CHECK_COMPARE_GREATER,
+                                'lt': DBUS_CHECK_COMPARE_LESS,
+                                'contains': DBUS_CHECK_COMPARE_CONTAINS,
+                                'matches': DBUS_CHECK_COMPARE_MATCHES,
+                            }
+                            if oper not in oper_map:
+                                raise ValueError("incorrect operator: '%s'"
+                                                 % oper)
+                            o = oper_map[oper]
+                            param_checks.append((v, sub, o, neg, value))
+                    d['param_checks'] = param_checks
+                    if 'verify' in values:
+                        value = values['verify'].lower()
+                        if value == 'all':
+                            d['verify_all_checks'] = True
+                        elif value == 'any':
+                            d['verify_all_checks'] = False
+                        else:
+                            raise ValueError("incorrect verify value: '%s'"
+                                             % value)
+            # add the item dictionary to the temporary store
+            store.append(d)
+        # if we are here without raising exceptions, the only checks
+        # still to be made are that conditions rely on existing items
+        task_names = [d['task_name'] for d in store if 'task_name' in d]
+        sighandler_names = [
+            d['handler_name'] for d in store if 'handler_name' in d]
+        if not ITEM_ADD_SELF_CONTAINED:
+            task_names += tasks.names
+            sighandler_names += signal_handlers.names
+        for cond in [d for d in store if d['type'] == 'condition']:
+            for name in cond['task_names']:
+                if name not in task_names:
+                    raise ValueError("unknown task name: '%s'" % name)
+            if 'event' in cond and cond['event'].startswith(EVENT_DBUS_SIGNAL_PREAMBLE + ':'):
+                name = cond['event'].split(':')[1]
+                if name not in sighandler_names:
+                    raise ValueError("unknown signal handler name: '%s'" % name)
+        # all tests passed
+        return store
+
+    def create_items(self):
+        if not self._data:
+            raise ValueError("items not loaded")
+        new_tasks = []
+        new_signal_handlers = []
+        new_conditions = []
+        for item_dict in self._data:
+            item_type = item_dict['type']
+            if item_type == 'condition':
+                subtype = item_dict['subtype']
+                if subtype == 'IntervalBasedCondition':
+                    item = dict_to_IntervalBasedCondition(item_dict)
+                elif subtype == 'TimeBasedCondition':
+                    item = dict_to_TimeBasedCondition(item_dict)
+                elif subtype == 'CommandBasedCondition':
+                    item = dict_to_CommandBasedCondition(item_dict)
+                elif subtype == 'IdleTimeBasedCondition':
+                    item = dict_to_IdleTimeBasedCondition(item_dict)
+                elif subtype == 'EventBasedCondition':
+                    item = dict_to_EventBasedCondition(item_dict)
+                elif subtype == 'PathNotifyBasedCondition':
+                    item = dict_to_PathNotifyBasedCondition(item_dict)
+                new_conditions.append(item)
+            elif item_type == 'task':
+                item = dict_to_Task(item_dict)
+                new_tasks.append(item)
+            elif item_type == 'dbus_signal_handler':
+                item = dict_to_SignalHandler(item_dict)
+                new_signal_handlers.append(item)
+        for item in new_signal_handlers:
+            signal_handlers.add(item)
+        for item in new_tasks:
+            tasks.add(item)
+        for item in new_conditions:
+            conditions.add(item)
+
+
+#############################################################################
 # the DBus service is needed for the running applet to receive commands
 class AppletDBusService(dbus.service.Object):
     def __init__(self):
@@ -631,6 +1248,49 @@ class AppletDBusService(dbus.service.Object):
     @dbus.service.method(APPLET_BUS_NAME)
     def export_history(self, file_name):
         return applet.export_task_history(file_name)
+
+    # NOTE: to self/to remove: rv is None on OK or error string on failure
+    @dbus.service.method(APPLET_BUS_NAME)
+    def add_items(self, item_data):
+        return applet.add_items(item_data)
+
+    @dbus.service.method(APPLET_BUS_NAME)
+    def del_item(self, item_spec):
+        li = remove_item_specs(item_spec)
+        if len(li) > 1:
+            applet_log.error("SERVICE: NTBS: too many items not deleted than expected (%s)" % len(li))
+            for x in li:
+                if x[2] == ITEM_OPERATION_OK:
+                    reason = "no error"
+                elif x[2] == ITEM_OPERATION_ERR_TYPE:
+                    reason = "invalid or unknown type"
+                elif x[2] == ITEM_OPERATION_ERR_NOTFOUND:
+                    reason = "item not found"
+                elif x[2] == ITEM_OPERATION_ERR_CONFLICT:
+                    reason = "name conflict"
+                else:
+                    reason = "unknown error"
+                applet_log.error("SERVICE: NTBS: item specification %s:%s marked as not removed (%s)" % (x[0], x[1], reason))
+            rv = '/'.join(['%s:%s:%s' % t for t in li])
+        else:
+            if li:
+                x = li[0]
+                if x[2] == ITEM_OPERATION_OK:
+                    reason = "no error"
+                elif x[2] == ITEM_OPERATION_ERR_TYPE:
+                    reason = "invalid or unknown type"
+                elif x[2] == ITEM_OPERATION_ERR_NOTFOUND:
+                    reason = "item not found"
+                elif x[2] == ITEM_OPERATION_ERR_CONFLICT:
+                    reason = "name conflict"
+                else:
+                    reason = "unknown error"
+                applet_log.warning("SERVICE: item specification %s:%s could not be deleted (%s)" % (x[0], x[1], reason))
+                rv = '%s:%s:%s' % li[0]
+            else:
+                applet_log.info("SERVICE: item specification %s has been removed" % item_spec)
+                rv = None
+        return rv
 
 
 #############################################################################
@@ -724,13 +1384,13 @@ class Config(object):
                 v = v.lower()
             self._config_parser.set(section, entry, v)
         except (TypeError, configparser.Error) as e:
-            applet_log.warning("CONFIG: cannot set option %s:%s = %s [%s]" % (section, entry, value, e))
+            applet_log.warning("CONFIG: cannot set option %s:%s = %s [%s]" % (section, entry, value, _x(e)))
 
     def load(self):
         try:
             self._config_parser.read(self._config_file)
         except configparser.Error as e:
-            applet_log.warning("CONFIG: malformed configuration file, using default [%s]" % e)
+            applet_log.warning("CONFIG: malformed configuration file, using default [%s]" % _x(e))
             self._default()
             self.save()
 
@@ -743,7 +1403,7 @@ class Config(object):
             with open(self._config_file, mode='w') as f:
                 self._config_parser.write(f)
         except IOError as e:
-            applet_log.error("CONFIG: cannot write file %s [%s]" % (_config_file, e))
+            applet_log.error("CONFIG: cannot write file %s [%s]" % (_config_file, _x(e)))
 
 
 # scheduler logic, see http://stackoverflow.com/a/18906292 for details
@@ -915,6 +1575,7 @@ class Tasks(object):
             for c in conditions:
                 if task.task_name in c.task_names:
                     removable = False
+                    applet_log.warning("GLOBAL: cannot delete task %s used in condition %s" % (task_name, c.cond_name))
                     break
             if removable:
                 self._lock.acquire()
@@ -1257,11 +1918,11 @@ class Task(object):
         self.match_exact = False
         self.match_regexp = False
         self.case_sensitive = False
-        self.command = ""
+        self.command = ''
         self.startup_dir = None
         self.running = False
-        self._process_stdout = ""
-        self._process_stderr = ""
+        self._process_stdout = ''
+        self._process_stderr = ''
         self._process_status = 0
         self._process_failed = False
         if name is None:
@@ -1538,10 +2199,10 @@ class Task(object):
                                     self._process_failed = True
                                     failure_reason = 'stderr'
         except RuntimeError as e:
-            self._warning("task failed, runtime error: %s" % e)
+            self._warning("task failed, runtime error: %s" % _x(e))
             failure_reason = 'overlap'
         except OSError as e:
-            self._warning("task failed, system error: %s" % e)
+            self._warning("task failed, system error: %s" % _x(e))
             self._process_failed = True
             failure_reason = 'system'
         except subprocess.CalledProcessError as e:
@@ -1612,7 +2273,7 @@ def dict_to_Task(d):
     if d['type'] != 'task':
         raise ValueError("incorrect dictionary type")
     t = Task()
-    applet_log.debug("MAIN: trying to restore task %s" % d['task_name'])
+    applet_log.debug("MAIN: trying to load task %s" % d['task_name'])
     t.task_id = d['task_id']
     t.task_name = d['task_name']
     t.environment_vars = d['environment_vars']
@@ -1629,7 +2290,7 @@ def dict_to_Task(d):
     t.startup_dir = d['startup_dir']
     # TODO: if there are more parameters, use d.get('key', default_val)
     t.match_regexp = d.get('match_regexp', False)
-    applet_log.info("MAIN: task %s restored" % t.task_name)
+    applet_log.info("MAIN: task %s loaded" % t.task_name)
     return t
 
 
@@ -1825,9 +2486,9 @@ def dict_to_Condition(d, c=None):
         raise ValueError("incorrect dictionary type")
     # this will raise an error
     if c is None:
-        applet_log.critical("MAIN: NTBS: attempt to restore base Condition")
+        applet_log.critical("MAIN: NTBS: attempt to load base Condition")
         c = Condition()
-    applet_log.debug("MAIN: trying to restore condition %s" % c.cond_name)
+    applet_log.debug("MAIN: trying to load condition %s" % c.cond_name)
     c.cond_id = d['cond_id']
     c.cond_name = d['cond_name']
     c.task_names = d['task_names']
@@ -1874,7 +2535,7 @@ def dict_to_IntervalBasedCondition(d):
     # TODO: if there are more parameters, use d.get('key', default_val)
     c = IntervalBasedCondition(name, interval)
     c = dict_to_Condition(d, c)
-    applet_log.info("MAIN: restored interval based condition %s" % c.cond_name)
+    applet_log.info("MAIN: loaded interval based condition %s" % c.cond_name)
     return c
 
 
@@ -1938,7 +2599,7 @@ def dict_to_TimeBasedCondition(d):
     # TODO: if there are more parameters, use d.get('key', default_val)
     c = TimeBasedCondition(name, d)
     c = dict_to_Condition(d, c)
-    applet_log.info("MAIN: restored time based condition %s" % c.cond_name)
+    applet_log.info("MAIN: loaded time based condition %s" % c.cond_name)
     return c
 
 
@@ -2029,7 +2690,7 @@ class CommandBasedCondition(Condition):
                 self._debug("test failed")
                 return False
         except OSError as e:
-            self._warning("condition failed, system error: %s" % e)
+            self._warning("condition failed, system error: %s" % _x(e))
             return False
         except subprocess.CalledProcessError as e:
             self._warning("condition failed, called process error")
@@ -2038,7 +2699,7 @@ class CommandBasedCondition(Condition):
             self._warning("condition failed, timeout expired")
             return False
         except Exception as e:
-            self._error("condition failed (unexpected error: %s)" % e)
+            self._error("condition failed (unexpected error: %s)" % _x(e))
             return False
 
     def __init__(self, name, command, status=None, stdout=None, stderr=None, repeat=True, exec_sequence=True):
@@ -2093,7 +2754,7 @@ def dict_to_CommandBasedCondition(d):
     c.match_regexp = match_regexp
     c.case_sensitive = case_sensitive
     c = dict_to_Condition(d, c)
-    applet_log.info("MAIN: restored command based condition %s" % c.cond_name)
+    applet_log.info("MAIN: loaded command based condition %s" % c.cond_name)
     return c
 
 
@@ -2143,7 +2804,7 @@ def dict_to_IdleTimeBasedCondition(d):
     # TODO: if there are more parameters, use d.get('key', default_val)
     c = IdleTimeBasedCondition(name, idle_secs)
     c = dict_to_Condition(d, c)
-    applet_log.info("MAIN: restored idle time based condition %s" % c.cond_name)
+    applet_log.info("MAIN: loaded idle time based condition %s" % c.cond_name)
     return c
 
 
@@ -2187,7 +2848,7 @@ def dict_to_EventBasedCondition(d):
     # TODO: if there are more parameters, use d.get('key', default_val)
     c = EventBasedCondition(name, event, no_skip)
     c = dict_to_Condition(d, c)
-    applet_log.info("MAIN: restored event based condition %s" % c.cond_name)
+    applet_log.info("MAIN: loaded event based condition %s" % c.cond_name)
     return c
 
 
@@ -2286,7 +2947,7 @@ def dict_to_PathNotifyBasedCondition(d):
     # TODO: if there are more parameters, use d.get('key', default_val)
     c = PathNotifyBasedCondition(name, event, no_skip)
     c = dict_to_Condition(d, c)
-    applet_log.info("MAIN: restored file change based condition %s" % c.cond_name)
+    applet_log.info("MAIN: loaded file change based condition %s" % c.cond_name)
     return c
 
 
@@ -2340,7 +3001,7 @@ def dict_to_DataCollectorBasedCondition(d, c=None):
     # TODO: if there are more parameters, use d.get('key', default_val)
     # the following will raise an error
     if c is None:
-        applet_log.critical("MAIN: NTBS: attempt to restore base DataCollectorBasedCondition")
+        applet_log.critical("MAIN: NTBS: attempt to load base DataCollectorBasedCondition")
         c = DataCollectorBasedCondition(name, no_skip)
     if no_skip:
         c.skip_seconds = 0
@@ -2440,14 +3101,14 @@ class SignalHandler(object):
             try:
                 param = args[index]
             except Exception as e:
-                error("cannot extract parameter (%s)" % e)
+                error("cannot extract parameter (%s)" % _x(e))
                 return False
             if sub is not None:
                 if type(param) in (dbus.Array, dbus.Struct):
                     try:
                         sub = int(sub)
                     except Exception as e:
-                        error("expected integer subindex (%s)" % e)
+                        error("expected integer subindex (%s)" % _x(e))
                         return False
                     try:
                         param = param[sub]
@@ -2458,7 +3119,7 @@ class SignalHandler(object):
                     try:
                         sub = dbus.String(sub)
                     except Exception as e:
-                        error("expected string subindex (%s)" % e)
+                        error("expected string subindex (%s)" % _x(e))
                         return False
                     try:
                         param = param[sub]
@@ -2488,7 +3149,7 @@ class SignalHandler(object):
                     param = int(param)
                     test = int(test)
                 except Exception as e:
-                    error("cannot convert either param or test value (%s)" % e)
+                    error("cannot convert either param or test value (%s)" % _x(e))
                     return False
                 if compare == DBUS_CHECK_COMPARE_IS:
                     rv = bool(param == test)
@@ -2504,7 +3165,7 @@ class SignalHandler(object):
                     param = float(param)
                     test = float(test)
                 except Exception as e:
-                    error("cannot convert either param or test value (%s)" % e)
+                    error("cannot convert either param or test value (%s)" % _x(e))
                     return False
                 if compare == DBUS_CHECK_COMPARE_IS:
                     rv = bool(param == test)
@@ -2522,7 +3183,7 @@ class SignalHandler(object):
                     param = str(param)
                     test = str(test)
                 except Exception as e:
-                    error("cannot convert either param or test value (%s)" % e)
+                    error("cannot convert either param or test value (%s)" % _x(e))
                     return False
                 if compare == DBUS_CHECK_COMPARE_IS:
                     rv = bool(param == test)
@@ -2695,7 +3356,7 @@ class SignalHandler(object):
             self.signal_match = None
             return True
         except Exception as e:
-            self._warning("could not unregister handler (%s)" % e)
+            self._warning("could not unregister handler (%s)" % _x(e))
             return False
 
     def dump(self):
@@ -2742,7 +3403,7 @@ def SignalHandler_to_dict(h):
 def dict_to_SignalHandler(d):
     if d['type'] != 'dbus_signal_handler':
         raise ValueError("incorrect dictionary type")
-    applet_log.debug("MAIN: trying to restore DBus signal handler %s" % d['handler_name'])
+    applet_log.debug("MAIN: trying to load DBus signal handler %s" % d['handler_name'])
     h = SignalHandler(d['handler_name'])
     h.bus = d['bus']
     h.bus_name = d['bus_name']
@@ -2758,7 +3419,7 @@ def dict_to_SignalHandler(d):
     h.verify_all_checks = d['verify_all_checks']
     h.defer = d['defer']
     # TODO: if there are more parameters, use d.get('key', default_val)
-    applet_log.info("MAIN: DBus signal handler %s restored" % h.handler_name)
+    applet_log.info("MAIN: DBus signal handler %s loaded" % h.handler_name)
     return h
 
 
@@ -3274,11 +3935,11 @@ class ConditionDialog(object):
                 if cond.year:
                     o('txtYear').set_text(str(cond.year))
                 if cond.month:
-                    o('cbMonth').set_active_item(cond.month - 1)
+                    o('cbMonth').set_active(cond.month - 1)
                 if cond.day:
                     o('txtDay').set_text(str(cond.day))
                 if cond.weekday:
-                    o('cbWeekday').set_active_item(cond.weekday)
+                    o('cbWeekday').set_active(cond.weekday)
                 if cond.hour:
                     o('txtHour').set_text(str(cond.hour))
                 if cond.minute:
@@ -3687,15 +4348,26 @@ class SignalDialog(object):
             applet_log.debug("DLGSIG: not adding signal check with bad param index")
             msgbox = Gtk.MessageDialog(type=Gtk.MessageType.ERROR,
                                        buttons=Gtk.ButtonsType.OK)
-            msgbox.set_markup(resources.DLG_WRONG_PARAM_INDEX % name)
+            msgbox.set_markup(resources.DLG_WRONG_PARAM_INDEX)
             msgbox.run()
             msgbox.hide()
             return
         sub_idx = o('txtValueSub').get_text()
-        if not sub_idx:
+        if sub_idx == '':
             sub_idx = None
+        elif self.validate_int(sub_idx, min_value=0) is not None:
+            sub_idx = int(sub_idx)
+        else:
+            if not VALIDATE_DBUS_SUBPARAM_RE.match(sub_idx):
+                applet_log.debug("DLGSIG: not adding signal check with bad subparam index")
+                msgbox = Gtk.MessageDialog(type=Gtk.MessageType.ERROR,
+                                           buttons=Gtk.ButtonsType.OK)
+                msgbox.set_markup(resources.DLG_WRONG_PARAM_INDEX)
+                msgbox.run()
+                msgbox.hide()
+                return
         l = [x for x in self.signal_param_tests
-             if x.value_idx != value_idx and x.sub_idx != sub_idx]
+             if x.value_idx != value_idx or x.sub_idx != sub_idx]
         check = param_check(
             value_idx,
             sub_idx,
@@ -3720,14 +4392,20 @@ class SignalDialog(object):
             return
         try:
             value_idx = int(s)
+            if value_idx < 0:
+                applet_log.debug("DLGSIG: not removing signal check with bad param index")
+                return
         except:
             applet_log.debug("DLGSIG: not removing signal check with bad param index")
             return
         sub_idx = o('txtValueSub').get_text()
-        if not sub_idx:
+        if sub_idx == '':
             sub_idx = None
+        else:
+            if self.validate_int(sub_idx, min_value=0) is not None:
+                sub_idx = int(sub_idx)
         l = [x for x in self.signal_param_tests
-             if x.value_idx != value_idx and x.sub_idx != sub_idx]
+             if x.value_idx != value_idx or x.sub_idx != sub_idx]
         self.signal_param_tests = l
         self.update_listTests()
 
@@ -3749,7 +4427,7 @@ class SignalDialog(object):
         for check in self.signal_param_tests:
             row = [
                 str(check.value_idx),
-                '' if not check.sub_idx else str(check.sub_idx),
+                '' if check.sub_idx is None else str(check.sub_idx),
                 'NOT' if check.negate else '',
                 self.all_comparisons_symdict[check.comparison],
                 str(check.test_value),
@@ -4214,7 +4892,7 @@ class AppletIndicator(Gtk.Application):
         try:
             self.register(None)
         except Exception as e:
-            applet_log.critical("MAIN: exception %s registering application" % e)
+            applet_log.critical("MAIN: exception %s registering application" % _x(e))
             sys.exit(2)
 
         self.connect('activate', self.applet_activate)
@@ -4532,6 +5210,17 @@ class AppletIndicator(Gtk.Application):
         except IOError as e:
             return HISTORY_ERR_IOERROR
 
+    def add_items(self, item_data):
+        try:
+            interpreter = ItemDataFileInterpreter(item_data)
+            interpreter.create_items()
+        except Exception as e:
+            return _x(e)
+        tasks.save()
+        conditions.save()
+        signal_handlers.save()
+        return None
+
     def quit(self, _):
         self.before_shutdown()
         Notify.uninit()
@@ -4739,12 +5428,15 @@ def kill_existing(verbose=False, shutdown=False):
          (resources.OERR_SHUTDOWN_SHUTDOWN if shutdown
           else resources.OERR_SHUTDOWN_KILL), verbose)
     bus = dbus.SessionBus()
-    interface = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
-    if shutdown:
-        interface.quit_instance()
-    else:
-        interface.kill_instance()
-    oerr(resources.OERR_SHUTDOWN_FINISH, verbose)
+    proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
+    try:
+        if shutdown:
+            proxy.quit_instance()
+        else:
+            proxy.kill_instance()
+        oerr(resources.OERR_SHUTDOWN_FINISH, verbose)
+    except dbus.exceptions.DBusException:
+        oerr(resources.OERR_ERR_DBUS_SERVICE, verbose)
 
 
 def oerr(s, verbose=True):
@@ -4765,15 +5457,21 @@ def show_box(box='about', verbose=False):
     proxy = Gio.DBusProxy.new_sync(bus, Gio.DBusProxyFlags.NONE, None,
                                    APPLET_BUS_NAME, APPLET_BUS_PATH,
                                    APPLET_BUS_NAME, None)
-    proxy.call_sync('show_dialog', GLib.Variant('(s)', (box,)),
-                    Gio.DBusCallFlags.NONE, GObject.G_MAXINT, None)
+    try:
+        proxy.call_sync('show_dialog', GLib.Variant('(s)', (box,)),
+                        Gio.DBusCallFlags.NONE, GObject.G_MAXINT, None)
+    except dbus.exceptions.DBusException:
+        oerr(resources.OERR_ERR_DBUS_SERVICE, verbose)
 
 
 def show_icon(show=True, running=True):
     if running:
         bus = dbus.SessionBus()
         proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
-        proxy.show_icon(show)
+        try:
+            proxy.show_icon(show)
+        except dbus.exceptions.DBusException:
+            oerr(resources.OERR_ERR_DBUS_SERVICE, verbose)
     config.set('General', 'show icon', show)
     config.save()
 
@@ -4793,7 +5491,11 @@ def export_running_history(filename, verbose=False):
     oerr(resources.OERR_EXPORT_HISTORY % filename, verbose)
     bus = dbus.SessionBus()
     proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
-    rv = proxy.export_history(filename)
+    try:
+        rv = proxy.export_history(filename)
+    except dbus.exceptions.DBusException:
+        oerr(resources.OERR_EXPORT_HISTORY_UNKNOWN, verbose)
+        return False
     if rv < 0:
         if rv == HISTORY_ERR_EMPTY:
             s = resources.OERR_EXPORT_HISTORY_EMPTY
@@ -4806,6 +5508,202 @@ def export_running_history(filename, verbose=False):
     else:
         oerr(resources.OERR_EXPORT_HISTORY_FINISH % rv, verbose)
         return True
+
+
+def call_add_items(filename, verbose=False):
+    bus = dbus.SessionBus()
+    proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
+    if filename == '-':
+        applet_log.info("MAIN: reading items from standard input")
+        data = sys.stdin.read()
+    else:
+        applet_log.info("MAIN: reading items from %s" % filename)
+        try:
+            with open(filename) as f:
+                data = f.read()
+        except Exception as e:
+            oerr(resources.OERR_ITEMOPS_ADD_NOREAD, verbose)
+            return False
+    try:
+        rv = proxy.add_items(data)
+    except dbus.exceptions.DBusException:
+        oerr(resources.OERR_ERR_ITEMOPS_DBUS, verbose)
+        return False
+    if rv:
+        applet_log.error("MAIN: failed to add items: %s" % rv)
+        oerr(resources.OERR_ITEMOPS_ADD_FAIL, verbose)
+        return False
+    else:
+        applet_log.info("MAIN: items added successfully")
+        return True
+
+
+def do_add_items(filename, verbose=False):
+    if filename == '-':
+        applet_log.info("MAIN: reading items from standard input")
+        data = sys.stdin.read()
+    else:
+        applet_log.info("MAIN: reading items from %s" % filename)
+        try:
+            with open(filename) as f:
+                data = f.read()
+        except Exception as e:
+            oerr(resources.OERR_ITEMOPS_ADD_NOREAD, verbose)
+            return False
+    try:
+        tasks.load()
+    except FileNotFoundError:
+        pass
+    try:
+        conditions.load()
+    except FileNotFoundError:
+        pass
+    try:
+        signal_handlers.load()
+    except FileNotFoundError:
+        pass
+    try:
+        interpreter = ItemDataFileInterpreter(data)
+        interpreter.create_items()
+    except Exception as e:
+        applet_log.error("MAIN: failed to add items: %s" % _x(e))
+        oerr(resources.OERR_ITEMOPS_ADD_FAIL, verbose)
+        return False
+    tasks.save()
+    conditions.save()
+    signal_handlers.save()
+    applet_log.info("MAIN: items added successfully")
+    return True
+
+
+def call_remove_item(item_spec, verbose=False):
+    # TODO: the symbols should be converted to constants
+    bus = dbus.SessionBus()
+    proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
+    try:
+        rv = proxy.del_item(item_spec)
+    except dbus.exceptions.DBusException:
+        oerr(resources.OERR_ERR_ITEMOPS_DBUS, verbose)
+        return False
+    if rv:
+        li = rv.split('/')
+        if len(li) > 1:
+            oerr(resources.OERR_ITEMOPS_DEL_FAIL %
+                 resources.OERR_ERR_ITEMOPS_DBUS, verbose)
+            return False
+        elif len(li) == 1:
+            try:
+                item_type, item_name, errcode = li[0].split(':')
+                errcode = int(errcode)
+                if errcode == ITEM_OPERATION_OK:
+                    reason = resources.OERR_ERR_ITEMOPS_OK
+                elif errcode == ITEM_OPERATION_ERR_TYPE:
+                    reason = resources.OERR_ERR_ITEMOPS_OK
+                elif errcode == ITEM_OPERATION_ERR_NOTFOUND:
+                    reason = resources.OERR_ERR_ITEMOPS_NOTFOUND
+                elif errcode == ITEM_OPERATION_ERR_CONFLICT:
+                    reason = resources.OERR_ERR_ITEMOPS_CONFLICT
+                else:
+                    reason = resources.OERR_ERR_ITEMOPS_GENERIC
+            except ValueError:
+                reason = resources.OERR_ERR_ITEMOPS_DBUS
+            oerr(resources.OERR_ITEMOPS_DEL_FAIL % reason, verbose)
+            return False
+    else:
+        oerr(resources.OERR_ITEMOPS_DEL_FINISH % item_spec, verbose)
+        return True
+
+
+def do_remove_item(item_spec, verbose=False):
+    try:
+        tasks.load()
+    except FileNotFoundError:
+        pass
+    try:
+        conditions.load()
+    except FileNotFoundError:
+        pass
+    try:
+        signal_handlers.load()
+    except FileNotFoundError:
+        pass
+    li = remove_item_specs(item_spec)
+    if len(li) > 1:
+        oerr(resources.OERR_ITEMOPS_DEL_FAIL %
+             resources.OERR_ERR_ITEMOPS_DBUS, verbose)
+        return False
+    elif len(li) == 1:
+        try:
+            item_type, item_name, errcode = li[0]
+            errcode = int(errcode)
+            if errcode == ITEM_OPERATION_OK:
+                reason = resources.OERR_ERR_ITEMOPS_OK
+            elif errcode == ITEM_OPERATION_ERR_TYPE:
+                reason = resources.OERR_ERR_ITEMOPS_OK
+            elif errcode == ITEM_OPERATION_ERR_NOTFOUND:
+                reason = resources.OERR_ERR_ITEMOPS_NOTFOUND
+            elif errcode == ITEM_OPERATION_ERR_CONFLICT:
+                reason = resources.OERR_ERR_ITEMOPS_CONFLICT
+            else:
+                reason = resources.OERR_ERR_ITEMOPS_GENERIC
+        except ValueError:
+            reason = resources.OERR_ERR_ITEMOPS_DBUS
+        oerr(resources.OERR_ITEMOPS_DEL_FAIL % reason, verbose)
+        return False
+    else:
+        oerr(resources.OERR_ITEMOPS_DEL_FINISH % item_spec, verbose)
+        return True
+
+
+def print_items(item_type=None):
+    if item_type is not None:
+        if item_type == ITEM_TYPE_TASKS:
+            try:
+                tasks.load()
+                for name in tasks.names:
+                    sys.stdout.write("%s:%s\n" % (ITEM_TYPE_TASKS, name))
+            except FileNotFoundError:
+                pass
+            return ITEM_OPERATION_OK
+        elif item_type == ITEM_TYPE_CONDITIONS:
+            try:
+                conditions.load()
+                for name in conditions.names:
+                    sys.stdout.write("%s:%s\n" % (ITEM_TYPE_CONDITIONS, name))
+            except FileNotFoundError:
+                pass
+            return ITEM_OPERATION_OK
+        elif item_type == ITEM_TYPE_SIGNAL_HANDLERS:
+            try:
+                signal_handlers.load()
+                for name in signal_handlers.names:
+                    sys.stdout.write(
+                        "%s:%s\n" % (ITEM_TYPE_SIGNAL_HANDLERS, name))
+            except FileNotFoundError:
+                pass
+            return ITEM_OPERATION_OK
+        else:
+            return ITEM_OPERATION_ERR_TYPE
+    else:
+        try:
+            tasks.load()
+            for name in tasks.names:
+                sys.stdout.write("%s:%s\n" % (ITEM_TYPE_TASKS, name))
+        except FileNotFoundError:
+            pass
+        try:
+            conditions.load()
+            for name in conditions.names:
+                sys.stdout.write("%s:%s\n" % (ITEM_TYPE_CONDITIONS, name))
+        except FileNotFoundError:
+            pass
+        try:
+            signal_handlers.load()
+            for name in signal_handlers.names:
+                sys.stdout.write("%s:%s\n" % (ITEM_TYPE_SIGNAL_HANDLERS, name))
+        except FileNotFoundError:
+            pass
+        return ITEM_OPERATION_OK
 
 
 def clear_item_data(verbose=False):
@@ -5139,14 +6037,19 @@ def main():
             help=resources.COMMAND_LINE_HELP_DEFER_CONDITION
         )
         parser.add_argument(
-            '--shutdown',
-            dest='shutdown', action='store_true',
-            help=resources.COMMAND_LINE_HELP_SHUTDOWN
+            '--item-list',
+            dest='item_list', metavar='ITEMTYPE', nargs='?', const='*',
+            help=resources.COMMAND_LINE_HELP_ITEM_LIST
         )
         parser.add_argument(
-            '--kill',
-            dest='kill', action='store_true',
-            help=resources.COMMAND_LINE_HELP_KILL
+            '--item-del',
+            dest='item_delete', metavar='ITEMSPEC', default=None,
+            help=resources.COMMAND_LINE_HELP_ITEM_DELETE
+        )
+        parser.add_argument(
+            '--item-add',
+            dest='item_add', metavar='FILE', nargs='?', const='-',
+            help=resources.COMMAND_LINE_HELP_ITEM_ADD
         )
         parser.add_argument(
             '--export',
@@ -5157,6 +6060,16 @@ def main():
             '--import',
             dest='import_items', metavar='FILE', nargs='?', const='*',
             help=resources.COMMAND_LINE_HELP_IMPORT
+        )
+        parser.add_argument(
+            '--shutdown',
+            dest='shutdown', action='store_true',
+            help=resources.COMMAND_LINE_HELP_SHUTDOWN
+        )
+        parser.add_argument(
+            '--kill',
+            dest='kill', action='store_true',
+            help=resources.COMMAND_LINE_HELP_KILL
         )
 
         args = parser.parse_args()
@@ -5217,7 +6130,7 @@ def main():
             try:
                 export_item_data(filename, verbose)
             except Exception as e:
-                applet_log.critical("MAIN: exception %s occurred while performing 'export'" % e)
+                applet_log.critical("MAIN: exception %s occurred while performing 'export'" % _x(e))
                 oerr(resources.OERR_ERR_EXPORT_GENERIC, verbose)
                 sys.exit(2)
             oerr(resources.OERR_EXPORT, verbose)
@@ -5246,6 +6159,40 @@ def main():
                 if not(run_condition(args.defer_condition, True, verbose)):
                     sys.exit(2)
 
+        if args.item_delete:
+            if running:
+                if not call_remove_item(args.item_delete, verbose):
+                    sys.exit(2)
+            else:
+                if not do_remove_item(args.item_delete, verbose):
+                    sys.exit(2)
+
+        if args.item_add:
+            if running:
+                if not call_add_items(args.item_add, verbose):
+                    sys.exit(2)
+            else:
+                if not do_add_items(args.item_add, verbose):
+                    sys.exit(2)
+
+        if args.item_list:
+            if args.item_list == '*':
+                print_items()
+            else:
+                s = args.item_list.lower()
+                if ITEM_TYPE_TASKS.startswith(s):
+                    s = ITEM_TYPE_TASKS
+                elif ITEM_TYPE_CONDITIONS.startswith(s):
+                    s = ITEM_TYPE_CONDITIONS
+                elif ITEM_TYPE_SIGNAL_HANDLERS.startswith(s):
+                    s = ITEM_TYPE_SIGNAL_HANDLERS
+                else:
+                    oerr(resources.OERR_ERR_ITEMOPS_TYPE, verbose)
+                    sys.exit(1)
+                if print_items(s) != ITEM_OPERATION_OK:
+                    oerr(resources.OERR_ERR_ITEMOPS_GENERIC, verbose)
+                    sys.exit(2)
+
         if args.shutdown:
             if running:
                 kill_existing(verbose=verbose, shutdown=True)
@@ -5270,7 +6217,7 @@ def main():
                     config.reset()
                     unlink_pause_file()
                 except Exception as e:
-                    applet_log.critical("MAIN: exception %s occurred while performing 'reset-config'" % e)
+                    applet_log.critical("MAIN: exception %s occurred while performing 'reset-config'" % _x(e))
                     oerr(resources.OERR_ERR_RESET_GENERIC, verbose)
                     sys.exit(2)
                 oerr(resources.OERR_RESET, verbose)
@@ -5283,7 +6230,7 @@ def main():
                 try:
                     clear_item_data(verbose)
                 except Exception as e:
-                    applet_log.critical("MAIN: exception %s occurred while performing 'clear'" % e)
+                    applet_log.critical("MAIN: exception %s occurred while performing 'clear'" % _x(e))
                     oerr(resources.OERR_ERR_CLEAR_GENERIC, verbose)
                     sys.exit(2)
                 oerr(resources.OERR_CLEAR, verbose)
@@ -5300,7 +6247,7 @@ def main():
                 try:
                     import_item_data(filename, verbose)
                 except Exception as e:
-                    applet_log.critical("MAIN: exception %s occurred while performing 'import'" % e)
+                    applet_log.critical("MAIN: exception %s occurred while performing 'import'" % _x(e))
                     oerr(resources.OERR_ERR_IMPORT_GENERIC, verbose)
                     sys.exit(2)
 
@@ -5312,7 +6259,7 @@ def main():
                 try:
                     install_icons(True)
                 except Exception as e:
-                    applet_log.critical("MAIN: exception %s occurred while performing 'install'" % e)
+                    applet_log.critical("MAIN: exception %s occurred while performing 'install'" % _x(e))
                     oerr(resources.OERR_ERR_INSTALL_GENERIC, verbose)
                     sys.exit(2)
                 oerr(resources.OERR_INSTALL, verbose)
