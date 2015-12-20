@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "WHEN-COMMAND" "1" "December 19, 2015" "0.9" "When Documentation"
+.TH "WHEN-COMMAND" "1" "December 20, 2015" "0.9" "When Documentation"
 .SH NAME
 when-command \- When Documentation
 .
@@ -36,8 +36,12 @@ It interacts with the user through a GUI, where the user can define tasks and
 conditions, as well as relationships of causality that bind conditions to
 tasks.
 .sp
-This manual page briefly describes the \fIcommand line interface\fP of \fBWhen\fP
-and the configuration file.
+This manual page briefly describes the \fIcommand line interface\fP of \fBWhen\fP,
+the configuration file and \fIitem definition files\fP\&. Please refer to
+.sp
+\fI\%http://when\-documentation.readthedocs.org/\fP
+.sp
+for more detailed information.
 .SH COMMAND LINE INTERFACE
 .sp
 This paragraph illustrates the command line options that can be used to either
@@ -119,6 +123,26 @@ first
 .B \-\-kill
 close a running instance abruptly, no shutdown tasks
 are run
+.TP
+.BI \-\-item\-add \ file
+add items from a specially formatted file (see the
+\fIadvanced\fP section for details); if the specified
+file is \fB\-\fP the text is read from the standard
+input
+.TP
+.BI \-\-item\-del \ itemspec
+delete the item specified by \fIitemspec\fP\&. \fIitemspec\fP
+has the form \fB[type:]item\fP where \fBtype:\fP is
+optional and is is one of \fBtasks\fP, \fBconditions\fP
+and \fBsighandlers\fP (or an abbreviation thereof)
+while \fBitem\fP is the name of an item; \fBtype\fP can
+only be omitted if the name is unique
+.TP
+.BI \-\-item\-list \ type
+print the list of currently managed items to the
+console, each prefixed with its type; \fBtype\fP is
+optional (see above for possible values) and if
+specified only items of that type are listed
 .TP
 .BI \-\-export \ file
 save tasks, conditions and other items to a portable
@@ -306,6 +330,418 @@ by setting the \fBshow icon\fP entry to \fBtrue\fP\&. Another way to force acces
 the \fISettings\fP dialog box when the icon is hidden is to invoke the applet from
 the command line using the \fB\-\-show\-settings\fP (or \fB\-s\fP) switch when an
 instance is running.
+.SH ITEM DEFINITION FILE
+.sp
+With version \fI9.4.0\-beta.1\fP a way has been introduced to define \fIitems\fP
+(\fItasks\fP, \fIconditions\fP and especially \fIsignal handlers\fP) using text files
+whose syntax is similar (although it differs in some ways) to the one used
+in common configuration files.
+.sp
+Item names are case sensitive and follow the same rules
+as the related \fIName\fP entries in dialog boxes: only names that begin with an
+alphanumeric character and continue with \fIalphanumerics\fP, \fIunderscores\fP and
+\fIdashes\fP (that is, no spaces) are accepted. Entries must be followed by
+colons and in case of entries that support lists the lists must be indented
+and span multiple lines. Complex values are rendered using commas to separate
+sub\-values. The value for each entry is considered to be the string beginning
+with the first non\-blank character after the colon.
+.sp
+\fBWARNING:\fP
+.INDENT 0.0
+.INDENT 3.5
+Even a single error, be it syntactical or due to other possibly more
+complex discrepancies, will cause the entire file to be rejected. The
+loading applet will complain with an error status and, if invoked using
+the \fB\-\-verbose\fP switch, a very brief error message: the actual cause
+of rejection can normally be found in the log files.
+.UNINDENT
+.UNINDENT
+.sp
+For each item, the item name must be enclosed in square brackets, followed
+by the entries that define it. An entry that is common to all items is
+\fBtype\fP: the type must be one of \fBtask\fP, \fBcondition\fP or
+\fBsignal_handler\fP\&. Every other value will be discarded and invalidate
+the file. The following sections describe the remaining entries that can
+(or have to) be used in item definitions, for each item type. Entry names
+must be written in their entirety: abbreviations are not accepted.
+.SS Tasks
+.sp
+Tasks are defined by the following entries. Some are mandatory and others
+are optional: for the optional ones, if omitted, default values are used.
+Consider that all entries correspond to entries or fields in the
+\fITask Definition Dialog Box\fP and the corresponding default values are the
+values that the dialog box shows by default.
+.INDENT 0.0
+.IP \(bu 2
+\fBcommand\fP:
+The value indicates the full command line to be executed when the task
+is run, it can contain every legal character for a shell command.
+\fIThis entry is mandatory:\fP omission invalidates the file.
+.IP \(bu 2
+\fBenvironment variables\fP:
+A multi\-value entry that includes a variable definition on each line.
+Each definition has the form \fBVARNAME=value\fP, must be indented and
+the value \fImust not\fP contain quotes. Everything after the equal sign
+is considered part of the value, including spaces. Each line defines
+a single variable.
+.IP \(bu 2
+\fBimport environment\fP:
+Decide whether or not to import environment for the command that the
+task runs. Must be either \fBtrue\fP or \fBfalse\fP\&.
+.IP \(bu 2
+\fBstartup directory\fP:
+Set the \fIstartup directory\fP for the task to be run. It should be a valid
+directory.
+.IP \(bu 2
+\fBcheck for\fP:
+The value of this entry consists either of the word \fBnothing\fP or of a
+comma\-separated list of three values, that is \fBoutcome, source, value\fP
+where
+.INDENT 2.0
+.IP \(bu 2
+\fBoutcome\fP is either \fBsuccess\fP or \fBfailure\fP
+.IP \(bu 2
+\fBsource\fP is one of \fBstatus\fP, \fBstdout\fP or \fBstderr\fP
+.IP \(bu 2
+\fBvalue\fP is a free form string (it can also contain commas), which
+should be compatible with the value chosen for \fBsource\fP \-\- this
+means that in case \fBstatus\fP is chosen it should be a number.
+.UNINDENT
+.sp
+By default, as in the corresponding dialog box, if this entry is omitted
+the task will check for success as an exit status of \fB0\fP\&.
+.IP \(bu 2
+\fBexact match\fP:
+Can be either \fBtrue\fP or false. If \fBtrue\fP in the post\-execution check
+the entire \fIstdout\fP or \fIstderr\fP will be checked against the \fIvalue\fP,
+otherwise the value will be sought in the command output. By default it
+is \fIfalse\fP\&. It is only taken into account if \fBcheck for\fP is specified
+and set to either \fIstdout\fP or \fIstderr\fP\&.
+.IP \(bu 2
+\fBregexp match\fP:
+If \fBtrue\fP the value will be treated as a \fIregular expression\fP\&. If also
+\fBexact match\fP is set, then the regular expression is matched at the
+beginning of the output. By default it is \fIfalse\fP\&. It is only taken into
+account if \fBcheck for\fP is specified and set to either \fIstdout\fP or
+\fIstderr\fP\&.
+.IP \(bu 2
+\fBcase sensitive\fP:
+If \fBtrue\fP the comparison will be made in a case sensitive fashion. By
+default it is \fIfalse\fP\&. It is only taken into account if \fBcheck for\fP
+is specified and set to either \fIstdout\fP or \fIstderr\fP\&.
+.UNINDENT
+.SS Signal Handlers
+.sp
+Signal handlers are an advanced feature, and cannot be defined if they are
+not enabled in the configuration: read the appropriate section on how to
+enable \fIuser defined events\fP\&. If user events are enabled, the following
+entries can be used:
+.INDENT 0.0
+.IP \(bu 2
+\fBbus\fP:
+This value can only be one of \fBsession\fP or \fBsystem\fP\&. It defaults to
+\fIsession\fP, so it has to be specified if the actual bus is not in the
+\fIsession bus\fP\&.
+.IP \(bu 2
+\fBbus name\fP:
+Must hold the \fIunique bus name\fP in dotted form, and is \fImandatory\fP\&.
+.IP \(bu 2
+\fBobject path\fP:
+The path to the objects that can issue the signal to be caught: has a
+form similar to a \fIpath\fP and is \fImandatory\fP\&.
+.IP \(bu 2
+\fBinterface\fP:
+It is the name of the object interface, in dotted form. \fIMandatory.\fP
+.IP \(bu 2
+\fBsignal\fP:
+The name of the signal to listen to. This too is \fImandatory\fP\&.
+.IP \(bu 2
+\fBdefer\fP:
+If set to \fBtrue\fP, the signal will be caught but the related condition
+will be fired at the next clock tick instead of immediately.
+.IP \(bu 2
+\fBparameters\fP:
+This is a multiple line entry, and each parameter check must be specified
+on a single line. Each check has the form: \fBidx[:sub], compare, value\fP
+where
+.INDENT 2.0
+.IP \(bu 2
+\fBidx[:sub]\fP is the parameter index per \fIDBus\fP specification, possibly
+followed by a subindex in case the parameter is a collection. \fBidx\fP
+is always an integer number, while \fBsub\fP is an integer if the
+collection is a list, or a string if the collection is a dictionary. The
+interpunction sign is a colon if the subindex is present.
+.IP \(bu 2
+\fBcompare\fP is always one of the following tokens: \fBequal\fP, \fBgt\fP,
+\fBlt\fP, \fBmatches\fP or \fBcontains\fP\&. It can be preceded by the word
+\fBnot\fP to negate the comparison.
+.IP \(bu 2
+\fBvalue\fP is an arbitrary string (it can also contain commas), without
+quotes.
+.UNINDENT
+.IP \(bu 2
+\fBverify\fP:
+Can be either \fBall\fP or \fBany\fP\&. If set to \fBany\fP (the default) the
+parameter check evaluates to \fItrue\fP if any of the provided checks is
+positive, if set to \fBall\fP the check is \fItrue\fP only if all parameter
+checks are verified. It is only taken into account if \fBparameters\fP
+are verified.
+.UNINDENT
+.sp
+If user events are not enabled and a signal handler is defined, the item
+definition file will be invalidated.
+.SS Conditions
+.sp
+\fIConditions\fP are the most complex type of items that can be defined, because
+of the many types that are supported. Valid entries depend on the type of
+condition that the file defines. Moreover, \fIconditions\fP depend on other items
+(\fItasks\fP and possibly \fIsignal handlers\fP) and if such dependencies are not
+satisfied the related condition \-\- and with it the entire file \-\- will be
+considered invalid.
+.sp
+The following entries are common to all types of condition:
+.INDENT 0.0
+.IP \(bu 2
+\fBbased on\fP:
+Determines the type of condition that is being defined. It \fImust\fP be one
+of the following and is \fImandatory\fP:
+.INDENT 2.0
+.IP \(bu 2
+\fBinterval\fP for conditions based on time intervals
+.IP \(bu 2
+\fBtime\fP for conditions that depend on a time specification
+.IP \(bu 2
+\fBcommand\fP if the condition depends on outcome of a command
+.IP \(bu 2
+\fBidle_session\fP for condition that arise when the session is idle
+.IP \(bu 2
+\fBevent\fP for conditions based on \fIstock\fP events
+.IP \(bu 2
+\fBfile_change\fP when file or directory changes trigger the condition
+.IP \(bu 2
+\fBuser_event\fP for conditions arising on user defined events: these
+can only be used if user events are enable, otherwise the definition
+file is considered \fIinvalid\fP\&.
+.UNINDENT
+.sp
+Any other value will invalidate the definition file.
+.IP \(bu 2
+\fBtask names\fP:
+A comma separated list of tasks that are executed when the condition fires
+up. The names \fImust\fP be defined, either in the set of existing tasks for
+the running instance, or among the tasks defined in the file itself.
+.IP \(bu 2
+\fBrepeat checks\fP:
+If set to \fBfalse\fP the condition is never re\-checked once it was found
+positive. By default it is \fItrue\fP\&.
+.IP \(bu 2
+\fBsequential\fP:
+If set to \fBtrue\fP the corresponding tasks are run in sequence, otherwise
+all tasks will start at the same time. \fITrue\fP by default.
+.IP \(bu 2
+\fBsuspended\fP:
+The condition will be suspended immediately after construction if this is
+\fItrue\fP\&. \fIFalse\fP by default.
+.IP \(bu 2
+\fBbreak on\fP:
+Can be one of \fBsuccess\fP, \fBfailure\fP or \fBnothing\fP\&. In the first case
+the task sequence will break on first success, in the second case it will
+break on the first failure. When \fBnothing\fP is specified or the entry is
+omitted, then the task sequence will be executed regardless of task
+outcomes.
+.UNINDENT
+.sp
+Other entries depend on the values assigned to the \fBbased on\fP entry.
+.SS Interval
+.sp
+Interval based conditions require the following entry to be defined:
+.INDENT 0.0
+.IP \(bu 2
+\fBinterval minutes\fP:
+An integer \fImandatory\fP value that defines the number of minutes that
+will occur between checks, or before the first check if the condition
+is not set to repeat.
+.UNINDENT
+.SS Time
+.sp
+All parameters are optional: if none is given, the condition will fire up
+every day at midnight.
+.INDENT 0.0
+.IP \(bu 2
+\fByear\fP:
+Integer value for the year.
+.IP \(bu 2
+\fBmonth\fP:
+Integer value for month: must be between 1 and 12 included.
+.IP \(bu 2
+\fBday\fP:
+Integer value for day: must be between 1 and 31 included.
+.IP \(bu 2
+\fBhour\fP:
+Integer value for hour: must be between 0 and 23 included.
+.IP \(bu 2
+\fBminute\fP:
+Integer value for minute: must be between 0 and 59 included.
+.IP \(bu 2
+\fBday of week\fP:
+A token, one of \fBmonday\fP, \fBtuesday\fP, \fBwednesday\fP, \fBthursday\fP,
+\fBfriday\fP, \fBsaturday\fP, \fBsunday\fP\&. No abbreviations allowed.
+.UNINDENT
+.SS Command
+.sp
+Command based conditions accept a command line and the specification of
+what has to be checked. The latter is not mandatory, and defaults to
+expectation of a zero exit status.
+.INDENT 0.0
+.IP \(bu 2
+\fBcommand\fP:
+The full command line to run: this is \fImandatory\fP\&.
+.IP \(bu 2
+\fBcheck for\fP:
+Somewhat similar to the same entry found in \fI\%Tasks\fP, this entry must be
+specified as a comma\-separated pair of the form \fBsource, value\fP, where
+\fBsource\fP is one of \fBstatus\fP, \fBstdout\fP or \fBstderr\fP, and \fBvalue\fP
+is an integer in the \fBstatus\fP case, or a string to look for in the
+other cases. Defaults to \fBstatus, 0\fP\&.
+.IP \(bu 2
+\fBmatch regexp\fP:
+If \fBtrue\fP the test value is treated as a \fIregular expression\fP\&. Defaults
+to \fBfalse\fP\&.
+.IP \(bu 2
+\fBexact match\fP:
+If \fBtrue\fP the test value is checked against the full output (if
+\fBmatch regexp\fP is \fBtrue\fP the regular expression is matched at the
+beginning of the output). Defaults to \fBfalse\fP\&.
+.IP \(bu 2
+\fBcase sensitive\fP:
+If \fBtrue\fP the comparison will be case sensitive. Defaults to \fBfalse\fP\&.
+.UNINDENT
+.SS Idle Session
+.sp
+The only parameter is mandatory:
+.INDENT 0.0
+.IP \(bu 2
+\fBidle minutes\fP:
+An integer value indicating the number of minutes that the machine must
+wait in idle state before the condition fires.
+.UNINDENT
+.SS Event
+.sp
+This condition type requires a sigle entry to be defined.
+.INDENT 0.0
+.IP \(bu 2
+\fBevent type\fP:
+This \fImust\fP be one of the following words:
+.INDENT 2.0
+.IP \(bu 2
+\fBstartup\fP
+.IP \(bu 2
+\fBshutdown\fP
+.IP \(bu 2
+\fBsuspend\fP
+.IP \(bu 2
+\fBresume\fP
+.IP \(bu 2
+\fBconnect_storage\fP
+.IP \(bu 2
+\fBdisconnect_storage\fP
+.IP \(bu 2
+\fBjoin_network\fP
+.IP \(bu 2
+\fBleave_network\fP
+.IP \(bu 2
+\fBscreensaver\fP
+.IP \(bu 2
+\fBexit_screensaver\fP
+.IP \(bu 2
+\fBlock\fP
+.IP \(bu 2
+\fBunlock\fP
+.IP \(bu 2
+\fBcharging\fP
+.IP \(bu 2
+\fBdischarging\fP
+.IP \(bu 2
+\fBbattery_low\fP
+.IP \(bu 2
+\fBcommand_line\fP
+.UNINDENT
+.UNINDENT
+.sp
+Each of them is a single word with underscores for spaces. Abbreviations
+are not accepted. Any other value invalidates the condition and the file.
+.SS File and Path Modifications
+.sp
+Also in this case a single entry is required, indicating the file or path
+that \fBWhen\fP must observe.
+.INDENT 0.0
+.IP \(bu 2
+\fBwatched path\fP:
+A path to be watched. Can be either the path to a file or to a directory.
+No trailing slash is required.
+.UNINDENT
+.SS User Event
+.sp
+In this case a single entry is required and must contain the \fIname\fP of an
+user defined event. The event can either be defined in the same file or
+already known to the applet, but it \fImust\fP be defined otherwise the file
+fails to load. Names, as usual, are case sensitive.
+.INDENT 0.0
+.IP \(bu 2
+\fBevent name\fP:
+The name of the user defined event.
+.UNINDENT
+.sp
+\fBNOTE:\fP
+.INDENT 0.0
+.INDENT 3.5
+Items defined in an \fIitems definition file\fP, just as items built using
+the applet GUI, will overwrite items of the same type and name.
+.UNINDENT
+.UNINDENT
+.SH EXPORTING AND IMPORTING ITEMS
+.sp
+\fBWhen\fP saves \fItasks\fP, \fIconditions\fP and \fIsignal handlers\fP in binary form
+for use across sessions. It might be useful to have a more portable format
+at hand to store these items and be sure, for instance, that they will be
+loaded correctly when upgrading \fBWhen\fP to a newer release. While every
+effort will be made to avoid incompatibilities, there might be cases where
+compatibility cannot be kept.
+.sp
+To export all items to a file, the following command can be used:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+$ when\-command \-\-export [filename.dump]
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+where the file argument is optional. If given, all items will be saved
+to the specified file, otherwise in a known location in \fB\&.config\fP\&. The
+saved file is not intended to be edited by the user \-\- it uses a JSON
+representation of the internal objects.
+.sp
+To import items back to the applet, it has to be shut down first and the
+following command must be run:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+$ when\-command \-\-import [filename.dump]
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+where the \fBfilename.dump\fP parameter must correspond to a file previously
+generated using the \fB\-\-export\fP switch. If no argument is given, \fBWhen\fP
+expects that items have been exported giving no file specification to the
+\fB\-\-export\fP switch. After import \fBWhen\fP can be restarted.
 .IP [1] 5
 This is an advanced feature and is not available by default.
 It has to be enabled in the program settings to be accessible. Refer to the
