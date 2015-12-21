@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-12-21 00:57+0100\n"
+"POT-Creation-Date: 2015-12-21 14:41+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,361 +17,365 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: when-command.py:342
+#: when-command.py:341
 #, python-format
 msgid "Are you sure you want to delete task %s?"
 msgstr ""
 
-#: when-command.py:343
+#: when-command.py:342
 #, python-format
 msgid "Are you sure you want to delete condition %s?"
 msgstr ""
 
-#: when-command.py:344
+#: when-command.py:343
 #, python-format
 msgid "Are you sure you want to delete signal handler %s?"
 msgstr ""
 
-#: when-command.py:345
+#: when-command.py:344
 #, python-format
 msgid "Task %s could not be deleted."
 msgstr ""
 
-#: when-command.py:346
+#: when-command.py:345
 #, python-format
 msgid "Condition %s could not be deleted."
 msgstr ""
 
-#: when-command.py:347
+#: when-command.py:346
 #, python-format
 msgid "Signal handler %s could not be deleted."
 msgstr ""
 
-#: when-command.py:348
+#: when-command.py:347
 #, python-format
 msgid "Task %s could not be found."
 msgstr ""
 
-#: when-command.py:349
+#: when-command.py:348
 #, python-format
 msgid "Condition %s could not be found."
 msgstr ""
 
-#: when-command.py:350
+#: when-command.py:349
 #, python-format
 msgid "Signal handler %s could not be found."
 msgstr ""
 
-#: when-command.py:351
+#: when-command.py:350
 #, python-format
 msgid "Signal handler %s could not be registered."
 msgstr ""
 
-#: when-command.py:352
+#: when-command.py:351
 msgid "Must specify watched path: condition not created."
 msgstr ""
 
-#: when-command.py:353
+#: when-command.py:352
 msgid ""
 "Invalid value for exit status specified.\n"
 "Please consider reviewing it."
 msgstr ""
 
-#: when-command.py:354
+#: when-command.py:353
 msgid ""
 "Invalid value for signal parameter index specified.\n"
 "Cannot add parameter test."
 msgstr ""
 
-#: when-command.py:355
+#: when-command.py:354
 msgid "This feature has not been implemented yet."
 msgstr ""
 
-#: when-command.py:356
+#: when-command.py:355
 msgid ""
 "This feature is not enabled.\n"
 "Please check documentation for possible reasons."
 msgstr ""
 
-#: when-command.py:357
+#: when-command.py:356
 #, python-format
 msgid "Version: %s"
 msgstr ""
 
-#: when-command.py:358
+#: when-command.py:357
 msgid "[disabled]"
 msgstr ""
 
-#: when-command.py:359
+#: when-command.py:358
 msgid "Choose File"
 msgstr ""
 
-#: when-command.py:360
+#: when-command.py:359
 msgid "Choose Directory"
 msgstr ""
 
-#: when-command.py:361
+#: when-command.py:360
 msgid "Choose File or Directory"
 msgstr ""
 
-#: when-command.py:363
+#: when-command.py:362
 #, python-format
 msgid "Task failed: %s"
 msgstr ""
 
-#: when-command.py:365
+#: when-command.py:364
 msgid "Edit Tasks..."
 msgstr ""
 
-#: when-command.py:366
+#: when-command.py:365
 msgid "Edit Conditions..."
 msgstr ""
 
-#: when-command.py:367
+#: when-command.py:366
 msgid "Settings..."
 msgstr ""
 
-#: when-command.py:368
+#: when-command.py:367
 msgid "Task History..."
 msgstr ""
 
-#: when-command.py:369
+#: when-command.py:368
 msgid "Pause"
 msgstr ""
 
-#: when-command.py:370
+#: when-command.py:369
 msgid "About..."
 msgstr ""
 
-#: when-command.py:371
+#: when-command.py:370
 msgid "Quit"
 msgstr ""
 
-#: when-command.py:373
+#: when-command.py:372
 msgid "User Defined Event"
 msgstr ""
 
-#: when-command.py:375
+#: when-command.py:374
 msgid "Variable"
 msgstr ""
 
-#: when-command.py:376 when-command.py:389
+#: when-command.py:375 when-command.py:388
 msgid "Value"
 msgstr ""
 
-#: when-command.py:377 when-command.py:379
+#: when-command.py:376 when-command.py:378
 msgid "Task Name"
 msgstr ""
 
-#: when-command.py:378
+#: when-command.py:377
 msgid "Time / Duration"
 msgstr ""
 
-#: when-command.py:380
+#: when-command.py:379
 msgid "Trigger"
 msgstr ""
 
-#: when-command.py:381 when-command-edit-condition.glade.h:10
+#: when-command.py:380 when-command-edit-condition.glade.h:10
 #: when-command-edit-task.glade.h:14
 msgid "Exit Code"
 msgstr ""
 
-#: when-command.py:382
+#: when-command.py:381
 msgid "Result"
 msgstr ""
 
-#: when-command.py:383
+#: when-command.py:382
 msgid "Reason"
 msgstr ""
 
-#: when-command.py:384
+#: when-command.py:383
 msgid "Row ID"
 msgstr ""
 
-#: when-command.py:385
+#: when-command.py:384
 msgid "Param"
 msgstr ""
 
-#: when-command.py:386
+#: when-command.py:385
 msgid "Sub"
 msgstr ""
 
-#: when-command.py:387
+#: when-command.py:386
 msgid "Negate"
 msgstr ""
 
-#: when-command.py:388
+#: when-command.py:387
 msgid "Compare"
 msgstr ""
 
-#: when-command.py:392
+#: when-command.py:391
 #, python-format
 msgid "an existing instance will be %s"
 msgstr ""
 
-#: when-command.py:393
+#: when-command.py:392
 msgid "shut down"
 msgstr ""
 
-#: when-command.py:394
+#: when-command.py:393
 msgid "killed"
 msgstr ""
 
-#: when-command.py:395
+#: when-command.py:394
 msgid "instance shutdown finished"
 msgstr ""
 
-#: when-command.py:396
+#: when-command.py:395
 #, python-format
 msgid "showing %s box of currently running instance"
 msgstr ""
 
-#: when-command.py:397
+#: when-command.py:396
 #, python-format
 msgid "attempting to run condition %s"
 msgstr ""
 
-#: when-command.py:398
+#: when-command.py:397
 #, python-format
 msgid "condition %s could not be run"
 msgstr ""
 
-#: when-command.py:399
+#: when-command.py:398
 #, python-format
 msgid "attempting to export task history to %s"
 msgstr ""
 
-#: when-command.py:400
+#: when-command.py:399
 msgid "empty"
 msgstr ""
 
-#: when-command.py:401
+#: when-command.py:400
 msgid "ioerror"
 msgstr ""
 
-#: when-command.py:402
+#: when-command.py:401
 msgid "unknown"
 msgstr ""
 
-#: when-command.py:403
+#: when-command.py:402
 #, python-format
 msgid "could not save task history (%s)"
 msgstr ""
 
-#: when-command.py:404
+#: when-command.py:403
 #, python-format
 msgid "exported %s elements to specified file"
 msgstr ""
 
-#: when-command.py:405
+#: when-command.py:404
 msgid "removing all items"
 msgstr ""
 
-#: when-command.py:406
+#: when-command.py:405
 msgid "could not remove condition list file"
 msgstr ""
 
-#: when-command.py:407
+#: when-command.py:406
 msgid "could not remove task list file"
 msgstr ""
 
-#: when-command.py:408
+#: when-command.py:407
 msgid "could not remove signal handler list file"
 msgstr ""
 
-#: when-command.py:409
+#: when-command.py:408
 msgid "exporting items:"
 msgstr ""
 
-#: when-command.py:410 when-command.py:417
+#: when-command.py:409 when-command.py:416
 #, python-format
 msgid "    %s tasks"
 msgstr ""
 
-#: when-command.py:411 when-command.py:418
+#: when-command.py:410 when-command.py:417
 #, python-format
 msgid "    %s conditions"
 msgstr ""
 
-#: when-command.py:412 when-command.py:419
+#: when-command.py:411 when-command.py:418
 #, python-format
 msgid "    %s signal handlers"
 msgstr ""
 
-#: when-command.py:413
+#: when-command.py:412
 #, python-format
 msgid "items exported to file %s"
 msgstr ""
 
-#: when-command.py:414
+#: when-command.py:413
 #, python-format
 msgid "importing items from file %s"
 msgstr ""
 
-#: when-command.py:415
+#: when-command.py:414
 msgid "could not import from dump file"
 msgstr ""
 
-#: when-command.py:416
+#: when-command.py:415
 msgid "restoring items:"
 msgstr ""
 
-#: when-command.py:420
+#: when-command.py:419
 msgid "items successfully imported"
 msgstr ""
 
-#: when-command.py:421
+#: when-command.py:420
 #, python-format
 msgid "item %s successfully deleted"
 msgstr ""
 
-#: when-command.py:422
+#: when-command.py:421
 #, python-format
 msgid "cannot delete item: %s"
 msgstr ""
 
-#: when-command.py:423
+#: when-command.py:422
 msgid "cannot add items from provided file"
 msgstr ""
 
-#: when-command.py:424
+#: when-command.py:423
 msgid "cannot add items: malformed item file"
 msgstr ""
 
-#: when-command.py:425
+#: when-command.py:424
 msgid "no instance could be found"
 msgstr ""
 
-#: when-command.py:426
+#: when-command.py:425
 msgid "found a running instance"
 msgstr ""
 
-#: when-command.py:427
+#: when-command.py:426
 msgid "tasks and conditions successfully exported"
 msgstr ""
 
-#: when-command.py:428
+#: when-command.py:427
 msgid "configuration has been reset"
 msgstr ""
 
-#: when-command.py:429
+#: when-command.py:428
 msgid "tasks and conditions deleted"
 msgstr ""
 
-#: when-command.py:430
+#: when-command.py:429
 msgid "icons and data installed"
 msgstr ""
 
-#: when-command.py:432
+#: when-command.py:431
 msgid "this program requires a graphical session"
 msgstr ""
 
-#: when-command.py:433
+#: when-command.py:432
 msgid "another instance is present: leaving"
 msgstr ""
 
-#: when-command.py:434
+#: when-command.py:433
 msgid "could not find a running instance, please start it first"
+msgstr ""
+
+#: when-command.py:434
+msgid "feature not available in minimalistic mode"
 msgstr ""
 
 #: when-command.py:435
@@ -999,7 +1003,7 @@ msgid "Notifications"
 msgstr ""
 
 #: when-command-settings.glade.h:5
-msgid "Icon Theme:"
+msgid "Minimalistic Mode"
 msgstr ""
 
 #: when-command-settings.glade.h:6
@@ -1019,78 +1023,82 @@ msgid "Guess"
 msgstr ""
 
 #: when-command-settings.glade.h:10
-msgid "General"
+msgid "Icon Theme:"
 msgstr ""
 
 #: when-command-settings.glade.h:11
-msgid "Application Clock Tick Time (seconds):"
+msgid "General"
 msgstr ""
 
 #: when-command-settings.glade.h:12
-msgid "Condition Check Skip Time (seconds):"
+msgid "Application Clock Tick Time (seconds):"
 msgstr ""
 
 #: when-command-settings.glade.h:13
-msgid "Preserve Pause Across Sessions"
+msgid "Condition Check Skip Time (seconds):"
 msgstr ""
 
 #: when-command-settings.glade.h:14
-msgid "Scheduler"
+msgid "Preserve Pause Across Sessions"
 msgstr ""
 
 #: when-command-settings.glade.h:15
-msgid "Max Concurrent Tasks:"
+msgid "Scheduler"
 msgstr ""
 
 #: when-command-settings.glade.h:16
-msgid "Critical"
+msgid "Max Concurrent Tasks:"
 msgstr ""
 
 #: when-command-settings.glade.h:17
-msgid "Error"
+msgid "Critical"
 msgstr ""
 
 #: when-command-settings.glade.h:18
-msgid "Warning"
+msgid "Error"
 msgstr ""
 
 #: when-command-settings.glade.h:19
-msgid "Info"
+msgid "Warning"
 msgstr ""
 
 #: when-command-settings.glade.h:20
-msgid "Debug"
+msgid "Info"
 msgstr ""
 
 #: when-command-settings.glade.h:21
-msgid "Log Level:"
+msgid "Debug"
 msgstr ""
 
 #: when-command-settings.glade.h:22
-msgid "Max Log Size (bytes):"
+msgid "Log Level:"
 msgstr ""
 
 #: when-command-settings.glade.h:23
-msgid "Number Of Log Backups:"
+msgid "Max Log Size (bytes):"
 msgstr ""
 
 #: when-command-settings.glade.h:24
-msgid "Instance History Items:"
+msgid "Number Of Log Backups:"
 msgstr ""
 
 #: when-command-settings.glade.h:25
-msgid "Enable User Defined Events (DBus)"
+msgid "Instance History Items:"
 msgstr ""
 
 #: when-command-settings.glade.h:26
-msgid "Enable File and Directory Notifications"
+msgid "Enable User Defined Events (DBus)"
 msgstr ""
 
 #: when-command-settings.glade.h:27
-msgid "Enable Task and Condition Environment Variables"
+msgid "Enable File and Directory Notifications"
 msgstr ""
 
 #: when-command-settings.glade.h:28
+msgid "Enable Task and Condition Environment Variables"
+msgstr ""
+
+#: when-command-settings.glade.h:29
 msgid "Advanced"
 msgstr ""
 

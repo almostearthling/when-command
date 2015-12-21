@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "WHEN-COMMAND" "1" "December 20, 2015" "0.9" "When Documentation"
+.TH "WHEN-COMMAND" "1" "December 21, 2015" "0.9" "When Documentation"
 .SH NAME
 when-command \- When Documentation
 .
@@ -207,6 +207,9 @@ The options are:
 .IP \(bu 2
 \fINotifications\fP: whether or not to show notifications upon task failure
 .IP \(bu 2
+\fIMinimalistic Mode\fP: disable menu entries for item definition dialog
+boxes and in part reduce memory footprint
+.IP \(bu 2
 \fIIcon Theme\fP: \fIGuess\fP to let the application decide, otherwise one of
 \fIDark\fP (light icons for dark themes), \fILight\fP (dark icons for light
 themes), and \fIColor\fP for colored icons that should be visible on all
@@ -311,6 +314,7 @@ icon theme = guess
 user events = false
 file notifications = false
 environment vars = true
+minimalistic mode = false
 
 [Concurrency]
 max threads = 5

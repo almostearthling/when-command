@@ -73,8 +73,8 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.4~beta.1'
-APPLET_TAGDESC = 'Command line item handling'
+APPLET_VERSION = '0.9.4~beta.2'
+APPLET_TAGDESC = 'Provide minimalistic mode'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -264,7 +264,6 @@ def verify_user_folders():
 # prefix of the applet data folder (where dialogs, icons and other resources
 # have to be installed); icons have their own subtree in the data folder;
 # locales are either in standard system folders or a subtree of data folder.
-# TODO: explain directory structure and installation procedure in README.md
 APP_BASE_FOLDER = '/usr'
 APP_BIN_FOLDER = os.path.join(APP_BASE_FOLDER, 'bin')
 APP_DATA_FOLDER = os.path.join(APP_BASE_FOLDER, 'share', APPLET_NAME)
@@ -325,13 +324,13 @@ def _x(e):
     return '%s: %s' % (t.__name__, v)
 
 
-# actual dialog box definitions (could be packed in .py files)
-DIALOG_ADD_TASK = load_applet_dialog('when-command-edit-task')
-DIALOG_ADD_CONDITION = load_applet_dialog('when-command-edit-condition')
-DIALOG_SETTINGS = load_applet_dialog('when-command-settings')
-DIALOG_TASK_HISTORY = load_applet_dialog('when-command-task-history')
-DIALOG_ABOUT = load_applet_dialog('when-command-about')
-DIALOG_ADD_DBUS_SIGNAL = load_applet_dialog('when-command-edit-dbus-signal')
+# dialog boxes are loaded after initialization
+ui_add_task = None
+ui_add_condition = None
+ui_settings = None
+ui_task_history = None
+ui_about = None
+ui_add_signal = None
 
 
 # define resource strings using the _() function for i18n
@@ -432,6 +431,7 @@ resources.OERR_INSTALL = _("icons and data installed")
 resources.OERR_ERR_REQUIRE_DESKTOP = _("this program requires a graphical session")
 resources.OERR_ERR_ALREADY_RUNNING = _("another instance is present: leaving")
 resources.OERR_ERR_REQUIRE_INSTANCE = _("could not find a running instance, please start it first")
+resources.OERR_ERR_MINIMALISTIC = _("feature not available in minimalistic mode")
 resources.OERR_ERR_NO_INSTANCE = _("could not find a running instance")
 resources.OERR_ERR_DBUS_DISABLED = _("dbus signals disabled by configuration")
 resources.OERR_ERR_DBUS_SERVICE = _("error in communication with running applet")
@@ -1335,6 +1335,7 @@ class Config(object):
                 'user events': bool_spec,
                 'file notifications': bool_spec,
                 'environment vars': bool_spec,
+                'minimalistic mode': bool_spec,
             },
             'Concurrency': {
                 'max threads': int,
@@ -1362,6 +1363,7 @@ class Config(object):
             user events = false
             file notifications = false
             environment vars = true
+            minimalistic mode = false
 
             [Concurrency]
             max threads = 5
@@ -3432,7 +3434,7 @@ def dict_to_SignalHandler(d):
 class TaskDialog(object):
 
     def __init__(self):
-        self.builder = Gtk.Builder().new_from_string(DIALOG_ADD_TASK, -1)
+        self.builder = Gtk.Builder().new_from_string(ui_add_task, -1)
         self.builder.connect_signals(self)
         self.builder.set_translation_domain(APPLET_NAME)
         o = self.builder.get_object
@@ -3719,7 +3721,7 @@ class TaskDialog(object):
 class ConditionDialog(object):
 
     def __init__(self):
-        self.builder = Gtk.Builder().new_from_string(DIALOG_ADD_CONDITION, -1)
+        self.builder = Gtk.Builder().new_from_string(ui_add_condition, -1)
         self.builder.connect_signals(self)
         self.builder.set_translation_domain(APPLET_NAME)
         o = self.builder.get_object
@@ -4277,7 +4279,7 @@ class ConditionDialog(object):
 class SignalDialog(object):
 
     def __init__(self):
-        self.builder = Gtk.Builder().new_from_string(DIALOG_ADD_DBUS_SIGNAL, -1)
+        self.builder = Gtk.Builder().new_from_string(ui_add_signal, -1)
         self.builder.connect_signals(self)
         self.builder.set_translation_domain(APPLET_NAME)
         o = self.builder.get_object
@@ -4581,7 +4583,7 @@ class SignalDialog(object):
 class SettingsDialog(object):
 
     def __init__(self):
-        self.builder = Gtk.Builder().new_from_string(DIALOG_SETTINGS, -1)
+        self.builder = Gtk.Builder().new_from_string(ui_settings, -1)
         self.builder.connect_signals(self)
         self.builder.set_translation_domain(APPLET_NAME)
         o = self.builder.get_object
@@ -4610,6 +4612,8 @@ class SettingsDialog(object):
             config.get('General', 'show icon'))
         o('chkAutostart').set_active(
             config.get('General', 'autostart'))
+        o('chkMinimalisticMode').set_active(
+            config.get('General', 'minimalistic mode'))
         o('chkNotifications').set_active(config.get('General', 'notifications'))
         o('chkPreservePause').set_active(
             config.get('Scheduler', 'preserve pause'))
@@ -4662,6 +4666,8 @@ class SettingsDialog(object):
                        self.icon_themes[o('cbIconTheme').get_active()])
             config.set('General', 'show icon', o('chkShowIcon').get_active())
             config.set('General', 'autostart', o('chkAutostart').get_active())
+            config.set('General', 'minimalistic mode',
+                       o('chkMinimalisticMode').get_active())
             config.set('General', 'notifications',
                        o('chkNotifications').get_active())
             config.set('General', 'user events',
@@ -4745,7 +4751,7 @@ class SettingsDialog(object):
 class HistoryDialog(object):
 
     def __init__(self):
-        self.builder = Gtk.Builder().new_from_string(DIALOG_TASK_HISTORY, -1)
+        self.builder = Gtk.Builder().new_from_string(ui_task_history, -1)
         self.builder.connect_signals(self)
         self.builder.set_translation_domain(APPLET_NAME)
         o = self.builder.get_object
@@ -4847,7 +4853,7 @@ class AboutDialog(object):
     def __init__(self):
         self.image_logo = Gtk.Image.new_from_file(
             os.path.join(APP_ICON_FOLDER, 'alarmclock-128.png'))
-        self.builder = Gtk.Builder().new_from_string(DIALOG_ABOUT, -1)
+        self.builder = Gtk.Builder().new_from_string(ui_about, -1)
         self.builder.connect_signals(self)
         self.builder.set_translation_domain(APPLET_NAME)
         o = self.builder.get_object
@@ -5011,13 +5017,24 @@ class AppletIndicator(Gtk.Application):
         enabled_events.append(EVENT_COMMAND_LINE)
         set_applet_enabled_events(enabled_events)
 
-        # now we can build dialog boxes since all necessary data is present
-        self.dialog_add_task = TaskDialog()
-        self.dialog_add_condition = ConditionDialog()
-        self.dialog_about = AboutDialog()
-        self.dialog_settings = SettingsDialog()
-        self.dialog_history = HistoryDialog()
-        self.dialog_add_dbus_signal = SignalDialog()
+        # we can build required dialog boxes since all needed data is present
+        self.dialog_add_task = None
+        self.dialog_add_condition = None
+        self.dialog_about = None
+        self.dialog_settings = None
+        self.dialog_history = None
+        self.dialog_add_dbus_signal = None
+        if not config.get('General', 'minimalistic mode'):
+            self.dialog_add_task = TaskDialog()
+            self.dialog_add_condition = ConditionDialog()
+            self.dialog_about = AboutDialog()
+            self.dialog_settings = SettingsDialog()
+            self.dialog_history = HistoryDialog()
+            self.dialog_add_dbus_signal = SignalDialog()
+        else:
+            self.dialog_about = AboutDialog()
+            self.dialog_settings = SettingsDialog()
+            self.dialog_history = HistoryDialog()
 
     def applet_activate(self, applet_instance):
         self.main()
@@ -5258,37 +5275,43 @@ class AppletIndicator(Gtk.Application):
         self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
 
     def dlgtask(self, _):
-        self.icon_dialog()
-        applet_log.debug("MAIN: opening task dialog")
-        self.dialog_add_task.run()
-        self.icon_dialog(False)
+        if self.dialog_add_task:
+            self.icon_dialog()
+            applet_log.debug("MAIN: opening task dialog")
+            self.dialog_add_task.run()
+            self.icon_dialog(False)
 
     def dlgcondition(self, _):
-        self.icon_dialog()
-        applet_log.debug("MAIN: opening condition dialog")
-        self.dialog_add_condition.run()
-        self.icon_dialog(False)
+        if self.dialog_add_condition:
+            self.icon_dialog()
+            applet_log.debug("MAIN: opening condition dialog")
+            self.dialog_add_condition.run()
+            self.icon_dialog(False)
 
     def dlgdbussignal(self, _):
-        self.icon_dialog()
-        applet_log.debug("MAIN: opening DBus signal definition dialog")
-        self.dialog_add_dbus_signal.run()
-        self.icon_dialog(False)
+        if self.dialog_add_dbus_signal:
+            self.icon_dialog()
+            applet_log.debug("MAIN: opening DBus signal definition dialog")
+            self.dialog_add_dbus_signal.run()
+            self.icon_dialog(False)
 
     def dlgabout(self, _):
-        applet_log.debug("MAIN: opening about dialog")
-        self.dialog_about.run()
+        if self.dialog_about:
+            applet_log.debug("MAIN: opening about dialog")
+            self.dialog_about.run()
 
     def dlgsettings(self, _):
-        self.icon_dialog()
-        applet_log.debug("MAIN: opening settings dialog")
-        self.dialog_settings.run()
-        self.icon_dialog(False)
+        if self.dialog_settings:
+            self.icon_dialog()
+            applet_log.debug("MAIN: opening settings dialog")
+            self.dialog_settings.run()
+            self.icon_dialog(False)
 
     def dlghistory(self, _):
-        applet_log.debug("MAIN: opening task history dialog")
-        self.set_attention(False)
-        self.dialog_history.run()
+        if self.dialog_history:
+            applet_log.debug("MAIN: opening task history dialog")
+            self.set_attention(False)
+            self.dialog_history.run()
 
     def set_attention(self, warn=True):
         if warn and config.get('General', 'notifications'):
@@ -5318,33 +5341,43 @@ class AppletIndicator(Gtk.Application):
 
     def build_menu(self):
         menu = Gtk.Menu()
-        item_newtask = Gtk.MenuItem(label=resources.MENU_EDIT_TASKS)
-        item_newtask.connect('activate', self.dlgtask)
-        item_newtask.show()
-        menu.append(item_newtask)
 
-        item_newcond = Gtk.MenuItem(label=resources.MENU_EDIT_CONDITIONS)
-        item_newcond.connect('activate', self.dlgcondition)
-        item_newcond.show()
-        menu.append(item_newcond)
+        if config.get('General', 'minimalistic mode'):
+            minimalistic = True
+        else:
+            minimalistic = False
+
+        if not minimalistic:
+            item_newtask = Gtk.MenuItem(label=resources.MENU_EDIT_TASKS)
+            item_newtask.connect('activate', self.dlgtask)
+            item_newtask.show()
+            menu.append(item_newtask)
+
+        if not minimalistic:
+            item_newcond = Gtk.MenuItem(label=resources.MENU_EDIT_CONDITIONS)
+            item_newcond.connect('activate', self.dlgcondition)
+            item_newcond.show()
+            menu.append(item_newcond)
 
         item_settings = Gtk.MenuItem(label=resources.MENU_SETTINGS)
         item_settings.connect('activate', self.dlgsettings)
         item_settings.show()
         menu.append(item_settings)
 
-        separator = Gtk.SeparatorMenuItem()
-        separator.show()
-        menu.append(separator)
+        if not minimalistic:
+            separator = Gtk.SeparatorMenuItem()
+            separator.show()
+            menu.append(separator)
 
         item_history = Gtk.MenuItem(label=resources.MENU_TASK_HISTORY)
         item_history.connect('activate', self.dlghistory)
         item_history.show()
         menu.append(item_history)
 
-        separator = Gtk.SeparatorMenuItem()
-        separator.show()
-        menu.append(separator)
+        if not minimalistic:
+            separator = Gtk.SeparatorMenuItem()
+            separator.show()
+            menu.append(separator)
 
         item_pause = Gtk.CheckMenuItem(label=resources.MENU_PAUSE)
         if config.get('Scheduler', 'preserve pause') and check_pause_file():
@@ -5901,6 +5934,12 @@ def main():
     global watch_path_notifier
     global deferred_events
     global deferred_watch_paths
+    global ui_add_task
+    global ui_add_condition
+    global ui_settings
+    global ui_task_history
+    global ui_about
+    global ui_add_signal
 
     if GRAPHIC_ENVIRONMENT:
         main_dbus_loop = DBusGMainLoop(set_as_default=True)
@@ -5911,6 +5950,21 @@ def main():
     config = Config()
     config_loghandler()
     config_loglevel()
+
+    # load dialog boxes
+    if not config.get('General', 'minimalistic mode'):
+        minimalistic = False
+        ui_add_task = load_applet_dialog('when-command-edit-task')
+        ui_add_condition = load_applet_dialog('when-command-edit-condition')
+        ui_settings = load_applet_dialog('when-command-settings')
+        ui_task_history = load_applet_dialog('when-command-task-history')
+        ui_about = load_applet_dialog('when-command-about')
+        ui_add_signal = load_applet_dialog('when-command-edit-dbus-signal')
+    else:
+        minimalistic = True
+        ui_settings = load_applet_dialog('when-command-settings')
+        ui_task_history = load_applet_dialog('when-command-task-history')
+        ui_about = load_applet_dialog('when-command-about')
 
     # create main collections
     tasks = Tasks()
@@ -6104,17 +6158,26 @@ def main():
             if not running:
                 oerr(resources.OERR_ERR_REQUIRE_INSTANCE, verbose)
                 sys.exit(2)
+            elif minimalistic:
+                oerr(resources.OERR_ERR_MINIMALISTIC, verbose)
+                sys.exit(2)
             else:
                 show_box('task', verbose)
         elif args.show_conditions:
             if not running:
                 oerr(resources.OERR_ERR_REQUIRE_INSTANCE, verbose)
                 sys.exit(2)
+            elif minimalistic:
+                oerr(resources.OERR_ERR_MINIMALISTIC, verbose)
+                sys.exit(2)
             else:
                 show_box('condition', verbose)
         elif args.show_dbus_signals:
             if not running:
                 oerr(resources.OERR_ERR_REQUIRE_INSTANCE, verbose)
+                sys.exit(2)
+            elif minimalistic:
+                oerr(resources.OERR_ERR_MINIMALISTIC, verbose)
                 sys.exit(2)
             else:
                 if not config.get('General', 'user events'):
