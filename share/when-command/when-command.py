@@ -208,6 +208,28 @@ ENVVAR_NAME_TASK = 'WHEN_COMMAND_TASK'
 ENVVAR_NAME_COND = 'WHEN_COMMAND_CONDITION'
 ENVVAR_UNKNOWN_COND = '(unknown)'
 
+
+#############################################################################
+# structures used throughout the application
+
+# data for the history queue (which is actually a resizable bounded deque)
+historyitem = namedtuple('historyitem', ['item_id', 'startup_time', 'run_time',
+                                         'task_name', 'trigger_cond', 'success',
+                                         'exit_code', 'stdout', 'stderr',
+                                         'failure_reason'])
+
+# all data needed to perform a parameter check in a signal handler
+param_check = namedtuple('param_check', ['value_idx', 'sub_idx', 'comparison',
+                                         'negate', 'test_value'])
+
+# complex structure that entirely defines a stock event
+event_definition = namedtuple('event_definition', ['event', 'defer', 'bus',
+                                                   'bus_name', 'bus_path',
+                                                   'interface', 'signal',
+                                                   'param_checks',
+                                                   'extra_callback'])
+
+
 #############################################################################
 # global variables referenced through the code (this should be redundant)
 applet = None
@@ -239,12 +261,6 @@ watch_path_notifier = None
 
 #############################################################################
 # map of stock event definitions
-event_definition = namedtuple('event_definition',
-                              ['event', 'defer',
-                               'bus', 'bus_name', 'bus_path',
-                               'interface', 'signal',
-                               'param_checks', 'extra_callback'])
-
 stock_event_definitions = {
     EVENT_SYSTEM_SUSPEND: [
         event_definition(
@@ -252,7 +268,7 @@ stock_event_definitions = {
             'org.freedesktop.login1', '/org/freedesktop/login1',
             'org.freedesktop.login1.Manager', 'PrepareForSleep',
             None,
-            lambda proxy, *args: bool(args[0])
+            lambda iface, *args: bool(args[0])
         ),
     ],
     EVENT_SYSTEM_RESUME: [
@@ -261,7 +277,7 @@ stock_event_definitions = {
             'org.freedesktop.login1', '/org/freedesktop/login1',
             'org.freedesktop.login1.Manager', 'PrepareForSleep',
             None,
-            lambda proxy, *args: not bool(args[0])
+            lambda iface, *args: not bool(args[0])
         ),
     ],
     EVENT_SESSION_LOCK: [
@@ -269,7 +285,7 @@ stock_event_definitions = {
             EVENT_SESSION_LOCK, True, 'session',
             'com.ubuntu.Upstart', '/com/ubuntu/Upstart',
             'com.ubuntu.Upstart0_6', 'EventEmitted',
-            [param_check(0, None, False, DBUS_CHECK_COMPARE_IS,
+            [param_check(0, None, DBUS_CHECK_COMPARE_IS, False,
                          'desktop-lock')],
             None
         ),
@@ -279,7 +295,7 @@ stock_event_definitions = {
             EVENT_SESSION_UNLOCK, True, 'session',
             'com.ubuntu.Upstart', '/com/ubuntu/Upstart',
             'com.ubuntu.Upstart0_6', 'EventEmitted',
-            [param_check(0, None, False, DBUS_CHECK_COMPARE_IS,
+            [param_check(0, None, DBUS_CHECK_COMPARE_IS, False,
                          'desktop-unlock')],
             None
         ),
@@ -290,7 +306,7 @@ stock_event_definitions = {
             'org.freedesktop.NetworkManager', '/org/freedesktop/NetworkManager',
             'org.freedesktop.NetworkManager', 'StateChanged',
             None,
-            lambda proxy, *args: proxy.state() in [
+            lambda iface, *args: iface.state() in [
                 NM_STATE_CONNECTED_LOCAL, NM_STATE_CONNECTED_SITE,
                 NM_STATE_CONNECTED_GLOBAL]
         ),
@@ -302,7 +318,7 @@ stock_event_definitions = {
             'org.freedesktop.NetworkManager', '/org/freedesktop/NetworkManager',
             'org.freedesktop.NetworkManager', 'StateChanged',
             None,
-            lambda proxy, *args: proxy.state() in [NM_STATE_DISCONNECTED]
+            lambda iface, *args: iface.state() in [NM_STATE_DISCONNECTED]
         ),
     ],
     EVENT_SYSTEM_BATTERY_CHARGE: [
@@ -312,11 +328,11 @@ stock_event_definitions = {
             'org.freedesktop.UPower', '/org/freedesktop/UPower',
             'org.freedesktop.UPower', 'Changed',
             None,
-            lambda proxy, *args: (
-                not proxy.proxy_object.Get(
+            lambda iface, *args: (
+                not iface.proxy_object.Get(
                     'org.freedesktop.UPower', 'OnBattery',
                     dbus_interface='org.freedesktop.DBus.Properties') and
-                not proxy.proxy_object.Get(
+                not iface.proxy_object.Get(
                     'org.freedesktop.UPower', 'OnLowBattery',
                     dbus_interface='org.freedesktop.DBus.Properties')
             )
@@ -329,11 +345,11 @@ stock_event_definitions = {
             'org.freedesktop.UPower', '/org/freedesktop/UPower',
             'org.freedesktop.UPower', 'Changed',
             None,
-            lambda proxy, *args: (
-                proxy.proxy_object.Get(
+            lambda iface, *args: (
+                iface.proxy_object.Get(
                     'org.freedesktop.UPower', 'OnBattery',
                     dbus_interface='org.freedesktop.DBus.Properties') and
-                not proxy.proxy_object.Get(
+                not iface.proxy_object.Get(
                     'org.freedesktop.UPower', 'OnLowBattery',
                     dbus_interface='org.freedesktop.DBus.Properties')
             )
@@ -346,11 +362,11 @@ stock_event_definitions = {
             'org.freedesktop.UPower', '/org/freedesktop/UPower',
             'org.freedesktop.UPower', 'Changed',
             None,
-            lambda proxy, *args: (
-                proxy.proxy_object.Get(
+            lambda iface, *args: (
+                iface.proxy_object.Get(
                     'org.freedesktop.UPower', 'OnBattery',
                     dbus_interface='org.freedesktop.DBus.Properties') and
-                proxy.proxy_object.Get(
+                iface.proxy_object.Get(
                     'org.freedesktop.UPower', 'OnLowBattery',
                     dbus_interface='org.freedesktop.DBus.Properties')
             )
@@ -382,7 +398,7 @@ stock_event_definitions = {
             'org.gnome.ScreenSaver', '/org/gnome/ScreenSaver',
             'org.gnome.ScreenSaver', 'ActiveChanged',
             None,
-            lambda proxy, *args: proxy.GetActive()
+            lambda iface, *args: iface.GetActive()
         ),
     ],
     EVENT_SESSION_SCREENSAVER_EXIT: [
@@ -391,7 +407,7 @@ stock_event_definitions = {
             'org.gnome.ScreenSaver', '/org/gnome/ScreenSaver',
             'org.gnome.ScreenSaver', 'ActiveChanged',
             None,
-            lambda proxy, *args: not proxy.GetActive()
+            lambda iface, *args: not iface.GetActive()
         ),
     ],
     # TODO: add more stock event definitions here
@@ -1928,6 +1944,7 @@ class SignalHandlers(object):
 class StockSignalHandlers(object):
 
     _list = []
+    _managers = {}
 
     def __iter__(self):
         for handler in self._list:
@@ -1938,24 +1955,24 @@ class StockSignalHandlers(object):
 
     def add(self, handler):
         applet_log.info("GLOBAL: adding stock signal handler for event '%s'" % handler.handler_name)
-        reg = handler.register()
-        if not reg:
+        manager = handler.register()
+        if not manager:
             applet_log.error("GLOBAL: could not register stock signal handler for event '%s'" % handler.handler_name)
             return False
         else:
             self._list.append(handler)
+            self._managers[handler.handler_name] = manager
             return True
 
     def get(self, handler_name):
         return next(
             (x for x in self._list if handler_name == x.handler_name), None)
 
-
-# data for the history queue (which is actually a resizable bounded deque)
-historyitem = namedtuple('historyitem', ['item_id', 'startup_time', 'run_time',
-                                         'task_name', 'trigger_cond', 'success',
-                                         'exit_code', 'stdout', 'stderr',
-                                         'failure_reason'])
+    def get_manager(self, handler_name):
+        if handler_name in self._managers:
+            return self._managers[handler_name]
+        else:
+            return None
 
 
 class HistoryQueue(object):
@@ -3201,11 +3218,6 @@ def dict_to_DataCollectorBasedCondition(d, c=None):
 #############################################################################
 # a class to build DBus signal handlers: related conditions are event based
 # conditions with a special event (dbus_signal:SigHandlerName) to reuse code
-param_check = namedtuple('param_check', ['value_idx', 'sub_idx',
-                                         'comparison', 'negate',
-                                         'test_value'])
-
-
 class SignalHandler(object):
 
     _logger = logging.getLogger(APPLET_NAME)
@@ -3619,24 +3631,30 @@ def dict_to_SignalHandler(d):
 class StockSignalHandler(SignalHandler):
 
     def __init__(self, name, bus=None, bus_name=None, bus_path=None, interface=None, signal=None, callback=None):
-        self.callback = self._cb_wrapper(callback)
         SignalHandler.__init__(
             self, name, bus, bus_name, bus_path, interface, signal)
+        self.callback = self._callback_normalize(callback)
+        self.manager = None
+
+    def register(self):
+        self.manager = SignalHandler.register(self)
+        return self.manager
 
     # convert provided callback to something that never raises exceptions
-    def _cb_wrapper(self, f):
-        def _wrapped(proxy, *args):
+    def _callback_normalize(self, f):
+        def _normalized(proxy, *args):
+            if not self.registered:
+                self._debug("stock signal test skipped: not registered")
+                return False
             try:
                 return bool(f(proxy, *args))
             except Exception as e:
                 self._info("failed stock signal test with exception: %s" % _x(e))
                 return False
         if f is None:
-            return lambda proxy, *args: True
+            return lambda iface, *args: True
         else:
-            wf = _wrapped(f)
-            wf.__name__ = f.__name__
-            return wf
+            return _normalized
 
     # same as above, but also checks for the passed callback if not None
     def signal_handler_callback(self, *args):
@@ -3646,8 +3664,8 @@ class StockSignalHandler(SignalHandler):
         except Exception as e:
             self._error("exception %s raised in stock event handler %s" % (_x(e), self.handler_name))
             return
-        if signal_caught and self.callback(self.interface, *args):
-            self._info("stock event signal caught: raising event %s" % event_name)
+        if signal_caught and self.callback(self.manager, *args):
+            self._info("stock event signal caught: raising event %s" % self.handler_name)
             if self.defer:
                 deferred_events.append(self.handler_name)
             else:
@@ -5140,108 +5158,17 @@ class AppletIndicator(Gtk.Application):
 
         enabled_events = [EVENT_APPLET_STARTUP]
 
-        # DBus events
+        # the following DBus events must be directly managed by the applet
         self.login_mgr = _signal_manager(
             self.system_bus,
             'org.freedesktop.login1', '/org/freedesktop/login1',
             'org.freedesktop.login1.Manager',
             [
                 ('PrepareForShutdown', self.before_shutdown),
-                # ('PrepareForSleep', self.system_sleep_manager),
             ]
         )
         if self.login_mgr:
             enabled_events.append(EVENT_APPLET_SHUTDOWN)
-            # enabled_events.append(EVENT_SYSTEM_SUSPEND)
-            # enabled_events.append(EVENT_SYSTEM_RESUME)
-
-        # self.screensaver_mgr = _signal_manager(
-        #     self.session_bus,
-        #     'org.gnome.ScreenSaver', '/org/gnome/ScreenSaver',
-        #     'org.gnome.ScreenSaver',
-        #     [
-        #         ('ActiveChanged', self.screensaver_manager),
-        #     ]
-        # )
-        # if self.screensaver_mgr:
-        #     enabled_events.append(EVENT_SESSION_SCREENSAVER)
-        #     enabled_events.append(EVENT_SESSION_SCREENSAVER_EXIT)
-
-        # self.lock_mgr = _signal_manager(
-        #     self.session_bus,
-        #     'com.ubuntu.Upstart', '/com/ubuntu/Upstart',
-        #     'com.ubuntu.Upstart0_6',
-        #     [
-        #         ('EventEmitted', self.upstart_lock_manager),
-        #     ]
-        # )
-        # self.lock_mgr = _signal_manager(
-        #     self.system_bus,
-        #     'org.freedesktop.login1', '/org/freedesktop/login1',
-        #     'org.freedesktop.login1.Session',
-        #     [
-        #         ('Lock', self.session_login_lock),
-        #         ('Unlock', self.session_login_unlock),
-        #     ]
-        # )
-        # if self.lock_mgr:
-        #     enabled_events.append(EVENT_SESSION_LOCK)
-        #     enabled_events.append(EVENT_SESSION_UNLOCK)
-
-        # self.storage_mgr = _signal_manager(
-        #     self.system_bus,
-        #     'org.freedesktop.UDisks2', '/org/freedesktop/UDisks2',
-        #     'org.freedesktop.DBus.ObjectManager',
-        #     [
-        #         ('InterfacesAdded', self.storage_device_manager),
-        #         ('InterfacesRemoved', self.storage_device_manager),
-        #     ]
-        # )
-        # if self.storage_mgr:
-        #     devices = self.storage_mgr.GetManagedObjects().keys()
-        #     drives = filter(
-        #         lambda x: x.startswith('/org/freedesktop/UDisks2/block_devices/'),
-        #         devices)
-        #     self.storage_mgr_num_devices = len(list(drives))
-        #     enabled_events.append(EVENT_SYSTEM_DEVICE_ATTACH)
-        #     enabled_events.append(EVENT_SYSTEM_DEVICE_DETACH)
-
-        # self.network_mgr = _signal_manager(
-        #     self.system_bus,
-        #     'org.freedesktop.NetworkManager', '/org/freedesktop/NetworkManager',
-        #     'org.freedesktop.NetworkManager',
-        #     [
-        #         ('StateChanged', self.network_manager),
-        #     ]
-        # )
-        # if self.network_mgr:
-        #     enabled_events.append(EVENT_SYSTEM_NETWORK_JOIN)
-        #     enabled_events.append(EVENT_SYSTEM_NETWORK_LEAVE)
-
-        # self.battery_mgr = _signal_manager(
-        #     self.system_bus,
-        #     'org.freedesktop.UPower', '/org/freedesktop/UPower',
-        #     'org.freedesktop.UPower',
-        #     [
-        #         ('Changed', self.battery_manager),
-        #     ]
-        # )
-        # if self.battery_mgr:
-        #     enabled_events.append(EVENT_SYSTEM_BATTERY_CHARGE)
-        #     enabled_events.append(EVENT_SYSTEM_BATTERY_DISCHARGING)
-        #     enabled_events.append(EVENT_SYSTEM_BATTERY_LOW)
-
-        # Template for standard (not custom DBus) signal handlers
-        # self.MANAGER = _signal_manager(
-        #     self.TYPE_BUS,
-        #     'BUSNAME', '/BUSPATH',
-        #     'BUSINT',
-        #     [
-        #         ('SIGNAL', self.HANDLER),
-        #     ]
-        # )
-        # if self.MANAGER:
-        #     enabled_events.append(EVENT_NAME)
 
         # create stock signal handlers and append enabled ones to enabled list
         create_stock_signal_handlers()
@@ -5321,98 +5248,6 @@ class AppletIndicator(Gtk.Application):
         applet_log.info("MAIN: trying to run startup tasks")
         sysevent_condition_check(EVENT_APPLET_STARTUP)
         Gtk.main()
-
-    # system and session DBus event managers
-    # def screensaver_manager(self, *args):
-    #     try:
-    #         if self.screensaver_mgr.GetActive():
-    #             applet_log.debug("MAIN: screensaver is active")
-    #             deferred_events.append(EVENT_SESSION_SCREENSAVER)
-    #         else:
-    #             applet_log.debug("MAIN: screensaver deactivated")
-    #             deferred_events.append(EVENT_SESSION_SCREENSAVER_EXIT)
-    #     except dbus.exceptions.DBusException:
-    #         applet_log.warning("MAIN: screensaver activity query failed")
-
-    # def session_login_lock(self, *args):
-    #     applet_log.debug("MAIN: session lock")
-    #     deferred_events.append(EVENT_SESSION_LOCK)
-
-    # def session_login_unlock(self, *args):
-    #     applet_log.debug("MAIN: session unlock")
-    #     deferred_events.append(EVENT_SESSION_UNLOCK)
-
-    # this is apparently valid for ubuntu 14.04 and above
-    # see: http://unix.stackexchange.com/a/211863/125979
-    # def upstart_lock_manager(self, *args):
-    #     message = args[0]
-    #     if message == 'desktop-lock':
-    #         applet_log.debug("MAIN: session lock")
-    #         deferred_events.append(EVENT_SESSION_LOCK)
-    #     elif message == 'desktop-unlock':
-    #         applet_log.debug("MAIN: session unlock")
-    #         deferred_events.append(EVENT_SESSION_UNLOCK)
-
-    # def system_sleep_manager(self, *args):
-    #     entering_sleep = args[0]
-    #     if entering_sleep:
-    #         applet_log.debug("MAIN: about to enter sleep state")
-    #         sysevent_condition_check(EVENT_SYSTEM_SUSPEND)
-    #     else:
-    #         applet_log.debug("MAIN: woke up from sleep state")
-    #         deferred_events.append(EVENT_SYSTEM_RESUME)
-
-    # def storage_device_manager(self, *args):
-    #     applet_log.debug("MAIN: storage change detected")
-    #     try:
-    #         devices = self.storage_mgr.GetManagedObjects().keys()
-    #         drives = filter(
-    #             lambda x: x.startswith('/org/freedesktop/UDisks2/block_devices/'),
-    #             devices)
-    #         num_devices = len(list(drives))
-    #         if self.storage_mgr_num_devices > num_devices:
-    #             applet_log.debug("MAIN: device detached")
-    #             deferred_events.append(EVENT_SYSTEM_DEVICE_DETACH)
-    #         elif self.storage_mgr_num_devices < num_devices:
-    #             applet_log.debug("MAIN: new device attached")
-    #             deferred_events.append(EVENT_SYSTEM_DEVICE_ATTACH)
-    #         self.storage_mgr_num_devices = num_devices
-    #     except dbus.exceptions.DBusException:
-    #         applet_log.warning("MAIN: storage objects query failed")
-
-    # def network_manager(self, *args):
-    #     applet_log.debug("MAIN: network state changed")
-    #     try:
-    #         state = self.network_mgr.state()
-    #         if state in [NM_STATE_CONNECTED_LOCAL, NM_STATE_CONNECTED_SITE,
-    #                      NM_STATE_CONNECTED_GLOBAL]:
-    #             applet_log.debug("MAIN: joined network")
-    #             deferred_events.append(EVENT_SYSTEM_NETWORK_JOIN)
-    #         elif state in [NM_STATE_DISCONNECTED]:
-    #             applet_log.debug("MAIN: left network")
-    #             deferred_events.append(EVENT_SYSTEM_NETWORK_LEAVE)
-    #     except dbus.exceptions.DBusException:
-    #         applet_log.warning("MAIN: network state query failed")
-
-    # def battery_manager(self, *args):
-    #     applet_log.debug("MAIN: battery state changed")
-    #     try:
-    #         proxy = self.battery_mgr.proxy_object
-    #         drain = proxy.Get('org.freedesktop.UPower', 'OnBattery',
-    #                           dbus_interface='org.freedesktop.DBus.Properties')
-    #         low = proxy.Get('org.freedesktop.UPower', 'OnLowBattery',
-    #                         dbus_interface='org.freedesktop.DBus.Properties')
-    #         if low:
-    #             applet_log.debug("MAIN: battery low")
-    #             deferred_events.append(EVENT_SYSTEM_BATTERY_LOW)
-    #         elif drain:
-    #             applet_log.debug("MAIN: battery discharging")
-    #             deferred_events.append(EVENT_SYSTEM_BATTERY_DISCHARGING)
-    #         else:
-    #             applet_log.debug("MAIN: battery charging or charged")
-    #             deferred_events.append(EVENT_SYSTEM_BATTERY_CHARGE)
-    #     except:
-    #         applet_log.warning("MAIN: battery state query failed")
 
     def before_shutdown(self, *args):
         if not self.leaving:
