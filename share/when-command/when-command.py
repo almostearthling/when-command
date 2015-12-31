@@ -73,8 +73,8 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.5~beta.1'
-APPLET_TAGDESC = 'Modular stock event management'
+APPLET_VERSION = '0.9.5~beta.2'
+APPLET_TAGDESC = 'Support for other Linux distributions'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -260,7 +260,8 @@ watch_path_manager = None
 watch_path_notifier = None
 
 #############################################################################
-# map of stock event definitions
+# map of stock event definitions: first choices are for recent Ubuntu,
+# fallbacks include a comment to specify what they are included for
 stock_event_definitions = {
     EVENT_SYSTEM_SUSPEND: [
         event_definition(
@@ -289,6 +290,22 @@ stock_event_definitions = {
                          'desktop-lock')],
             None
         ),
+        # non-Upstart
+        event_definition(
+            EVENT_SESSION_LOCK, True, 'system',
+            'org.freedesktop.login1', '/org/freedesktop/login1',
+            'org.freedesktop.login1.Session', 'Lock',
+            None,
+            None
+        ),
+        # Mint
+        event_definition(
+            EVENT_SESSION_LOCK, True, 'system',
+            'org.freedesktop.login1', '/org/freedesktop/login1',
+            'org.freedesktop.login1.Manager', 'LockSession',
+            None,
+            None
+        ),
     ],
     EVENT_SESSION_UNLOCK: [
         event_definition(
@@ -297,6 +314,22 @@ stock_event_definitions = {
             'com.ubuntu.Upstart0_6', 'EventEmitted',
             [param_check(0, None, DBUS_CHECK_COMPARE_IS, False,
                          'desktop-unlock')],
+            None
+        ),
+        # non-Upstart
+        event_definition(
+            EVENT_SESSION_UNLOCK, True, 'system',
+            'org.freedesktop.login1', '/org/freedesktop/login1',
+            'org.freedesktop.login1.Session', 'Unlock',
+            None,
+            None
+        ),
+        # Mint
+        event_definition(
+            EVENT_SESSION_UNLOCK, True, 'system',
+            'org.freedesktop.login1', '/org/freedesktop/login1',
+            'org.freedesktop.login1.Manager', 'UnlockSession',
+            None,
             None
         ),
     ],
@@ -400,12 +433,28 @@ stock_event_definitions = {
             None,
             lambda iface, *args: iface.GetActive()
         ),
+        # Mint
+        event_definition(
+            EVENT_SESSION_SCREENSAVER, False, 'session',
+            'org.cinnamon.ScreenSaver', '/',
+            'org.cinnamon.ScreenSaver', 'ActiveChanged',
+            None,
+            lambda iface, *args: iface.GetActive()
+        ),
     ],
     EVENT_SESSION_SCREENSAVER_EXIT: [
         event_definition(
             EVENT_SESSION_SCREENSAVER_EXIT, False, 'session',
             'org.gnome.ScreenSaver', '/org/gnome/ScreenSaver',
             'org.gnome.ScreenSaver', 'ActiveChanged',
+            None,
+            lambda iface, *args: not iface.GetActive()
+        ),
+        # Mint
+        event_definition(
+            EVENT_SESSION_SCREENSAVER_EXIT, False, 'session',
+            'org.cinnamon.ScreenSaver', '/',
+            'org.cinnamon.ScreenSaver', 'ActiveChanged',
             None,
             lambda iface, *args: not iface.GetActive()
         ),
