@@ -5453,10 +5453,6 @@ class AppletIndicator(Gtk.Application):
             self._notify.update(APPLET_SHORTNAME, message, icon)
             self._notify.show()
 
-    # TODO: use this instead of 'xprintidle' to save system resources
-    def session_idle_seconds(self):
-        return self.screensaver_mgr.getSessionIdleTime()
-
     def build_menu(self):
         menu = Gtk.Menu()
 
@@ -5586,13 +5582,6 @@ def init_signal_handler(applet_instance):
 def set_applet_enabled_events(evts):
     global applet_enabled_events
     applet_enabled_events = evts
-
-
-def get_applet_idle_seconds():
-    if applet:
-        return applet.session_idle_seconds()
-    else:
-        return 0
 
 
 def kill_existing(verbose=False, shutdown=False):
