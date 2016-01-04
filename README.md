@@ -10,7 +10,7 @@ It is not generally intended as a replacement to [*cron*](https://en.wikipedia.o
 
 [![Documentation Status](https://readthedocs.org/projects/when-documentation/badge/?version=latest)](http://when-documentation.readthedocs.org/en/latest/?badge=latest)
 
-The complete documentation for **When** can be found online [here](http://when-documentation.readthedocs.org/).
+The complete documentation for **When** can be found online [here](http://when-documentation.readthedocs.org/). Documentation for contributors has a separate [site](http://contributing-to-when.readthedocs.org/).
 
 
 ## Credits
