@@ -3,7 +3,7 @@
 #
 # When
 #
-# Copyright (c) 2015 Francesco Garosi
+# Copyright (c) 2015-2016 Francesco Garosi
 # Released under the BSD License (see LICENSE file)
 #
 # Small startup applet that runs tasks when particular conditions are met.
@@ -25,6 +25,7 @@ import argparse
 import shutil
 import re
 import locale
+import ctypes
 
 import traceback
 
@@ -62,7 +63,7 @@ if 'when_command' not in sys.modules:
 APPLET_NAME = 'when-command'
 APPLET_FULLNAME = 'When Gnome Scheduler'
 APPLET_SHORTNAME = 'When'
-APPLET_COPYRIGHT = '(c) 2015 Francesco Garosi'
+APPLET_COPYRIGHT = '(c) 2015-2016 Francesco Garosi'
 APPLET_URL = 'http://almostearthling.github.io/when-command/'
 APPLET_ID = 'it.jks.WhenCommand'
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
@@ -73,8 +74,8 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.5~beta.2'
-APPLET_TAGDESC = 'Support for other Linux distributions'
+APPLET_VERSION = '0.9.6~beta.1'
+APPLET_TAGDESC = 'Efficient idle time detection'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -258,6 +259,7 @@ signal_handlers = None
 stock_signal_handlers = None
 watch_path_manager = None
 watch_path_notifier = None
+idle_time_checker = None
 
 #############################################################################
 # map of stock event definitions: first choices are for recent Ubuntu,
@@ -1432,6 +1434,137 @@ class ItemDataFileInterpreter(object):
 
 
 #############################################################################
+# an object that can check for idle time: this class takes most inspiration
+# from the pxss module by Yu-Jie Lin (http://livibetter.mp/), see
+# https://yjl.googlecode.com/hg/Python/pxss.py for the original module with
+# more details, comments and explaination; note that the xprintidle-based
+# version has not been completely abandoned: it still exists as a fallback
+# if the Xss library cannot be loaded
+class IdleTimeChecker(object):
+
+    class _Screen(ctypes.Structure):
+        _fields_ = [
+            ('ext_data', ctypes.c_void_p),
+            ('display', ctypes.c_void_p),
+            ('root', ctypes.c_ulong),
+            ('width', ctypes.c_int),
+            ('height', ctypes.c_int),
+            ('mwidth', ctypes.c_int),
+            ('mheight', ctypes.c_int),
+            ('ndepths', ctypes.c_int),
+            ('depths', ctypes.c_void_p),
+            ('root_depth', ctypes.c_int),
+            ('root_visual', ctypes.c_void_p),
+            ('default_gc', ctypes.c_void_p),
+            ('cmap', ctypes.c_ulong),
+            ('white_pixel', ctypes.c_ulong),
+            ('black_pixel', ctypes.c_ulong),
+            ('min_maps', ctypes.c_int),
+            ('backing_store', ctypes.c_int),
+            ('save_unders', ctypes.c_bool),
+            ('root_input_mask', ctypes.c_long),
+        ]
+
+    class _Display(ctypes.Structure):
+        _fields_ = [
+            ('ext_data', ctypes.c_void_p),
+            ('private1', ctypes.c_void_p),
+            ('fd', ctypes.c_int),
+            ('private2', ctypes.c_int),
+            ('proto_major_version', ctypes.c_int),
+            ('proto_minor_version', ctypes.c_int),
+            ('vendor', ctypes.c_char_p),
+            ('private3', ctypes.c_ulong),
+            ('private4', ctypes.c_ulong),
+            ('private5', ctypes.c_ulong),
+            ('private6', ctypes.c_int),
+            ('resource_alloc', ctypes.c_long),
+            ('byte_order', ctypes.c_int),
+            ('bitmap_unit', ctypes.c_int),
+            ('bitmap_pad', ctypes.c_int),
+            ('bitmap_bit_order', ctypes.c_int),
+            ('nformats', ctypes.c_int),
+            ('pixmap_format', ctypes.c_void_p),
+            ('private8', ctypes.c_int),
+            ('release', ctypes.c_int),
+            ('private9', ctypes.c_void_p),
+            ('private10', ctypes.c_void_p),
+            ('qlen', ctypes.c_int),
+            ('last_request_read', ctypes.c_ulong),
+            ('request', ctypes.c_long),
+            ('private11', ctypes.c_char_p),
+            ('private12', ctypes.c_char_p),
+            ('private13', ctypes.c_char_p),
+            ('private14', ctypes.c_char_p),
+            ('max_request_size', ctypes.c_uint),
+            ('db', ctypes.c_void_p),
+            ('private15', ctypes.c_int),
+            ('display_name', ctypes.c_char_p),
+            ('default_screen', ctypes.c_int),
+            ('nscreens', ctypes.c_int),
+            ('screens', ctypes.c_void_p),
+        ]
+
+    class _XScreenSaverInfo(ctypes.Structure):
+        _fields_ = [
+            ('window', ctypes.c_ulong),
+            ('state', ctypes.c_int),
+            ('kind', ctypes.c_int),
+            ('til_or_since', ctypes.c_ulong),
+            ('idle', ctypes.c_ulong),
+            ('eventMask', ctypes.c_ulong),
+        ]
+
+    idle_milliseconds = property(lambda self: self._get_idle())
+
+    def __init__(self, always_fallback=False):
+        self._libXss = None
+        if not always_fallback:
+            for l in ['libXss.so', 'libXss.so.1']:
+                try:
+                    self._libXss = ctypes.CDLL(l)
+                except OSError:
+                    pass
+            if self._libXss is None:
+                applet_log.warning("GLOBAL: could not load libXss")
+        if self._libXss is not None:
+            applet_log.info("GLOBAL: using libXss to detect idle time")
+            self.fallback_mode = False
+            self._libXss.XOpenDisplay.restype = ctypes.POINTER(self._Display)
+            self._libXss.XScreenSaverAllocInfo.restype = ctypes.POINTER(
+                self._XScreenSaverInfo)
+
+            def _get_idle_msecs():
+                p_display = self._libXss.XOpenDisplay('')
+                display = p_display.contents
+                screens = ctypes.cast(
+                    display.screens,
+                    ctypes.POINTER(self._Screen * display.nscreens))
+                df_root_window = screens.contents[display.default_screen].root
+                p_info = ctypes.pointer(self._XScreenSaverInfo())
+                rv = self._libXss.XScreenSaverQueryInfo(
+                    p_display, df_root_window, p_info)
+                self._libXss.XCloseDisplay(p_display)
+                return p_info.contents.idle
+
+        else:
+            applet_log.warning("GLOBAL: falling back to xprintidle for idle time")
+            self.fallback_mode = True
+
+            def _get_idle_msecs():
+                try:
+                    with subprocess.Popen('xprintidle',
+                                          stdout=subprocess.PIPE,
+                                          stderr=subprocess.PIPE) as proc:
+                        stdout, stderr = proc.communicate()
+                        return int(stdout.decode().strip())
+                except OSError:
+                    return 0
+
+        self._get_idle = _get_idle_msecs
+
+
+#############################################################################
 # the DBus service is needed for the running applet to receive commands
 class AppletDBusService(dbus.service.Object):
     def __init__(self):
@@ -1774,8 +1907,11 @@ class Tasks(object):
         with open(file_name, 'rb') as f:
             l = pickle.load(f)
         for x in l:
-            t = Task.restore(x)
-            self.add(t)
+            try:
+                t = Task.restore(x)
+                self.add(t)
+            except Exception as e:
+                applet_log.error("GLOBAL: could not load task %s: %s" % (x, _x(e)))
 
     def add(self, task):
         if task.task_id == 0:
@@ -1857,9 +1993,15 @@ class Conditions(object):
         with open(file_name, 'rb') as f:
             l = pickle.load(f)
         for x, xc in l:
-            c = Condition.restore(x)
-            c.reset()
-            self.add(c)
+            try:
+                c = Condition.restore(x)
+                for t in c.task_names:
+                    if t not in tasks.names:
+                        raise ValueError("task %s does not exist" % t)
+                c.reset()
+                self.add(c)
+            except Exception as e:
+                applet_log.error("GLOBAL: could not restore condition %s: %s" % (x, _x(e)))
 
     def add(self, cond):
         if cond.cond_id == 0:
@@ -1933,8 +2075,11 @@ class SignalHandlers(object):
         with open(file_name, 'rb') as f:
             l = pickle.load(f)
         for x in l:
-            h = SignalHandler.restore(x)
-            self.add(h)
+            try:
+                h = SignalHandler.restore(x)
+                self.add(h)
+            except Exception as e:
+                applet_log.error("GLOBAL: could not load user signal handler %s: %s" % (x, _x(e)))
 
     def add(self, handler):
         applet_log.info("GLOBAL: adding signal handler %s" % handler.handler_name)
@@ -3013,34 +3158,27 @@ def dict_to_CommandBasedCondition(d):
     return c
 
 
-# this version should use DBus and the screensaver manager to determine
-# idle time, but it segfaults when the condition is verified
-# class IdleTimeBasedCondition(Condition):
-class IdleTimeBasedCondition(CommandBasedCondition):
+class IdleTimeBasedCondition(Condition):
 
     def _check_condition(self):
         if self.idle_reset:
-            # if get_applet_idle_seconds() >= idle_secs:
-            if CommandBasedCondition._check_condition(self):
+            if idle_time_checker.idle_milliseconds >= self.idle_secs * 1000:
                 self.idle_reset = False
                 return True
             else:
                 self.idle_reset = True
                 return False
         else:
-            # if get_applet_idle_seconds() < idle_secs:
-            if not CommandBasedCondition._check_condition(self):
+            if idle_time_checker.idle_milliseconds < self.idle_secs * 1000:
                 self.idle_reset = True
             return False
 
     def __init__(self, name, idle_secs, repeat=True, exec_sequence=True):
         self.idle_secs = idle_secs
         self.idle_reset = True
-        command = """test $(xprintidle) -gt %s""" % (idle_secs * 1000)
-        # Condition.__init__(self, name, repeat, exec_sequence)
-        CommandBasedCondition.__init__(
-            self, name, command, status=0, repeat=repeat,
-            exec_sequence=exec_sequence)
+        Condition.__init__(self, name, repeat, exec_sequence)
+        if idle_time_checker and not idle_time_checker.fallback_mode:
+            self.skip_seconds = 0
 
 
 def IdleTimeBasedCondition_to_dict(c):
@@ -4383,9 +4521,12 @@ class ConditionDialog(object):
         o('chkSuspend').set_active(False)
         o('store_listTasks').clear()
         cb = o('cbInterval')
+        cbi = o('cbIdleMins')
         cb.get_model().clear()
+        cbi.get_model().clear()
         for x in UI_INTERVALS_MINUTES:
             cb.append_text(str(x))
+            cbi.append_text(str(x))
 
     def run(self):
         o = self.builder.get_object
@@ -5281,13 +5422,13 @@ class AppletIndicator(Gtk.Application):
         except FileNotFoundError:
             tasks.save()
         try:
-            conditions.load()
-        except FileNotFoundError:
-            conditions.save()
-        try:
             signal_handlers.load()
         except FileNotFoundError:
             signal_handlers.save()
+        try:
+            conditions.load()
+        except FileNotFoundError:
+            conditions.save()
 
         if signal_handlers.not_empty:
             applet_log.info("MAIN: signal handlers found, enabling user events")
@@ -5716,11 +5857,11 @@ def do_add_items(filename, verbose=False):
     except FileNotFoundError:
         pass
     try:
-        conditions.load()
+        signal_handlers.load()
     except FileNotFoundError:
         pass
     try:
-        signal_handlers.load()
+        conditions.load()
     except FileNotFoundError:
         pass
     try:
@@ -5781,11 +5922,11 @@ def do_remove_item(item_spec, verbose=False):
     except FileNotFoundError:
         pass
     try:
-        conditions.load()
+        signal_handlers.load()
     except FileNotFoundError:
         pass
     try:
-        signal_handlers.load()
+        conditions.load()
     except FileNotFoundError:
         pass
     li = remove_item_specs(item_spec)
@@ -5826,20 +5967,20 @@ def print_items(item_type=None):
             except FileNotFoundError:
                 pass
             return ITEM_OPERATION_OK
-        elif item_type == ITEM_TYPE_CONDITIONS:
-            try:
-                conditions.load()
-                for name in conditions.names:
-                    sys.stdout.write("%s:%s\n" % (ITEM_TYPE_CONDITIONS, name))
-            except FileNotFoundError:
-                pass
-            return ITEM_OPERATION_OK
         elif item_type == ITEM_TYPE_SIGNAL_HANDLERS:
             try:
                 signal_handlers.load()
                 for name in signal_handlers.names:
                     sys.stdout.write(
                         "%s:%s\n" % (ITEM_TYPE_SIGNAL_HANDLERS, name))
+            except FileNotFoundError:
+                pass
+            return ITEM_OPERATION_OK
+        elif item_type == ITEM_TYPE_CONDITIONS:
+            try:
+                conditions.load()
+                for name in conditions.names:
+                    sys.stdout.write("%s:%s\n" % (ITEM_TYPE_CONDITIONS, name))
             except FileNotFoundError:
                 pass
             return ITEM_OPERATION_OK
@@ -5853,15 +5994,15 @@ def print_items(item_type=None):
         except FileNotFoundError:
             pass
         try:
-            conditions.load()
-            for name in conditions.names:
-                sys.stdout.write("%s:%s\n" % (ITEM_TYPE_CONDITIONS, name))
-        except FileNotFoundError:
-            pass
-        try:
             signal_handlers.load()
             for name in signal_handlers.names:
                 sys.stdout.write("%s:%s\n" % (ITEM_TYPE_SIGNAL_HANDLERS, name))
+        except FileNotFoundError:
+            pass
+        try:
+            conditions.load()
+            for name in conditions.names:
+                sys.stdout.write("%s:%s\n" % (ITEM_TYPE_CONDITIONS, name))
         except FileNotFoundError:
             pass
         return ITEM_OPERATION_OK
@@ -5874,13 +6015,13 @@ def clear_item_data(verbose=False):
     except FileNotFoundError:
         tasks.save()
     try:
-        conditions.load()
-    except FileNotFoundError:
-        conditions.save()
-    try:
         signal_handlers.load()
     except FileNotFoundError:
         signal_handlers.save()
+    try:
+        conditions.load()
+    except FileNotFoundError:
+        conditions.save()
     l = list(conditions.names)
     for x in l:
         conditions.remove(cond_name=x)
@@ -5920,13 +6061,13 @@ def export_item_data(filename=None, verbose=False):
     except FileNotFoundError:
         tasks.save()
     try:
-        conditions.load()
-    except FileNotFoundError:
-        conditions.save()
-    try:
         signal_handlers.load()
     except FileNotFoundError:
         signal_handlers.save()
+    try:
+        conditions.load()
+    except FileNotFoundError:
+        conditions.save()
     for name in tasks.names:
         t = tasks.get(task_name=name)
         d = Task_to_dict(t)
@@ -6063,6 +6204,7 @@ def main():
     global watch_path_notifier
     global deferred_events
     global deferred_watch_paths
+    global idle_time_checker
     global ui_add_task
     global ui_add_condition
     global ui_settings
@@ -6097,8 +6239,8 @@ def main():
 
     # create main collections
     tasks = Tasks()
-    conditions = Conditions()
     signal_handlers = SignalHandlers()
+    conditions = Conditions()
     stock_signal_handlers = StockSignalHandlers()
     applet = AppletIndicator()
 
@@ -6135,6 +6277,7 @@ def main():
         history = HistoryQueue()
         deferred_events = DeferredEvents()
         deferred_watch_paths = DeferredWatchPaths()
+        idle_time_checker = IdleTimeChecker()
         create_desktop_file(False)
         create_autostart_file(False)
         gui_applet_main()

@@ -299,6 +299,7 @@
                           <object class="GtkLabel" id="lblIdleMins">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
+                            <property name="margin_right">10</property>
                             <property name="margin_bottom">5</property>
                             <property name="label" translatable="yes">Idle Minutes</property>
                           </object>
@@ -309,11 +310,15 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkEntry" id="txtIdleMins">
+                          <object class="GtkComboBoxText" id="cbIdleMins">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="margin_left">15</property>
-                            <property name="margin_bottom">5</property>
+                            <property name="can_focus">False</property>
+                            <property name="has_entry">True</property>
+                            <child internal-child="entry">
+                              <object class="GtkEntry" id="txtIdleMins">
+                                <property name="can_focus">True</property>
+                              </object>
+                            </child>
                           </object>
                           <packing>
                             <property name="expand">True</property>
