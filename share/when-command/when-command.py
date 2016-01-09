@@ -22,7 +22,6 @@ import logging
 import logging.config
 import logging.handlers
 import argparse
-import shutil
 import re
 import locale
 import ctypes
@@ -74,8 +73,8 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.6~beta.1'
-APPLET_TAGDESC = 'Efficient idle time detection'
+APPLET_VERSION = '0.9.6~beta.2'
+APPLET_TAGDESC = 'Minor cosmetic changes'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -5298,6 +5297,10 @@ class AboutDialog(object):
         self.dialog.set_logo(self.image_logo.get_pixbuf())
         self.dialog.set_version(
             resources.DLG_ABOUT_VERSION_STRING % APPLET_VERSION)
+        self.dialog.set_program_name(APPLET_SHORTNAME)
+        self.dialog.set_copyright(APPLET_COPYRIGHT)
+        self.dialog.set_website(APPLET_URL)
+        self.dialog.set_comments(APPLET_LONGDESC)
         self.dialog.set_icon_from_file(
             os.path.join(APP_ICON_FOLDER, 'alarmclock.png'))
 
