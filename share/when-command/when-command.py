@@ -73,8 +73,8 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.6~beta.2'
-APPLET_TAGDESC = 'Minor cosmetic changes'
+APPLET_VERSION = '0.9.6~beta.3'
+APPLET_TAGDESC = 'Suppress history box in Minimalistic Mode'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -5202,11 +5202,13 @@ class HistoryDialog(object):
             resources.LISTCOL_HISTORY_TIMESTAMP, renderer, text=0)
         l.append_column(c)
         renderer = Gtk.CellRendererText()
+        renderer.set_property("ellipsize", Pango.EllipsizeMode.MIDDLE)
         c = Gtk.TreeViewColumn(
             resources.LISTCOL_HISTORY_TASK, renderer, text=1)
         c.props.expand = True
         l.append_column(c)
         renderer = Gtk.CellRendererText()
+        renderer.set_property("ellipsize", Pango.EllipsizeMode.MIDDLE)
         c = Gtk.TreeViewColumn(
             resources.LISTCOL_HISTORY_TRIGGER, renderer, text=2)
         c.props.expand = True
@@ -5605,6 +5607,8 @@ class AppletIndicator(Gtk.Application):
         else:
             minimalistic = False
 
+        # the "if not minimalistic" clauses are not grouped so that it is
+        # easier to decide to change entries on minimalistic mode
         if not minimalistic:
             item_newtask = Gtk.MenuItem(label=resources.MENU_EDIT_TASKS)
             item_newtask.connect('activate', self.dlgtask)
@@ -5627,10 +5631,11 @@ class AppletIndicator(Gtk.Application):
             separator.show()
             menu.append(separator)
 
-        item_history = Gtk.MenuItem(label=resources.MENU_TASK_HISTORY)
-        item_history.connect('activate', self.dlghistory)
-        item_history.show()
-        menu.append(item_history)
+        if not minimalistic:
+            item_history = Gtk.MenuItem(label=resources.MENU_TASK_HISTORY)
+            item_history.connect('activate', self.dlghistory)
+            item_history.show()
+            menu.append(item_history)
 
         if not minimalistic:
             separator = Gtk.SeparatorMenuItem()
@@ -5981,6 +5986,8 @@ def print_items(item_type=None):
             return ITEM_OPERATION_OK
         elif item_type == ITEM_TYPE_CONDITIONS:
             try:
+                tasks.load()
+                signal_handlers.load()
                 conditions.load()
                 for name in conditions.names:
                     sys.stdout.write("%s:%s\n" % (ITEM_TYPE_CONDITIONS, name))
@@ -6427,6 +6434,9 @@ def main():
         elif args.show_history:
             if not running:
                 oerr(resources.OERR_ERR_REQUIRE_INSTANCE, verbose)
+                sys.exit(2)
+            elif minimalistic:
+                oerr(resources.OERR_ERR_MINIMALISTIC, verbose)
                 sys.exit(2)
             else:
                 show_box('history', verbose)
