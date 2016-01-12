@@ -5986,6 +5986,8 @@ def print_items(item_type=None):
             return ITEM_OPERATION_OK
         elif item_type == ITEM_TYPE_CONDITIONS:
             try:
+                tasks.load()
+                signal_handlers.load()
                 conditions.load()
                 for name in conditions.names:
                     sys.stdout.write("%s:%s\n" % (ITEM_TYPE_CONDITIONS, name))
