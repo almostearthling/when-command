@@ -5579,7 +5579,9 @@ class AppletIndicator(Gtk.Application):
 
     def set_attention(self, warn=True):
         if warn and config.get('General', 'notifications'):
-            self.indicator.set_status(AppIndicator.IndicatorStatus.ATTENTION)
+            if not config.get('General', 'minimalistic mode'):
+                self.indicator.set_status(
+                    AppIndicator.IndicatorStatus.ATTENTION)
         else:
             if periodic.stopped:
                 self.indicator.set_icon('alarm-off')
