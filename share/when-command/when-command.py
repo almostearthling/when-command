@@ -73,8 +73,8 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.6~beta.4'
-APPLET_TAGDESC = 'Minimalistic mode adjustments'
+APPLET_VERSION = '0.9.6~beta.5'
+APPLET_TAGDESC = 'More conventional names for current DBus methods'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -1571,17 +1571,17 @@ class AppletDBusService(dbus.service.Object):
         dbus.service.Object.__init__(self, bus_name, APPLET_BUS_PATH)
 
     @dbus.service.method(APPLET_BUS_NAME)
-    def kill_instance(self):
+    def KillInstance(self):
         self.remove_from_connection()
         Gtk.main_quit()
 
     @dbus.service.method(APPLET_BUS_NAME)
-    def quit_instance(self):
+    def QuitInstance(self):
         self.remove_from_connection()
         applet.quit(None)
 
     @dbus.service.method(APPLET_BUS_NAME)
-    def show_dialog(self, dlgname):
+    def ShowDialog(self, dlgname):
         if dlgname == 'settings':
             applet.dlgsettings(None)
         elif dlgname == 'about':
@@ -1596,24 +1596,24 @@ class AppletDBusService(dbus.service.Object):
             applet.dlgdbussignal(None)
 
     @dbus.service.method(APPLET_BUS_NAME)
-    def show_icon(self, show=True):
+    def ShowIcon(self, show=True):
         applet.hide_icon(not show)
 
     @dbus.service.method(APPLET_BUS_NAME)
-    def run_condition(self, cond_name, deferred=False):
+    def RunCondition(self, cond_name, deferred=False):
         return applet.start_event_condition(cond_name, deferred)
 
     @dbus.service.method(APPLET_BUS_NAME)
-    def export_history(self, file_name):
+    def ExportHistory(self, file_name):
         return applet.export_task_history(file_name)
 
     # NOTE: to self/to remove: rv is None on OK or error string on failure
     @dbus.service.method(APPLET_BUS_NAME)
-    def add_items(self, item_data):
-        return applet.add_items(item_data)
+    def AddItemsBatch(self, item_data):
+        return applet.add_items_batch(item_data)
 
     @dbus.service.method(APPLET_BUS_NAME)
-    def del_item(self, item_spec):
+    def RemoveItem(self, item_spec):
         li = remove_item_specs(item_spec)
         if len(li) > 1:
             applet_log.error("SERVICE: NTBS: too many items not deleted than expected (%s)" % len(li))
@@ -5491,7 +5491,7 @@ class AppletIndicator(Gtk.Application):
         except IOError as e:
             return HISTORY_ERR_IOERROR
 
-    def add_items(self, item_data):
+    def add_items_batch(self, item_data):
         try:
             interpreter = ItemDataFileInterpreter(item_data)
             interpreter.create_items()
@@ -5743,9 +5743,9 @@ def kill_existing(verbose=False, shutdown=False):
     proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
     try:
         if shutdown:
-            proxy.quit_instance()
+            proxy.QuitInstance()
         else:
-            proxy.kill_instance()
+            proxy.KillInstance()
         oerr(resources.OERR_SHUTDOWN_FINISH, verbose)
     except dbus.exceptions.DBusException:
         oerr(resources.OERR_ERR_DBUS_SERVICE, verbose)
@@ -5770,7 +5770,7 @@ def show_box(box='about', verbose=False):
                                    APPLET_BUS_NAME, APPLET_BUS_PATH,
                                    APPLET_BUS_NAME, None)
     try:
-        proxy.call_sync('show_dialog', GLib.Variant('(s)', (box,)),
+        proxy.call_sync('ShowDialog', GLib.Variant('(s)', (box,)),
                         Gio.DBusCallFlags.NONE, GObject.G_MAXINT, None)
     except dbus.exceptions.DBusException:
         oerr(resources.OERR_ERR_DBUS_SERVICE, verbose)
@@ -5781,7 +5781,7 @@ def show_icon(show=True, running=True):
         bus = dbus.SessionBus()
         proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
         try:
-            proxy.show_icon(show)
+            proxy.ShowIcon(show)
         except dbus.exceptions.DBusException:
             oerr(resources.OERR_ERR_DBUS_SERVICE, verbose)
     config.set('General', 'show icon', show)
@@ -5792,7 +5792,7 @@ def run_condition(cond_name, deferred, verbose=False):
     oerr(resources.OERR_RUN_CONDITION % cond_name, verbose)
     bus = dbus.SessionBus()
     proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
-    if not proxy.run_condition(cond_name, deferred):
+    if not proxy.RunCondition(cond_name, deferred):
         oerr(resources.OERR_RUN_CONDITION_FAIL % cond_name, verbose)
         return False
     else:
@@ -5804,7 +5804,7 @@ def export_running_history(filename, verbose=False):
     bus = dbus.SessionBus()
     proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
     try:
-        rv = proxy.export_history(filename)
+        rv = proxy.ExportHistory(filename)
     except dbus.exceptions.DBusException:
         oerr(resources.OERR_EXPORT_HISTORY_UNKNOWN, verbose)
         return False
@@ -5837,7 +5837,7 @@ def call_add_items(filename, verbose=False):
             oerr(resources.OERR_ITEMOPS_ADD_NOREAD, verbose)
             return False
     try:
-        rv = proxy.add_items(data)
+        rv = proxy.AddItemsBatch(data)
     except dbus.exceptions.DBusException:
         oerr(resources.OERR_ERR_ITEMOPS_DBUS, verbose)
         return False
@@ -5893,7 +5893,7 @@ def call_remove_item(item_spec, verbose=False):
     bus = dbus.SessionBus()
     proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
     try:
-        rv = proxy.del_item(item_spec)
+        rv = proxy.RemoveItem(item_spec)
     except dbus.exceptions.DBusException:
         oerr(resources.OERR_ERR_ITEMOPS_DBUS, verbose)
         return False
