@@ -73,8 +73,8 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.6~beta.5'
-APPLET_TAGDESC = 'More conventional names for current DBus methods'
+APPLET_VERSION = '0.9.6~beta.6'
+APPLET_TAGDESC = 'Lazy loading of About Box in Minimalistic Mode'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -5388,9 +5388,7 @@ class AppletIndicator(Gtk.Application):
             self.dialog_history = HistoryDialog()
             self.dialog_add_dbus_signal = SignalDialog()
         else:
-            self.dialog_about = AboutDialog()
             self.dialog_settings = SettingsDialog()
-            self.dialog_history = HistoryDialog()
 
     def applet_activate(self, applet_instance):
         self.main()
@@ -5560,9 +5558,14 @@ class AppletIndicator(Gtk.Application):
             self.icon_dialog(False)
 
     def dlgabout(self, _):
-        if self.dialog_about:
-            applet_log.debug("MAIN: opening about dialog")
-            self.dialog_about.run()
+        global ui_about
+        if not self.dialog_about:
+            applet_log.debug("MAIN: loading about dialog")
+            if not ui_about:
+                ui_about = load_applet_dialog('when-command-about')
+            self.dialog_about = AboutDialog()
+        applet_log.debug("MAIN: opening about dialog")
+        self.dialog_about.run()
 
     def dlgsettings(self, _):
         if self.dialog_settings:
@@ -6246,8 +6249,6 @@ def main():
     else:
         minimalistic = True
         ui_settings = load_applet_dialog('when-command-settings')
-        ui_task_history = load_applet_dialog('when-command-task-history')
-        ui_about = load_applet_dialog('when-command-about')
 
     # create main collections
     tasks = Tasks()
