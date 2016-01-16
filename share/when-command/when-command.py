@@ -1610,6 +1610,8 @@ class AppletDBusService(dbus.service.Object):
 
     @dbus.service.method(APPLET_BUS_NAME, in_signature='b')
     def ShowIcon(self, show=True):
+        config.set('General', 'show icon', show)
+        config.save()
         applet.hide_icon(not show)
 
     @dbus.service.method(APPLET_BUS_NAME, in_signature='sb', out_signature='b')
@@ -1818,10 +1820,14 @@ class Periodic(object):
 
     def restart(self, new_interval=None):
         if new_interval:
-            self._logger.info("SCHED: changing tick to %s" % new_interval)
+            self._logger.info("SCHED: restarting with tick %s" % new_interval)
             self.interval = new_interval
         self.stop()
         self.start()
+
+    def set_interval(self, new_interval):
+        self._logger.info("SCHED: changing next tick to %s" % new_interval)
+        self.interval = new_interval
 
 
 # module level functions to handle condition checks and thus task execution
@@ -5187,13 +5193,7 @@ class SettingsDialog(object):
             applet_log.info("DLGCONF: saving user configuration")
             config.save()
             # reconfigure running applet as much as possible
-            applet_log.info("DLGCONF: reconfiguring application")
-            config_loghandler()
-            config_loglevel()
-            periodic.restart(new_interval=config.get('Scheduler', 'tick seconds'))
-            history.resize()
-            create_autostart_file()
-            applet.hide_icon(not config.get('General', 'show icon'))
+            applet.reconfigure()
 
 
 class HistoryDialog(object):
@@ -5527,30 +5527,29 @@ class AppletIndicator(Gtk.Application):
             periodic.stop()
             if config.get('Scheduler', 'preserve pause'):
                 create_pause_file()
-            self.indicator.set_icon('alarm-off')
-            self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
+            if config.get('General', 'show icon'):
+                self.indicator.set_icon('alarm-off')
+                self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
         else:
-            self.indicator.set_icon('alarm')
-            self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
+            if config.get('General', 'show icon'):
+                self.indicator.set_icon('alarm')
+                self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
             if config.get('Scheduler', 'preserve pause'):
                 unlink_pause_file()
             periodic.start()
             applet_log.info("MAIN: scheduler resumed operation")
 
-    def icon_change(self, name='alarm'):
-        self.indicator.set_icon(name)
-        self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
-
     def icon_dialog(self, active=True):
-        if active:
-            name = 'alarm-add'
-        else:
-            if periodic.stopped:
-                name = 'alarm-off'
+        if config.get('General', 'show icon'):
+            if active:
+                name = 'alarm-add'
             else:
-                name = 'alarm'
-        self.indicator.set_icon(name)
-        self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
+                if periodic.stopped:
+                    name = 'alarm-off'
+                else:
+                    name = 'alarm'
+            self.indicator.set_icon(name)
+            self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
 
     def dlgtask(self, _):
         if self.dialog_add_task:
@@ -5597,22 +5596,29 @@ class AppletIndicator(Gtk.Application):
             self.dialog_history.run()
 
     def set_attention(self, warn=True):
-        if warn and config.get('General', 'notifications'):
-            if not config.get('General', 'minimalistic mode'):
-                self.indicator.set_status(
-                    AppIndicator.IndicatorStatus.ATTENTION)
-        else:
-            if periodic.stopped:
-                self.indicator.set_icon('alarm-off')
-                self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
+        if config.get('General', 'show icon'):
+            if warn and config.get('General', 'notifications'):
+                if not config.get('General', 'minimalistic mode'):
+                    self.indicator.set_status(
+                        AppIndicator.IndicatorStatus.ATTENTION)
             else:
-                self.indicator.set_icon('alarm')
-                self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
+                if periodic.stopped:
+                    self.indicator.set_icon('alarm-off')
+                    self.indicator.set_status(
+                        AppIndicator.IndicatorStatus.ACTIVE)
+                else:
+                    self.indicator.set_icon('alarm')
+                    self.indicator.set_status(
+                        AppIndicator.IndicatorStatus.ACTIVE)
 
     def hide_icon(self, hide=True):
         if hide:
             self.indicator.set_status(AppIndicator.IndicatorStatus.PASSIVE)
         else:
+            if periodic.stopped:
+                self.indicator.set_icon('alarm-off')
+            else:
+                self.indicator.set_icon('alarm')
             self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
 
     def notify(self, message, icon='dialog-warning'):
@@ -5666,8 +5672,9 @@ class AppletIndicator(Gtk.Application):
         item_pause = Gtk.CheckMenuItem(label=resources.MENU_PAUSE)
         if config.get('Scheduler', 'preserve pause') and check_pause_file():
             item_pause.set_active(True)
-            self.indicator.set_icon('alarm-off')
-            self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
+            if config.get('General', 'show icon'):
+                self.indicator.set_icon('alarm-off')
+                self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
         item_pause.connect('activate', self.pause)
         item_pause.show()
         menu.append(item_pause)
@@ -5687,6 +5694,20 @@ class AppletIndicator(Gtk.Application):
         menu.append(item_quit)
         menu.show_all()
         return menu
+
+    def rebuild_menu(self):
+        self.indicator.set_menu(self.build_menu())
+
+    # try to do most configuration tasks automatically
+    def reconfigure(self):
+        applet_log.info("MAIN: reconfiguring applet")
+        config_loghandler()
+        config_loglevel()
+        create_autostart_file()
+        periodic.set_interval(config.get('Scheduler', 'tick seconds'))
+        history.resize()
+        self.rebuild_menu()
+        self.hide_icon(not config.get('General', 'show icon'))
 
 
 # create the list of stock signal handlers: this happens at every startup
