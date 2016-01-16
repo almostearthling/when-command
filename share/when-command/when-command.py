@@ -73,8 +73,8 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.6~beta.6'
-APPLET_TAGDESC = 'Lazy loading of About Box in Minimalistic Mode'
+APPLET_VERSION = '0.9.6~beta.7'
+APPLET_TAGDESC = 'Correct signatures for current DBus methods'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -623,11 +623,8 @@ resources.OERR_SHOW_BOX = _("showing %s box of currently running instance")
 resources.OERR_RUN_CONDITION = _("attempting to run condition %s")
 resources.OERR_RUN_CONDITION_FAIL = _("condition %s could not be run")
 resources.OERR_EXPORT_HISTORY = _("attempting to export task history to %s")
-resources.OERR_EXPORT_HISTORY_EMPTY = _("empty")
-resources.OERR_EXPORT_HISTORY_IOERROR = _("ioerror")
-resources.OERR_EXPORT_HISTORY_UNKNOWN = _("unknown")
-resources.OERR_EXPORT_HISTORY_FAIL = _("could not save task history (%s)")
-resources.OERR_EXPORT_HISTORY_FINISH = _("exported %s elements to specified file")
+resources.OERR_EXPORT_HISTORY_FAIL = _("could not save task history")
+resources.OERR_EXPORT_HISTORY_FINISH = _("history exported to specified file")
 resources.OERR_CLEAR_DATA = _("removing all items")
 resources.OERR_CLEAR_DATA_CONDFAIL = _("could not remove condition list file")
 resources.OERR_CLEAR_DATA_TASKFAIL = _("could not remove task list file")
@@ -644,8 +641,8 @@ resources.OERR_IMPORT_DATA_TASKS = _("    %s tasks")
 resources.OERR_IMPORT_DATA_CONDITIONS = _("    %s conditions")
 resources.OERR_IMPORT_DATA_SIGHANDLERS = _("    %s signal handlers")
 resources.OERR_IMPORT_DATA_FINISH = _("items successfully imported")
-resources.OERR_ITEMOPS_DEL_FINISH = _("item %s successfully deleted")
-resources.OERR_ITEMOPS_DEL_FAIL = _("cannot delete item: %s")
+resources.OERR_ITEMOPS_DEL_FINISH = _("item successfully deleted")
+resources.OERR_ITEMOPS_DEL_FAIL = _("cannot delete item")
 resources.OERR_ITEMOPS_ADD_NOREAD = _("cannot add items from provided file")
 resources.OERR_ITEMOPS_ADD_FAIL = _("cannot add items: malformed item file")
 resources.OERR_NO_INSTANCE = _("no instance could be found")
@@ -1564,6 +1561,22 @@ class IdleTimeChecker(object):
 
 
 #############################################################################
+# define a path notification handler, non functional if module not loaded
+if FILE_NOTIFY_ENABLED:
+    class PathNotifyEventHandler(pyinotify.ProcessEvent):
+        def process_default(self, event):
+            if event.mask & FN_IN_MODIFY_EVENTS:
+                applet_log.debug("PATHNOTIFY: notifying changes (%s) in %s" % (event.maskname, event.pathname))
+                deferred_watch_paths.append(event.pathname)
+            else:
+                applet_log.debug("PATHNOTIFY: event ignored (%s) for %s" % (event.maskname, event.pathname))
+else:
+    class PathNotifyEventHandler(object):
+        def process_default(self, event):
+            pass
+
+
+#############################################################################
 # the DBus service is needed for the running applet to receive commands
 class AppletDBusService(dbus.service.Object):
     def __init__(self):
@@ -1580,7 +1593,7 @@ class AppletDBusService(dbus.service.Object):
         self.remove_from_connection()
         applet.quit(None)
 
-    @dbus.service.method(APPLET_BUS_NAME)
+    @dbus.service.method(APPLET_BUS_NAME, in_signature='s')
     def ShowDialog(self, dlgname):
         if dlgname == 'settings':
             applet.dlgsettings(None)
@@ -1595,24 +1608,24 @@ class AppletDBusService(dbus.service.Object):
         elif dlgname == 'dbus_signal':
             applet.dlgdbussignal(None)
 
-    @dbus.service.method(APPLET_BUS_NAME)
+    @dbus.service.method(APPLET_BUS_NAME, in_signature='b')
     def ShowIcon(self, show=True):
         applet.hide_icon(not show)
 
-    @dbus.service.method(APPLET_BUS_NAME)
+    @dbus.service.method(APPLET_BUS_NAME, in_signature='sb', out_signature='b')
     def RunCondition(self, cond_name, deferred=False):
         return applet.start_event_condition(cond_name, deferred)
 
-    @dbus.service.method(APPLET_BUS_NAME)
+    @dbus.service.method(APPLET_BUS_NAME, in_signature='s', out_signature='b')
     def ExportHistory(self, file_name):
         return applet.export_task_history(file_name)
 
     # NOTE: to self/to remove: rv is None on OK or error string on failure
-    @dbus.service.method(APPLET_BUS_NAME)
+    @dbus.service.method(APPLET_BUS_NAME, in_signature='s', out_signature='b')
     def AddItemsBatch(self, item_data):
         return applet.add_items_batch(item_data)
 
-    @dbus.service.method(APPLET_BUS_NAME)
+    @dbus.service.method(APPLET_BUS_NAME, in_signature='s', out_signature='b')
     def RemoveItem(self, item_spec):
         li = remove_item_specs(item_spec)
         if len(li) > 1:
@@ -1629,7 +1642,7 @@ class AppletDBusService(dbus.service.Object):
                 else:
                     reason = "unknown error"
                 applet_log.error("SERVICE: NTBS: item specification %s:%s marked as not removed (%s)" % (x[0], x[1], reason))
-            rv = '/'.join(['%s:%s:%s' % t for t in li])
+            return False
         else:
             if li:
                 x = li[0]
@@ -1644,11 +1657,10 @@ class AppletDBusService(dbus.service.Object):
                 else:
                     reason = "unknown error"
                 applet_log.warning("SERVICE: item specification %s:%s could not be deleted (%s)" % (x[0], x[1], reason))
-                rv = '%s:%s:%s' % li[0]
+                return False
             else:
                 applet_log.info("SERVICE: item specification %s has been removed" % item_spec)
-                rv = None
-        return rv
+                return True
 
 
 #############################################################################
@@ -1777,7 +1789,7 @@ class Periodic(object):
         self._logger = logging.getLogger(APPLET_NAME)
         self._lock = threading.Lock()
         self._timer = None
-        self._logger.info("SCHED: initialized")
+        self._logger.info("SCHED: initialized with tick set to %s" % interval)
         if kwargs.pop('autostart', True):
             self.start()
 
@@ -1806,7 +1818,7 @@ class Periodic(object):
 
     def restart(self, new_interval=None):
         if new_interval:
-            self._logger.info("SCHED: changing interval to %s" % new_interval)
+            self._logger.info("SCHED: changing tick to %s" % new_interval)
             self.interval = new_interval
         self.stop()
         self.start()
@@ -5468,7 +5480,8 @@ class AppletIndicator(Gtk.Application):
             items = history.items()
             rv = len(items)
             if rv == 0:
-                return HISTORY_ERR_EMPTY
+                applet_log("MAIN: not exporting empty history")
+                return False
             f = open(filename, 'w')
             f.write(HISTORY_SEPARATOR.join(HISTORY_HEADERS) + '\n')
             for x in items:
@@ -5485,20 +5498,23 @@ class AppletIndicator(Gtk.Application):
                         x.failure_reason if x.failure_reason else HISTORY_ENTRY_SUCCESS
                     ])) + "\n")
             f.close()
-            return rv
+            applet_log.debug("MAIN: correctly exported %s history items" % rv)
+            return True
         except IOError as e:
-            return HISTORY_ERR_IOERROR
+            applet_log.error("MAIN: IOerror while exporting history items")
+            return False
 
     def add_items_batch(self, item_data):
         try:
             interpreter = ItemDataFileInterpreter(item_data)
             interpreter.create_items()
         except Exception as e:
-            return _x(e)
+            applet_log.error("MAIN: error while processing item data file: %s" % _x(e))
+            return False
         tasks.save()
         conditions.save()
         signal_handlers.save()
-        return None
+        return True
 
     def quit(self, _):
         self.before_shutdown()
@@ -5807,22 +5823,15 @@ def export_running_history(filename, verbose=False):
     bus = dbus.SessionBus()
     proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
     try:
-        rv = proxy.ExportHistory(filename)
+        if proxy.ExportHistory(filename):
+            oerr(resources.OERR_EXPORT_HISTORY_FINISH, verbose)
+            return True
+        else:
+            oerr(resources.OERR_EXPORT_HISTORY_FAIL, verbose)
+            return False
     except dbus.exceptions.DBusException:
         oerr(resources.OERR_EXPORT_HISTORY_UNKNOWN, verbose)
         return False
-    if rv < 0:
-        if rv == HISTORY_ERR_EMPTY:
-            s = resources.OERR_EXPORT_HISTORY_EMPTY
-        elif rv == HISTORY_ERR_IOERROR:
-            s = resources.OERR_EXPORT_HISTORY_IOERROR
-        else:
-            s = resources.OERR_EXPORT_HISTORY_UNKNOWN
-        oerr(resources.OERR_EXPORT_HISTORY_FAIL % s, verbose)
-        return False
-    else:
-        oerr(resources.OERR_EXPORT_HISTORY_FINISH % rv, verbose)
-        return True
 
 
 def call_add_items(filename, verbose=False):
@@ -5840,17 +5849,16 @@ def call_add_items(filename, verbose=False):
             oerr(resources.OERR_ITEMOPS_ADD_NOREAD, verbose)
             return False
     try:
-        rv = proxy.AddItemsBatch(data)
+        if not proxy.AddItemsBatch(data):
+            applet_log.error("MAIN: failed to add items")
+            oerr(resources.OERR_ITEMOPS_ADD_FAIL, verbose)
+            return False
+        else:
+            applet_log.info("MAIN: items added successfully")
+            return True
     except dbus.exceptions.DBusException:
         oerr(resources.OERR_ERR_ITEMOPS_DBUS, verbose)
         return False
-    if rv:
-        applet_log.error("MAIN: failed to add items: %s" % rv)
-        oerr(resources.OERR_ITEMOPS_ADD_FAIL, verbose)
-        return False
-    else:
-        applet_log.info("MAIN: items added successfully")
-        return True
 
 
 def do_add_items(filename, verbose=False):
@@ -5892,41 +5900,18 @@ def do_add_items(filename, verbose=False):
 
 
 def call_remove_item(item_spec, verbose=False):
-    # TODO: the symbols should be converted to constants
     bus = dbus.SessionBus()
     proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
     try:
-        rv = proxy.RemoveItem(item_spec)
+        if not proxy.RemoveItem(item_spec):
+            oerr(resources.OERR_ITEMOPS_DEL_FAIL, verbose)
+            return False
+        else:
+            oerr(resources.OERR_ITEMOPS_DEL_FINISH, verbose)
+            return True
     except dbus.exceptions.DBusException:
         oerr(resources.OERR_ERR_ITEMOPS_DBUS, verbose)
         return False
-    if rv:
-        li = rv.split('/')
-        if len(li) > 1:
-            oerr(resources.OERR_ITEMOPS_DEL_FAIL %
-                 resources.OERR_ERR_ITEMOPS_DBUS, verbose)
-            return False
-        elif len(li) == 1:
-            try:
-                item_type, item_name, errcode = li[0].split(':')
-                errcode = int(errcode)
-                if errcode == ITEM_OPERATION_OK:
-                    reason = resources.OERR_ERR_ITEMOPS_OK
-                elif errcode == ITEM_OPERATION_ERR_TYPE:
-                    reason = resources.OERR_ERR_ITEMOPS_OK
-                elif errcode == ITEM_OPERATION_ERR_NOTFOUND:
-                    reason = resources.OERR_ERR_ITEMOPS_NOTFOUND
-                elif errcode == ITEM_OPERATION_ERR_CONFLICT:
-                    reason = resources.OERR_ERR_ITEMOPS_CONFLICT
-                else:
-                    reason = resources.OERR_ERR_ITEMOPS_GENERIC
-            except ValueError:
-                reason = resources.OERR_ERR_ITEMOPS_DBUS
-            oerr(resources.OERR_ITEMOPS_DEL_FAIL % reason, verbose)
-            return False
-    else:
-        oerr(resources.OERR_ITEMOPS_DEL_FINISH % item_spec, verbose)
-        return True
 
 
 def do_remove_item(item_spec, verbose=False):
@@ -5943,30 +5928,11 @@ def do_remove_item(item_spec, verbose=False):
     except FileNotFoundError:
         pass
     li = remove_item_specs(item_spec)
-    if len(li) > 1:
-        oerr(resources.OERR_ITEMOPS_DEL_FAIL %
-             resources.OERR_ERR_ITEMOPS_DBUS, verbose)
-        return False
-    elif len(li) == 1:
-        try:
-            item_type, item_name, errcode = li[0]
-            errcode = int(errcode)
-            if errcode == ITEM_OPERATION_OK:
-                reason = resources.OERR_ERR_ITEMOPS_OK
-            elif errcode == ITEM_OPERATION_ERR_TYPE:
-                reason = resources.OERR_ERR_ITEMOPS_OK
-            elif errcode == ITEM_OPERATION_ERR_NOTFOUND:
-                reason = resources.OERR_ERR_ITEMOPS_NOTFOUND
-            elif errcode == ITEM_OPERATION_ERR_CONFLICT:
-                reason = resources.OERR_ERR_ITEMOPS_CONFLICT
-            else:
-                reason = resources.OERR_ERR_ITEMOPS_GENERIC
-        except ValueError:
-            reason = resources.OERR_ERR_ITEMOPS_DBUS
-        oerr(resources.OERR_ITEMOPS_DEL_FAIL % reason, verbose)
+    if len(li) > 0:
+        oerr(resources.OERR_ITEMOPS_DEL_FAIL, verbose)
         return False
     else:
-        oerr(resources.OERR_ITEMOPS_DEL_FINISH % item_spec, verbose)
+        oerr(resources.OERR_ITEMOPS_DEL_FINISH, verbose)
         return True
 
 
@@ -6272,16 +6238,9 @@ def main():
 
         # if pyinotify was imported and enabled, activate watch path manager
         if FILE_NOTIFY_ENABLED and config.get('General', 'file notifications'):
-            class LocalEventHandler(pyinotify.ProcessEvent):
-                def process_default(self, event):
-                    if event.mask & FN_IN_MODIFY_EVENTS:
-                        applet_log.debug("PATHNOTIFY: notifying changes (%s) in %s" % (event.maskname, event.pathname))
-                        deferred_watch_paths.append(event.pathname)
-                    else:
-                        applet_log.debug("PATHNOTIFY: event ignored (%s) for %s" % (event.maskname, event.pathname))
             watch_path_manager = pyinotify.WatchManager()
             watch_path_notifier = pyinotify.ThreadedNotifier(
-                watch_path_manager, LocalEventHandler())
+                watch_path_manager, PathNotifyEventHandler())
             applet_log.debug("MAIN: filesystem change based conditions are enabled")
 
         # initialize global variables that require running environment
