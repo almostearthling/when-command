@@ -73,8 +73,8 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.6~beta.7'
-APPLET_TAGDESC = 'Correct signatures for current DBus methods'
+APPLET_VERSION = '0.9.6~beta.8'
+APPLET_TAGDESC = 'Clean up toplevel and applet methods'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -1616,16 +1616,19 @@ class AppletDBusService(dbus.service.Object):
 
     @dbus.service.method(APPLET_BUS_NAME, in_signature='sb', out_signature='b')
     def RunCondition(self, cond_name, deferred=False):
-        return applet.start_event_condition(cond_name, deferred)
+        # return applet.start_event_condition(cond_name, deferred)
+        return start_event_condition(cond_name, deferred)
 
     @dbus.service.method(APPLET_BUS_NAME, in_signature='s', out_signature='b')
     def ExportHistory(self, file_name):
-        return applet.export_task_history(file_name)
+        # return applet.export_task_history(file_name)
+        return export_task_history(file_name)
 
     # NOTE: to self/to remove: rv is None on OK or error string on failure
     @dbus.service.method(APPLET_BUS_NAME, in_signature='s', out_signature='b')
     def AddItemsBatch(self, item_data):
-        return applet.add_items_batch(item_data)
+        # return applet.add_items_batch(item_data)
+        return add_items_batch(item_data)
 
     @dbus.service.method(APPLET_BUS_NAME, in_signature='s', out_signature='b')
     def RemoveItem(self, item_spec):
@@ -5461,62 +5464,6 @@ class AppletIndicator(Gtk.Application):
             sysevent_condition_check(EVENT_APPLET_SHUTDOWN)
             self.leaving = True
 
-    def start_event_condition(self, cond_name, deferred):
-        if cond_name not in conditions.names:
-            applet_log.warning("MAIN: non existing condition %s will not trigger" % cond_name)
-            return False
-        cond = conditions.get(cond_name=cond_name)
-        event = EVENT_COMMAND_LINE_PREAMBLE + ':' + cond_name
-        if cond.event != event:
-            applet_log.warning("MAIN: wrong event type for condition %s" % cond_name)
-            return False
-        if deferred:
-            deferred_events.append(event)
-        else:
-            sysevent_condition_check(event)
-        return True
-
-    def export_task_history(self, filename):
-        try:
-            items = history.items()
-            rv = len(items)
-            if rv == 0:
-                applet_log("MAIN: not exporting empty history")
-                return False
-            f = open(filename, 'w')
-            f.write(HISTORY_SEPARATOR.join(HISTORY_HEADERS) + '\n')
-            for x in items:
-                f.write(
-                    HISTORY_SEPARATOR.join(map(str, [
-                        x.item_id,
-                        time.strftime('%Y-%m-%d %H:%M:%S',
-                                      time.localtime(x.startup_time)),
-                        '%.4f' % x.run_time,
-                        x.task_name,
-                        x.trigger_cond,
-                        HISTORY_ENTRY_SUCCESS if x.success else HISTORY_ENTRY_FAILURE,
-                        x.exit_code,
-                        x.failure_reason if x.failure_reason else HISTORY_ENTRY_SUCCESS
-                    ])) + "\n")
-            f.close()
-            applet_log.debug("MAIN: correctly exported %s history items" % rv)
-            return True
-        except IOError as e:
-            applet_log.error("MAIN: IOerror while exporting history items")
-            return False
-
-    def add_items_batch(self, item_data):
-        try:
-            interpreter = ItemDataFileInterpreter(item_data)
-            interpreter.create_items()
-        except Exception as e:
-            applet_log.error("MAIN: error while processing item data file: %s" % _x(e))
-            return False
-        tasks.save()
-        conditions.save()
-        signal_handlers.save()
-        return True
-
     def quit(self, _):
         self.before_shutdown()
         Notify.uninit()
@@ -5726,6 +5673,68 @@ class AppletIndicator(Gtk.Application):
         self.hide_icon(not config.get('General', 'show icon'))
 
 
+#############################################################################
+# General and event related utilities
+
+def start_event_condition(cond_name, deferred):
+    if cond_name not in conditions.names:
+        applet_log.warning("MAIN: non existing condition %s will not trigger" % cond_name)
+        return False
+    cond = conditions.get(cond_name=cond_name)
+    event = EVENT_COMMAND_LINE_PREAMBLE + ':' + cond_name
+    if cond.event != event:
+        applet_log.warning("MAIN: wrong event type for condition %s" % cond_name)
+        return False
+    if deferred:
+        deferred_events.append(event)
+    else:
+        sysevent_condition_check(event)
+    return True
+
+
+def export_task_history(filename):
+    try:
+        items = history.items()
+        rv = len(items)
+        if rv == 0:
+            applet_log("MAIN: not exporting empty history")
+            return False
+        f = open(filename, 'w')
+        f.write(HISTORY_SEPARATOR.join(HISTORY_HEADERS) + '\n')
+        for x in items:
+            f.write(
+                HISTORY_SEPARATOR.join(map(str, [
+                    x.item_id,
+                    time.strftime('%Y-%m-%d %H:%M:%S',
+                                  time.localtime(x.startup_time)),
+                    '%.4f' % x.run_time,
+                    x.task_name,
+                    x.trigger_cond,
+                    HISTORY_ENTRY_SUCCESS if x.success else HISTORY_ENTRY_FAILURE,
+                    x.exit_code,
+                    x.failure_reason if x.failure_reason else HISTORY_ENTRY_SUCCESS
+                ])) + "\n")
+        f.close()
+        applet_log.debug("MAIN: correctly exported %s history items" % rv)
+        return True
+    except IOError as e:
+        applet_log.error("MAIN: IOerror while exporting history items")
+        return False
+
+
+def add_items_batch(item_data):
+    try:
+        interpreter = ItemDataFileInterpreter(item_data)
+        interpreter.create_items()
+    except Exception as e:
+        applet_log.error("MAIN: error while processing item data file: %s" % _x(e))
+        return False
+    tasks.save()
+    conditions.save()
+    signal_handlers.save()
+    return True
+
+
 # create the list of stock signal handlers: this happens at every startup
 def create_stock_signal_handlers():
     for evt_name in stock_event_definitions:
@@ -5791,6 +5800,9 @@ def set_applet_enabled_events(evts):
     applet_enabled_events = evts
 
 
+#############################################################################
+# Functions corresponding to CLI actions
+
 def kill_existing(verbose=False, shutdown=False):
     oerr(resources.OERR_SHUTDOWN_BEGIN %
          (resources.OERR_SHUTDOWN_SHUTDOWN if shutdown
@@ -5807,11 +5819,6 @@ def kill_existing(verbose=False, shutdown=False):
         oerr(resources.OERR_ERR_DBUS_SERVICE, verbose)
 
 
-def oerr(s, verbose=True):
-    if verbose:
-        sys.stderr.write("%s: %s\n" % (APPLET_NAME, s))
-
-
 def install_icons(overwrite=True):
     create_desktop_file(overwrite=overwrite)
     create_autostart_file(overwrite=overwrite)
@@ -5819,7 +5826,7 @@ def install_icons(overwrite=True):
 
 # the horrible hack below is because no way was found to set the timeout for
 # introspective DBus methods to infinite (that is: GObject.G_MAXINT)
-def show_box(box='about', verbose=False):
+def call_show_box(box='about', verbose=False):
     oerr(resources.OERR_SHOW_BOX % box, verbose)
     bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
     proxy = Gio.DBusProxy.new_sync(bus, Gio.DBusProxyFlags.NONE, None,
@@ -5844,7 +5851,7 @@ def show_icon(show=True, running=True):
     config.save()
 
 
-def run_condition(cond_name, deferred, verbose=False):
+def call_run_condition(cond_name, deferred, verbose=False):
     oerr(resources.OERR_RUN_CONDITION % cond_name, verbose)
     bus = dbus.SessionBus()
     proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
@@ -5855,7 +5862,7 @@ def run_condition(cond_name, deferred, verbose=False):
         return True
 
 
-def export_running_history(filename, verbose=False):
+def call_export_task_history(filename, verbose=False):
     oerr(resources.OERR_EXPORT_HISTORY % filename, verbose)
     bus = dbus.SessionBus()
     proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
@@ -6184,6 +6191,12 @@ def import_item_data(filename=None, verbose=False):
     oerr(resources.OERR_IMPORT_DATA_FINISH, verbose)
 
 
+# verbose output shortcut
+def oerr(s, verbose=True):
+    if verbose:
+        sys.stderr.write("%s: %s\n" % (APPLET_NAME, s))
+
+
 # Configure services and start the application
 def gui_applet_main():
     init_signal_handler(applet)
@@ -6419,7 +6432,7 @@ def main():
             print(resources.COMMAND_LINE_SHOWVERSION
                   % (APPLET_NAME, APPLET_FULLNAME, APPLET_VERSION))
             if verbose and running:
-                show_box('about', False)
+                call_show_box('about', False)
 
         if args.show_icon:
             show_icon(True, running)
@@ -6429,7 +6442,7 @@ def main():
                 oerr(resources.OERR_ERR_REQUIRE_INSTANCE, verbose)
                 sys.exit(2)
             else:
-                show_box('settings', verbose)
+                call_show_box('settings', verbose)
         elif args.show_history:
             if not running:
                 oerr(resources.OERR_ERR_REQUIRE_INSTANCE, verbose)
@@ -6438,7 +6451,7 @@ def main():
                 oerr(resources.OERR_ERR_MINIMALISTIC, verbose)
                 sys.exit(2)
             else:
-                show_box('history', verbose)
+                call_show_box('history', verbose)
         elif args.show_tasks:
             if not running:
                 oerr(resources.OERR_ERR_REQUIRE_INSTANCE, verbose)
@@ -6447,7 +6460,7 @@ def main():
                 oerr(resources.OERR_ERR_MINIMALISTIC, verbose)
                 sys.exit(2)
             else:
-                show_box('task', verbose)
+                call_show_box('task', verbose)
         elif args.show_conditions:
             if not running:
                 oerr(resources.OERR_ERR_REQUIRE_INSTANCE, verbose)
@@ -6456,7 +6469,7 @@ def main():
                 oerr(resources.OERR_ERR_MINIMALISTIC, verbose)
                 sys.exit(2)
             else:
-                show_box('condition', verbose)
+                call_show_box('condition', verbose)
         elif args.show_dbus_signals:
             if not running:
                 oerr(resources.OERR_ERR_REQUIRE_INSTANCE, verbose)
@@ -6468,7 +6481,7 @@ def main():
                 if not config.get('General', 'user events'):
                     oerr(resources.OERR_ERR_DBUS_DISABLED, verbose)
                     sys.exit(1)
-                show_box('dbus_signal', verbose)
+                call_show_box('dbus_signal', verbose)
 
         if args.export_items:
             if args.export_items == '*':
@@ -6489,7 +6502,7 @@ def main():
                 sys.exit(2)
             else:
                 filename = os.path.realpath(args.export_history)
-                if not export_running_history(filename, verbose):
+                if not call_export_task_history(filename, verbose):
                     sys.exit(2)
 
         if args.run_condition:
@@ -6497,14 +6510,14 @@ def main():
                 oerr(resources.OERR_ERR_DBUS_DISABLED, verbose)
                 sys.exit(2)
             else:
-                if not(run_condition(args.run_condition, False, verbose)):
+                if not(call_run_condition(args.run_condition, False, verbose)):
                     sys.exit(2)
         if args.defer_condition:
             if not running:
                 oerr(resources.OERR_ERR_DBUS_DISABLED, verbose)
                 sys.exit(2)
             else:
-                if not(run_condition(args.defer_condition, True, verbose)):
+                if not(call_run_condition(args.defer_condition, True, verbose)):
                     sys.exit(2)
 
         if args.item_delete:
