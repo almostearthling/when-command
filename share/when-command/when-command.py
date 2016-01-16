@@ -5407,10 +5407,11 @@ class AppletIndicator(Gtk.Application):
 
     def main(self):
         # GUI management
-        settings = Gtk.Settings.get_default()
+        self.theme_settings = Gtk.Settings.get_default()
         icon_suffix = config.get('General', 'icon theme').lower()
         if icon_suffix not in ('dark', 'light', 'color'):
-            theme_name = settings.get_property('gtk-icon-theme-name').lower()
+            theme_name = self.theme_settings.get_property(
+                'gtk-icon-theme-name').lower()
             if 'dark' in theme_name:
                 icon_suffix = 'dark'
             elif 'light' in theme_name:
@@ -5418,15 +5419,15 @@ class AppletIndicator(Gtk.Application):
             else:
                 icon_suffix = 'color'
         self.indicator = AppIndicator.Indicator.new(
-            APPLET_NAME, 'alarm', AppIndicator.IndicatorCategory.SYSTEM_SERVICES)
+            APPLET_NAME, 'alarm',
+            AppIndicator.IndicatorCategory.SYSTEM_SERVICES)
         self.indicator.set_icon_theme_path(
             os.path.join(APP_ICON_FOLDER, icon_suffix))
+        self.indicator.set_icon('alarm')
+        self.indicator.set_attention_icon('warning')
         if config.get('General', 'show icon'):
-            self.indicator.set_icon('alarm')
-            self.indicator.set_attention_icon('warning')
-            if config.get('General', 'show icon'):
-                self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
-            self.indicator.set_menu(self.build_menu())
+            self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
+        self.indicator.set_menu(self.build_menu())
         if config.get('General', 'notifications'):
             Notify.init(APPLET_NAME)
             self._notify = Notify.Notification()
@@ -5698,6 +5699,20 @@ class AppletIndicator(Gtk.Application):
     def rebuild_menu(self):
         self.indicator.set_menu(self.build_menu())
 
+    def reset_icon_theme(self):
+        icon_suffix = config.get('General', 'icon theme').lower()
+        if icon_suffix not in ('dark', 'light', 'color'):
+            theme_name = self.theme_settings.get_property(
+                'gtk-icon-theme-name').lower()
+            if 'dark' in theme_name:
+                icon_suffix = 'dark'
+            elif 'light' in theme_name:
+                icon_suffix = 'light'
+            else:
+                icon_suffix = 'color'
+        self.indicator.set_icon_theme_path(
+            os.path.join(APP_ICON_FOLDER, icon_suffix))
+
     # try to do most configuration tasks automatically
     def reconfigure(self):
         applet_log.info("MAIN: reconfiguring applet")
@@ -5707,6 +5722,7 @@ class AppletIndicator(Gtk.Application):
         periodic.set_interval(config.get('Scheduler', 'tick seconds'))
         history.resize()
         self.rebuild_menu()
+        self.reset_icon_theme()
         self.hide_icon(not config.get('General', 'show icon'))
 
 
