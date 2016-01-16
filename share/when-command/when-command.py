@@ -1616,18 +1616,14 @@ class AppletDBusService(dbus.service.Object):
 
     @dbus.service.method(APPLET_BUS_NAME, in_signature='sb', out_signature='b')
     def RunCondition(self, cond_name, deferred=False):
-        # return applet.start_event_condition(cond_name, deferred)
         return start_event_condition(cond_name, deferred)
 
     @dbus.service.method(APPLET_BUS_NAME, in_signature='s', out_signature='b')
     def ExportHistory(self, file_name):
-        # return applet.export_task_history(file_name)
         return export_task_history(file_name)
 
-    # NOTE: to self/to remove: rv is None on OK or error string on failure
     @dbus.service.method(APPLET_BUS_NAME, in_signature='s', out_signature='b')
     def AddItemsBatch(self, item_data):
-        # return applet.add_items_batch(item_data)
         return add_items_batch(item_data)
 
     @dbus.service.method(APPLET_BUS_NAME, in_signature='s', out_signature='b')
