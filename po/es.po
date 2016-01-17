@@ -319,7 +319,7 @@ msgstr "elemento eliminado correctamente"
 
 #: when-command.py:645
 msgid "cannot delete item"
-msgstr ""
+msgstr "no se pudo eliminar el elemento"
 
 #: when-command.py:646
 msgid "cannot add items from provided file"
@@ -367,7 +367,7 @@ msgstr "no se encontraron instancias en ejecución; inicie una primero"
 
 #: when-command.py:658
 msgid "feature not available in minimalistic mode"
-msgstr ""
+msgstr "no es disponible en el modo minimo"
 
 #: when-command.py:659
 msgid "could not find a running instance"
@@ -379,7 +379,7 @@ msgstr "las señales de DBus se desactivaron en la configuración"
 
 #: when-command.py:661
 msgid "error in communication with running applet"
-msgstr ""
+msgstr "error en la comunicación con la aplicación"
 
 #: when-command.py:662
 msgid "an error occurred while trying to export items"
@@ -556,6 +556,7 @@ msgstr ""
 "manera predeterminada.\n"
 
 #: when-command.py:708
+#, python-format
 msgid ""
 "Note: options marked with [R] require an instance running in the "
 "background,\n"
@@ -1007,7 +1008,7 @@ msgstr "Notificaciones"
 
 #: when-command-settings.glade.h:5
 msgid "Minimalistic Mode"
-msgstr ""
+msgstr "Modo minimo"
 
 #: when-command-settings.glade.h:6
 msgid "Light Background"
