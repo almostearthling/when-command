@@ -682,7 +682,7 @@ resources.COMMAND_LINE_HELP_SHOW_TASKS = _("show tasks dialog box for the runnin
 resources.COMMAND_LINE_HELP_SHOW_CONDITIONS = _("show conditions box for the running instance [R]")
 resources.COMMAND_LINE_HELP_SHOW_DBUS_SIGNALS = _("show dbus signals box for the running instance [R]")
 resources.COMMAND_LINE_HELP_RESET_CONFIG = _("reset general configuration to default [S]")
-resources.COMMAND_LINE_HELP_SHOW_ICON = _("show applet icon [N]")
+resources.COMMAND_LINE_HELP_SHOW_ICON = _("show applet icon")
 resources.COMMAND_LINE_HELP_CLEAR = _("clear all tasks and conditions [S]")
 resources.COMMAND_LINE_HELP_INSTALL = _("install application icons and autostart [S]")
 resources.COMMAND_LINE_HELP_QUERY = _("query for a running instance")
@@ -707,8 +707,7 @@ from the command, as most operations will show no output by default.
 """) % (APPLET_NAME, APPLET_FULLNAME, APPLET_COPYRIGHT)
 resources.COMMAND_LINE_EPILOG = _("""\
 Note: options marked with [R] require an instance running in the background,
-with [S] require that no instance is running and with [N] have only effect
-after restart. Go to %s for more information.
+with [S] require that no instance is running. Go to %s for more information.
 """) % APPLET_URL
 
 # constants for desktop entry and autostart entry
