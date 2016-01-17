@@ -73,8 +73,8 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.6~beta.6'
-APPLET_TAGDESC = 'Lazy loading of About Box in Minimalistic Mode'
+APPLET_VERSION = '0.9.6~beta.8'
+APPLET_TAGDESC = 'Clean up toplevel and applet methods'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -623,11 +623,8 @@ resources.OERR_SHOW_BOX = _("showing %s box of currently running instance")
 resources.OERR_RUN_CONDITION = _("attempting to run condition %s")
 resources.OERR_RUN_CONDITION_FAIL = _("condition %s could not be run")
 resources.OERR_EXPORT_HISTORY = _("attempting to export task history to %s")
-resources.OERR_EXPORT_HISTORY_EMPTY = _("empty")
-resources.OERR_EXPORT_HISTORY_IOERROR = _("ioerror")
-resources.OERR_EXPORT_HISTORY_UNKNOWN = _("unknown")
-resources.OERR_EXPORT_HISTORY_FAIL = _("could not save task history (%s)")
-resources.OERR_EXPORT_HISTORY_FINISH = _("exported %s elements to specified file")
+resources.OERR_EXPORT_HISTORY_FAIL = _("could not save task history")
+resources.OERR_EXPORT_HISTORY_FINISH = _("history exported to specified file")
 resources.OERR_CLEAR_DATA = _("removing all items")
 resources.OERR_CLEAR_DATA_CONDFAIL = _("could not remove condition list file")
 resources.OERR_CLEAR_DATA_TASKFAIL = _("could not remove task list file")
@@ -644,8 +641,8 @@ resources.OERR_IMPORT_DATA_TASKS = _("    %s tasks")
 resources.OERR_IMPORT_DATA_CONDITIONS = _("    %s conditions")
 resources.OERR_IMPORT_DATA_SIGHANDLERS = _("    %s signal handlers")
 resources.OERR_IMPORT_DATA_FINISH = _("items successfully imported")
-resources.OERR_ITEMOPS_DEL_FINISH = _("item %s successfully deleted")
-resources.OERR_ITEMOPS_DEL_FAIL = _("cannot delete item: %s")
+resources.OERR_ITEMOPS_DEL_FINISH = _("item successfully deleted")
+resources.OERR_ITEMOPS_DEL_FAIL = _("cannot delete item")
 resources.OERR_ITEMOPS_ADD_NOREAD = _("cannot add items from provided file")
 resources.OERR_ITEMOPS_ADD_FAIL = _("cannot add items: malformed item file")
 resources.OERR_NO_INSTANCE = _("no instance could be found")
@@ -1564,6 +1561,22 @@ class IdleTimeChecker(object):
 
 
 #############################################################################
+# define a path notification handler, non functional if module not loaded
+if FILE_NOTIFY_ENABLED:
+    class PathNotifyEventHandler(pyinotify.ProcessEvent):
+        def process_default(self, event):
+            if event.mask & FN_IN_MODIFY_EVENTS:
+                applet_log.debug("PATHNOTIFY: notifying changes (%s) in %s" % (event.maskname, event.pathname))
+                deferred_watch_paths.append(event.pathname)
+            else:
+                applet_log.debug("PATHNOTIFY: event ignored (%s) for %s" % (event.maskname, event.pathname))
+else:
+    class PathNotifyEventHandler(object):
+        def process_default(self, event):
+            pass
+
+
+#############################################################################
 # the DBus service is needed for the running applet to receive commands
 class AppletDBusService(dbus.service.Object):
     def __init__(self):
@@ -1580,7 +1593,7 @@ class AppletDBusService(dbus.service.Object):
         self.remove_from_connection()
         applet.quit(None)
 
-    @dbus.service.method(APPLET_BUS_NAME)
+    @dbus.service.method(APPLET_BUS_NAME, in_signature='s')
     def ShowDialog(self, dlgname):
         if dlgname == 'settings':
             applet.dlgsettings(None)
@@ -1595,24 +1608,25 @@ class AppletDBusService(dbus.service.Object):
         elif dlgname == 'dbus_signal':
             applet.dlgdbussignal(None)
 
-    @dbus.service.method(APPLET_BUS_NAME)
+    @dbus.service.method(APPLET_BUS_NAME, in_signature='b')
     def ShowIcon(self, show=True):
+        config.set('General', 'show icon', show)
+        config.save()
         applet.hide_icon(not show)
 
-    @dbus.service.method(APPLET_BUS_NAME)
+    @dbus.service.method(APPLET_BUS_NAME, in_signature='sb', out_signature='b')
     def RunCondition(self, cond_name, deferred=False):
-        return applet.start_event_condition(cond_name, deferred)
+        return start_event_condition(cond_name, deferred)
 
-    @dbus.service.method(APPLET_BUS_NAME)
+    @dbus.service.method(APPLET_BUS_NAME, in_signature='s', out_signature='b')
     def ExportHistory(self, file_name):
-        return applet.export_task_history(file_name)
+        return export_task_history(file_name)
 
-    # NOTE: to self/to remove: rv is None on OK or error string on failure
-    @dbus.service.method(APPLET_BUS_NAME)
+    @dbus.service.method(APPLET_BUS_NAME, in_signature='s', out_signature='b')
     def AddItemsBatch(self, item_data):
-        return applet.add_items_batch(item_data)
+        return add_items_batch(item_data)
 
-    @dbus.service.method(APPLET_BUS_NAME)
+    @dbus.service.method(APPLET_BUS_NAME, in_signature='s', out_signature='b')
     def RemoveItem(self, item_spec):
         li = remove_item_specs(item_spec)
         if len(li) > 1:
@@ -1629,7 +1643,7 @@ class AppletDBusService(dbus.service.Object):
                 else:
                     reason = "unknown error"
                 applet_log.error("SERVICE: NTBS: item specification %s:%s marked as not removed (%s)" % (x[0], x[1], reason))
-            rv = '/'.join(['%s:%s:%s' % t for t in li])
+            return False
         else:
             if li:
                 x = li[0]
@@ -1644,11 +1658,10 @@ class AppletDBusService(dbus.service.Object):
                 else:
                     reason = "unknown error"
                 applet_log.warning("SERVICE: item specification %s:%s could not be deleted (%s)" % (x[0], x[1], reason))
-                rv = '%s:%s:%s' % li[0]
+                return False
             else:
                 applet_log.info("SERVICE: item specification %s has been removed" % item_spec)
-                rv = None
-        return rv
+                return True
 
 
 #############################################################################
@@ -1777,7 +1790,7 @@ class Periodic(object):
         self._logger = logging.getLogger(APPLET_NAME)
         self._lock = threading.Lock()
         self._timer = None
-        self._logger.info("SCHED: initialized")
+        self._logger.info("SCHED: initialized with tick set to %s" % interval)
         if kwargs.pop('autostart', True):
             self.start()
 
@@ -1806,10 +1819,14 @@ class Periodic(object):
 
     def restart(self, new_interval=None):
         if new_interval:
-            self._logger.info("SCHED: changing interval to %s" % new_interval)
+            self._logger.info("SCHED: restarting with tick %s" % new_interval)
             self.interval = new_interval
         self.stop()
         self.start()
+
+    def set_interval(self, new_interval):
+        self._logger.info("SCHED: changing next tick to %s" % new_interval)
+        self.interval = new_interval
 
 
 # module level functions to handle condition checks and thus task execution
@@ -5175,13 +5192,7 @@ class SettingsDialog(object):
             applet_log.info("DLGCONF: saving user configuration")
             config.save()
             # reconfigure running applet as much as possible
-            applet_log.info("DLGCONF: reconfiguring application")
-            config_loghandler()
-            config_loglevel()
-            periodic.restart(new_interval=config.get('Scheduler', 'tick seconds'))
-            history.resize()
-            create_autostart_file()
-            applet.hide_icon(not config.get('General', 'show icon'))
+            applet.reconfigure()
 
 
 class HistoryDialog(object):
@@ -5395,10 +5406,11 @@ class AppletIndicator(Gtk.Application):
 
     def main(self):
         # GUI management
-        settings = Gtk.Settings.get_default()
+        self.theme_settings = Gtk.Settings.get_default()
         icon_suffix = config.get('General', 'icon theme').lower()
         if icon_suffix not in ('dark', 'light', 'color'):
-            theme_name = settings.get_property('gtk-icon-theme-name').lower()
+            theme_name = self.theme_settings.get_property(
+                'gtk-icon-theme-name').lower()
             if 'dark' in theme_name:
                 icon_suffix = 'dark'
             elif 'light' in theme_name:
@@ -5406,15 +5418,15 @@ class AppletIndicator(Gtk.Application):
             else:
                 icon_suffix = 'color'
         self.indicator = AppIndicator.Indicator.new(
-            APPLET_NAME, 'alarm', AppIndicator.IndicatorCategory.SYSTEM_SERVICES)
+            APPLET_NAME, 'alarm',
+            AppIndicator.IndicatorCategory.SYSTEM_SERVICES)
         self.indicator.set_icon_theme_path(
             os.path.join(APP_ICON_FOLDER, icon_suffix))
+        self.indicator.set_icon('alarm')
+        self.indicator.set_attention_icon('warning')
         if config.get('General', 'show icon'):
-            self.indicator.set_icon('alarm')
-            self.indicator.set_attention_icon('warning')
-            if config.get('General', 'show icon'):
-                self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
-            self.indicator.set_menu(self.build_menu())
+            self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
+        self.indicator.set_menu(self.build_menu())
         if config.get('General', 'notifications'):
             Notify.init(APPLET_NAME)
             self._notify = Notify.Notification()
@@ -5448,58 +5460,6 @@ class AppletIndicator(Gtk.Application):
             sysevent_condition_check(EVENT_APPLET_SHUTDOWN)
             self.leaving = True
 
-    def start_event_condition(self, cond_name, deferred):
-        if cond_name not in conditions.names:
-            applet_log.warning("MAIN: non existing condition %s will not trigger" % cond_name)
-            return False
-        cond = conditions.get(cond_name=cond_name)
-        event = EVENT_COMMAND_LINE_PREAMBLE + ':' + cond_name
-        if cond.event != event:
-            applet_log.warning("MAIN: wrong event type for condition %s" % cond_name)
-            return False
-        if deferred:
-            deferred_events.append(event)
-        else:
-            sysevent_condition_check(event)
-        return True
-
-    def export_task_history(self, filename):
-        try:
-            items = history.items()
-            rv = len(items)
-            if rv == 0:
-                return HISTORY_ERR_EMPTY
-            f = open(filename, 'w')
-            f.write(HISTORY_SEPARATOR.join(HISTORY_HEADERS) + '\n')
-            for x in items:
-                f.write(
-                    HISTORY_SEPARATOR.join(map(str, [
-                        x.item_id,
-                        time.strftime('%Y-%m-%d %H:%M:%S',
-                                      time.localtime(x.startup_time)),
-                        '%.4f' % x.run_time,
-                        x.task_name,
-                        x.trigger_cond,
-                        HISTORY_ENTRY_SUCCESS if x.success else HISTORY_ENTRY_FAILURE,
-                        x.exit_code,
-                        x.failure_reason if x.failure_reason else HISTORY_ENTRY_SUCCESS
-                    ])) + "\n")
-            f.close()
-            return rv
-        except IOError as e:
-            return HISTORY_ERR_IOERROR
-
-    def add_items_batch(self, item_data):
-        try:
-            interpreter = ItemDataFileInterpreter(item_data)
-            interpreter.create_items()
-        except Exception as e:
-            return _x(e)
-        tasks.save()
-        conditions.save()
-        signal_handlers.save()
-        return None
-
     def quit(self, _):
         self.before_shutdown()
         Notify.uninit()
@@ -5511,30 +5471,29 @@ class AppletIndicator(Gtk.Application):
             periodic.stop()
             if config.get('Scheduler', 'preserve pause'):
                 create_pause_file()
-            self.indicator.set_icon('alarm-off')
-            self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
+            if config.get('General', 'show icon'):
+                self.indicator.set_icon('alarm-off')
+                self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
         else:
-            self.indicator.set_icon('alarm')
-            self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
+            if config.get('General', 'show icon'):
+                self.indicator.set_icon('alarm')
+                self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
             if config.get('Scheduler', 'preserve pause'):
                 unlink_pause_file()
             periodic.start()
             applet_log.info("MAIN: scheduler resumed operation")
 
-    def icon_change(self, name='alarm'):
-        self.indicator.set_icon(name)
-        self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
-
     def icon_dialog(self, active=True):
-        if active:
-            name = 'alarm-add'
-        else:
-            if periodic.stopped:
-                name = 'alarm-off'
+        if config.get('General', 'show icon'):
+            if active:
+                name = 'alarm-add'
             else:
-                name = 'alarm'
-        self.indicator.set_icon(name)
-        self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
+                if periodic.stopped:
+                    name = 'alarm-off'
+                else:
+                    name = 'alarm'
+            self.indicator.set_icon(name)
+            self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
 
     def dlgtask(self, _):
         if self.dialog_add_task:
@@ -5581,22 +5540,29 @@ class AppletIndicator(Gtk.Application):
             self.dialog_history.run()
 
     def set_attention(self, warn=True):
-        if warn and config.get('General', 'notifications'):
-            if not config.get('General', 'minimalistic mode'):
-                self.indicator.set_status(
-                    AppIndicator.IndicatorStatus.ATTENTION)
-        else:
-            if periodic.stopped:
-                self.indicator.set_icon('alarm-off')
-                self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
+        if config.get('General', 'show icon'):
+            if warn and config.get('General', 'notifications'):
+                if not config.get('General', 'minimalistic mode'):
+                    self.indicator.set_status(
+                        AppIndicator.IndicatorStatus.ATTENTION)
             else:
-                self.indicator.set_icon('alarm')
-                self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
+                if periodic.stopped:
+                    self.indicator.set_icon('alarm-off')
+                    self.indicator.set_status(
+                        AppIndicator.IndicatorStatus.ACTIVE)
+                else:
+                    self.indicator.set_icon('alarm')
+                    self.indicator.set_status(
+                        AppIndicator.IndicatorStatus.ACTIVE)
 
     def hide_icon(self, hide=True):
         if hide:
             self.indicator.set_status(AppIndicator.IndicatorStatus.PASSIVE)
         else:
+            if periodic.stopped:
+                self.indicator.set_icon('alarm-off')
+            else:
+                self.indicator.set_icon('alarm')
             self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
 
     def notify(self, message, icon='dialog-warning'):
@@ -5650,8 +5616,9 @@ class AppletIndicator(Gtk.Application):
         item_pause = Gtk.CheckMenuItem(label=resources.MENU_PAUSE)
         if config.get('Scheduler', 'preserve pause') and check_pause_file():
             item_pause.set_active(True)
-            self.indicator.set_icon('alarm-off')
-            self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
+            if config.get('General', 'show icon'):
+                self.indicator.set_icon('alarm-off')
+                self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
         item_pause.connect('activate', self.pause)
         item_pause.show()
         menu.append(item_pause)
@@ -5671,6 +5638,97 @@ class AppletIndicator(Gtk.Application):
         menu.append(item_quit)
         menu.show_all()
         return menu
+
+    def rebuild_menu(self):
+        self.indicator.set_menu(self.build_menu())
+
+    def reset_icon_theme(self):
+        icon_suffix = config.get('General', 'icon theme').lower()
+        if icon_suffix not in ('dark', 'light', 'color'):
+            theme_name = self.theme_settings.get_property(
+                'gtk-icon-theme-name').lower()
+            if 'dark' in theme_name:
+                icon_suffix = 'dark'
+            elif 'light' in theme_name:
+                icon_suffix = 'light'
+            else:
+                icon_suffix = 'color'
+        self.indicator.set_icon_theme_path(
+            os.path.join(APP_ICON_FOLDER, icon_suffix))
+
+    # try to do most configuration tasks automatically
+    def reconfigure(self):
+        applet_log.info("MAIN: reconfiguring applet")
+        config_loghandler()
+        config_loglevel()
+        create_autostart_file()
+        periodic.set_interval(config.get('Scheduler', 'tick seconds'))
+        history.resize()
+        self.rebuild_menu()
+        self.reset_icon_theme()
+        self.hide_icon(not config.get('General', 'show icon'))
+
+
+#############################################################################
+# General and event related utilities
+
+def start_event_condition(cond_name, deferred):
+    if cond_name not in conditions.names:
+        applet_log.warning("MAIN: non existing condition %s will not trigger" % cond_name)
+        return False
+    cond = conditions.get(cond_name=cond_name)
+    event = EVENT_COMMAND_LINE_PREAMBLE + ':' + cond_name
+    if cond.event != event:
+        applet_log.warning("MAIN: wrong event type for condition %s" % cond_name)
+        return False
+    if deferred:
+        deferred_events.append(event)
+    else:
+        sysevent_condition_check(event)
+    return True
+
+
+def export_task_history(filename):
+    try:
+        items = history.items()
+        rv = len(items)
+        if rv == 0:
+            applet_log("MAIN: not exporting empty history")
+            return False
+        f = open(filename, 'w')
+        f.write(HISTORY_SEPARATOR.join(HISTORY_HEADERS) + '\n')
+        for x in items:
+            f.write(
+                HISTORY_SEPARATOR.join(map(str, [
+                    x.item_id,
+                    time.strftime('%Y-%m-%d %H:%M:%S',
+                                  time.localtime(x.startup_time)),
+                    '%.4f' % x.run_time,
+                    x.task_name,
+                    x.trigger_cond,
+                    HISTORY_ENTRY_SUCCESS if x.success else HISTORY_ENTRY_FAILURE,
+                    x.exit_code,
+                    x.failure_reason if x.failure_reason else HISTORY_ENTRY_SUCCESS
+                ])) + "\n")
+        f.close()
+        applet_log.debug("MAIN: correctly exported %s history items" % rv)
+        return True
+    except IOError as e:
+        applet_log.error("MAIN: IOerror while exporting history items")
+        return False
+
+
+def add_items_batch(item_data):
+    try:
+        interpreter = ItemDataFileInterpreter(item_data)
+        interpreter.create_items()
+    except Exception as e:
+        applet_log.error("MAIN: error while processing item data file: %s" % _x(e))
+        return False
+    tasks.save()
+    conditions.save()
+    signal_handlers.save()
+    return True
 
 
 # create the list of stock signal handlers: this happens at every startup
@@ -5738,6 +5796,9 @@ def set_applet_enabled_events(evts):
     applet_enabled_events = evts
 
 
+#############################################################################
+# Functions corresponding to CLI actions
+
 def kill_existing(verbose=False, shutdown=False):
     oerr(resources.OERR_SHUTDOWN_BEGIN %
          (resources.OERR_SHUTDOWN_SHUTDOWN if shutdown
@@ -5754,11 +5815,6 @@ def kill_existing(verbose=False, shutdown=False):
         oerr(resources.OERR_ERR_DBUS_SERVICE, verbose)
 
 
-def oerr(s, verbose=True):
-    if verbose:
-        sys.stderr.write("%s: %s\n" % (APPLET_NAME, s))
-
-
 def install_icons(overwrite=True):
     create_desktop_file(overwrite=overwrite)
     create_autostart_file(overwrite=overwrite)
@@ -5766,7 +5822,7 @@ def install_icons(overwrite=True):
 
 # the horrible hack below is because no way was found to set the timeout for
 # introspective DBus methods to infinite (that is: GObject.G_MAXINT)
-def show_box(box='about', verbose=False):
+def call_show_box(box='about', verbose=False):
     oerr(resources.OERR_SHOW_BOX % box, verbose)
     bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
     proxy = Gio.DBusProxy.new_sync(bus, Gio.DBusProxyFlags.NONE, None,
@@ -5791,7 +5847,7 @@ def show_icon(show=True, running=True):
     config.save()
 
 
-def run_condition(cond_name, deferred, verbose=False):
+def call_run_condition(cond_name, deferred, verbose=False):
     oerr(resources.OERR_RUN_CONDITION % cond_name, verbose)
     bus = dbus.SessionBus()
     proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
@@ -5802,27 +5858,20 @@ def run_condition(cond_name, deferred, verbose=False):
         return True
 
 
-def export_running_history(filename, verbose=False):
+def call_export_task_history(filename, verbose=False):
     oerr(resources.OERR_EXPORT_HISTORY % filename, verbose)
     bus = dbus.SessionBus()
     proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
     try:
-        rv = proxy.ExportHistory(filename)
+        if proxy.ExportHistory(filename):
+            oerr(resources.OERR_EXPORT_HISTORY_FINISH, verbose)
+            return True
+        else:
+            oerr(resources.OERR_EXPORT_HISTORY_FAIL, verbose)
+            return False
     except dbus.exceptions.DBusException:
         oerr(resources.OERR_EXPORT_HISTORY_UNKNOWN, verbose)
         return False
-    if rv < 0:
-        if rv == HISTORY_ERR_EMPTY:
-            s = resources.OERR_EXPORT_HISTORY_EMPTY
-        elif rv == HISTORY_ERR_IOERROR:
-            s = resources.OERR_EXPORT_HISTORY_IOERROR
-        else:
-            s = resources.OERR_EXPORT_HISTORY_UNKNOWN
-        oerr(resources.OERR_EXPORT_HISTORY_FAIL % s, verbose)
-        return False
-    else:
-        oerr(resources.OERR_EXPORT_HISTORY_FINISH % rv, verbose)
-        return True
 
 
 def call_add_items(filename, verbose=False):
@@ -5840,17 +5889,16 @@ def call_add_items(filename, verbose=False):
             oerr(resources.OERR_ITEMOPS_ADD_NOREAD, verbose)
             return False
     try:
-        rv = proxy.AddItemsBatch(data)
+        if not proxy.AddItemsBatch(data):
+            applet_log.error("MAIN: failed to add items")
+            oerr(resources.OERR_ITEMOPS_ADD_FAIL, verbose)
+            return False
+        else:
+            applet_log.info("MAIN: items added successfully")
+            return True
     except dbus.exceptions.DBusException:
         oerr(resources.OERR_ERR_ITEMOPS_DBUS, verbose)
         return False
-    if rv:
-        applet_log.error("MAIN: failed to add items: %s" % rv)
-        oerr(resources.OERR_ITEMOPS_ADD_FAIL, verbose)
-        return False
-    else:
-        applet_log.info("MAIN: items added successfully")
-        return True
 
 
 def do_add_items(filename, verbose=False):
@@ -5892,41 +5940,18 @@ def do_add_items(filename, verbose=False):
 
 
 def call_remove_item(item_spec, verbose=False):
-    # TODO: the symbols should be converted to constants
     bus = dbus.SessionBus()
     proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
     try:
-        rv = proxy.RemoveItem(item_spec)
+        if not proxy.RemoveItem(item_spec):
+            oerr(resources.OERR_ITEMOPS_DEL_FAIL, verbose)
+            return False
+        else:
+            oerr(resources.OERR_ITEMOPS_DEL_FINISH, verbose)
+            return True
     except dbus.exceptions.DBusException:
         oerr(resources.OERR_ERR_ITEMOPS_DBUS, verbose)
         return False
-    if rv:
-        li = rv.split('/')
-        if len(li) > 1:
-            oerr(resources.OERR_ITEMOPS_DEL_FAIL %
-                 resources.OERR_ERR_ITEMOPS_DBUS, verbose)
-            return False
-        elif len(li) == 1:
-            try:
-                item_type, item_name, errcode = li[0].split(':')
-                errcode = int(errcode)
-                if errcode == ITEM_OPERATION_OK:
-                    reason = resources.OERR_ERR_ITEMOPS_OK
-                elif errcode == ITEM_OPERATION_ERR_TYPE:
-                    reason = resources.OERR_ERR_ITEMOPS_OK
-                elif errcode == ITEM_OPERATION_ERR_NOTFOUND:
-                    reason = resources.OERR_ERR_ITEMOPS_NOTFOUND
-                elif errcode == ITEM_OPERATION_ERR_CONFLICT:
-                    reason = resources.OERR_ERR_ITEMOPS_CONFLICT
-                else:
-                    reason = resources.OERR_ERR_ITEMOPS_GENERIC
-            except ValueError:
-                reason = resources.OERR_ERR_ITEMOPS_DBUS
-            oerr(resources.OERR_ITEMOPS_DEL_FAIL % reason, verbose)
-            return False
-    else:
-        oerr(resources.OERR_ITEMOPS_DEL_FINISH % item_spec, verbose)
-        return True
 
 
 def do_remove_item(item_spec, verbose=False):
@@ -5943,30 +5968,11 @@ def do_remove_item(item_spec, verbose=False):
     except FileNotFoundError:
         pass
     li = remove_item_specs(item_spec)
-    if len(li) > 1:
-        oerr(resources.OERR_ITEMOPS_DEL_FAIL %
-             resources.OERR_ERR_ITEMOPS_DBUS, verbose)
-        return False
-    elif len(li) == 1:
-        try:
-            item_type, item_name, errcode = li[0]
-            errcode = int(errcode)
-            if errcode == ITEM_OPERATION_OK:
-                reason = resources.OERR_ERR_ITEMOPS_OK
-            elif errcode == ITEM_OPERATION_ERR_TYPE:
-                reason = resources.OERR_ERR_ITEMOPS_OK
-            elif errcode == ITEM_OPERATION_ERR_NOTFOUND:
-                reason = resources.OERR_ERR_ITEMOPS_NOTFOUND
-            elif errcode == ITEM_OPERATION_ERR_CONFLICT:
-                reason = resources.OERR_ERR_ITEMOPS_CONFLICT
-            else:
-                reason = resources.OERR_ERR_ITEMOPS_GENERIC
-        except ValueError:
-            reason = resources.OERR_ERR_ITEMOPS_DBUS
-        oerr(resources.OERR_ITEMOPS_DEL_FAIL % reason, verbose)
+    if len(li) > 0:
+        oerr(resources.OERR_ITEMOPS_DEL_FAIL, verbose)
         return False
     else:
-        oerr(resources.OERR_ITEMOPS_DEL_FINISH % item_spec, verbose)
+        oerr(resources.OERR_ITEMOPS_DEL_FINISH, verbose)
         return True
 
 
@@ -6181,6 +6187,12 @@ def import_item_data(filename=None, verbose=False):
     oerr(resources.OERR_IMPORT_DATA_FINISH, verbose)
 
 
+# verbose output shortcut
+def oerr(s, verbose=True):
+    if verbose:
+        sys.stderr.write("%s: %s\n" % (APPLET_NAME, s))
+
+
 # Configure services and start the application
 def gui_applet_main():
     init_signal_handler(applet)
@@ -6272,16 +6284,9 @@ def main():
 
         # if pyinotify was imported and enabled, activate watch path manager
         if FILE_NOTIFY_ENABLED and config.get('General', 'file notifications'):
-            class LocalEventHandler(pyinotify.ProcessEvent):
-                def process_default(self, event):
-                    if event.mask & FN_IN_MODIFY_EVENTS:
-                        applet_log.debug("PATHNOTIFY: notifying changes (%s) in %s" % (event.maskname, event.pathname))
-                        deferred_watch_paths.append(event.pathname)
-                    else:
-                        applet_log.debug("PATHNOTIFY: event ignored (%s) for %s" % (event.maskname, event.pathname))
             watch_path_manager = pyinotify.WatchManager()
             watch_path_notifier = pyinotify.ThreadedNotifier(
-                watch_path_manager, LocalEventHandler())
+                watch_path_manager, PathNotifyEventHandler())
             applet_log.debug("MAIN: filesystem change based conditions are enabled")
 
         # initialize global variables that require running environment
@@ -6423,7 +6428,7 @@ def main():
             print(resources.COMMAND_LINE_SHOWVERSION
                   % (APPLET_NAME, APPLET_FULLNAME, APPLET_VERSION))
             if verbose and running:
-                show_box('about', False)
+                call_show_box('about', False)
 
         if args.show_icon:
             show_icon(True, running)
@@ -6433,7 +6438,7 @@ def main():
                 oerr(resources.OERR_ERR_REQUIRE_INSTANCE, verbose)
                 sys.exit(2)
             else:
-                show_box('settings', verbose)
+                call_show_box('settings', verbose)
         elif args.show_history:
             if not running:
                 oerr(resources.OERR_ERR_REQUIRE_INSTANCE, verbose)
@@ -6442,7 +6447,7 @@ def main():
                 oerr(resources.OERR_ERR_MINIMALISTIC, verbose)
                 sys.exit(2)
             else:
-                show_box('history', verbose)
+                call_show_box('history', verbose)
         elif args.show_tasks:
             if not running:
                 oerr(resources.OERR_ERR_REQUIRE_INSTANCE, verbose)
@@ -6451,7 +6456,7 @@ def main():
                 oerr(resources.OERR_ERR_MINIMALISTIC, verbose)
                 sys.exit(2)
             else:
-                show_box('task', verbose)
+                call_show_box('task', verbose)
         elif args.show_conditions:
             if not running:
                 oerr(resources.OERR_ERR_REQUIRE_INSTANCE, verbose)
@@ -6460,7 +6465,7 @@ def main():
                 oerr(resources.OERR_ERR_MINIMALISTIC, verbose)
                 sys.exit(2)
             else:
-                show_box('condition', verbose)
+                call_show_box('condition', verbose)
         elif args.show_dbus_signals:
             if not running:
                 oerr(resources.OERR_ERR_REQUIRE_INSTANCE, verbose)
@@ -6472,7 +6477,7 @@ def main():
                 if not config.get('General', 'user events'):
                     oerr(resources.OERR_ERR_DBUS_DISABLED, verbose)
                     sys.exit(1)
-                show_box('dbus_signal', verbose)
+                call_show_box('dbus_signal', verbose)
 
         if args.export_items:
             if args.export_items == '*':
@@ -6493,7 +6498,7 @@ def main():
                 sys.exit(2)
             else:
                 filename = os.path.realpath(args.export_history)
-                if not export_running_history(filename, verbose):
+                if not call_export_task_history(filename, verbose):
                     sys.exit(2)
 
         if args.run_condition:
@@ -6501,14 +6506,14 @@ def main():
                 oerr(resources.OERR_ERR_DBUS_DISABLED, verbose)
                 sys.exit(2)
             else:
-                if not(run_condition(args.run_condition, False, verbose)):
+                if not(call_run_condition(args.run_condition, False, verbose)):
                     sys.exit(2)
         if args.defer_condition:
             if not running:
                 oerr(resources.OERR_ERR_DBUS_DISABLED, verbose)
                 sys.exit(2)
             else:
-                if not(run_condition(args.defer_condition, True, verbose)):
+                if not(call_run_condition(args.defer_condition, True, verbose)):
                     sys.exit(2)
 
         if args.item_delete:
