@@ -73,8 +73,8 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.7~beta.2'
-APPLET_TAGDESC = 'Full DBus API and dict-to-item checks'
+APPLET_VERSION = '0.9.7~beta.3'
+APPLET_TAGDESC = 'DBus API bug fixes'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -1619,16 +1619,6 @@ class AppletDBusService(dbus.service.Object):
         bus_name = dbus.service.BusName(APPLET_BUS_NAME, bus=dbus.SessionBus())
         dbus.service.Object.__init__(self, bus_name, APPLET_BUS_PATH)
 
-    @dbus.service.method(APPLET_BUS_NAME)
-    def KillInstance(self):
-        self.remove_from_connection()
-        Gtk.main_quit()
-
-    @dbus.service.method(APPLET_BUS_NAME)
-    def QuitInstance(self):
-        self.remove_from_connection()
-        applet.quit(None)
-
     @dbus.service.method(APPLET_BUS_NAME, in_signature='s')
     def Reset(self, clear_history=False):
         global current_deferred_events
@@ -1673,16 +1663,6 @@ class AppletDBusService(dbus.service.Object):
         elif dlgname == 'dbus_signal':
             applet.dlgdbussignal(None)
 
-    @dbus.service.method(APPLET_BUS_NAME, in_signature='b')
-    def ShowIcon(self, show=True):
-        config.set('General', 'show icon', show)
-        config.save()
-        applet.hide_icon(not show)
-
-    @dbus.service.method(APPLET_BUS_NAME, in_signature='sb', out_signature='b')
-    def RunCondition(self, cond_name, deferred=False):
-        return start_event_condition(cond_name, deferred)
-
     @dbus.service.method(APPLET_BUS_NAME, in_signature='s', out_signature='b')
     def ExportHistory(self, file_name):
         return export_task_history(file_name)
@@ -1690,6 +1670,50 @@ class AppletDBusService(dbus.service.Object):
     @dbus.service.method(APPLET_BUS_NAME, in_signature='s', out_signature='b')
     def AddItemsBatch(self, item_data):
         return add_items_batch(item_data)
+
+    # API methods
+    @dbus.service.method(APPLET_BUS_NAME, in_signature='b')
+    def Pause(self, pause=True):
+        applet.pause_scheduler(pause)
+
+    @dbus.service.method(APPLET_BUS_NAME, out_signature='b')
+    def Paused(self):
+        return periodic.stopped
+
+    @dbus.service.method(APPLET_BUS_NAME)
+    def KillInstance(self):
+        self.remove_from_connection()
+        Gtk.main_quit()
+
+    @dbus.service.method(APPLET_BUS_NAME)
+    def QuitInstance(self):
+        self.remove_from_connection()
+        applet.quit(None)
+
+    @dbus.service.method(APPLET_BUS_NAME, in_signature='sb', out_signature='b')
+    def RunCondition(self, cond_name, deferred=False):
+        return start_event_condition(cond_name, deferred)
+
+    @dbus.service.method(APPLET_BUS_NAME, in_signature='ss', out_signature='v')
+    def GetConfig(self, section, entry):
+        try:
+            v = config.get(section, entry)
+            return v
+        except Exception as e:
+            applet_log.error("SERVICE: could not get option at %s:%s (%s)" % (section, entry, _x(e)))
+            return None
+
+    @dbus.service.method(APPLET_BUS_NAME, in_signature='ssvb', out_signature='b')
+    def SetConfig(self, section, entry, value, reload=True):
+        try:
+            config.set(section, entry, value)
+            config.save()
+            if reload:
+                applet.reconfigure()
+            return True
+        except Exception as e:
+            applet_log.error("SERVICE: could not set option at %s:%s (%s)" % (section, entry, _x(e)))
+            return False
 
     @dbus.service.method(APPLET_BUS_NAME, in_signature='s', out_signature='b')
     def RemoveItem(self, item_spec):
@@ -1728,32 +1752,6 @@ class AppletDBusService(dbus.service.Object):
                 applet_log.info("SERVICE: item specification %s has been removed" % item_spec)
                 return True
 
-    # API-only methods
-    @dbus.service.method(APPLET_BUS_NAME, in_signature='ss', out_signature='v')
-    def GetConfig(self, section, entry):
-        try:
-            v = config.get(section, entry)
-            return v
-        except Exception as e:
-            applet_log.error("SERVICE: could not get option at %s:%s (%s)" % (section, entry, _x(e)))
-            return None
-
-    @dbus.service.method(APPLET_BUS_NAME, in_signature='ssvb', out_signature='b')
-    def SetConfig(self, section, entry, value, reload=True):
-        try:
-            config.set(section, entry, value)
-            config.save()
-            if reload:
-                applet.reconfigure()
-            return True
-        except Exception as e:
-            applet_log.error("SERVICE: could not set option at %s:%s (%s)" % (section, entry, _x(e)))
-            return False
-
-    @dbus.service.method(APPLET_BUS_NAME, in_signature='b')
-    def Pause(self, pause=True):
-        applet.pause_scheduler(pause)
-
     @dbus.service.method(APPLET_BUS_NAME, in_signature='s', out_signature='as')
     def GetItemNames(self, item_type=''):
         l = []
@@ -1774,7 +1772,7 @@ class AppletDBusService(dbus.service.Object):
         if ':' not in item_spec:
             applet_log.warning("SERVICE: invalid item specification %s for item definition" % item_spec)
         else:
-            t, n = item.split(':')
+            t, n = item_spec.split(':')
             if ITEM_TYPE_CONDITIONS.startswith(t):
                 i = conditions.get(cond_name=n)
                 if i is not None:
@@ -1809,37 +1807,42 @@ class AppletDBusService(dbus.service.Object):
                     applet_log.warning("SERVICE: signal handler not found while retrieving %s" % item_spec)
         return rd
 
+    # booleans are handled in a special way because bool cannot be subclassed
+    # see http://dbus.freedesktop.org/doc/dbus-python/api/dbus.Boolean-class.html
     @dbus.service.method(APPLET_BUS_NAME, in_signature='a{sv}b', out_signature='b')
     def AddItemByDefinition(self, item_dic, save=True):
+        for k in item_dic:
+            if isinstance(item_dic[k], dbus.Boolean):
+                item_dic[k] = bool(item_dic[k])
         try:
             item_type = item_dic['type']
             if item_type == 'condition':
                 condition = None
-                condtype = condition_dic['subtype']
+                condtype = item_dic['subtype']
                 if condtype == 'IntervalBasedCondition':
-                    condition = dict_to_IntervalBasedCondition(condition_dic)
+                    condition = dict_to_IntervalBasedCondition(item_dic)
                 elif condtype == 'TimeBasedCondition':
-                    condition = dict_to_TimeBasedCondition(condition_dic)
+                    condition = dict_to_TimeBasedCondition(item_dic)
                 elif condtype == 'CommandBasedCondition':
-                    condition = dict_to_CommandBasedCondition(condition_dic)
+                    condition = dict_to_CommandBasedCondition(item_dic)
                 elif condtype == 'IdleTimeBasedCondition':
-                    condition = dict_to_IdleTimeBasedCondition(condition_dic)
+                    condition = dict_to_IdleTimeBasedCondition(item_dic)
                 elif condtype == 'EventBasedCondition':
-                    condition = dict_to_EventBasedCondition(condition_dic)
+                    condition = dict_to_EventBasedCondition(item_dic)
                 elif condtype == 'PathNotifyBasedCondition':
-                    condition = dict_to_PathNotifyBasedCondition(condition_dic)
+                    condition = dict_to_PathNotifyBasedCondition(item_dic)
                 # TODO: add further condition loaders here
                 if condition:
                     conditions.add(condition)
                 if save:
                     conditions.save()
             elif item_type == 'task':
-                task = dict_to_Task(task_dic)
+                task = dict_to_Task(item_dic)
                 tasks.add(task)
                 if save:
                     tasks.save()
             elif item_type == 'dbus_signal_handler':
-                handler = dict_to_SignalHandler(handler_dic)
+                handler = dict_to_SignalHandler(item_dic)
                 signal_handlers.add(handler)
                 if save:
                     signal_handlers.save()
@@ -1881,10 +1884,6 @@ class AppletDBusService(dbus.service.Object):
                     x.failure_reason if x.failure_reason else HISTORY_ENTRY_SUCCESS
                 ])))
         return l
-
-    @dbus.service.method(APPLET_BUS_NAME, out_signature='b')
-    def Paused(self):
-        return periodic.stopped
 
 
 #############################################################################
@@ -6149,16 +6148,17 @@ def call_show_box(box='about', verbose=False):
         oerr(resources.OERR_ERR_DBUS_SERVICE, verbose)
 
 
-def show_icon(show=True, running=True):
+def call_show_icon(show=True, running=True):
     if running:
         bus = dbus.SessionBus()
         proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
         try:
-            proxy.ShowIcon(show)
+            proxy.SetConfig('General', 'show icon', show, True)
         except dbus.exceptions.DBusException:
             oerr(resources.OERR_ERR_DBUS_SERVICE, verbose)
-    config.set('General', 'show icon', show)
-    config.save()
+    else:
+        config.set('General', 'show icon', show)
+        config.save()
 
 
 def call_run_condition(cond_name, deferred, verbose=False):
@@ -6745,7 +6745,7 @@ def main():
                 call_show_box('about', False)
 
         if args.show_icon:
-            show_icon(True, running)
+            call_show_icon(True, running)
 
         if args.show_settings:
             if not running:
