@@ -73,8 +73,8 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.7~beta.1'
-APPLET_TAGDESC = 'Code cleanup and better DBus interface'
+APPLET_VERSION = '0.9.7~beta.2'
+APPLET_TAGDESC = 'Full DBus API and dict-to-item checks'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -92,6 +92,13 @@ DBUS_CHECK_COMPARE_CONTAINS = 'contains'
 DBUS_CHECK_COMPARE_MATCHES = 'matches'
 DBUS_CHECK_COMPARE_GREATER = 'gt'
 DBUS_CHECK_COMPARE_LESS = 'lt'
+DBUS_CHECK_COMPARE = [
+    DBUS_CHECK_COMPARE_IS,
+    DBUS_CHECK_COMPARE_CONTAINS,
+    DBUS_CHECK_COMPARE_MATCHES,
+    DBUS_CHECK_COMPARE_GREATER,
+    DBUS_CHECK_COMPARE_LESS,
+]
 
 # item types for CLI arguments
 ITEM_TYPE_TASKS = 'tasks'
@@ -530,7 +537,6 @@ sys.path.insert(0, APP_DATA_FOLDER)
 
 # dialog boxes
 def load_applet_dialog(name):
-    base = os.path.dirname(sys.argv[0])
     with open(os.path.join(APP_DATA_FOLDER, '%s.glade' % name)) as f:
         dialog_xml = f.read()
     return dialog_xml
@@ -549,6 +555,26 @@ def _x(e):
     if t is None:
         return ''
     return '%s: %s' % (t.__name__, v)
+
+
+# raise a type error if the type of something doesn't match the given type
+def _type_check(v, expected_type, or_null=False):
+    if not isinstance(v, expected_type):
+        if v is not None or not or_null:
+            if isinstance(expected_type, tuple):
+                et_l = []
+                for x in expected_type:
+                    if hasattr(x, '__name__'):
+                        et_l.append(x.__name__)
+                    else:
+                        et_l.append(str(x))
+                et_n = ', '.join(et_l)
+            else:
+                if hasattr(expected_type, '__name__'):
+                    et_n = expected_type.__name__
+                else:
+                    et_n = str(expected_type)
+            raise TypeError("expected %s but got %s" % (et_n, type(v).__name__))
 
 
 # dialog boxes are loaded after initialization
@@ -687,8 +713,8 @@ resources.COMMAND_LINE_HELP_CLEAR = _("clear all tasks and conditions [S]")
 resources.COMMAND_LINE_HELP_INSTALL = _("install application icons and autostart [S]")
 resources.COMMAND_LINE_HELP_QUERY = _("query for a running instance")
 resources.COMMAND_LINE_HELP_EXPORT_HISTORY = _("export task history to a text file [R]")
-resources.COMMAND_LINE_HELP_RUN_CONDITION = _("run a command-line bound condition")
-resources.COMMAND_LINE_HELP_DEFER_CONDITION = _("enqueue a command-line bound condition")
+resources.COMMAND_LINE_HELP_RUN_CONDITION = _("run a command-line bound condition [R]")
+resources.COMMAND_LINE_HELP_DEFER_CONDITION = _("enqueue a command-line bound condition [R]")
 resources.COMMAND_LINE_HELP_SHUTDOWN = _("run shutdown tasks and close an existing istance [R]")
 resources.COMMAND_LINE_HELP_KILL = _("kill an existing istance [R]")
 resources.COMMAND_LINE_HELP_EXPORT = _("save tasks and conditions to a portable format")
@@ -870,8 +896,8 @@ def remove_item_specs(item_specs):
     to_delete = []
     not_deleted = []
     for item in item_specs:
-        if ITEM_SPEC_SEPARATOR in item:
-            t, n = item.split(ITEM_SPEC_SEPARATOR)
+        if ':' in item:
+            t, n = item.split(':')
             t = t.lower()
             if ITEM_TYPE_CONDITIONS.startswith(t):
                 to_delete.append((ITEM_TYPE_CONDITIONS, n))
@@ -1391,6 +1417,11 @@ class ItemDataFileInterpreter(object):
         # all tests passed
         return store
 
+    # in this utility, after data has been loaded, dependency checks are
+    # redundant and lead to errors: dependencies have already been checked
+    # in the loader, and since we want to reject an entire file if anything
+    # goes wrong we have to be able to create conditions even when items
+    # they depend on still have to be added to the current ones
     def create_items(self):
         if not self._data:
             raise ValueError("items not loaded")
@@ -1402,17 +1433,23 @@ class ItemDataFileInterpreter(object):
             if item_type == 'condition':
                 subtype = item_dict['subtype']
                 if subtype == 'IntervalBasedCondition':
-                    item = dict_to_IntervalBasedCondition(item_dict)
+                    item = dict_to_IntervalBasedCondition(
+                        item_dict, skip_dependency_check=True)
                 elif subtype == 'TimeBasedCondition':
-                    item = dict_to_TimeBasedCondition(item_dict)
+                    item = dict_to_TimeBasedCondition(
+                        item_dict, skip_dependency_check=True)
                 elif subtype == 'CommandBasedCondition':
-                    item = dict_to_CommandBasedCondition(item_dict)
+                    item = dict_to_CommandBasedCondition(
+                        item_dict, skip_dependency_check=True)
                 elif subtype == 'IdleTimeBasedCondition':
-                    item = dict_to_IdleTimeBasedCondition(item_dict)
+                    item = dict_to_IdleTimeBasedCondition(
+                        item_dict, skip_dependency_check=True)
                 elif subtype == 'EventBasedCondition':
-                    item = dict_to_EventBasedCondition(item_dict)
+                    item = dict_to_EventBasedCondition(
+                        item_dict, skip_dependency_check=True)
                 elif subtype == 'PathNotifyBasedCondition':
-                    item = dict_to_PathNotifyBasedCondition(item_dict)
+                    item = dict_to_PathNotifyBasedCondition(
+                        item_dict, skip_dependency_check=True)
                 new_conditions.append(item)
             elif item_type == 'task':
                 item = dict_to_Task(item_dict)
@@ -1593,6 +1630,35 @@ class AppletDBusService(dbus.service.Object):
         applet.quit(None)
 
     @dbus.service.method(APPLET_BUS_NAME, in_signature='s')
+    def Reset(self, clear_history=False):
+        global current_deferred_events
+        global current_deferred_changed_paths
+        global current_system_event
+        global current_changed_path
+        applet_log.warning("SERVICE: resetting applet")
+        periodic.stop()
+        # some cleanup actions may fail due to multiple threads
+        applet_lock.acquire()
+        current_deferred_changed_paths = None
+        current_deferred_events = None
+        current_system_event = None
+        current_changed_path = None
+        deferred_events.items(clear=True)
+        deferred_watch_paths.items(clear=True)
+        applet_lock.release()
+        tasks.load()
+        signal_handlers.load()
+        conditions.load()
+        if clear_history:
+            history.clear()
+        periodic.start()
+        applet_log.info("SERVICE: applet was reset")
+
+    @dbus.service.method(APPLET_BUS_NAME)
+    def ReloadConfig(self):
+        applet.reconfigure()
+
+    @dbus.service.method(APPLET_BUS_NAME, in_signature='s')
     def ShowDialog(self, dlgname):
         if dlgname == 'settings':
             applet.dlgsettings(None)
@@ -1661,6 +1727,164 @@ class AppletDBusService(dbus.service.Object):
             else:
                 applet_log.info("SERVICE: item specification %s has been removed" % item_spec)
                 return True
+
+    # API-only methods
+    @dbus.service.method(APPLET_BUS_NAME, in_signature='ss', out_signature='v')
+    def GetConfig(self, section, entry):
+        try:
+            v = config.get(section, entry)
+            return v
+        except Exception as e:
+            applet_log.error("SERVICE: could not get option at %s:%s (%s)" % (section, entry, _x(e)))
+            return None
+
+    @dbus.service.method(APPLET_BUS_NAME, in_signature='ssvb', out_signature='b')
+    def SetConfig(self, section, entry, value, reload=True):
+        try:
+            config.set(section, entry, value)
+            config.save()
+            if reload:
+                applet.reconfigure()
+            return True
+        except Exception as e:
+            applet_log.error("SERVICE: could not set option at %s:%s (%s)" % (section, entry, _x(e)))
+            return False
+
+    @dbus.service.method(APPLET_BUS_NAME, in_signature='b')
+    def Pause(self, pause=True):
+        applet.pause_scheduler(pause)
+
+    @dbus.service.method(APPLET_BUS_NAME, in_signature='s', out_signature='as')
+    def GetItemNames(self, item_type=''):
+        l = []
+        if not item_type or ITEM_TYPE_TASKS.startswith(item_type):
+            for name in tasks.names:
+                l.append('%s:%s' % (ITEM_TYPE_TASKS, name))
+        if not item_type or ITEM_TYPE_SIGNAL_HANDLERS.startswith(item_type):
+            for name in signal_handlers.names:
+                l.append('%s:%s' % (ITEM_TYPE_SIGNAL_HANDLERS, name))
+        if not item_type or ITEM_TYPE_CONDITIONS.startswith(item_type):
+            for name in conditions.names:
+                l.append('%s:%s' % (ITEM_TYPE_CONDITIONS, name))
+        return l
+
+    @dbus.service.method(APPLET_BUS_NAME, in_signature='s', out_signature='a{sv}')
+    def GetItemDefinition(self, item_spec):
+        rd = {}
+        if ':' not in item_spec:
+            applet_log.warning("SERVICE: invalid item specification %s for item definition" % item_spec)
+        else:
+            t, n = item.split(':')
+            if ITEM_TYPE_CONDITIONS.startswith(t):
+                i = conditions.get(cond_name=n)
+                if i is not None:
+                    if isinstance(i, PathNotifyBasedCondition):
+                        rd = PathNotifyBasedCondition_to_dict(i)
+                    elif isinstance(i, EventBasedCondition):
+                        rd = EventBasedCondition_to_dict(i)
+                    elif isinstance(i, IdleTimeBasedCondition):
+                        rd = IdleTimeBasedCondition_to_dict(i)
+                    elif isinstance(i, CommandBasedCondition):
+                        rd = CommandBasedCondition_to_dict(i)
+                    elif isinstance(i, TimeBasedCondition):
+                        rd = TimeBasedCondition_to_dict(i)
+                    elif isinstance(i, IntervalBasedCondition):
+                        rd = IntervalBasedCondition_to_dict(i)
+                    # TODO: add possible other conditions here
+                    else:
+                        applet_log.error("SERVICE: unknown condition type while retrieving %s" % item_spec)
+                else:
+                    applet_log.warning("SERVICE: condition not found while retrieving %s" % item_spec)
+            elif ITEM_TYPE_TASKS.startswith(t):
+                i = tasks.get(task_name=n)
+                if i is not None:
+                    rd = Task_to_dict(i)
+                else:
+                    applet_log.warning("SERVICE: task not found while retrieving %s" % item_spec)
+            elif ITEM_TYPE_SIGNAL_HANDLERS.startswith(t):
+                i = signal_handlers.get(handler_name=n)
+                if i is not None:
+                    rd = SignalHandler_to_dict(i)
+                else:
+                    applet_log.warning("SERVICE: signal handler not found while retrieving %s" % item_spec)
+        return rd
+
+    @dbus.service.method(APPLET_BUS_NAME, in_signature='a{sv}b', out_signature='b')
+    def AddItemByDefinition(self, item_dic, save=True):
+        try:
+            item_type = item_dic['type']
+            if item_type == 'condition':
+                condition = None
+                condtype = condition_dic['subtype']
+                if condtype == 'IntervalBasedCondition':
+                    condition = dict_to_IntervalBasedCondition(condition_dic)
+                elif condtype == 'TimeBasedCondition':
+                    condition = dict_to_TimeBasedCondition(condition_dic)
+                elif condtype == 'CommandBasedCondition':
+                    condition = dict_to_CommandBasedCondition(condition_dic)
+                elif condtype == 'IdleTimeBasedCondition':
+                    condition = dict_to_IdleTimeBasedCondition(condition_dic)
+                elif condtype == 'EventBasedCondition':
+                    condition = dict_to_EventBasedCondition(condition_dic)
+                elif condtype == 'PathNotifyBasedCondition':
+                    condition = dict_to_PathNotifyBasedCondition(condition_dic)
+                # TODO: add further condition loaders here
+                if condition:
+                    conditions.add(condition)
+                if save:
+                    conditions.save()
+            elif item_type == 'task':
+                task = dict_to_Task(task_dic)
+                tasks.add(task)
+                if save:
+                    tasks.save()
+            elif item_type == 'dbus_signal_handler':
+                handler = dict_to_SignalHandler(handler_dic)
+                signal_handlers.add(handler)
+                if save:
+                    signal_handlers.save()
+            return True
+        except Exception as e:
+            applet_log.error("SERVICE: could not add item by definition (%s)" % _x(e))
+            return False
+
+    @dbus.service.method(APPLET_BUS_NAME, in_signature='s')
+    def SaveItems(self, what=''):
+        if what:
+            if ITEM_TYPE_TASKS.startswith(what):
+                tasks.save()
+            elif ITEM_TYPE_CONDITIONS.startswith(what):
+                conditions.save()
+            elif ITEM_TYPE_SIGNAL_HANDLERS.startswith(what):
+                signal_handlers.save()
+            else:
+                applet_log.error("SERVICE: cannot save items of type %s" % what)
+        else:
+            tasks.save()
+            signal_handlers.save()
+            conditions.save()
+
+    @dbus.service.method(APPLET_BUS_NAME, out_signature='as')
+    def GetHistoryEntries(self):
+        l = []
+        for x in history.items():
+            l.append(
+                HISTORY_SEPARATOR.join(map(str, [
+                    x.item_id,
+                    time.strftime('%Y-%m-%d %H:%M:%S',
+                                  time.localtime(x.startup_time)),
+                    '%.4f' % x.run_time,
+                    x.task_name,
+                    x.trigger_cond,
+                    HISTORY_ENTRY_SUCCESS if x.success else HISTORY_ENTRY_FAILURE,
+                    x.exit_code,
+                    x.failure_reason if x.failure_reason else HISTORY_ENTRY_SUCCESS
+                ])))
+        return l
+
+    @dbus.service.method(APPLET_BUS_NAME, out_signature='b')
+    def Paused(self):
+        return periodic.stopped
 
 
 #############################################################################
@@ -2687,6 +2911,22 @@ def Task_to_dict(t):
 def dict_to_Task(d):
     if d['type'] != 'task':
         raise ValueError("incorrect dictionary type")
+    if not VALIDATE_TASK_RE.match(d['task_name']):
+        raise ValueError("invalid task name: %s" % d['task_name'])
+    _type_check(d['task_id'], int)
+    _type_check(d['environment_vars'], dict)
+    _type_check(d['include_env'], bool)
+    _type_check(d['success_stdout'], str, or_null=True)
+    _type_check(d['success_stderr'], str, or_null=True)
+    _type_check(d['success_status'], int, or_null=True)
+    _type_check(d['failure_stdout'], str, or_null=True)
+    _type_check(d['failure_stderr'], str, or_null=True)
+    _type_check(d['failure_status'], int, or_null=True)
+    _type_check(d['match_exact'], bool)
+    _type_check(d['case_sensitive'], bool)
+    _type_check(d['command'], str)
+    _type_check(d['startup_dir'], str)
+    _type_check(d['match_regexp'], bool)
     t = Task()
     applet_log.debug("MAIN: trying to load task %s" % d['task_name'])
     t.task_id = d['task_id']
@@ -2896,9 +3136,25 @@ def Condition_to_dict(c):
     return d
 
 
-def dict_to_Condition(d, c=None):
+# the reason for the optional skip_dependency_check parameter is that in at
+# least one case, namely when items are created from an item definition file,
+# it is impossible to check dependency against currently available items;
+# however the parameter should be normally be omitted (or set to False)
+def dict_to_Condition(d, c=None, skip_dependency_check=False):
     if d['type'] != 'condition':
         raise ValueError("incorrect dictionary type")
+    if not VALIDATE_CONDITION_RE.match(d['cond_name']):
+        raise ValueError("invalid condition name: %s" % d['cond_name'])
+    if not skip_dependency_check:
+        for name in d['task_names']:
+            if name not in tasks.names:
+                raise ValueError("task name not found: %s" % name)
+    _type_check(d['cond_id'], int)
+    _type_check(d['repeat'], bool)
+    _type_check(d['exec_sequence'], bool)
+    _type_check(d['suspended'], bool)
+    _type_check(d['break_failure'], bool)
+    _type_check(d['break_success'], bool)
     # this will raise an error
     if c is None:
         applet_log.critical("MAIN: NTBS: attempt to load base Condition")
@@ -2942,14 +3198,15 @@ def IntervalBasedCondition_to_dict(c):
     return d
 
 
-def dict_to_IntervalBasedCondition(d):
+def dict_to_IntervalBasedCondition(d, skip_dependency_check=False):
     if d['type'] != 'condition' or d['subtype'] != 'IntervalBasedCondition':
         raise ValueError("incorrect dictionary type")
+    _type_check(d['interval'], int)
     name = d['cond_name']
     interval = d['interval']
     # TODO: if there are more parameters, use d.get('key', default_val)
     c = IntervalBasedCondition(name, interval)
-    c = dict_to_Condition(d, c)
+    c = dict_to_Condition(d, c, skip_dependency_check)
     applet_log.info("MAIN: loaded interval based condition %s" % c.cond_name)
     return c
 
@@ -3006,14 +3263,20 @@ def TimeBasedCondition_to_dict(c):
     return d
 
 
-def dict_to_TimeBasedCondition(d):
+def dict_to_TimeBasedCondition(d, skip_dependency_check=False):
     if d['type'] != 'condition' or d['subtype'] != 'TimeBasedCondition':
         raise ValueError("incorrect dictionary type")
+    _type_check(d['year'], int, or_null=True)
+    _type_check(d['month'], int, or_null=True)
+    _type_check(d['day'], int, or_null=True)
+    _type_check(d['hour'], int, or_null=True)
+    _type_check(d['minute'], int, or_null=True)
+    _type_check(d['weekday'], int, or_null=True)
     name = d['cond_name']
     # we can use d for timedict because the needed keys (intentionally) match
     # TODO: if there are more parameters, use d.get('key', default_val)
     c = TimeBasedCondition(name, d)
-    c = dict_to_Condition(d, c)
+    c = dict_to_Condition(d, c, skip_dependency_check)
     applet_log.info("MAIN: loaded time based condition %s" % c.cond_name)
     return c
 
@@ -3117,7 +3380,8 @@ class CommandBasedCondition(Condition):
             self._error("condition failed (unexpected error: %s)" % _x(e))
             return False
 
-    def __init__(self, name, command, status=None, stdout=None, stderr=None, repeat=True, exec_sequence=True):
+    def __init__(self, name, command, status=None, stdout=None, stderr=None,
+                 repeat=True, exec_sequence=True):
         self.match_exact = False
         self.match_regexp = False
         self.case_sensitive = False
@@ -3152,9 +3416,16 @@ def CommandBasedCondition_to_dict(c):
     return d
 
 
-def dict_to_CommandBasedCondition(d):
+def dict_to_CommandBasedCondition(d, skip_dependency_check=False):
     if d['type'] != 'condition' or d['subtype'] != 'CommandBasedCondition':
         raise ValueError("incorrect dictionary type")
+    _type_check(d['command'], str)
+    _type_check(d['expected_status'], int, or_null=True)
+    _type_check(d['expected_stdout'], str, or_null=True)
+    _type_check(d['expected_stderr'], str, or_null=True)
+    _type_check(d['match_exact'], bool)
+    _type_check(d['case_sensitive'], bool)
+    _type_check(d['match_regexp'], bool)
     name = d['cond_name']
     command = d['command']
     status = d['expected_status']
@@ -3168,7 +3439,7 @@ def dict_to_CommandBasedCondition(d):
     c.match_exact = match_exact
     c.match_regexp = match_regexp
     c.case_sensitive = case_sensitive
-    c = dict_to_Condition(d, c)
+    c = dict_to_Condition(d, c, skip_dependency_check)
     applet_log.info("MAIN: loaded command based condition %s" % c.cond_name)
     return c
 
@@ -3204,14 +3475,15 @@ def IdleTimeBasedCondition_to_dict(c):
     return d
 
 
-def dict_to_IdleTimeBasedCondition(d):
+def dict_to_IdleTimeBasedCondition(d, skip_dependency_check=False):
     if d['type'] != 'condition' or d['subtype'] != 'IdleTimeBasedCondition':
         raise ValueError("incorrect dictionary type")
+    _type_check(d['idle_secs'], int)
     name = d['cond_name']
     idle_secs = d['idle_secs']
     # TODO: if there are more parameters, use d.get('key', default_val)
     c = IdleTimeBasedCondition(name, idle_secs)
-    c = dict_to_Condition(d, c)
+    c = dict_to_Condition(d, c, skip_dependency_check)
     applet_log.info("MAIN: loaded idle time based condition %s" % c.cond_name)
     return c
 
@@ -3231,7 +3503,8 @@ class EventBasedCondition(Condition):
         else:
             return False
 
-    def __init__(self, name, event, no_skip=True, repeat=False, exec_sequence=True):
+    def __init__(self, name, event, no_skip=True, repeat=False,
+                 exec_sequence=True):
         self.event = event
         Condition.__init__(self, name, repeat, exec_sequence)
         if no_skip:
@@ -3247,15 +3520,27 @@ def EventBasedCondition_to_dict(c):
     return d
 
 
-def dict_to_EventBasedCondition(d):
+def dict_to_EventBasedCondition(d, skip_dependency_check=False):
     if d['type'] != 'condition' or d['subtype'] != 'EventBasedCondition':
         raise ValueError("incorrect dictionary type")
+    if d['event'].startswith(EVENT_COMMAND_LINE_PREAMBLE + ':'):
+        if d['event'].split(':')[1] != d['cond_name']:
+            raise ValueError(
+                "invalid command line condition event: %s" % d['event'])
+    elif d['event'].startswith(EVENT_DBUS_SIGNAL_PREAMBLE + ':'):
+        if not skip_dependency_check and \
+           d['event'].split(':')[1] not in signal_handlers.names:
+            raise ValueError("unknown user defined event: %s" % d['event'])
+    elif d['event'] not in stock_event_definitions and \
+            d['event'] not in (EVENT_APPLET_STARTUP, EVENT_APPLET_SHUTDOWN):
+        raise ValueError("unknown event: %s" % d['event'])
+    _type_check(d['no_skip'], bool)
     name = d['cond_name']
     event = d['event']
     no_skip = d['no_skip']
     # TODO: if there are more parameters, use d.get('key', default_val)
     c = EventBasedCondition(name, event, no_skip)
-    c = dict_to_Condition(d, c)
+    c = dict_to_Condition(d, c, skip_dependency_check)
     applet_log.info("MAIN: loaded event based condition %s" % c.cond_name)
     return c
 
@@ -3346,15 +3631,19 @@ def PathNotifyBasedCondition_to_dict(c):
     return d
 
 
-def dict_to_PathNotifyBasedCondition(d):
+def dict_to_PathNotifyBasedCondition(d, skip_dependency_check=False):
     if d['type'] != 'condition' or d['subtype'] != 'PathNotifyBasedCondition':
         raise ValueError("incorrect dictionary type")
+    _type_check(d['watched_paths'], list)
+    _type_check(d['no_skip'], bool)
+    for x in d['watched_paths']:
+        _type_check(x, str)
     name = d['cond_name']
     event = d['watched_paths']
     no_skip = d['no_skip']
     # TODO: if there are more parameters, use d.get('key', default_val)
     c = PathNotifyBasedCondition(name, event, no_skip)
-    c = dict_to_Condition(d, c)
+    c = dict_to_Condition(d, c, skip_dependency_check)
     applet_log.info("MAIN: loaded file change based condition %s" % c.cond_name)
     return c
 
@@ -3401,9 +3690,10 @@ def DataCollectorBasedCondition_to_dict(c):
     return d
 
 
-def dict_to_DataCollectorBasedCondition(d, c=None):
+def dict_to_DataCollectorBasedCondition(d, c=None, skip_dependency_check=False):
     if d['type'] != 'condition' or d['subtype'] != 'DataCollectorBasedCondition':
         raise ValueError("incorrect dictionary type")
+    _type_check(d['no_skip'], bool)
     name = d['cond_name']
     no_skip = d['no_skip']
     # TODO: if there are more parameters, use d.get('key', default_val)
@@ -3413,7 +3703,7 @@ def dict_to_DataCollectorBasedCondition(d, c=None):
         c = DataCollectorBasedCondition(name, no_skip)
     if no_skip:
         c.skip_seconds = 0
-    c = dict_to_Condition(d, c)
+    c = dict_to_Condition(d, c, skip_dependency_check)
     return c
 
 
@@ -3765,7 +4055,8 @@ class SignalHandler(object):
     def dump(self):
         if self.handler_name is None:
             raise RuntimeError("signal handler not initialized")
-        file_name = os.path.join(USER_CONFIG_FOLDER, '%s.handler' % self.handler_name)
+        file_name = os.path.join(USER_CONFIG_FOLDER,
+                                 '%s.handler' % self.handler_name)
         # self.signal_match is session dependent (and a weakref): don't dump
         m = self.signal_match
         self.signal_match = None
@@ -3774,7 +4065,8 @@ class SignalHandler(object):
         self.signal_match = m
 
     def unlink_file(self):
-        file_name = os.path.join(USER_CONFIG_FOLDER, '%s.handler' % self.handler_name)
+        file_name = os.path.join(USER_CONFIG_FOLDER,
+                                 '%s.handler' % self.handler_name)
         if os.path.exists(file_name):
             os.unlink(file_name)
 
@@ -3806,6 +4098,21 @@ def SignalHandler_to_dict(h):
 def dict_to_SignalHandler(d):
     if d['type'] != 'dbus_signal_handler':
         raise ValueError("incorrect dictionary type")
+    if not VALIDATE_SIGNAL_HANDLER_RE.match(d['handler_name']):
+        raise ValueError("invalid signal handler name: %s" % d['handler_name'])
+    if not VALIDATE_DBUS_NAME_RE.match(d['bus_name']):
+        raise ValueError("invalid unique bus name: %s" % d['bus_name'])
+    if not VALIDATE_DBUS_PATH_RE.match(d['bus_path']):
+        raise ValueError("invalid object path: %s" % d['bus_path'])
+    if not VALIDATE_DBUS_INTERFACE_RE.match(d['interface']):
+        raise ValueError("invalid interface: %s" % d['interface'])
+    if not VALIDATE_DBUS_SIGNAL_RE.match(d['signal']):
+        raise ValueError("invalid signal: %s" % d['signal'])
+    if d['bus'] not in ['system', 'session']:
+        raise ValueError("bus must be either system or session")
+    _type_check(d['verify_all_checks'], bool)
+    _type_check(d['defer'], bool)
+    _type_check(d['param_checks'], list)
     applet_log.debug("MAIN: trying to load DBus signal handler %s" % d['handler_name'])
     h = SignalHandler(d['handler_name'])
     h.bus = d['bus']
@@ -3817,6 +4124,16 @@ def dict_to_SignalHandler(d):
     param_checks = d['param_checks']
     h.param_checks = []
     for p in param_checks:
+        _type_check(p[0], int)
+        _type_check(p[3], bool)
+        # element no. 4 is not always saved as a string
+        # _type_check(p[4], str)
+        if p[1] is not None and \
+           type(p[1]) != int and \
+           not VALIDATE_DBUS_SUBPARAM_RE.match(p[1]):
+            raise ValueError("invalid value for subparam index: %s" % p[1])
+        if p[2] not in DBUS_CHECK_COMPARE:
+            raise ValueError("invalid comparison operator: %s" % p[2])
         t = param_check(p[0], p[1], p[2], p[3], p[4])
         h.param_checks.append(t)
     h.verify_all_checks = d['verify_all_checks']
@@ -3832,7 +4149,8 @@ def dict_to_SignalHandler(d):
 # possibly adds (via AND) to other checks
 class StockSignalHandler(SignalHandler):
 
-    def __init__(self, name, bus=None, bus_name=None, bus_path=None, interface=None, signal=None, callback=None):
+    def __init__(self, name, bus=None, bus_name=None, bus_path=None,
+                 interface=None, signal=None, callback=None):
         SignalHandler.__init__(
             self, name, bus, bus_name, bus_path, interface, signal)
         self.callback = self._callback_normalize(callback)
@@ -4764,13 +5082,7 @@ class SignalDialog(object):
             resources.LISTCOL_SIGNAL_VALUE, renderer, text=4)
         l.append_column(c)
         self.signal_param_tests = []
-        self.all_comparisons = [
-            DBUS_CHECK_COMPARE_IS,
-            DBUS_CHECK_COMPARE_CONTAINS,
-            DBUS_CHECK_COMPARE_MATCHES,
-            DBUS_CHECK_COMPARE_LESS,
-            DBUS_CHECK_COMPARE_GREATER,
-        ]
+        self.all_comparisons = DBUS_CHECK_COMPARE
         self.all_comparisons_symdict = {
             DBUS_CHECK_COMPARE_IS: '=',
             DBUS_CHECK_COMPARE_CONTAINS: 'CONTAINS',
@@ -4779,7 +5091,7 @@ class SignalDialog(object):
             DBUS_CHECK_COMPARE_GREATER: '>',
         }
         self.all_comparisons_revdict = {}
-        for k in self.all_comparisons_symdict.keys():
+        for k in self.all_comparisons:
             self.all_comparisons_revdict[self.all_comparisons_symdict[k]] = k
 
     def validate_int(self, s, min_value=None, max_value=None):
@@ -5464,8 +5776,8 @@ class AppletIndicator(Gtk.Application):
         Notify.uninit()
         Gtk.main_quit()
 
-    def pause(self, o):
-        if o.get_active():
+    def pause_scheduler(self, v):
+        if v:
             applet_log.info("MAIN: pausing the scheduler")
             periodic.stop()
             if config.get('Scheduler', 'preserve pause'):
@@ -5481,6 +5793,9 @@ class AppletIndicator(Gtk.Application):
                 unlink_pause_file()
             periodic.start()
             applet_log.info("MAIN: scheduler resumed operation")
+
+    def pause(self, o):
+        self.pause_scheduler(o.get_active())
 
     def icon_dialog(self, active=True):
         if config.get('General', 'show icon'):
@@ -6092,6 +6407,10 @@ def export_item_data(filename=None, verbose=False):
         t = tasks.get(task_name=name)
         d = Task_to_dict(t)
         task_dict_list.append(d)
+    for name in signal_handlers.names:
+        t = signal_handlers.get(handler_name=name)
+        d = SignalHandler_to_dict(t)
+        signal_handler_dict_list.append(d)
     for name in conditions.names:
         c = conditions.get(cond_name=name)
         condtype = type(c)
@@ -6111,16 +6430,12 @@ def export_item_data(filename=None, verbose=False):
         else:
             d = Condition_to_dict(c)
         condition_dict_list.append(d)
-    for name in signal_handlers.names:
-        t = signal_handlers.get(handler_name=name)
-        d = SignalHandler_to_dict(t)
-        signal_handler_dict_list.append(d)
     oerr(resources.OERR_EXPORT_DATA_BEGIN, verbose)
     oerr(resources.OERR_EXPORT_DATA_TASKS % len(task_dict_list), verbose)
-    oerr(resources.OERR_EXPORT_DATA_CONDITIONS
-         % len(condition_dict_list), verbose)
     oerr(resources.OERR_EXPORT_DATA_SIGHANDLERS
          % len(signal_handler_dict_list), verbose)
+    oerr(resources.OERR_EXPORT_DATA_CONDITIONS
+         % len(condition_dict_list), verbose)
     json_dic = {
         'tasks': task_dict_list,
         'conditions': condition_dict_list,
@@ -6151,6 +6466,12 @@ def import_item_data(filename=None, verbose=False):
             tasks.add(task)
         oerr(resources.OERR_IMPORT_DATA_TASKS
              % len(json_dic['tasks']), verbose)
+    if 'signalhandlers' in json_dic.keys():
+        for handler_dic in json_dic['signalhandlers']:
+            handler = dict_to_SignalHandler(handler_dic)
+            signal_handlers.add(handler)
+        oerr(resources.OERR_IMPORT_DATA_SIGHANDLERS
+             % len(json_dic['signalhandlers']), verbose)
     if 'conditions' in json_dic.keys():
         for condition_dic in json_dic['conditions']:
             condition = None
@@ -6174,15 +6495,9 @@ def import_item_data(filename=None, verbose=False):
                 conditions.add(condition)
         oerr(resources.OERR_IMPORT_DATA_CONDITIONS
              % len(json_dic['conditions']), verbose)
-    if 'signalhandlers' in json_dic.keys():
-        for handler_dic in json_dic['signalhandlers']:
-            handler = dict_to_SignalHandler(handler_dic)
-            signal_handlers.add(handler)
-        oerr(resources.OERR_IMPORT_DATA_SIGHANDLERS
-             % len(json_dic['signalhandlers']), verbose)
     tasks.save()
-    conditions.save()
     signal_handlers.save()
+    conditions.save()
     oerr(resources.OERR_IMPORT_DATA_FINISH, verbose)
 
 
