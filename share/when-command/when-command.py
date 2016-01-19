@@ -1619,7 +1619,7 @@ class AppletDBusService(dbus.service.Object):
         bus_name = dbus.service.BusName(APPLET_BUS_NAME, bus=dbus.SessionBus())
         dbus.service.Object.__init__(self, bus_name, APPLET_BUS_PATH)
 
-    @dbus.service.method(APPLET_BUS_NAME, in_signature='s')
+    @dbus.service.method(APPLET_BUS_NAME, in_signature='b')
     def Reset(self, clear_history=False):
         global current_deferred_events
         global current_deferred_changed_paths
