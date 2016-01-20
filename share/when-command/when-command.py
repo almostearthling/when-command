@@ -5990,6 +5990,9 @@ def start_event_condition(cond_name, deferred):
         applet_log.warning("MAIN: non existing condition %s will not trigger" % cond_name)
         return False
     cond = conditions.get(cond_name=cond_name)
+    if not isinstance(cond, EventBasedCondition):
+        applet_log.error("MAIN: %s is not an event based condition" % cond_name)
+        return False
     event = EVENT_COMMAND_LINE_PREAMBLE + ':' + cond_name
     if cond.event != event:
         applet_log.warning("MAIN: wrong event type for condition %s" % cond_name)
