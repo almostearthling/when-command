@@ -1691,7 +1691,7 @@ class AppletDBusService(dbus.service.Object):
         applet.quit(None)
 
     @dbus.service.method(APPLET_BUS_NAME, in_signature='sb', out_signature='b')
-    def RunCondition(self, cond_name, deferred=False):
+    def RunCLIBasedCondition(self, cond_name, deferred=False):
         return start_event_condition(cond_name, deferred)
 
     @dbus.service.method(APPLET_BUS_NAME, in_signature='ss', out_signature='v')
@@ -1852,16 +1852,16 @@ class AppletDBusService(dbus.service.Object):
             return False
 
     @dbus.service.method(APPLET_BUS_NAME, in_signature='s')
-    def SaveItems(self, what=''):
+    def SaveItems(self, item_type=''):
         if what:
-            if ITEM_TYPE_TASKS.startswith(what):
+            if ITEM_TYPE_TASKS.startswith(item_type):
                 tasks.save()
-            elif ITEM_TYPE_CONDITIONS.startswith(what):
+            elif ITEM_TYPE_CONDITIONS.startswith(item_type):
                 conditions.save()
-            elif ITEM_TYPE_SIGNAL_HANDLERS.startswith(what):
+            elif ITEM_TYPE_SIGNAL_HANDLERS.startswith(item_type):
                 signal_handlers.save()
             else:
-                applet_log.error("SERVICE: cannot save items of type %s" % what)
+                applet_log.error("SERVICE: cannot save items of type %s" % item_type)
         else:
             tasks.save()
             signal_handlers.save()
@@ -6165,7 +6165,7 @@ def call_run_condition(cond_name, deferred, verbose=False):
     oerr(resources.OERR_RUN_CONDITION % cond_name, verbose)
     bus = dbus.SessionBus()
     proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
-    if not proxy.RunCondition(cond_name, deferred):
+    if not proxy.RunCLIBasedCondition(cond_name, deferred):
         oerr(resources.OERR_RUN_CONDITION_FAIL % cond_name, verbose)
         return False
     else:
