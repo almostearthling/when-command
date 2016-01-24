@@ -73,8 +73,8 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.7~beta.4'
-APPLET_TAGDESC = 'DBus API naming amendments'
+APPLET_VERSION = '0.9.8~beta.1'
+APPLET_TAGDESC = 'Full DBus interface'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -4281,8 +4281,10 @@ class TaskDialog(object):
                                                 Gtk.ResponseType.OK))
         if os.path.exists(curpath) and os.path.isdir(curpath):
             dirdlg.set_filename(curpath)
+        dirdlg.set_keep_above(True)
         ret = dirdlg.run()
         dirdlg.hide()
+        dirdlg.set_keep_above(False)
         if ret == Gtk.ResponseType.OK:
             o('txtFolder').set_text(dirdlg.get_filename())
 
@@ -4680,8 +4682,10 @@ class ConditionDialog(object):
                                                 Gtk.ResponseType.OK))
         if os.path.exists(curpath):
             dirdlg.set_filename(curpath)
+        dirdlg.set_keep_above(True)
         ret = dirdlg.run()
         dirdlg.hide()
+        dirdlg.set_keep_above(False)
         if ret == Gtk.ResponseType.OK:
             o('txtWatchPath').set_text(dirdlg.get_filename())
 
