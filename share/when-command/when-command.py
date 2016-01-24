@@ -4281,8 +4281,10 @@ class TaskDialog(object):
                                                 Gtk.ResponseType.OK))
         if os.path.exists(curpath) and os.path.isdir(curpath):
             dirdlg.set_filename(curpath)
+        dirdlg.set_keep_above(True)
         ret = dirdlg.run()
         dirdlg.hide()
+        dirdlg.set_keep_above(False)
         if ret == Gtk.ResponseType.OK:
             o('txtFolder').set_text(dirdlg.get_filename())
 
@@ -4680,8 +4682,10 @@ class ConditionDialog(object):
                                                 Gtk.ResponseType.OK))
         if os.path.exists(curpath):
             dirdlg.set_filename(curpath)
+        dirdlg.set_keep_above(True)
         ret = dirdlg.run()
         dirdlg.hide()
+        dirdlg.set_keep_above(False)
         if ret == Gtk.ResponseType.OK:
             o('txtWatchPath').set_text(dirdlg.get_filename())
 
