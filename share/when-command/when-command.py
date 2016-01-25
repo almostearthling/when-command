@@ -73,8 +73,8 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.8~beta.1'
-APPLET_TAGDESC = 'Full DBus interface'
+APPLET_VERSION = '0.9.8~beta.2'
+APPLET_TAGDESC = 'Full DBus interface and bug fixes'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -5975,12 +5975,48 @@ class AppletIndicator(Gtk.Application):
 
     # try to do most configuration tasks automatically
     def reconfigure(self):
+        global ui_add_task
+        global ui_add_condition
+        global ui_task_history
+        global ui_add_signal
+        # global ui_settings
+        # global ui_about
+
         applet_log.info("MAIN: reconfiguring applet")
         config_loghandler()
         config_loglevel()
         create_autostart_file()
-        periodic.set_interval(config.get('Scheduler', 'tick seconds'))
         history.resize()
+        if config.get('General', 'minimalistic mode'):
+            # ui_add_task = None
+            # ui_add_condition = None
+            # ui_task_history = None
+            # ui_add_signal = None
+            self.dialog_add_task = None
+            self.dialog_add_condition = None
+            self.dialog_history = None
+            self.dialog_add_dbus_signal = None
+        else:
+            if not self.dialog_add_task:
+                if not ui_add_task:
+                    ui_add_task = load_applet_dialog('when-command-edit-task')
+                self.dialog_add_task = TaskDialog()
+            if not self.dialog_add_condition:
+                if not ui_add_condition:
+                    ui_add_condition = load_applet_dialog(
+                        'when-command-edit-condition')
+                self.dialog_add_condition = ConditionDialog()
+            if not self.dialog_history:
+                if not ui_task_history:
+                    ui_task_history = load_applet_dialog(
+                        'when-command-task-history')
+                self.dialog_history = HistoryDialog()
+            if not self.dialog_add_dbus_signal:
+                if not ui_add_signal:
+                    ui_add_signal = load_applet_dialog(
+                        'when-command-edit-dbus-signal')
+                self.dialog_add_dbus_signal = SignalDialog()
+        periodic.set_interval(config.get('Scheduler', 'tick seconds'))
         self.rebuild_menu()
         self.reset_icon_theme()
         self.hide_icon(not config.get('General', 'show icon'))
