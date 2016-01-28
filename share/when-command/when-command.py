@@ -28,6 +28,11 @@ import ctypes
 
 import traceback
 
+import gi
+gi.require_version('Gtk', '3.0')
+gi.require_version('AppIndicator3', '0.1')
+gi.require_version('Notify', '0.7')
+
 from gi.repository import GLib, Gio
 from gi.repository import GObject
 from gi.repository import Gtk
@@ -73,8 +78,8 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.8~beta.2'
-APPLET_TAGDESC = 'Full DBus interface and bug fixes'
+APPLET_VERSION = '0.9.8~beta.3'
+APPLET_TAGDESC = 'Declare GI requirements for upcoming Ubuntu versions'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
