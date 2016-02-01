@@ -3643,10 +3643,10 @@ def dict_to_PathNotifyBasedCondition(d, skip_dependency_check=False):
     for x in d['watched_paths']:
         _type_check(x, str)
     name = d['cond_name']
-    event = d['watched_paths']
+    watched_paths = d['watched_paths']
     no_skip = d['no_skip']
     # TODO: if there are more parameters, use d.get('key', default_val)
-    c = PathNotifyBasedCondition(name, event, no_skip)
+    c = PathNotifyBasedCondition(name, watched_paths, no_skip)
     c = dict_to_Condition(d, c, skip_dependency_check)
     applet_log.info("MAIN: loaded file change based condition %s" % c.cond_name)
     return c
