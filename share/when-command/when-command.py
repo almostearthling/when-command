@@ -1977,10 +1977,10 @@ class Config(object):
         return type_spec(self._config_parser.get(section, entry))
 
     def set(self, section, entry, value):
-        typespec = self._types[section][entry]
+        type_spec = self._types[section][entry]
         try:
-            v = str(typespec(value))
-            if type(v) == bool:
+            v = str(type_spec(value))
+            if type_spec == bool:
                 v = v.lower()
             self._config_parser.set(section, entry, v)
         except (TypeError, configparser.Error) as e:
