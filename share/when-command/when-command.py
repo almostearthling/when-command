@@ -1856,14 +1856,20 @@ class AppletDBusService(dbus.service.Object):
                     raise Exception
             elif item_type == 'task':
                 task = dict_to_Task(item_dic)
-                tasks.add(task)
-                if save:
-                    tasks.save()
+                if task:
+                    tasks.add(task)
+                    if save:
+                        tasks.save()
+                else:
+                    raise Exception
             elif item_type == 'dbus_signal_handler':
                 handler = dict_to_SignalHandler(item_dic)
-                signal_handlers.add(handler)
-                if save:
-                    signal_handlers.save()
+                if handler:
+                    signal_handlers.add(handler)
+                    if save:
+                        signal_handlers.save()
+                else:
+                    raise Exception
             return True
         except Exception as e:
             applet_log.error("SERVICE: could not add item by definition (%s)" % _x(e))
@@ -1871,7 +1877,7 @@ class AppletDBusService(dbus.service.Object):
 
     @dbus.service.method(APPLET_BUS_NAME, in_signature='s')
     def SaveItems(self, item_type=''):
-        if what:
+        if item_type:
             if ITEM_TYPE_TASKS.startswith(item_type):
                 tasks.save()
             elif ITEM_TYPE_CONDITIONS.startswith(item_type):
