@@ -78,7 +78,7 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.8~beta.4'
+APPLET_VERSION = '0.9.8~beta.5'
 APPLET_TAGDESC = 'Safe data-to-item conversion functions'
 
 # logging constants
@@ -4216,53 +4216,67 @@ def SignalHandler_to_dict(h):
 
 
 def dict_to_SignalHandler(d):
-    if d['type'] != 'dbus_signal_handler':
-        raise ValueError("incorrect dictionary type")
-    if not VALIDATE_SIGNAL_HANDLER_RE.match(d['handler_name']):
-        raise ValueError("invalid signal handler name: %s" % d['handler_name'])
-    if not VALIDATE_DBUS_NAME_RE.match(d['bus_name']):
-        raise ValueError("invalid unique bus name: %s" % d['bus_name'])
-    if not VALIDATE_DBUS_PATH_RE.match(d['bus_path']):
-        raise ValueError("invalid object path: %s" % d['bus_path'])
-    if not VALIDATE_DBUS_INTERFACE_RE.match(d['interface']):
-        raise ValueError("invalid interface: %s" % d['interface'])
-    if not VALIDATE_DBUS_SIGNAL_RE.match(d['signal']):
-        raise ValueError("invalid signal: %s" % d['signal'])
-    if d['bus'] not in ['system', 'session']:
-        raise ValueError("bus must be either system or session")
-    h.verify_all_checks = d.get('verify_all_checks', False)
-    h.defer = d.get('defer', True)
-    param_checks = d.get('param_checks', [])
-    _type_check(h.verify_all_checks, bool)
-    _type_check(h.defer, bool)
-    _type_check(param_checks, list)
-    applet_log.debug("MAIN: trying to load DBus signal handler %s" % d['handler_name'])
-    h = SignalHandler(d['handler_name'])
-    h.bus = d['bus']
-    h.bus_name = d['bus_name']
-    h.bus_path = d['bus_path']
-    h.interface = d['interface']
-    h.signal = d['signal']
-    # too bad I used named tuples: they are not well JSONified
-    h.param_checks = []
-    for p in param_checks:
-        _type_check(p[0], int)
-        _type_check(p[3], bool)
-        # element no. 4 is not always saved as a string
-        # _type_check(p[4], str)
-        if p[1] == '':
-            p[1] = None
-        if p[1] is not None and \
-           type(p[1]) != int and \
-           not VALIDATE_DBUS_SUBPARAM_RE.match(p[1]):
-            raise ValueError("invalid value for subparam index: %s" % p[1])
-        if p[2] not in DBUS_CHECK_COMPARE:
-            raise ValueError("invalid comparison operator: %s" % p[2])
-        t = param_check(p[0], p[1], p[2], p[3], p[4])
-        h.param_checks.append(t)
-    # TODO: if there are more parameters, use d.get('key', default_val)
-    applet_log.info("MAIN: DBus signal handler %s loaded" % h.handler_name)
-    return h
+    try:
+        if d['type'] != 'dbus_signal_handler':
+            raise ValueError("incorrect dictionary type")
+        if not VALIDATE_SIGNAL_HANDLER_RE.match(d['handler_name']):
+            raise ValueError("invalid signal handler name: %s" % d['handler_name'])
+        if not VALIDATE_DBUS_NAME_RE.match(d['bus_name']):
+            raise ValueError("invalid unique bus name: %s" % d['bus_name'])
+        if not VALIDATE_DBUS_PATH_RE.match(d['bus_path']):
+            raise ValueError("invalid object path: %s" % d['bus_path'])
+        if not VALIDATE_DBUS_INTERFACE_RE.match(d['interface']):
+            raise ValueError("invalid interface: %s" % d['interface'])
+        if not VALIDATE_DBUS_SIGNAL_RE.match(d['signal']):
+            raise ValueError("invalid signal: %s" % d['signal'])
+        if d['bus'] not in ['system', 'session']:
+            raise ValueError("bus must be either system or session")
+        h = SignalHandler(d['handler_name'])
+        h.verify_all_checks = d.get('verify_all_checks', False)
+        h.defer = d.get('defer', True)
+        param_checks = d.get('param_checks', [])
+        _type_check(h.verify_all_checks, bool)
+        _type_check(h.defer, bool)
+        _type_check(param_checks, list)
+        applet_log.debug("MAIN: trying to load DBus signal handler %s" % d['handler_name'])
+        h.bus = d['bus']
+        h.bus_name = d['bus_name']
+        h.bus_path = d['bus_path']
+        h.interface = d['interface']
+        h.signal = d['signal']
+        # too bad I used named tuples: they are not well JSONified
+        h.param_checks = []
+        for p in param_checks:
+            _type_check(p[0], int)
+            _type_check(p[3], bool)
+            # element no. 4 is not always saved as a string
+            # _type_check(p[4], str)
+            if p[1] == '':
+                p[1] = None
+            if p[1] is not None and \
+               type(p[1]) != int and \
+               not VALIDATE_DBUS_SUBPARAM_RE.match(p[1]):
+                raise ValueError("invalid value for subparam index: %s" % p[1])
+            if p[2] not in DBUS_CHECK_COMPARE:
+                raise ValueError("invalid comparison operator: %s" % p[2])
+            t = param_check(p[0], p[1], p[2], p[3], p[4])
+            h.param_checks.append(t)
+        # TODO: if there are more parameters, use d.get('key', default_val)
+        applet_log.info("MAIN: DBus signal handler %s loaded" % h.handler_name)
+        return h
+    except TypeError:
+        applet_log.error("MAIN: attempt to convert object of wrong type to signal handler")
+        return None
+    except KeyError:
+        applet_log.error("MAIN: required value missing in conversion to signal handler")
+        return None
+    except IndexError:
+        applet_log.error("MAIN: malformed data structure in conversion to signal handler")
+        return None
+    except ValueError as e:
+        applet_log.error("MAIN: wrong value: %s" % _x(e))
+        applet_log.error("MAIN: skipping conversion to signal handler due to previous errors")
+        return None
 
 
 # stock signal handlers behave exactly the same way as user signal handlers
