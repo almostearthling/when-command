@@ -28,6 +28,11 @@ import ctypes
 
 import traceback
 
+import gi
+gi.require_version('Gtk', '3.0')
+gi.require_version('AppIndicator3', '0.1')
+gi.require_version('Notify', '0.7')
+
 from gi.repository import GLib, Gio
 from gi.repository import GObject
 from gi.repository import Gtk
@@ -73,8 +78,8 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.8~beta.2'
-APPLET_TAGDESC = 'Full DBus interface and bug fixes'
+APPLET_VERSION = '0.9.8~beta.5'
+APPLET_TAGDESC = 'Safe data-to-item conversion functions'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -1803,8 +1808,19 @@ class AppletDBusService(dbus.service.Object):
                 i = signal_handlers.get(handler_name=n)
                 if i is not None:
                     rd = SignalHandler_to_dict(i)
+                    # this might seem obscure, but it's needed to handle
+                    # the case of a missing subparameter index, as DBus
+                    # does not support None or NULL
+                    l = []
+                    for p in rd['param_checks']:
+                        p1 = '' if p[1] is None else p[1]
+                        p4 = '' if p[4] is None else p[4]
+                        t = (p[0], p1, p[2], p[3], p4)
+                        l.append(t)
+                    rd['param_checks'] = l
                 else:
                     applet_log.warning("SERVICE: signal handler not found while retrieving %s" % item_spec)
+        rd = {key: rd[key] for key in rd if rd[key] is not None}
         return rd
 
     # booleans are handled in a special way because bool cannot be subclassed
@@ -1834,18 +1850,26 @@ class AppletDBusService(dbus.service.Object):
                 # TODO: add further condition loaders here
                 if condition:
                     conditions.add(condition)
-                if save:
-                    conditions.save()
+                    if save:
+                        conditions.save()
+                else:
+                    raise Exception
             elif item_type == 'task':
                 task = dict_to_Task(item_dic)
-                tasks.add(task)
-                if save:
-                    tasks.save()
+                if task:
+                    tasks.add(task)
+                    if save:
+                        tasks.save()
+                else:
+                    raise Exception
             elif item_type == 'dbus_signal_handler':
                 handler = dict_to_SignalHandler(item_dic)
-                signal_handlers.add(handler)
-                if save:
-                    signal_handlers.save()
+                if handler:
+                    signal_handlers.add(handler)
+                    if save:
+                        signal_handlers.save()
+                else:
+                    raise Exception
             return True
         except Exception as e:
             applet_log.error("SERVICE: could not add item by definition (%s)" % _x(e))
@@ -1853,7 +1877,7 @@ class AppletDBusService(dbus.service.Object):
 
     @dbus.service.method(APPLET_BUS_NAME, in_signature='s')
     def SaveItems(self, item_type=''):
-        if what:
+        if item_type:
             if ITEM_TYPE_TASKS.startswith(item_type):
                 tasks.save()
             elif ITEM_TYPE_CONDITIONS.startswith(item_type):
@@ -1972,10 +1996,10 @@ class Config(object):
         return type_spec(self._config_parser.get(section, entry))
 
     def set(self, section, entry, value):
-        typespec = self._types[section][entry]
+        type_spec = self._types[section][entry]
         try:
-            v = str(typespec(value))
-            if type(v) == bool:
+            v = str(type_spec(value))
+            if type_spec == bool:
                 v = v.lower()
             self._config_parser.set(section, entry, v)
         except (TypeError, configparser.Error) as e:
@@ -2908,44 +2932,50 @@ def Task_to_dict(t):
 
 
 def dict_to_Task(d):
-    if d['type'] != 'task':
-        raise ValueError("incorrect dictionary type")
-    if not VALIDATE_TASK_RE.match(d['task_name']):
-        raise ValueError("invalid task name: %s" % d['task_name'])
-    _type_check(d['task_id'], int)
-    _type_check(d['environment_vars'], dict)
-    _type_check(d['include_env'], bool)
-    _type_check(d['success_stdout'], str, or_null=True)
-    _type_check(d['success_stderr'], str, or_null=True)
-    _type_check(d['success_status'], int, or_null=True)
-    _type_check(d['failure_stdout'], str, or_null=True)
-    _type_check(d['failure_stderr'], str, or_null=True)
-    _type_check(d['failure_status'], int, or_null=True)
-    _type_check(d['match_exact'], bool)
-    _type_check(d['case_sensitive'], bool)
-    _type_check(d['command'], str)
-    _type_check(d['startup_dir'], str)
-    _type_check(d['match_regexp'], bool)
-    t = Task()
-    applet_log.debug("MAIN: trying to load task %s" % d['task_name'])
-    t.task_id = d['task_id']
-    t.task_name = d['task_name']
-    t.environment_vars = d['environment_vars']
-    t.include_env = d['include_env']
-    t.success_stdout = d['success_stdout']
-    t.success_stderr = d['success_stderr']
-    t.success_status = d['success_status']
-    t.failure_stdout = d['failure_stdout']
-    t.failure_stderr = d['failure_stderr']
-    t.failure_status = d['failure_status']
-    t.match_exact = d['match_exact']
-    t.case_sensitive = d['case_sensitive']
-    t.command = d['command']
-    t.startup_dir = d['startup_dir']
-    # TODO: if there are more parameters, use d.get('key', default_val)
-    t.match_regexp = d.get('match_regexp', False)
-    applet_log.info("MAIN: task %s loaded" % t.task_name)
-    return t
+    try:
+        if d['type'] != 'task':
+            raise ValueError("incorrect dictionary type")
+        if not VALIDATE_TASK_RE.match(d['task_name']):
+            raise ValueError("invalid task name: %s" % d['task_name'])
+        t = Task()
+        applet_log.debug("MAIN: trying to load task %s" % d['task_name'])
+        t.task_id = d['task_id']
+        t.task_name = d['task_name']
+        t.command = d['command']
+        t.environment_vars = d.get('environment_vars', {})
+        t.startup_dir = d.get('startup_dir', USER_FOLDER)
+        t.include_env = d.get('include_env', True)
+        t.success_stdout = d.get('success_stdout', None)
+        t.success_stderr = d.get('success_stderr', None)
+        t.success_status = d.get('success_status', None)
+        t.failure_stdout = d.get('failure_stdout', None)
+        t.failure_stderr = d.get('failure_stderr', None)
+        t.failure_status = d.get('failure_status', None)
+        t.match_exact = d.get('match_exact', False)
+        t.case_sensitive = d.get('case_sensitive', False)
+        t.match_regexp = d.get('match_regexp', False)
+        _type_check(t.task_id, int)
+        _type_check(t.command, str)
+        _type_check(t.startup_dir, str)
+        _type_check(t.environment_vars, dict)
+        _type_check(t.include_env, bool)
+        _type_check(t.success_stdout, str, or_null=True)
+        _type_check(t.success_stderr, str, or_null=True)
+        _type_check(t.success_status, int, or_null=True)
+        _type_check(t.failure_stdout, str, or_null=True)
+        _type_check(t.failure_stderr, str, or_null=True)
+        _type_check(t.failure_status, int, or_null=True)
+        _type_check(t.match_exact, bool)
+        _type_check(t.case_sensitive, bool)
+        _type_check(t.match_regexp, bool)
+        applet_log.info("MAIN: task %s loaded" % t.task_name)
+        return t
+    except TypeError:
+        applet_log.error("MAIN: attempt to convert object of wrong type to task")
+        return None
+    except KeyError:
+        applet_log.error("MAIN: required value missing in conversion to task")
+        return None
 
 
 #############################################################################
@@ -3140,35 +3170,42 @@ def Condition_to_dict(c):
 # it is impossible to check dependency against currently available items;
 # however the parameter should be normally be omitted (or set to False)
 def dict_to_Condition(d, c=None, skip_dependency_check=False):
-    if d['type'] != 'condition':
-        raise ValueError("incorrect dictionary type")
-    if not VALIDATE_CONDITION_RE.match(d['cond_name']):
-        raise ValueError("invalid condition name: %s" % d['cond_name'])
-    if not skip_dependency_check:
-        for name in d['task_names']:
-            if name not in tasks.names:
-                raise ValueError("task name not found: %s" % name)
-    _type_check(d['cond_id'], int)
-    _type_check(d['repeat'], bool)
-    _type_check(d['exec_sequence'], bool)
-    _type_check(d['suspended'], bool)
-    _type_check(d['break_failure'], bool)
-    _type_check(d['break_success'], bool)
-    # this will raise an error
-    if c is None:
-        applet_log.critical("MAIN: NTBS: attempt to load base Condition")
-        c = Condition()
-    applet_log.debug("MAIN: trying to load condition %s" % c.cond_name)
-    c.cond_id = d['cond_id']
-    c.cond_name = d['cond_name']
-    c.task_names = d['task_names']
-    c.repeat = d['repeat']
-    c.exec_sequence = d['exec_sequence']
-    c.suspended = d['suspended']
-    # TODO: if there are more parameters, use d.get('key', default_val)
-    c.break_failure = d.get('break_failure', False)
-    c.break_success = d.get('break_success', False)
-    return c
+    try:
+        if d['type'] != 'condition':
+            raise ValueError("incorrect dictionary type")
+        if not VALIDATE_CONDITION_RE.match(d['cond_name']):
+            raise ValueError("invalid condition name: %s" % d['cond_name'])
+        if not skip_dependency_check:
+            for name in d['task_names']:
+                if name not in tasks.names:
+                    raise ValueError("task name not found: %s" % name)
+        # this will raise an error
+        if c is None:
+            applet_log.critical("MAIN: NTBS: attempt to load base Condition")
+            c = Condition()
+        applet_log.debug("MAIN: trying to load condition %s" % c.cond_name)
+        c.cond_id = d['cond_id']
+        c.cond_name = d['cond_name']
+        c.task_names = d['task_names']
+        c.repeat = d.get('repeat', True)
+        c.exec_sequence = d.get('exec_sequence', True)
+        c.suspended = d.get('suspended', False)
+        c.break_failure = d.get('break_failure', False)
+        c.break_success = d.get('break_success', False)
+        _type_check(c.cond_id, int)
+        _type_check(c.task_names, list)
+        _type_check(c.repeat, bool)
+        _type_check(c.exec_sequence, bool)
+        _type_check(c.suspended, bool)
+        _type_check(c.break_failure, bool)
+        _type_check(c.break_success, bool)
+        return c
+    except TypeError:
+        applet_log.error("MAIN: attempt to convert object of wrong type to condition")
+        return None
+    except KeyError:
+        applet_log.error("MAIN: required value missing in conversion to condition")
+        return None
 
 
 class IntervalBasedCondition(Condition):
@@ -3198,16 +3235,28 @@ def IntervalBasedCondition_to_dict(c):
 
 
 def dict_to_IntervalBasedCondition(d, skip_dependency_check=False):
-    if d['type'] != 'condition' or d['subtype'] != 'IntervalBasedCondition':
-        raise ValueError("incorrect dictionary type")
-    _type_check(d['interval'], int)
-    name = d['cond_name']
-    interval = d['interval']
-    # TODO: if there are more parameters, use d.get('key', default_val)
-    c = IntervalBasedCondition(name, interval)
-    c = dict_to_Condition(d, c, skip_dependency_check)
-    applet_log.info("MAIN: loaded interval based condition %s" % c.cond_name)
-    return c
+    try:
+        if d['type'] != 'condition' or d['subtype'] != 'IntervalBasedCondition':
+            raise ValueError("incorrect dictionary type")
+        name = d['cond_name']
+        interval = d['interval']
+        # TODO: if there are more parameters, use d.get('key', default_val)
+        _type_check(interval, int)
+        c = IntervalBasedCondition(name, interval)
+        c = dict_to_Condition(d, c, skip_dependency_check)
+        if c is None:
+            raise ValueError
+        applet_log.info("MAIN: loaded interval based condition %s" % c.cond_name)
+        return c
+    except TypeError:
+        applet_log.error("MAIN: attempt to convert object of wrong type to interval based condition")
+        return None
+    except KeyError:
+        applet_log.error("MAIN: required value missing in conversion to interval based condition")
+        return None
+    except ValueError:
+        applet_log.error("MAIN: skipping conversion to interval based condition due to previous errors")
+        return None
 
 
 class TimeBasedCondition(Condition):
@@ -3238,12 +3287,12 @@ class TimeBasedCondition(Condition):
     def __init__(self, name, timedict, repeat=True, exec_sequence=True):
         if not timedict:
             raise ValueError("time specification must be given")
-        self.year = None if 'year' not in timedict.keys() else timedict['year']
-        self.month = None if 'month' not in timedict.keys() else timedict['month']
-        self.day = None if 'day' not in timedict.keys() else timedict['day']
-        self.hour = None if 'hour' not in timedict.keys() else timedict['hour']
-        self.minute = None if 'minute' not in timedict.keys() else timedict['minute']
-        self.weekday = None if 'weekday' not in timedict.keys() else timedict['weekday']
+        self.year = timedict.get('year', None)
+        self.month = timedict.get('month', None)
+        self.day = timedict.get('day', None)
+        self.hour = timedict.get('hour', None)
+        self.minute = timedict.get('minute', None)
+        self.weekday = timedict.get('weekday', None)
         self.tick_seconds = config.get('Scheduler', 'tick seconds')
         Condition.__init__(self, name, repeat, exec_sequence)
         self.skip_seconds = 0
@@ -3263,21 +3312,34 @@ def TimeBasedCondition_to_dict(c):
 
 
 def dict_to_TimeBasedCondition(d, skip_dependency_check=False):
-    if d['type'] != 'condition' or d['subtype'] != 'TimeBasedCondition':
-        raise ValueError("incorrect dictionary type")
-    _type_check(d['year'], int, or_null=True)
-    _type_check(d['month'], int, or_null=True)
-    _type_check(d['day'], int, or_null=True)
-    _type_check(d['hour'], int, or_null=True)
-    _type_check(d['minute'], int, or_null=True)
-    _type_check(d['weekday'], int, or_null=True)
-    name = d['cond_name']
-    # we can use d for timedict because the needed keys (intentionally) match
-    # TODO: if there are more parameters, use d.get('key', default_val)
-    c = TimeBasedCondition(name, d)
-    c = dict_to_Condition(d, c, skip_dependency_check)
-    applet_log.info("MAIN: loaded time based condition %s" % c.cond_name)
-    return c
+    try:
+        if d['type'] != 'condition' or d['subtype'] != 'TimeBasedCondition':
+            raise ValueError("incorrect dictionary type")
+        name = d['cond_name']
+        _type_check(d.get('year', None), int, or_null=True)
+        _type_check(d.get('month', None), int, or_null=True)
+        _type_check(d.get('day', None), int, or_null=True)
+        _type_check(d.get('hour', None), int, or_null=True)
+        _type_check(d.get('minute', None), int, or_null=True)
+        _type_check(d.get('weekday', None), int, or_null=True)
+        # we can use d for timedict because the needed keys (intentionally) match
+        # and the construction also yields when part of the dictionary is missing
+        # TODO: if there are more parameters, use d.get('key', default_val)
+        c = TimeBasedCondition(name, d)
+        c = dict_to_Condition(d, c, skip_dependency_check)
+        if c is None:
+            raise ValueError
+        applet_log.info("MAIN: loaded time based condition %s" % c.cond_name)
+        return c
+    except TypeError:
+        applet_log.error("MAIN: attempt to convert object of wrong type to time based condition")
+        return None
+    except KeyError:
+        applet_log.error("MAIN: required value missing in conversion to time based condition")
+        return None
+    except ValueError:
+        applet_log.error("MAIN: skipping conversion to time based condition due to previous errors")
+        return None
 
 
 class CommandBasedCondition(Condition):
@@ -3416,31 +3478,42 @@ def CommandBasedCondition_to_dict(c):
 
 
 def dict_to_CommandBasedCondition(d, skip_dependency_check=False):
-    if d['type'] != 'condition' or d['subtype'] != 'CommandBasedCondition':
-        raise ValueError("incorrect dictionary type")
-    _type_check(d['command'], str)
-    _type_check(d['expected_status'], int, or_null=True)
-    _type_check(d['expected_stdout'], str, or_null=True)
-    _type_check(d['expected_stderr'], str, or_null=True)
-    _type_check(d['match_exact'], bool)
-    _type_check(d['case_sensitive'], bool)
-    _type_check(d['match_regexp'], bool)
-    name = d['cond_name']
-    command = d['command']
-    status = d['expected_status']
-    stdout = d['expected_stdout']
-    stderr = d['expected_stderr']
-    match_exact = d['match_exact']
-    case_sensitive = d['case_sensitive']
-    # TODO: if there are more parameters, use d.get('key', default_val)
-    match_regexp = d.get('match_regexp', False)
-    c = CommandBasedCondition(name, command, status, stdout, stderr)
-    c.match_exact = match_exact
-    c.match_regexp = match_regexp
-    c.case_sensitive = case_sensitive
-    c = dict_to_Condition(d, c, skip_dependency_check)
-    applet_log.info("MAIN: loaded command based condition %s" % c.cond_name)
-    return c
+    try:
+        if d['type'] != 'condition' or d['subtype'] != 'CommandBasedCondition':
+            raise ValueError("incorrect dictionary type")
+        name = d['cond_name']
+        command = d['command']
+        status = d.get('expected_status', None)
+        stdout = d.get('expected_stdout', None)
+        stderr = d.get('expected_stderr', None)
+        match_exact = d.get('match_exact', False)
+        case_sensitive = d.get('case_sensitive', False)
+        match_regexp = d.get('match_regexp', False)
+        _type_check(command, str)
+        _type_check(status, int, or_null=True)
+        _type_check(stdout, str, or_null=True)
+        _type_check(stderr, str, or_null=True)
+        _type_check(match_exact, bool)
+        _type_check(case_sensitive, bool)
+        _type_check(match_regexp, bool)
+        c = CommandBasedCondition(name, command, status, stdout, stderr)
+        c.match_exact = match_exact
+        c.match_regexp = match_regexp
+        c.case_sensitive = case_sensitive
+        c = dict_to_Condition(d, c, skip_dependency_check)
+        if c is None:
+            raise ValueError
+        applet_log.info("MAIN: loaded command based condition %s" % c.cond_name)
+        return c
+    except TypeError:
+        applet_log.error("MAIN: attempt to convert object of wrong type to command based condition")
+        return None
+    except KeyError:
+        applet_log.error("MAIN: required value missing in conversion to command based condition")
+        return None
+    except ValueError:
+        applet_log.error("MAIN: skipping conversion to command based condition due to previous errors")
+        return None
 
 
 class IdleTimeBasedCondition(Condition):
@@ -3475,16 +3548,28 @@ def IdleTimeBasedCondition_to_dict(c):
 
 
 def dict_to_IdleTimeBasedCondition(d, skip_dependency_check=False):
-    if d['type'] != 'condition' or d['subtype'] != 'IdleTimeBasedCondition':
-        raise ValueError("incorrect dictionary type")
-    _type_check(d['idle_secs'], int)
-    name = d['cond_name']
-    idle_secs = d['idle_secs']
-    # TODO: if there are more parameters, use d.get('key', default_val)
-    c = IdleTimeBasedCondition(name, idle_secs)
-    c = dict_to_Condition(d, c, skip_dependency_check)
-    applet_log.info("MAIN: loaded idle time based condition %s" % c.cond_name)
-    return c
+    try:
+        if d['type'] != 'condition' or d['subtype'] != 'IdleTimeBasedCondition':
+            raise ValueError("incorrect dictionary type")
+        _type_check(d['idle_secs'], int)
+        name = d['cond_name']
+        idle_secs = d['idle_secs']
+        # TODO: if there are more parameters, use d.get('key', default_val)
+        c = IdleTimeBasedCondition(name, idle_secs)
+        c = dict_to_Condition(d, c, skip_dependency_check)
+        if c is None:
+            raise ValueError
+        applet_log.info("MAIN: loaded idle time based condition %s" % c.cond_name)
+        return c
+    except TypeError:
+        applet_log.error("MAIN: attempt to convert object of wrong type to idle time based condition")
+        return None
+    except KeyError:
+        applet_log.error("MAIN: required value missing in conversion to idle time based condition")
+        return None
+    except ValueError:
+        applet_log.error("MAIN: skipping conversion to idle time based condition due to previous errors")
+        return None
 
 
 # current_system_event is for events that are not queued and are directly
@@ -3520,28 +3605,40 @@ def EventBasedCondition_to_dict(c):
 
 
 def dict_to_EventBasedCondition(d, skip_dependency_check=False):
-    if d['type'] != 'condition' or d['subtype'] != 'EventBasedCondition':
-        raise ValueError("incorrect dictionary type")
-    if d['event'].startswith(EVENT_COMMAND_LINE_PREAMBLE + ':'):
-        if d['event'].split(':')[1] != d['cond_name']:
-            raise ValueError(
-                "invalid command line condition event: %s" % d['event'])
-    elif d['event'].startswith(EVENT_DBUS_SIGNAL_PREAMBLE + ':'):
-        if not skip_dependency_check and \
-           d['event'].split(':')[1] not in signal_handlers.names:
-            raise ValueError("unknown user defined event: %s" % d['event'])
-    elif d['event'] not in stock_event_definitions and \
-            d['event'] not in (EVENT_APPLET_STARTUP, EVENT_APPLET_SHUTDOWN):
-        raise ValueError("unknown event: %s" % d['event'])
-    _type_check(d['no_skip'], bool)
-    name = d['cond_name']
-    event = d['event']
-    no_skip = d['no_skip']
-    # TODO: if there are more parameters, use d.get('key', default_val)
-    c = EventBasedCondition(name, event, no_skip)
-    c = dict_to_Condition(d, c, skip_dependency_check)
-    applet_log.info("MAIN: loaded event based condition %s" % c.cond_name)
-    return c
+    try:
+        if d['type'] != 'condition' or d['subtype'] != 'EventBasedCondition':
+            raise ValueError("incorrect dictionary type")
+        if d['event'].startswith(EVENT_COMMAND_LINE_PREAMBLE + ':'):
+            if d['event'].split(':')[1] != d['cond_name']:
+                raise ValueError(
+                    "invalid command line condition event: %s" % d['event'])
+        elif d['event'].startswith(EVENT_DBUS_SIGNAL_PREAMBLE + ':'):
+            if not skip_dependency_check and \
+               d['event'].split(':')[1] not in signal_handlers.names:
+                raise ValueError("unknown user defined event: %s" % d['event'])
+        elif d['event'] not in stock_event_definitions and \
+                d['event'] not in (EVENT_APPLET_STARTUP, EVENT_APPLET_SHUTDOWN):
+            raise ValueError("unknown event: %s" % d['event'])
+        name = d['cond_name']
+        event = d['event']
+        no_skip = d.get('no_skip', True)
+        _type_check(no_skip, bool)
+        # TODO: if there are more parameters, use d.get('key', default_val)
+        c = EventBasedCondition(name, event, no_skip)
+        c = dict_to_Condition(d, c, skip_dependency_check)
+        if c is None:
+            raise ValueError
+        applet_log.info("MAIN: loaded event based condition %s" % c.cond_name)
+        return c
+    except TypeError:
+        applet_log.error("MAIN: attempt to convert object of wrong type to event based condition")
+        return None
+    except KeyError:
+        applet_log.error("MAIN: required value missing in conversion to event based condition")
+        return None
+    except ValueError:
+        applet_log.error("MAIN: skipping conversion to event based condition due to previous errors")
+        return None
 
 
 # the file notification condition only fires when currently notified file list
@@ -3631,20 +3728,32 @@ def PathNotifyBasedCondition_to_dict(c):
 
 
 def dict_to_PathNotifyBasedCondition(d, skip_dependency_check=False):
-    if d['type'] != 'condition' or d['subtype'] != 'PathNotifyBasedCondition':
-        raise ValueError("incorrect dictionary type")
-    _type_check(d['watched_paths'], list)
-    _type_check(d['no_skip'], bool)
-    for x in d['watched_paths']:
-        _type_check(x, str)
-    name = d['cond_name']
-    event = d['watched_paths']
-    no_skip = d['no_skip']
-    # TODO: if there are more parameters, use d.get('key', default_val)
-    c = PathNotifyBasedCondition(name, event, no_skip)
-    c = dict_to_Condition(d, c, skip_dependency_check)
-    applet_log.info("MAIN: loaded file change based condition %s" % c.cond_name)
-    return c
+    try:
+        if d['type'] != 'condition' or d['subtype'] != 'PathNotifyBasedCondition':
+            raise ValueError("incorrect dictionary type")
+        for x in d['watched_paths']:
+            _type_check(x, str)
+        name = d['cond_name']
+        watched_paths = d['watched_paths']
+        no_skip = d.get('no_skip', True)
+        _type_check(watched_paths, list)
+        _type_check(no_skip, bool)
+        # TODO: if there are more parameters, use d.get('key', default_val)
+        c = PathNotifyBasedCondition(name, watched_paths, no_skip)
+        c = dict_to_Condition(d, c, skip_dependency_check)
+        if c is None:
+            raise ValueError
+        applet_log.info("MAIN: loaded file change based condition %s" % c.cond_name)
+        return c
+    except TypeError:
+        applet_log.error("MAIN: attempt to convert object of wrong type to file change based condition")
+        return None
+    except KeyError:
+        applet_log.error("MAIN: required value missing in conversion to file change based condition")
+        return None
+    except ValueError:
+        applet_log.error("MAIN: skipping conversion to file change based condition due to previous errors")
+        return None
 
 
 #############################################################################
@@ -3690,20 +3799,32 @@ def DataCollectorBasedCondition_to_dict(c):
 
 
 def dict_to_DataCollectorBasedCondition(d, c=None, skip_dependency_check=False):
-    if d['type'] != 'condition' or d['subtype'] != 'DataCollectorBasedCondition':
-        raise ValueError("incorrect dictionary type")
-    _type_check(d['no_skip'], bool)
-    name = d['cond_name']
-    no_skip = d['no_skip']
-    # TODO: if there are more parameters, use d.get('key', default_val)
-    # the following will raise an error
-    if c is None:
-        applet_log.critical("MAIN: NTBS: attempt to load base DataCollectorBasedCondition")
-        c = DataCollectorBasedCondition(name, no_skip)
-    if no_skip:
-        c.skip_seconds = 0
-    c = dict_to_Condition(d, c, skip_dependency_check)
-    return c
+    try:
+        if d['type'] != 'condition' or d['subtype'] != 'DataCollectorBasedCondition':
+            raise ValueError("incorrect dictionary type")
+        name = d['cond_name']
+        no_skip = d.get('no_skip', True)
+        _type_check(no_skip, bool)
+        # TODO: if there are more parameters, use d.get('key', default_val)
+        # the following will raise an error
+        if c is None:
+            applet_log.critical("MAIN: NTBS: attempt to load base data collector condition")
+            c = DataCollectorBasedCondition(name, no_skip)
+        if no_skip:
+            c.skip_seconds = 0
+        c = dict_to_Condition(d, c, skip_dependency_check)
+        if c is None:
+            raise ValueError
+        return c
+    except TypeError:
+        applet_log.error("MAIN: attempt to convert object of wrong type to data collector condition")
+        return None
+    except KeyError:
+        applet_log.error("MAIN: required value missing in conversion to data collector condition")
+        return None
+    except ValueError:
+        applet_log.error("MAIN: skipping conversion to data collector condition due to previous errors")
+        return None
 
 
 #############################################################################
@@ -4095,51 +4216,67 @@ def SignalHandler_to_dict(h):
 
 
 def dict_to_SignalHandler(d):
-    if d['type'] != 'dbus_signal_handler':
-        raise ValueError("incorrect dictionary type")
-    if not VALIDATE_SIGNAL_HANDLER_RE.match(d['handler_name']):
-        raise ValueError("invalid signal handler name: %s" % d['handler_name'])
-    if not VALIDATE_DBUS_NAME_RE.match(d['bus_name']):
-        raise ValueError("invalid unique bus name: %s" % d['bus_name'])
-    if not VALIDATE_DBUS_PATH_RE.match(d['bus_path']):
-        raise ValueError("invalid object path: %s" % d['bus_path'])
-    if not VALIDATE_DBUS_INTERFACE_RE.match(d['interface']):
-        raise ValueError("invalid interface: %s" % d['interface'])
-    if not VALIDATE_DBUS_SIGNAL_RE.match(d['signal']):
-        raise ValueError("invalid signal: %s" % d['signal'])
-    if d['bus'] not in ['system', 'session']:
-        raise ValueError("bus must be either system or session")
-    _type_check(d['verify_all_checks'], bool)
-    _type_check(d['defer'], bool)
-    _type_check(d['param_checks'], list)
-    applet_log.debug("MAIN: trying to load DBus signal handler %s" % d['handler_name'])
-    h = SignalHandler(d['handler_name'])
-    h.bus = d['bus']
-    h.bus_name = d['bus_name']
-    h.bus_path = d['bus_path']
-    h.interface = d['interface']
-    h.signal = d['signal']
-    # too bad I used named tuples: they are not well JSONified
-    param_checks = d['param_checks']
-    h.param_checks = []
-    for p in param_checks:
-        _type_check(p[0], int)
-        _type_check(p[3], bool)
-        # element no. 4 is not always saved as a string
-        # _type_check(p[4], str)
-        if p[1] is not None and \
-           type(p[1]) != int and \
-           not VALIDATE_DBUS_SUBPARAM_RE.match(p[1]):
-            raise ValueError("invalid value for subparam index: %s" % p[1])
-        if p[2] not in DBUS_CHECK_COMPARE:
-            raise ValueError("invalid comparison operator: %s" % p[2])
-        t = param_check(p[0], p[1], p[2], p[3], p[4])
-        h.param_checks.append(t)
-    h.verify_all_checks = d['verify_all_checks']
-    h.defer = d['defer']
-    # TODO: if there are more parameters, use d.get('key', default_val)
-    applet_log.info("MAIN: DBus signal handler %s loaded" % h.handler_name)
-    return h
+    try:
+        if d['type'] != 'dbus_signal_handler':
+            raise ValueError("incorrect dictionary type")
+        if not VALIDATE_SIGNAL_HANDLER_RE.match(d['handler_name']):
+            raise ValueError("invalid signal handler name: %s" % d['handler_name'])
+        if not VALIDATE_DBUS_NAME_RE.match(d['bus_name']):
+            raise ValueError("invalid unique bus name: %s" % d['bus_name'])
+        if not VALIDATE_DBUS_PATH_RE.match(d['bus_path']):
+            raise ValueError("invalid object path: %s" % d['bus_path'])
+        if not VALIDATE_DBUS_INTERFACE_RE.match(d['interface']):
+            raise ValueError("invalid interface: %s" % d['interface'])
+        if not VALIDATE_DBUS_SIGNAL_RE.match(d['signal']):
+            raise ValueError("invalid signal: %s" % d['signal'])
+        if d['bus'] not in ['system', 'session']:
+            raise ValueError("bus must be either system or session")
+        h = SignalHandler(d['handler_name'])
+        h.verify_all_checks = d.get('verify_all_checks', False)
+        h.defer = d.get('defer', True)
+        param_checks = d.get('param_checks', [])
+        _type_check(h.verify_all_checks, bool)
+        _type_check(h.defer, bool)
+        _type_check(param_checks, list)
+        applet_log.debug("MAIN: trying to load DBus signal handler %s" % d['handler_name'])
+        h.bus = d['bus']
+        h.bus_name = d['bus_name']
+        h.bus_path = d['bus_path']
+        h.interface = d['interface']
+        h.signal = d['signal']
+        # too bad I used named tuples: they are not well JSONified
+        h.param_checks = []
+        for p in param_checks:
+            _type_check(p[0], int)
+            _type_check(p[3], bool)
+            # element no. 4 is not always saved as a string
+            # _type_check(p[4], str)
+            if p[1] == '':
+                p[1] = None
+            if p[1] is not None and \
+               type(p[1]) != int and \
+               not VALIDATE_DBUS_SUBPARAM_RE.match(p[1]):
+                raise ValueError("invalid value for subparam index: %s" % p[1])
+            if p[2] not in DBUS_CHECK_COMPARE:
+                raise ValueError("invalid comparison operator: %s" % p[2])
+            t = param_check(p[0], p[1], p[2], p[3], p[4])
+            h.param_checks.append(t)
+        # TODO: if there are more parameters, use d.get('key', default_val)
+        applet_log.info("MAIN: DBus signal handler %s loaded" % h.handler_name)
+        return h
+    except TypeError:
+        applet_log.error("MAIN: attempt to convert object of wrong type to signal handler")
+        return None
+    except KeyError:
+        applet_log.error("MAIN: required value missing in conversion to signal handler")
+        return None
+    except IndexError:
+        applet_log.error("MAIN: malformed data structure in conversion to signal handler")
+        return None
+    except ValueError as e:
+        applet_log.error("MAIN: wrong value: %s" % _x(e))
+        applet_log.error("MAIN: skipping conversion to signal handler due to previous errors")
+        return None
 
 
 # stock signal handlers behave exactly the same way as user signal handlers
