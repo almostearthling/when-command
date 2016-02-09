@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-01-19 18:03+0100\n"
+"POT-Creation-Date: 2016-02-09 19:35+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,517 +17,522 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: when-command.py:594
+#: when-command.py:599
 #, python-format
 msgid "Are you sure you want to delete task %s?"
 msgstr ""
 
-#: when-command.py:595
+#: when-command.py:600
 #, python-format
 msgid "Are you sure you want to delete condition %s?"
 msgstr ""
 
-#: when-command.py:596
+#: when-command.py:601
 #, python-format
 msgid "Are you sure you want to delete signal handler %s?"
 msgstr ""
 
-#: when-command.py:597
+#: when-command.py:602
 #, python-format
 msgid "Task %s could not be deleted."
 msgstr ""
 
-#: when-command.py:598
+#: when-command.py:603
 #, python-format
 msgid "Condition %s could not be deleted."
 msgstr ""
 
-#: when-command.py:599
+#: when-command.py:604
 #, python-format
 msgid "Signal handler %s could not be deleted."
 msgstr ""
 
-#: when-command.py:600
+#: when-command.py:605
 #, python-format
 msgid "Task %s could not be found."
 msgstr ""
 
-#: when-command.py:601
+#: when-command.py:606
 #, python-format
 msgid "Condition %s could not be found."
 msgstr ""
 
-#: when-command.py:602
+#: when-command.py:607
 #, python-format
 msgid "Signal handler %s could not be found."
 msgstr ""
 
-#: when-command.py:603
+#: when-command.py:608
 #, python-format
 msgid "Signal handler %s could not be registered."
 msgstr ""
 
-#: when-command.py:604
+#: when-command.py:609
 msgid "Must specify watched path: condition not created."
 msgstr ""
 
-#: when-command.py:605
+#: when-command.py:610
 msgid ""
 "Invalid value for exit status specified.\n"
 "Please consider reviewing it."
 msgstr ""
 
-#: when-command.py:606
+#: when-command.py:611
 msgid ""
 "Invalid value for signal parameter index specified.\n"
 "Cannot add parameter test."
 msgstr ""
 
-#: when-command.py:607
+#: when-command.py:612
 msgid "This feature has not been implemented yet."
 msgstr ""
 
-#: when-command.py:608
+#: when-command.py:613
 msgid ""
 "This feature is not enabled.\n"
 "Please check documentation for possible reasons."
 msgstr ""
 
-#: when-command.py:609
+#: when-command.py:614
 #, python-format
 msgid "Version: %s"
 msgstr ""
 
-#: when-command.py:610
+#: when-command.py:615
 msgid "[disabled]"
 msgstr ""
 
-#: when-command.py:611
+#: when-command.py:616
 msgid "Choose File"
 msgstr ""
 
-#: when-command.py:612
+#: when-command.py:617
 msgid "Choose Directory"
 msgstr ""
 
-#: when-command.py:613
+#: when-command.py:618
 msgid "Choose File or Directory"
 msgstr ""
 
-#: when-command.py:615
+#: when-command.py:620
 #, python-format
 msgid "Task failed: %s"
 msgstr ""
 
-#: when-command.py:617
+#: when-command.py:622
 msgid "Edit Tasks..."
 msgstr ""
 
-#: when-command.py:618
+#: when-command.py:623
 msgid "Edit Conditions..."
 msgstr ""
 
-#: when-command.py:619
+#: when-command.py:624
 msgid "Settings..."
 msgstr ""
 
-#: when-command.py:620
+#: when-command.py:625
 msgid "Task History..."
 msgstr ""
 
-#: when-command.py:621
+#: when-command.py:626
 msgid "Pause"
 msgstr ""
 
-#: when-command.py:622
+#: when-command.py:627
 msgid "About..."
 msgstr ""
 
-#: when-command.py:623
+#: when-command.py:628
 msgid "Quit"
 msgstr ""
 
-#: when-command.py:625
+#: when-command.py:630
 msgid "User Defined Event"
 msgstr ""
 
-#: when-command.py:627
+#: when-command.py:632
 msgid "Variable"
 msgstr ""
 
-#: when-command.py:628 when-command.py:641
+#: when-command.py:633 when-command.py:646
 msgid "Value"
 msgstr ""
 
-#: when-command.py:629 when-command.py:631
+#: when-command.py:634 when-command.py:636
 msgid "Task Name"
 msgstr ""
 
-#: when-command.py:630
+#: when-command.py:635
 msgid "Time / Duration"
 msgstr ""
 
-#: when-command.py:632
+#: when-command.py:637
 msgid "Trigger"
 msgstr ""
 
-#: when-command.py:633 when-command-edit-condition.glade.h:10
+#: when-command.py:638 when-command-edit-condition.glade.h:10
 #: when-command-edit-task.glade.h:14
 msgid "Exit Code"
 msgstr ""
 
-#: when-command.py:634
+#: when-command.py:639
 msgid "Result"
 msgstr ""
 
-#: when-command.py:635
+#: when-command.py:640
 msgid "Reason"
 msgstr ""
 
-#: when-command.py:636
+#: when-command.py:641
 msgid "Row ID"
 msgstr ""
 
-#: when-command.py:637
+#: when-command.py:642
 msgid "Param"
 msgstr ""
 
-#: when-command.py:638
+#: when-command.py:643
 msgid "Sub"
 msgstr ""
 
-#: when-command.py:639
+#: when-command.py:644
 msgid "Negate"
 msgstr ""
 
-#: when-command.py:640
-msgid "Compare"
-msgstr ""
-
-#: when-command.py:644
-#, python-format
-msgid "an existing instance will be %s"
-msgstr ""
-
 #: when-command.py:645
-msgid "shut down"
-msgstr ""
-
-#: when-command.py:646
-msgid "killed"
-msgstr ""
-
-#: when-command.py:647
-msgid "instance shutdown finished"
-msgstr ""
-
-#: when-command.py:648
-#, python-format
-msgid "showing %s box of currently running instance"
+msgid "Compare"
 msgstr ""
 
 #: when-command.py:649
 #, python-format
-msgid "attempting to run condition %s"
+msgid "an existing instance will be %s"
 msgstr ""
 
 #: when-command.py:650
+msgid "shut down"
+msgstr ""
+
+#: when-command.py:651
+msgid "killed"
+msgstr ""
+
+#: when-command.py:652
+msgid "instance shutdown finished"
+msgstr ""
+
+#: when-command.py:653
+#, python-format
+msgid "showing %s box of currently running instance"
+msgstr ""
+
+#: when-command.py:654
+#, python-format
+msgid "attempting to run condition %s"
+msgstr ""
+
+#: when-command.py:655
 #, python-format
 msgid "condition %s could not be run"
 msgstr ""
 
-#: when-command.py:651
+#: when-command.py:656
 #, python-format
 msgid "attempting to export task history to %s"
 msgstr ""
 
-#: when-command.py:652
+#: when-command.py:657
 msgid "could not save task history"
 msgstr ""
 
-#: when-command.py:653
+#: when-command.py:658
 msgid "history exported to specified file"
 msgstr ""
 
-#: when-command.py:654
+#: when-command.py:659
 msgid "removing all items"
 msgstr ""
 
-#: when-command.py:655
+#: when-command.py:660
 msgid "could not remove condition list file"
 msgstr ""
 
-#: when-command.py:656
+#: when-command.py:661
 msgid "could not remove task list file"
 msgstr ""
 
-#: when-command.py:657
+#: when-command.py:662
 msgid "could not remove signal handler list file"
 msgstr ""
 
-#: when-command.py:658
+#: when-command.py:663
 msgid "exporting items:"
 msgstr ""
 
-#: when-command.py:659 when-command.py:666
+#: when-command.py:664 when-command.py:671
 #, python-format
 msgid "    %s tasks"
 msgstr ""
 
-#: when-command.py:660 when-command.py:667
+#: when-command.py:665 when-command.py:672
 #, python-format
 msgid "    %s conditions"
 msgstr ""
 
-#: when-command.py:661 when-command.py:668
+#: when-command.py:666 when-command.py:673
 #, python-format
 msgid "    %s signal handlers"
 msgstr ""
 
-#: when-command.py:662
+#: when-command.py:667
 #, python-format
 msgid "items exported to file %s"
 msgstr ""
 
-#: when-command.py:663
+#: when-command.py:668
 #, python-format
 msgid "importing items from file %s"
 msgstr ""
 
-#: when-command.py:664
+#: when-command.py:669
 msgid "could not import from dump file"
 msgstr ""
 
-#: when-command.py:665
+#: when-command.py:670
 msgid "restoring items:"
 msgstr ""
 
-#: when-command.py:669
+#: when-command.py:674
 msgid "items successfully imported"
 msgstr ""
 
-#: when-command.py:670
+#: when-command.py:675
 msgid "item successfully deleted"
 msgstr ""
 
-#: when-command.py:671
+#: when-command.py:676
 msgid "cannot delete item"
 msgstr ""
 
-#: when-command.py:672
+#: when-command.py:677
 msgid "cannot add items from provided file"
 msgstr ""
 
-#: when-command.py:673
+#: when-command.py:678
 msgid "cannot add items: malformed item file"
 msgstr ""
 
-#: when-command.py:674
+#: when-command.py:679
 msgid "no instance could be found"
 msgstr ""
 
-#: when-command.py:675
+#: when-command.py:680
 msgid "found a running instance"
 msgstr ""
 
-#: when-command.py:676
+#: when-command.py:681
 msgid "tasks and conditions successfully exported"
 msgstr ""
 
-#: when-command.py:677
+#: when-command.py:682
 msgid "configuration has been reset"
 msgstr ""
 
-#: when-command.py:678
+#: when-command.py:683
 msgid "tasks and conditions deleted"
 msgstr ""
 
-#: when-command.py:679
+#: when-command.py:684
 msgid "icons and data installed"
 msgstr ""
 
-#: when-command.py:681
+#: when-command.py:686
 msgid "this program requires a graphical session"
 msgstr ""
 
-#: when-command.py:682
+#: when-command.py:687
 msgid "another instance is present: leaving"
 msgstr ""
 
-#: when-command.py:683
+#: when-command.py:688
 msgid "could not find a running instance, please start it first"
 msgstr ""
 
-#: when-command.py:684
+#: when-command.py:689
 msgid "feature not available in minimalistic mode"
 msgstr ""
 
-#: when-command.py:685
+#: when-command.py:690
 msgid "could not find a running instance"
 msgstr ""
 
-#: when-command.py:686
+#: when-command.py:691
 msgid "dbus signals disabled by configuration"
 msgstr ""
 
-#: when-command.py:687
+#: when-command.py:692
 msgid "error in communication with running applet"
 msgstr ""
 
-#: when-command.py:688
+#: when-command.py:693
 msgid "an error occurred while trying to export items"
 msgstr ""
 
-#: when-command.py:689
+#: when-command.py:694
 msgid "cannot reset configuration, please close instance first"
 msgstr ""
 
-#: when-command.py:690
+#: when-command.py:695
 msgid "an error occurred while trying to reset configuration"
 msgstr ""
 
-#: when-command.py:691
+#: when-command.py:696
 msgid "cannot clear items, please close instance first"
 msgstr ""
 
-#: when-command.py:692
+#: when-command.py:697
 msgid "an error occurred while trying to delete items"
 msgstr ""
 
-#: when-command.py:693
+#: when-command.py:698
 msgid "cannot import items, please close instance first"
 msgstr ""
 
-#: when-command.py:694
+#: when-command.py:699
 msgid "an error occurred while trying to import items"
 msgstr ""
 
-#: when-command.py:695
-msgid "cannot install, please close instance first"
-msgstr ""
-
-#: when-command.py:696
-msgid "an error occurred while trying to install icons"
-msgstr ""
-
-#: when-command.py:697
-msgid "no error found"
-msgstr ""
-
-#: when-command.py:698
-msgid "unknown item type"
-msgstr ""
-
-#: when-command.py:699
-msgid "item name conflict"
-msgstr ""
-
 #: when-command.py:700
-msgid "item not found"
+#, python-format
+msgid "%s items could not be imported"
 msgstr ""
 
 #: when-command.py:701
-msgid "error communicating with applet"
+msgid "cannot install, please close instance first"
 msgstr ""
 
 #: when-command.py:702
-msgid "unknown error or dependency conflict"
+msgid "an error occurred while trying to install icons"
+msgstr ""
+
+#: when-command.py:703
+msgid "no error found"
 msgstr ""
 
 #: when-command.py:704
-msgid "show applet version"
+msgid "unknown item type"
 msgstr ""
 
 #: when-command.py:705
-msgid "show settings dialog box for the running instance [R]"
+msgid "item name conflict"
 msgstr ""
 
 #: when-command.py:706
-msgid "show history dialog box for the running instance [R]"
+msgid "item not found"
 msgstr ""
 
 #: when-command.py:707
-msgid "show tasks dialog box for the running instance [R]"
+msgid "error communicating with applet"
 msgstr ""
 
 #: when-command.py:708
-msgid "show conditions box for the running instance [R]"
-msgstr ""
-
-#: when-command.py:709
-msgid "show dbus signals box for the running instance [R]"
+msgid "unknown error or dependency conflict"
 msgstr ""
 
 #: when-command.py:710
-msgid "reset general configuration to default [S]"
+msgid "show applet version"
 msgstr ""
 
 #: when-command.py:711
-msgid "show applet icon"
+msgid "show settings dialog box for the running instance [R]"
 msgstr ""
 
 #: when-command.py:712
-msgid "clear all tasks and conditions [S]"
+msgid "show history dialog box for the running instance [R]"
 msgstr ""
 
 #: when-command.py:713
-msgid "install application icons and autostart [S]"
+msgid "show tasks dialog box for the running instance [R]"
 msgstr ""
 
 #: when-command.py:714
-msgid "query for a running instance"
+msgid "show conditions box for the running instance [R]"
 msgstr ""
 
 #: when-command.py:715
-msgid "export task history to a text file [R]"
+msgid "show dbus signals box for the running instance [R]"
 msgstr ""
 
 #: when-command.py:716
-msgid "run a command-line bound condition [R]"
+msgid "reset general configuration to default [S]"
 msgstr ""
 
 #: when-command.py:717
-msgid "enqueue a command-line bound condition [R]"
+msgid "show applet icon"
 msgstr ""
 
 #: when-command.py:718
-msgid "run shutdown tasks and close an existing istance [R]"
+msgid "clear all tasks and conditions [S]"
 msgstr ""
 
 #: when-command.py:719
-msgid "kill an existing istance [R]"
+msgid "install application icons and autostart [S]"
 msgstr ""
 
 #: when-command.py:720
-msgid "save tasks and conditions to a portable format"
+msgid "query for a running instance"
 msgstr ""
 
 #: when-command.py:721
-msgid "import tasks and conditions from saved file [S]"
+msgid "export task history to a text file [R]"
 msgstr ""
 
 #: when-command.py:722
-msgid "list items of the given type to console"
+msgid "run a command-line bound condition [R]"
 msgstr ""
 
 #: when-command.py:723
-msgid "add items from specified file or standard input"
+msgid "enqueue a command-line bound condition [R]"
 msgstr ""
 
 #: when-command.py:724
-msgid "delete the item specified as [type:]NAME"
+msgid "run shutdown tasks and close an existing istance [R]"
 msgstr ""
 
 #: when-command.py:725
-msgid "show verbose output for some options"
+msgid "kill an existing istance [R]"
 msgstr ""
 
 #: when-command.py:726
+msgid "save tasks and conditions to a portable format"
+msgstr ""
+
+#: when-command.py:727
+msgid "import tasks and conditions from saved file [S]"
+msgstr ""
+
+#: when-command.py:728
+msgid "list items of the given type to console"
+msgstr ""
+
+#: when-command.py:729
+msgid "add items from specified file or standard input"
+msgstr ""
+
+#: when-command.py:730
+msgid "delete the item specified as [type:]NAME"
+msgstr ""
+
+#: when-command.py:731
+msgid "show verbose output for some options"
+msgstr ""
+
+#: when-command.py:732
 #, python-format
 msgid "%s: %s, version %s"
 msgstr ""
 
-#: when-command.py:727
+#: when-command.py:733
 #, python-format
 msgid ""
 "%s: %s - %s /\n"
@@ -539,7 +544,7 @@ msgid ""
 "from the command, as most operations will show no output by default.\n"
 msgstr ""
 
-#: when-command.py:734
+#: when-command.py:740
 #, python-format
 msgid ""
 "Note: options marked with [R] require an instance running in the "

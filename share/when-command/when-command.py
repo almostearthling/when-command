@@ -78,8 +78,8 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.9~beta.1'
-APPLET_TAGDESC = 'Quite stable remote DBus API'
+APPLET_VERSION = '0.9.9~beta.2'
+APPLET_TAGDESC = 'Thorough checks for item import or remote injection'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -697,6 +697,7 @@ resources.OERR_ERR_CLEAR_RUNNING = _("cannot clear items, please close instance 
 resources.OERR_ERR_CLEAR_GENERIC = _("an error occurred while trying to delete items")
 resources.OERR_ERR_IMPORT_RUNNING = _("cannot import items, please close instance first")
 resources.OERR_ERR_IMPORT_GENERIC = _("an error occurred while trying to import items")
+resources.OERR_ERR_IMPORT_FAILITEMS = _("%s items could not be imported")
 resources.OERR_ERR_INSTALL_RUNNING = _("cannot install, please close instance first")
 resources.OERR_ERR_INSTALL_GENERIC = _("an error occurred while trying to install icons")
 resources.OERR_ERR_ITEMOPS_OK = _("no error found")
@@ -1455,13 +1456,22 @@ class ItemDataFileInterpreter(object):
                 elif subtype == 'PathNotifyBasedCondition':
                     item = dict_to_PathNotifyBasedCondition(
                         item_dict, skip_dependency_check=True)
-                new_conditions.append(item)
+                if item:
+                    new_conditions.append(item)
+                else:
+                    raise ValueError("condition not correctly converted")
             elif item_type == 'task':
                 item = dict_to_Task(item_dict)
-                new_tasks.append(item)
+                if item:
+                    new_tasks.append(item)
+                else:
+                    raise ValueError("task not correctly converted")
             elif item_type == 'dbus_signal_handler':
                 item = dict_to_SignalHandler(item_dict)
-                new_signal_handlers.append(item)
+                if item:
+                    new_signal_handlers.append(item)
+                else:
+                    raise ValueError("signal handler not correctly converted")
         for item in new_signal_handlers:
             signal_handlers.add(item)
         for item in new_tasks:
@@ -4841,17 +4851,17 @@ class ConditionDialog(object):
                 o('txtInterval').set_text(str(int(intv)))
                 o('cbType').set_active(0)
             elif type(cond) == TimeBasedCondition:
-                if cond.year:
+                if cond.year is not None:
                     o('txtYear').set_text(str(cond.year))
-                if cond.month:
+                if cond.month is not None:
                     o('cbMonth').set_active(cond.month - 1)
-                if cond.day:
+                if cond.day is not None:
                     o('txtDay').set_text(str(cond.day))
-                if cond.weekday:
+                if cond.weekday is not None:
                     o('cbWeekday').set_active(cond.weekday)
-                if cond.hour:
+                if cond.hour is not None:
                     o('txtHour').set_text(str(cond.hour))
-                if cond.minute:
+                if cond.minute is not None:
                     o('txtMinute').set_text(str(cond.minute))
                 o('cbType').set_active(1)
             elif type(cond) == CommandBasedCondition:
@@ -6629,6 +6639,7 @@ def export_item_data(filename=None, verbose=False):
 
 
 def import_item_data(filename=None, verbose=False):
+    errors = 0
     if not filename:
         filename = os.path.join(USER_CONFIG_FOLDER, '%s.dump' % APPLET_NAME)
     oerr(resources.OERR_IMPORT_DATA % filename, verbose)
@@ -6643,13 +6654,19 @@ def import_item_data(filename=None, verbose=False):
     if 'tasks' in json_dic.keys():
         for task_dic in json_dic['tasks']:
             task = dict_to_Task(task_dic)
-            tasks.add(task)
+            if task:
+                tasks.add(task)
+            else:
+                errors += 1
         oerr(resources.OERR_IMPORT_DATA_TASKS
              % len(json_dic['tasks']), verbose)
     if 'signalhandlers' in json_dic.keys():
         for handler_dic in json_dic['signalhandlers']:
             handler = dict_to_SignalHandler(handler_dic)
-            signal_handlers.add(handler)
+            if handler:
+                signal_handlers.add(handler)
+            else:
+                errors += 1
         oerr(resources.OERR_IMPORT_DATA_SIGHANDLERS
              % len(json_dic['signalhandlers']), verbose)
     if 'conditions' in json_dic.keys():
@@ -6673,8 +6690,12 @@ def import_item_data(filename=None, verbose=False):
                 condition = dict_to_Condition(condition_dic)
             if condition:
                 conditions.add(condition)
+            else:
+                errors += 1
         oerr(resources.OERR_IMPORT_DATA_CONDITIONS
              % len(json_dic['conditions']), verbose)
+    if errors:
+        oerr(resources.OERR_ERR_IMPORT_FAILITEMS % errors, verbose)
     tasks.save()
     signal_handlers.save()
     conditions.save()
