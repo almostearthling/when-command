@@ -78,8 +78,8 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.9~beta.2'
-APPLET_TAGDESC = 'Thorough checks for item import or remote injection'
+APPLET_VERSION = '0.9.9~beta.3'
+APPLET_TAGDESC = 'Destroy informational message boxes after use'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -4558,6 +4558,7 @@ class TaskDialog(object):
                         msgbox.set_markup(resources.DLG_WRONG_EXIT_STATUS)
                         msgbox.run()
                         msgbox.hide()
+                        msgbox.destroy()
                         applet_log.warning("DLGTASK: wrong exit code specification")
                         s = 0
                     task.set_check(success_status=s)
@@ -4576,6 +4577,7 @@ class TaskDialog(object):
                         msgbox.set_markup(resources.DLG_WRONG_EXIT_STATUS)
                         msgbox.run()
                         msgbox.hide()
+                        msgbox.destroy()
                         s = 0
                     task.set_check(failure_status=s)
                 elif idx == 1:
@@ -4604,6 +4606,7 @@ class TaskDialog(object):
                 msgbox.set_markup(resources.DLG_CONFIRM_DELETE_TASK % name)
                 ret = msgbox.run()
                 msgbox.hide()
+                msgbox.destroy()
                 if ret == Gtk.ResponseType.YES:
                     self.default_box(True)
                     if tasks.remove(task_name=name):
@@ -4616,6 +4619,7 @@ class TaskDialog(object):
                             resources.DLG_CANNOT_DELETE_TASK % name)
                         msgbox.run()
                         msgbox.hide()
+                        msgbox.destroy()
                 else:
                     applet_log.info("DLGTASK: removal of task %s canceled" % name)
             else:
@@ -4625,6 +4629,7 @@ class TaskDialog(object):
                 msgbox.set_markup(resources.DLG_CANNOT_FIND_TASK % name)
                 msgbox.run()
                 msgbox.hide()
+                msgbox.destroy()
             return None
         else:
             return None
@@ -5091,6 +5096,7 @@ class ConditionDialog(object):
                         msgbox.set_markup(resources.DLG_WRONG_EXIT_STATUS)
                         msgbox.run()
                         msgbox.hide()
+                        msgbox.destroy()
                         applet_log.warning("DLGCOND: wrong exit code specification")
                         status = 0
                 elif chk == 1:
@@ -5134,6 +5140,7 @@ class ConditionDialog(object):
                         msgbox.set_markup(resources.DLG_PATH_NOT_SPECIFIED)
                         msgbox.run()
                         msgbox.hide()
+                        msgbox.destroy()
                         return None
                 else:
                     msgbox = Gtk.MessageDialog(type=Gtk.MessageType.ERROR,
@@ -5141,6 +5148,7 @@ class ConditionDialog(object):
                     msgbox.set_markup(resources.DLG_NOT_ENABLED_FEATURE)
                     msgbox.run()
                     msgbox.hide()
+                    msgbox.destroy()
                     applet_log.warning("DLGCOND: file watch condition is disabled")
                     return None
             elif idx == 6:
@@ -5170,6 +5178,7 @@ class ConditionDialog(object):
                 msgbox.set_markup(resources.DLG_CONFIRM_DELETE_CONDITION % name)
                 ret = msgbox.run()
                 msgbox.hide()
+                msgbox.destroy()
                 if ret == Gtk.ResponseType.YES:
                     self.default_box(True)
                     if conditions.remove(cond_name=name):
@@ -5182,6 +5191,7 @@ class ConditionDialog(object):
                             resources.DLG_CANNOT_DELETE_CONDITION % name)
                         msgbox.run()
                         msgbox.hide()
+                        msgbox.destroy()
                 else:
                     applet_log.debug("DLGCOND: removal of condition %s canceled")
             else:
@@ -5191,6 +5201,7 @@ class ConditionDialog(object):
                 msgbox.set_markup(resources.DLG_CANNOT_FIND_CONDITION % name)
                 msgbox.run()
                 msgbox.hide()
+                msgbox.destroy()
             return None
         else:
             return None
@@ -5267,6 +5278,7 @@ class SignalDialog(object):
             msgbox.set_markup(resources.DLG_WRONG_PARAM_INDEX)
             msgbox.run()
             msgbox.hide()
+            msgbox.destroy()
             return
         sub_idx = o('txtValueSub').get_text()
         if sub_idx == '':
@@ -5281,6 +5293,7 @@ class SignalDialog(object):
                 msgbox.set_markup(resources.DLG_WRONG_PARAM_INDEX)
                 msgbox.run()
                 msgbox.hide()
+                msgbox.destroy()
                 return
         l = [x for x in self.signal_param_tests
              if x.value_idx != value_idx or x.sub_idx != sub_idx]
@@ -5462,6 +5475,7 @@ class SignalDialog(object):
                     resources.DLG_CANNOT_REGISTER_SIGHANDLER % name)
                 msgbox.run()
                 msgbox.hide()
+                msgbox.destroy()
             signal_handlers.save()
             return h
         elif ret == ACTION_DELETE:
@@ -5474,6 +5488,7 @@ class SignalDialog(object):
                     resources.DLG_CONFIRM_DELETE_SIGHANDLER % name)
                 ret = msgbox.run()
                 msgbox.hide()
+                msgbox.destroy()
                 if ret == Gtk.ResponseType.YES:
                     self.default_box(True)
                     if signal_handlers.remove(handler_name=name):
@@ -5486,6 +5501,7 @@ class SignalDialog(object):
                             resources.DLG_CANNOT_DELETE_SIGHANDLER % name)
                         msgbox.run()
                         msgbox.hide()
+                        msgbox.destroy()
                 else:
                     applet_log.info("DLGSIG: removal of signal handler %s canceled" % name)
             return None
