@@ -78,8 +78,8 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.9~beta.3'
-APPLET_TAGDESC = 'Destroy informational message boxes after use'
+APPLET_VERSION = '0.9.9~beta.4'
+APPLET_TAGDESC = 'Suspend condition via remote DBus API'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -1708,6 +1708,10 @@ class AppletDBusService(dbus.service.Object):
     @dbus.service.method(APPLET_BUS_NAME, in_signature='sb', out_signature='b')
     def RunCLIBasedCondition(self, cond_name, deferred=False):
         return start_event_condition(cond_name, deferred)
+
+    @dbus.service.method(APPLET_BUS_NAME, in_signature='sb', out_signature='b')
+    def SuspendCondition(self, cond_name, suspend=True):
+        return suspend_condition(cond_name, suspend)
 
     @dbus.service.method(APPLET_BUS_NAME, in_signature='ss', out_signature='v')
     def GetConfig(self, section, entry):
@@ -6204,6 +6208,18 @@ def start_event_condition(cond_name, deferred):
         deferred_events.append(event)
     else:
         sysevent_condition_check(event)
+    return True
+
+
+def suspend_condition(cond_name, suspend=True):
+    if cond_name not in conditions.names:
+        applet_log.warning("MAIN: cannot suspend non existing condition %s" % cond_name)
+        return False
+    cond = conditions.get(cond_name=cond_name)
+    if suspend:
+        cond.suspend()
+    else:
+        cond.resume()
     return True
 
 
