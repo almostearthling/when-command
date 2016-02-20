@@ -11,6 +11,9 @@ It is not generally intended as a replacement to [_cron_](https://en.wikipedia.o
 
 The complete documentation for **When** can be found online [here](http://when-documentation.readthedocs.org/). Documentation for contributors has a separate [site](http://contributing-to-when.readthedocs.org/).
 
+## Alternate Interface
+Besides being fully configurable and accessible from both the command line interface and the graphical user interface, an alternate and more streamlined GUI for **When** is being actively developed: the [When Wizard](https://github.com/almostearthling/when-wizard) suite can be used to create actions in **When** in a possibly easier way.
+
 ## Credits
 Open Source Software relies on collaboration, and I'm more than happy to receive help from other developers. Here I'll list the main contributions.
 - Adolfo Jayme-Barrientos, aka [fitojb](https://github.com/fitojb), for the Spanish translation
