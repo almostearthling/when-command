@@ -78,7 +78,7 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.10~beta.1'
+APPLET_VERSION = '0.9.10~beta.2'
 APPLET_TAGDESC = 'Stable beta fully compatible with alternate UI'
 
 # logging constants
@@ -6215,7 +6215,7 @@ def start_event_condition(cond_name, deferred):
     return True
 
 
-def suspend_condition(cond_name, suspend=True):
+def suspend_condition(cond_name, suspend=True, save=True):
     if cond_name not in conditions.names:
         applet_log.warning("MAIN: cannot suspend non existing condition %s" % cond_name)
         return False
@@ -6224,6 +6224,8 @@ def suspend_condition(cond_name, suspend=True):
         cond.suspend()
     else:
         cond.resume()
+    if save:
+        cond.save()
     return True
 
 
