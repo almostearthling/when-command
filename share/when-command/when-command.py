@@ -78,8 +78,8 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.9~beta.5'
-APPLET_TAGDESC = 'Inquiry condition suspension via remote DBus API'
+APPLET_VERSION = '0.9.10~beta.1'
+APPLET_TAGDESC = 'Stable beta fully compatible with alternate UI'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
