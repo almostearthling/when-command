@@ -78,8 +78,8 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.10~beta.2'
-APPLET_TAGDESC = 'Stable beta fully compatible with alternate UI'
+APPLET_VERSION = '0.9.10~beta.3'
+APPLET_TAGDESC = 'Fix important bug in full time check implementation'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -3284,14 +3284,14 @@ class TimeBasedCondition(Condition):
         cur_time = time.time()
         now = time.localtime(cur_time)
         test_tuple = (
-            self.year or now[0],
-            self.month or now[1],
-            self.day or now[2],
-            self.hour or now[3],
-            self.minute or now[4],
+            self.year if self.year is not None else now[0],
+            self.month if self.month is not None else now[1],
+            self.day if self.day is not None else now[2],
+            self.hour if self.hour is not None else now[3],
+            self.minute if self.minute is not None else now[4],
             0,
             now[6],
-            self.weekday or now[6],
+            self.weekday if self.weekday is not None else now[6],
             now[8],
         )
         test_time = time.mktime(test_tuple)
