@@ -78,8 +78,8 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.10~beta.3'
-APPLET_TAGDESC = 'Fix important bug in full time check implementation'
+APPLET_VERSION = '0.9.10~beta.4'
+APPLET_TAGDESC = 'Fix remote condition suspension process'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -6225,7 +6225,7 @@ def suspend_condition(cond_name, suspend=True, save=True):
     else:
         cond.resume()
     if save:
-        cond.save()
+        cond.dump()
     return True
 
 
