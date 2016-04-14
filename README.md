@@ -11,6 +11,17 @@ It is not generally intended as a replacement to [_cron_](https://en.wikipedia.o
 
 The complete documentation for **When** can be found online [here](http://when-documentation.readthedocs.org/). Documentation for contributors has a separate [site](http://contributing-to-when.readthedocs.org/).
 
+## Installation
+Besides manual installation from source as explained in the [documentation](http://when-documentation.readthedocs.org/en/latest/install.html#install-from-the-source), packages suitable for Ubuntu can be found in the [releases](https://github.com/almostearthling/when-command/releases) page. A PPA for Ubuntu is also available: to install from the PPA and get automatic updates, the following commands can be used from a terminal window:
+
+```
+$ sudo add-apt-repository ppa:franzg/when-command
+$ sudo apt-get update
+$ sudo apt-get install when-command
+```
+
+If the PPA is used, **When** can be started from the *Dash* immediately: once started, it can be configured for autostart using the *Settings* dialog box.
+
 ## Alternate Interface
 Besides being fully configurable and accessible from both the command line interface and the graphical user interface, an alternate and more streamlined GUI for **When** is being actively developed: the [When Wizard](https://github.com/almostearthling/when-wizard) suite can be used to create actions in **When** in a possibly easier way.
 
