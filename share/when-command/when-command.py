@@ -78,8 +78,8 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.10~beta.4'
-APPLET_TAGDESC = 'Fix remote condition suspension process'
+APPLET_VERSION = '0.9.11~beta.1'
+APPLET_TAGDESC = 'Correctly manage storage device attachment in Xenial'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -427,11 +427,29 @@ stock_event_definitions = {
             None,
             None
         ),
+        # Xenial (might have to be swapped to above to become main)
+        event_definition(
+            EVENT_SYSTEM_DEVICE_ATTACH, False, 'session',
+            'org.gtk.vfs.UDisks2VolumeMonitor',
+            '/org/gtk/Private/RemoteVolumeMonitor',
+            'org.gtk.Private.RemoteVolumeMonitor', 'DriveConnected',
+            None,
+            None
+        ),
     ],
     EVENT_SYSTEM_DEVICE_DETACH: [
         event_definition(
             EVENT_SYSTEM_DEVICE_DETACH, False, 'session',
             'org.gtk.Private.UDisks2VolumeMonitor',
+            '/org/gtk/Private/RemoteVolumeMonitor',
+            'org.gtk.Private.RemoteVolumeMonitor', 'DriveDisconnected',
+            None,
+            None
+        ),
+        # Xenial (might have to be swapped to above to become main)
+        event_definition(
+            EVENT_SYSTEM_DEVICE_DETACH, False, 'session',
+            'org.gtk.vfs.UDisks2VolumeMonitor',
             '/org/gtk/Private/RemoteVolumeMonitor',
             'org.gtk.Private.RemoteVolumeMonitor', 'DriveDisconnected',
             None,
