@@ -7,12 +7,12 @@ The purpose of this small utility is to provide the user, possibly without admin
 
 It is not generally intended as a replacement to [_cron_](https://en.wikipedia.org/wiki/Cron) and the [Gnome Task Scheduler](http://gnome-schedule.sourceforge.net/), although to some extent these utilities might overlap. **When** is intended to be more flexible, although less precise, and to provide an alternative to more complicated solutions -- such as the implementation of _cron_ jobs that check for a particular condition and execute commands when the condition is verified. In such spirit, **When** is not as fine-grained in terms of doing things on a strict time schedule: the **When** approach is that "_when_ a certain condition is met, _then_ something has to be done". The condition is checked periodically, and the countermeasure is taken _subsequently_ in a relaxed fashion, which means that it might not occur _immediately_ in most cases.
 
-[![Documentation Status](https://readthedocs.org/projects/when-documentation/badge/?version=latest)](http://when-documentation.readthedocs.org/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.io/projects/when-documentation/badge/?version=latest)](http://when-documentation.readthedocs.io/en/latest/?badge=latest)
 
-The complete documentation for **When** can be found online [here](http://when-documentation.readthedocs.org/). Documentation for contributors has a separate [site](http://contributing-to-when.readthedocs.org/).
+The complete documentation for **When** can be found online [here](http://when-documentation.readthedocs.io/). Documentation for contributors has a separate [site](http://contributing-to-when.readthedocs.io/).
 
 ## Installation
-Besides manual installation from source as explained in the [documentation](http://when-documentation.readthedocs.org/en/latest/install.html#install-from-the-source), packages suitable for Ubuntu can be found in the [releases](https://github.com/almostearthling/when-command/releases) page. A PPA for Ubuntu is also available: to install from the PPA and get automatic updates, the following commands can be used from a terminal window:
+Besides manual installation from source as explained in the [documentation](http://when-documentation.readthedocs.io/en/latest/install.html#install-from-the-source), packages suitable for Ubuntu can be found in the [releases](https://github.com/almostearthling/when-command/releases) page. A PPA for Ubuntu is also available: to install from the PPA and get automatic updates, the following commands can be used from a terminal window:
 
 ```
 $ sudo add-apt-repository ppa:franzg/when-command
@@ -38,7 +38,7 @@ Application [icon](http://www.graphicsfuel.com/2012/08/alarm-clock-icon-psd/) by
 ## Resources
 The resources that I have found particularly useful in the development of **When** are:
 - [Python 3.x Documentation](https://docs.python.org/3/)
-- [PyGTK 3.x Tutorial](http://python-gtk-3-tutorial.readthedocs.org/en/latest/index.html)
+- [PyGTK 3.x Tutorial](http://python-gtk-3-tutorial.readthedocs.io/en/latest/index.html)
 - [PyGTK 2.x Documentation](https://developer.gnome.org/pygtk/stable/)
 - [PyGObject Documentation](https://developer.gnome.org/pygobject/stable/)
 - [GTK 3.0 Documentation](http://lazka.github.io/pgi-docs/Gtk-3.0/index.html)

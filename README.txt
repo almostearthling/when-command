@@ -3,4 +3,4 @@ It interacts with the user through a GUI, where the user can define tasks and
 conditions, as well as relationships of causality that bind conditions to
 tasks.
 
-See http://when-documentation.readthedocs.org/ for further information.
+See http://when-documentation.readthedocs.io/ for further information.
