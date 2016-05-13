@@ -306,7 +306,7 @@
                     </child>
                     <child>
                       <object class="GtkCheckButton" id="chkResetConditions">
-                        <property name="label" translatable="yes">Reset Condition Tests on Wakeup from Suspension</property>
+                        <property name="label" translatable="yes">Reset Condition Tests on Wakeup Events</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>

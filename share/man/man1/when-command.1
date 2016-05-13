@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "WHEN-COMMAND" "1" "January 12, 2016" "0.9" "When Documentation"
+.TH "WHEN-COMMAND" "1" "May 13, 2016" "0.9" "When Documentation"
 .SH NAME
 when-command \- When Documentation
 .
@@ -78,9 +78,13 @@ existing instance [1]
 reset applet configuration to default, requires the
 applet to be shut down with an appropriate switch
 .TP
+.B \-E\fP,\fB  \-\-restart\-conditions
+reset conditions to be checked as if they had not
+been already successful: it allows to restore checks
+also for conditions that are not recurrent
+.TP
 .B \-I\fP,\fB  \-\-show\-icon
-show applet icon, the icon will be shown at the next
-startup
+show applet icon
 .TP
 .B \-T\fP,\fB  \-\-install
 install or reinstall application icon and autostart
@@ -241,7 +245,12 @@ in the configuration file
 will remain paused upon applet restart if it was paused when the applet (or
 session) was closed. Please notice that the indicator icon gives feedback
 anyway about the paused/non\-paused state. Use \fBpreserve pause\fP in the
-configuration file.
+configuration file
+.IP \(bu 2
+\fIReset Condition Tests on Wakeup Events\fP: automatically restore condition
+checks for non recurring conditions also on wakeup (usually from suspended
+state) as if the applet were restarted. The option is \fBwakeup reset\fP in
+the configuration.
 .UNINDENT
 .UNINDENT
 .UNINDENT
@@ -286,11 +295,8 @@ configuration entry is \fBenvironment vars\fP\&.
 .UNINDENT
 .UNINDENT
 .sp
-The configuration is \fIimmediately stored upon confirmation\fP to the
-configuration file, although some settings (such as \fINotifications\fP,
-\fIIcon Theme\fP, and most advanced settings) might require a restart of the
-applet. The configuration file can be edited with a standard text editor, and
-it follows some conventions common to most configuration files. The sections
+The configuration file can be edited with a standard text editor, and it
+follows some conventions common to most configuration files. The sections
 in the file might slightly differ from the tabs in the \fISettings\fP dialog, but
 the entries are easily recognizable.
 .sp

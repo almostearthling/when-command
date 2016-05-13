@@ -642,7 +642,7 @@ resources.DLG_TITLE_CHOOSE_DIR = _("Choose Directory")
 resources.DLG_TITLE_CHOOSE_FILEDIR = _("Choose File or Directory")
 
 resources.NOTIFY_TASK_FAILED = _("Task failed: %s")
-resources.NOTIFY_RELOAD_CONDITIONS_FAILED = _("Could not reset tests: a restart\nof the applet may be required")
+resources.NOTIFY_RESET_CONDITIONS_FAILED = _("Could not reset tests: a restart\nof the applet may be required")
 
 resources.MENU_EDIT_TASKS = _("Edit Tasks...")
 resources.MENU_EDIT_CONDITIONS = _("Edit Conditions...")
@@ -1939,7 +1939,7 @@ class AppletDBusService(dbus.service.Object):
 
     @dbus.service.method(APPLET_BUS_NAME, out_signature='b')
     def RestartConditions(self):
-        return reload_conditions()
+        return reset_conditions()
 
     @dbus.service.method(APPLET_BUS_NAME, out_signature='as')
     def GetHistoryEntries(self):
@@ -1992,7 +1992,7 @@ class Config(object):
                 'tick seconds': int,
                 'skip seconds': int,
                 'preserve pause': bool_spec,
-                'reset after suspend': bool_spec,
+                'wakeup reset': bool_spec,
             },
             'General': {
                 'show icon': bool_spec,
@@ -2021,7 +2021,7 @@ class Config(object):
             tick seconds = 15
             skip seconds = 60
             preserve pause = true
-            reset after suspend = true
+            wakeup reset = true
 
             [General]
             show icon = true
@@ -2167,10 +2167,12 @@ def sysevent_condition_check(event, param=None):
 # check if current event should reset conditions
 def sysevent_check_reset_conditions(event):
     if event in sysevents_reset_conditions \
-       and config.get('Scheduler', 'reset after suspend'):
-        if not reload_conditions():
+       and config.get('Scheduler', 'wakeup reset'):
+        applet_log.info("SYSEVENT: event %s is configured to reset conditions")
+        if not reset_conditions():
+            applet_log.error("SYSEVENT: conditions could not be correctly reset")
             applet.set_attention()
-            applet.notify(resources.NOTIFY_RELOAD_CONDITIONS_FAILED)
+            applet.notify(resources.NOTIFY_RESET_CONDITIONS_FAILED)
 
 
 # check among the path notifications by setting the global changed path:
@@ -2367,6 +2369,17 @@ class Conditions(object):
             return next((c for c in self._list if c.cond_id == cond_id), None)
         elif cond_name:
             return next((c for c in self._list if c.cond_name == cond_name), None)
+
+
+# a simple utility to reset successfulness flag on all conditions
+# note that the flag name is not mangled, so it can be used as it is
+# TODO: transition to either a condition method or a non private variable
+def reset_conditions():
+    applet_lock.acquire()
+    for condition in conditions:
+        condition._has_succeeded = False
+    applet_lock.release()
+    return True
 
 
 class SignalHandlers(object):
@@ -4383,6 +4396,7 @@ class StockSignalHandler(SignalHandler):
             return
         if signal_caught and self.callback(self.manager, *args):
             self._info("stock event signal caught: raising event %s" % self.handler_name)
+            sysevent_check_reset_conditions(self.handler_name)
             if self.defer:
                 deferred_events.append(self.handler_name)
             else:
@@ -5599,7 +5613,7 @@ class SettingsDialog(object):
         o('chkPreservePause').set_active(
             config.get('Scheduler', 'preserve pause'))
         o('chkResetConditions').set_active(
-            config.get('Scheduler', 'reset after suspend'))
+            config.get('Scheduler', 'wakeup reset'))
         o('cbLogLevel').set_active(log_level_idx)
         o('cbIconTheme').set_active(icon_theme_idx)
         o('txtTickSeconds').set_text(
@@ -5661,8 +5675,8 @@ class SettingsDialog(object):
                        o('chkEnableEnvVars').get_active())
             preserve_pause = o('chkPreservePause').get_active()
             config.set('Scheduler', 'preserve pause', preserve_pause)
-            reset_after_suspend = o('chkResetConditions').get_active()
-            config.set('Scheduler', 'reset after suspend', reset_after_suspend)
+            wakeup_reset = o('chkResetConditions').get_active()
+            config.set('Scheduler', 'wakeup reset', wakeup_reset)
             if not preserve_pause:
                 unlink_pause_file()
             try:
@@ -6074,11 +6088,6 @@ class AppletIndicator(Gtk.Application):
             self.set_attention(False)
             self.dialog_history.run()
 
-    def reset_conditions(self, _):
-        if not reload_conditions():
-            self.set_attention()
-            self.notify(resources.NOTIFY_RELOAD_CONDITIONS_FAILED)
-
     def set_attention(self, warn=True):
         if config.get('General', 'show icon'):
             if warn and config.get('General', 'notifications'):
@@ -6201,6 +6210,11 @@ class AppletIndicator(Gtk.Application):
                 icon_suffix = 'color'
         self.indicator.set_icon_theme_path(
             os.path.join(APP_ICON_FOLDER, icon_suffix))
+
+    def reset_conditions(self, _):
+        if not reset_conditions():
+            self.set_attention()
+            self.notify(resources.NOTIFY_RESET_CONDITIONS_FAILED)
 
     # try to do most configuration tasks automatically
     def reconfigure(self):
@@ -6820,15 +6834,6 @@ def import_item_data(filename=None, verbose=False):
     signal_handlers.save()
     conditions.save()
     oerr(resources.OERR_IMPORT_DATA_FINISH, verbose)
-
-
-def reload_conditions():
-    try:
-        conditions.load()
-        return True
-    except Exception as e:
-        applet_log.error("MAIN: could not reload conditions (%s)" % _x(e))
-        return False
 
 
 # verbose output shortcut
