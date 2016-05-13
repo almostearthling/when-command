@@ -493,6 +493,12 @@ stock_event_definitions = {
     # TODO: add more stock event definitions here
 }
 
+# list of events that may reset conditions
+sysevents_reset_conditions = [
+    EVENT_SYSTEM_RESUME,
+    # EVENT_SESSION_SCREENSAVER_EXIT,
+]
+
 
 # verify that the user folders are present, otherwise create them
 def verify_user_folders():
@@ -636,12 +642,14 @@ resources.DLG_TITLE_CHOOSE_DIR = _("Choose Directory")
 resources.DLG_TITLE_CHOOSE_FILEDIR = _("Choose File or Directory")
 
 resources.NOTIFY_TASK_FAILED = _("Task failed: %s")
+resources.NOTIFY_RELOAD_CONDITIONS_FAILED = _("Could not reset tests: a restart\nof the applet may be required")
 
 resources.MENU_EDIT_TASKS = _("Edit Tasks...")
 resources.MENU_EDIT_CONDITIONS = _("Edit Conditions...")
 resources.MENU_SETTINGS = _("Settings...")
 resources.MENU_TASK_HISTORY = _("Task History...")
 resources.MENU_PAUSE = _("Pause")
+resources.MENU_RESET_CONDS = _("Reset tests")
 resources.MENU_ABOUT = _("About...")
 resources.MENU_QUIT = _("Quit")
 
@@ -718,6 +726,7 @@ resources.OERR_ERR_IMPORT_GENERIC = _("an error occurred while trying to import 
 resources.OERR_ERR_IMPORT_FAILITEMS = _("%s items could not be imported")
 resources.OERR_ERR_INSTALL_RUNNING = _("cannot install, please close instance first")
 resources.OERR_ERR_INSTALL_GENERIC = _("an error occurred while trying to install icons")
+resources.OERR_ERR_RESTART_CONDITIONS = _("an error occurred while restarting conditions")
 resources.OERR_ERR_ITEMOPS_OK = _("no error found")
 resources.OERR_ERR_ITEMOPS_TYPE = _("unknown item type")
 resources.OERR_ERR_ITEMOPS_CONFLICT = _("item name conflict")
@@ -740,6 +749,7 @@ resources.COMMAND_LINE_HELP_EXPORT_HISTORY = _("export task history to a text fi
 resources.COMMAND_LINE_HELP_RUN_CONDITION = _("run a command-line bound condition [R]")
 resources.COMMAND_LINE_HELP_DEFER_CONDITION = _("enqueue a command-line bound condition [R]")
 resources.COMMAND_LINE_HELP_SHUTDOWN = _("run shutdown tasks and close an existing istance [R]")
+resources.COMMAND_LINE_HELP_RESTART_CONDITIONS = _("reset tests for already successful conditions [R]")
 resources.COMMAND_LINE_HELP_KILL = _("kill an existing istance [R]")
 resources.COMMAND_LINE_HELP_EXPORT = _("save tasks and conditions to a portable format")
 resources.COMMAND_LINE_HELP_IMPORT = _("import tasks and conditions from saved file [S]")
@@ -1927,6 +1937,10 @@ class AppletDBusService(dbus.service.Object):
             signal_handlers.save()
             conditions.save()
 
+    @dbus.service.method(APPLET_BUS_NAME, out_signature='b')
+    def RestartConditions(self):
+        return reload_conditions()
+
     @dbus.service.method(APPLET_BUS_NAME, out_signature='as')
     def GetHistoryEntries(self):
         l = []
@@ -1978,6 +1992,7 @@ class Config(object):
                 'tick seconds': int,
                 'skip seconds': int,
                 'preserve pause': bool_spec,
+                'reset after suspend': bool_spec,
             },
             'General': {
                 'show icon': bool_spec,
@@ -2006,6 +2021,7 @@ class Config(object):
             tick seconds = 15
             skip seconds = 60
             preserve pause = true
+            reset after suspend = true
 
             [General]
             show icon = true
@@ -2146,6 +2162,15 @@ def sysevent_condition_check(event, param=None):
         applet_lock.acquire()
         current_system_event = None
         applet_lock.release()
+
+
+# check if current event should reset conditions
+def sysevent_check_reset_conditions(event):
+    if event in sysevents_reset_conditions \
+       and config.get('Scheduler', 'reset after suspend'):
+        if not reload_conditions():
+            applet.set_attention()
+            applet.notify(resources.NOTIFY_RELOAD_CONDITIONS_FAILED)
 
 
 # check among the path notifications by setting the global changed path:
@@ -5573,6 +5598,8 @@ class SettingsDialog(object):
         o('chkNotifications').set_active(config.get('General', 'notifications'))
         o('chkPreservePause').set_active(
             config.get('Scheduler', 'preserve pause'))
+        o('chkResetConditions').set_active(
+            config.get('Scheduler', 'reset after suspend'))
         o('cbLogLevel').set_active(log_level_idx)
         o('cbIconTheme').set_active(icon_theme_idx)
         o('txtTickSeconds').set_text(
@@ -5634,6 +5661,8 @@ class SettingsDialog(object):
                        o('chkEnableEnvVars').get_active())
             preserve_pause = o('chkPreservePause').get_active()
             config.set('Scheduler', 'preserve pause', preserve_pause)
+            reset_after_suspend = o('chkResetConditions').get_active()
+            config.set('Scheduler', 'reset after suspend', reset_after_suspend)
             if not preserve_pause:
                 unlink_pause_file()
             try:
@@ -6045,6 +6074,11 @@ class AppletIndicator(Gtk.Application):
             self.set_attention(False)
             self.dialog_history.run()
 
+    def reset_conditions(self, _):
+        if not reload_conditions():
+            self.set_attention()
+            self.notify(resources.NOTIFY_RELOAD_CONDITIONS_FAILED)
+
     def set_attention(self, warn=True):
         if config.get('General', 'show icon'):
             if warn and config.get('General', 'notifications'):
@@ -6128,6 +6162,12 @@ class AppletIndicator(Gtk.Application):
         item_pause.connect('activate', self.pause)
         item_pause.show()
         menu.append(item_pause)
+
+        if not minimalistic:
+            item_reset_conds = Gtk.MenuItem(label=resources.MENU_RESET_CONDS)
+            item_reset_conds.connect('activate', self.reset_conditions)
+            item_reset_conds.show()
+            menu.append(item_reset_conds)
 
         separator = Gtk.SeparatorMenuItem()
         separator.show()
@@ -6469,6 +6509,22 @@ def call_add_items(filename, verbose=False):
         return False
 
 
+def call_restart_conditions(verbose=False):
+    bus = dbus.SessionBus()
+    proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
+    try:
+        if not proxy.RestartConditions():
+            applet_log.error("MAIN: failed to restart conditions")
+            oerr(resources.OERR_ERR_RESTART_CONDITIONS, verbose)
+            return False
+        else:
+            applet_log.info("MAIN: conditions restarted successfully")
+            return True
+    except dbus.exceptions.DBusException:
+        oerr(resources.OERR_ERR_ITEMOPS_DBUS, verbose)
+        return False
+
+
 def do_add_items(filename, verbose=False):
     if filename == '-':
         applet_log.info("MAIN: reading items from standard input")
@@ -6766,6 +6822,15 @@ def import_item_data(filename=None, verbose=False):
     oerr(resources.OERR_IMPORT_DATA_FINISH, verbose)
 
 
+def reload_conditions():
+    try:
+        conditions.load()
+        return True
+    except Exception as e:
+        applet_log.error("MAIN: could not reload conditions (%s)" % _x(e))
+        return False
+
+
 # verbose output shortcut
 def oerr(s, verbose=True):
     if verbose:
@@ -6961,6 +7026,11 @@ def main():
             help=resources.COMMAND_LINE_HELP_DEFER_CONDITION
         )
         parser.add_argument(
+            '-E', '--restart-conditions',
+            dest='restart_conditions', action='store_true',
+            help=resources.COMMAND_LINE_HELP_RESTART_CONDITIONS
+        )
+        parser.add_argument(
             '--item-list',
             dest='item_list', metavar='ITEMTYPE', nargs='?', const='*',
             help=resources.COMMAND_LINE_HELP_ITEM_LIST
@@ -7082,17 +7152,25 @@ def main():
 
         if args.run_condition:
             if not running:
-                oerr(resources.OERR_ERR_DBUS_DISABLED, verbose)
+                oerr(resources.OERR_ERR_REQUIRE_INSTANCE, verbose)
                 sys.exit(2)
             else:
                 if not(call_run_condition(args.run_condition, False, verbose)):
                     sys.exit(2)
         if args.defer_condition:
             if not running:
-                oerr(resources.OERR_ERR_DBUS_DISABLED, verbose)
+                oerr(resources.OERR_ERR_REQUIRE_INSTANCE, verbose)
                 sys.exit(2)
             else:
                 if not(call_run_condition(args.defer_condition, True, verbose)):
+                    sys.exit(2)
+
+        if args.restart_conditions:
+            if not running:
+                oerr(resources.OERR_ERR_REQUIRE_INSTANCE, verbose)
+                sys.exit(2)
+            else:
+                if not(call_restart_conditions(verbose)):
                     sys.exit(2)
 
         if args.item_delete:
