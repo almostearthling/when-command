@@ -623,6 +623,7 @@ resources = Resources()
 resources.DLG_CONFIRM_DELETE_TASK = _("Are you sure you want to delete task %s?")
 resources.DLG_CONFIRM_DELETE_CONDITION = _("Are you sure you want to delete condition %s?")
 resources.DLG_CONFIRM_DELETE_SIGHANDLER = _("Are you sure you want to delete signal handler %s?")
+resources.DLG_CONFIRM_RESET_CONDITIONS = _("Are you sure you want to reset condition tests?")
 resources.DLG_CANNOT_DELETE_TASK = _("Task %s could not be deleted.")
 resources.DLG_CANNOT_DELETE_CONDITION = _("Condition %s could not be deleted.")
 resources.DLG_CANNOT_DELETE_SIGHANDLER = _("Signal handler %s could not be deleted.")
@@ -630,6 +631,7 @@ resources.DLG_CANNOT_FIND_TASK = _("Task %s could not be found.")
 resources.DLG_CANNOT_FIND_CONDITION = _("Condition %s could not be found.")
 resources.DLG_CANNOT_FIND_SIGHANDLER = _("Signal handler %s could not be found.")
 resources.DLG_CANNOT_REGISTER_SIGHANDLER = _("Signal handler %s could not be registered.")
+resources.DLG_RESET_CONDITIONS_FAILED = _("Could not reset tests: a restart\nof the applet may be required")
 resources.DLG_PATH_NOT_SPECIFIED = _("Must specify watched path: condition not created.")
 resources.DLG_WRONG_EXIT_STATUS = _("Invalid value for exit status specified.\nPlease consider reviewing it.")
 resources.DLG_WRONG_PARAM_INDEX = _("Invalid value for signal parameter index specified.\nCannot add parameter test.")
@@ -6214,9 +6216,20 @@ class AppletIndicator(Gtk.Application):
             os.path.join(APP_ICON_FOLDER, icon_suffix))
 
     def reset_conditions(self, _):
-        if not reset_conditions():
-            self.set_attention()
-            self.notify(resources.NOTIFY_RESET_CONDITIONS_FAILED)
+        msgbox = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,
+                                   buttons=Gtk.ButtonsType.YES_NO)
+        msgbox.set_markup(resources.DLG_CONFIRM_RESET_CONDITIONS % name)
+        ret = msgbox.run()
+        msgbox.hide()
+        msgbox.destroy()
+        if ret == Gtk.ResponseType.YES:
+            if not reset_conditions():
+                msgbox = Gtk.MessageDialog(type=Gtk.MessageType.ERROR,
+                                           buttons=Gtk.ButtonsType.OK)
+                msgbox.set_markup(resources.DLG_RESET_CONDITIONS_FAILED)
+                msgbox.run()
+                msgbox.hide()
+                msgbox.destroy()
 
     # try to do most configuration tasks automatically
     def reconfigure(self):
