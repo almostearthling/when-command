@@ -78,8 +78,8 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.11~beta.1'
-APPLET_TAGDESC = 'Correctly manage storage device attachment in Xenial'
+APPLET_VERSION = '0.9.12~beta.1'
+APPLET_TAGDESC = 'Optionally reset condition check after wakeup events'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
