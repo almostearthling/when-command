@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: when-command 0.9.1-beta.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-05-14 19:07+0200\n"
+"POT-Creation-Date: 2016-05-14 19:34+0200\n"
 "PO-Revision-Date: 2015-12-21 14:43+0100\n"
 "Last-Translator: Francesco Garosi <franz.g@no-spam-please.infinito.it>\n"
 "Language-Team: Italian\n"
@@ -342,225 +342,229 @@ msgid "cannot add items: malformed item file"
 msgstr "impossibile aggiungere elementi: file malformato"
 
 #: when-command.py:705
+msgid "condition checks restarted successfully"
+msgstr "test delle condizioni riavviati correttamente"
+
+#: when-command.py:706
 msgid "no instance could be found"
 msgstr "impossibile trovare un'istanza"
 
-#: when-command.py:706
+#: when-command.py:707
 msgid "found a running instance"
 msgstr "istanza attiva trovata"
 
-#: when-command.py:707
+#: when-command.py:708
 msgid "tasks and conditions successfully exported"
 msgstr "task e condizioni esportati con successo"
 
-#: when-command.py:708
+#: when-command.py:709
 msgid "configuration has been reset"
 msgstr "la configurazione è stata reimpostata"
 
-#: when-command.py:709
+#: when-command.py:710
 msgid "tasks and conditions deleted"
 msgstr "task e condizioni eliminati"
 
-#: when-command.py:710
+#: when-command.py:711
 msgid "icons and data installed"
 msgstr "icone e dati installati"
 
-#: when-command.py:712
+#: when-command.py:713
 msgid "this program requires a graphical session"
 msgstr "questo programma ha bisogno di una sessione grafica"
 
-#: when-command.py:713
+#: when-command.py:714
 msgid "another instance is present: leaving"
 msgstr "istanza attiva già presente: uscita"
 
-#: when-command.py:714
+#: when-command.py:715
 msgid "could not find a running instance, please start it first"
 msgstr "impossibile trovare un'istanza attiva, deve essere avviata"
 
-#: when-command.py:715
+#: when-command.py:716
 msgid "feature not available in minimalistic mode"
 msgstr "non disponibile in modalità minimale"
 
-#: when-command.py:716
+#: when-command.py:717
 msgid "could not find a running instance"
 msgstr "impossibile trovare un'istanza attiva"
 
-#: when-command.py:717
+#: when-command.py:718
 msgid "dbus signals disabled by configuration"
 msgstr "segnali dbus disabilitati dalla configurazione"
 
-#: when-command.py:718
+#: when-command.py:719
 msgid "error in communication with running applet"
 msgstr "errore nella comunicazione con l'istanza attiva"
 
-#: when-command.py:719
+#: when-command.py:720
 msgid "an error occurred while trying to export items"
 msgstr "si è verificato un errore nell'esportazione degli elementi"
 
-#: when-command.py:720
+#: when-command.py:721
 msgid "cannot reset configuration, please close instance first"
 msgstr "impossibile reimpostare la configurazione, chiudere l'istanza"
 
-#: when-command.py:721
+#: when-command.py:722
 msgid "an error occurred while trying to reset configuration"
 msgstr "errore verificato nel reimpostare la configurazione"
 
-#: when-command.py:722
+#: when-command.py:723
 msgid "cannot clear items, please close instance first"
 msgstr "impossibile eliminare elementi, chiudere l'istanza"
 
-#: when-command.py:723
+#: when-command.py:724
 msgid "an error occurred while trying to delete items"
 msgstr "errore verificato nell'eliminazione degli elementi"
 
-#: when-command.py:724
+#: when-command.py:725
 msgid "cannot import items, please close instance first"
 msgstr "impossibile importare elementi, chiudere l'istanza"
 
-#: when-command.py:725
+#: when-command.py:726
 msgid "an error occurred while trying to import items"
 msgstr "errore verificato nell'importazione degli elementi"
 
-#: when-command.py:726
+#: when-command.py:727
 #, python-format
 msgid "%s items could not be imported"
 msgstr "%s elementi non sono stati importati"
 
-#: when-command.py:727
+#: when-command.py:728
 msgid "cannot install, please close instance first"
 msgstr "impossibile installare, chiudere l'istanza"
 
-#: when-command.py:728
+#: when-command.py:729
 msgid "an error occurred while trying to install icons"
 msgstr "errore verificato nell'installazione"
 
-#: when-command.py:729
+#: when-command.py:730
 #, fuzzy
 msgid "an error occurred while restarting conditions"
 msgstr "errore nel ripristino dei test delle condizioni"
 
-#: when-command.py:730
+#: when-command.py:731
 msgid "no error found"
 msgstr "nessun errore trovato"
 
-#: when-command.py:731
+#: when-command.py:732
 msgid "unknown item type"
 msgstr "tipo di elemento sconosciuto"
 
-#: when-command.py:732
+#: when-command.py:733
 msgid "item name conflict"
 msgstr "conflitto tra nomi di elementi"
 
-#: when-command.py:733
+#: when-command.py:734
 msgid "item not found"
 msgstr "elemento non trovato"
 
-#: when-command.py:734
+#: when-command.py:735
 msgid "error communicating with applet"
 msgstr "errore nella comunicazione con l'applet"
 
-#: when-command.py:735
+#: when-command.py:736
 msgid "unknown error or dependency conflict"
 msgstr "errore sconosciuto o conflitto di dipendenza"
 
-#: when-command.py:737
+#: when-command.py:738
 msgid "show applet version"
 msgstr "visualizza la versione dell'applet"
 
-#: when-command.py:738
+#: when-command.py:739
 msgid "show settings dialog box for the running instance [R]"
 msgstr "visualizza box impostazioni per l'istanza attiva [R]"
 
-#: when-command.py:739
+#: when-command.py:740
 msgid "show history dialog box for the running instance [R]"
 msgstr "visualizza box storico per l'istanza attiva [R]"
 
-#: when-command.py:740
+#: when-command.py:741
 msgid "show tasks dialog box for the running instance [R]"
 msgstr "visualizza box dei task per l'istanza attiva [R]"
 
-#: when-command.py:741
+#: when-command.py:742
 msgid "show conditions box for the running instance [R]"
 msgstr "visualizza box condizioni per l'istanza attiva [R]"
 
-#: when-command.py:742
+#: when-command.py:743
 msgid "show dbus signals box for the running instance [R]"
 msgstr "visualizza box segnali dbus per l'istanza attiva [R]"
 
-#: when-command.py:743
+#: when-command.py:744
 msgid "reset general configuration to default [S]"
 msgstr "reimposta la configurazione a predefinita [S]"
 
-#: when-command.py:744
+#: when-command.py:745
 msgid "show applet icon"
 msgstr "visualizza icona applet"
 
-#: when-command.py:745
+#: when-command.py:746
 msgid "clear all tasks and conditions [S]"
 msgstr "elimina tutti i task e condizioni [S]"
 
-#: when-command.py:746
+#: when-command.py:747
 msgid "install application icons and autostart [S]"
 msgstr "installazione di icone e autostart applicazione [S]"
 
-#: when-command.py:747
+#: when-command.py:748
 msgid "query for a running instance"
 msgstr "verifica se c'è un'istanza attiva"
 
-#: when-command.py:748
+#: when-command.py:749
 msgid "export task history to a text file [R]"
 msgstr "esporta storico task in un file di testo [R]"
 
-#: when-command.py:749
+#: when-command.py:750
 msgid "run a command-line bound condition [R]"
 msgstr "avvia una condizione da linea di comando [R]"
 
-#: when-command.py:750
+#: when-command.py:751
 msgid "enqueue a command-line bound condition [R]"
 msgstr "accoda una condizione da linea di comando [R]"
 
-#: when-command.py:751
+#: when-command.py:752
 msgid "run shutdown tasks and close an existing istance [R]"
 msgstr "chiusura istanza attiva avviando task di chiusura [R]"
 
-#: when-command.py:752
+#: when-command.py:753
 msgid "reset tests for already successful conditions [R]"
 msgstr "ripristina test per condizioni già verificate [R]"
 
-#: when-command.py:753
+#: when-command.py:754
 msgid "kill an existing istance [R]"
 msgstr "terminazione istanza attiva [R]"
 
-#: when-command.py:754
+#: when-command.py:755
 msgid "save tasks and conditions to a portable format"
 msgstr "esporta task e condizioni su file portabile"
 
-#: when-command.py:755
+#: when-command.py:756
 msgid "import tasks and conditions from saved file [S]"
 msgstr "importa task e condizioni da file portabile [S]"
 
-#: when-command.py:756
+#: when-command.py:757
 msgid "list items of the given type to console"
 msgstr "mostra elementi del tipo specificato su console"
 
-#: when-command.py:757
+#: when-command.py:758
 msgid "add items from specified file or standard input"
 msgstr "aggiungi elementi da un file o dallo standard input"
 
-#: when-command.py:758
+#: when-command.py:759
 msgid "delete the item specified as [type:]NAME"
 msgstr "elimina elemento specificato come [tipo:]NOME"
 
-#: when-command.py:759
+#: when-command.py:760
 msgid "show verbose output for some options"
 msgstr "visualizza output esteso per alcune opzioni"
 
-#: when-command.py:760
+#: when-command.py:761
 #, python-format
 msgid "%s: %s, version %s"
 msgstr "%s: %s, versione %s"
 
-#: when-command.py:761
+#: when-command.py:762
 #, python-format
 msgid ""
 "%s: %s - %s /\n"
@@ -578,7 +582,7 @@ msgstr ""
 "l'opzione --verbose per ottenere output dal comando, poiché la maggior parte "
 "delle operazioni non produce output per default.\n"
 
-#: when-command.py:768
+#: when-command.py:769
 #, python-format
 msgid ""
 "Note: options marked with [R] require an instance running in the "

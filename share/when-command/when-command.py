@@ -702,6 +702,7 @@ resources.OERR_ITEMOPS_DEL_FINISH = _("item successfully deleted")
 resources.OERR_ITEMOPS_DEL_FAIL = _("cannot delete item")
 resources.OERR_ITEMOPS_ADD_NOREAD = _("cannot add items from provided file")
 resources.OERR_ITEMOPS_ADD_FAIL = _("cannot add items: malformed item file")
+resources.OERR_RESTART_CONDITIONS = _("condition checks restarted successfully")
 resources.OERR_NO_INSTANCE = _("no instance could be found")
 resources.OERR_FOUND_INSTANCE = _("found a running instance")
 resources.OERR_EXPORT = _("tasks and conditions successfully exported")
@@ -6534,6 +6535,7 @@ def call_restart_conditions(verbose=False):
             return False
         else:
             applet_log.info("MAIN: conditions restarted successfully")
+            oerr(resources.OERR_RESTART_CONDITIONS, verbose)
             return True
     except dbus.exceptions.DBusException:
         oerr(resources.OERR_ERR_ITEMOPS_DBUS, verbose)
