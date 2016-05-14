@@ -6218,7 +6218,7 @@ class AppletIndicator(Gtk.Application):
     def reset_conditions(self, _):
         msgbox = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION,
                                    buttons=Gtk.ButtonsType.YES_NO)
-        msgbox.set_markup(resources.DLG_CONFIRM_RESET_CONDITIONS % name)
+        msgbox.set_markup(resources.DLG_CONFIRM_RESET_CONDITIONS)
         ret = msgbox.run()
         msgbox.hide()
         msgbox.destroy()
