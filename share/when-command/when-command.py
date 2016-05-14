@@ -78,7 +78,7 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.12~beta.1'
+APPLET_VERSION = '0.9.12~beta.2'
 APPLET_TAGDESC = 'Optionally reset condition check after wakeup events'
 
 # logging constants
@@ -2168,7 +2168,7 @@ def sysevent_condition_check(event, param=None):
 def sysevent_check_reset_conditions(event):
     if event in sysevents_reset_conditions \
        and config.get('Scheduler', 'wakeup reset'):
-        applet_log.info("SYSEVENT: event %s is configured to reset conditions")
+        applet_log.info("SYSEVENT: event %s is configured to reset conditions" % event)
         if not reset_conditions():
             applet_log.error("SYSEVENT: conditions could not be correctly reset")
             applet.set_attention()
@@ -2375,6 +2375,7 @@ class Conditions(object):
 # note that the flag name is not mangled, so it can be used as it is
 # TODO: transition to either a condition method or a non private variable
 def reset_conditions():
+    applet_log.info("MAIN: resetting conditions after wakeup event")
     applet_lock.acquire()
     for condition in conditions:
         condition._has_succeeded = False
