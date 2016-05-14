@@ -649,7 +649,7 @@ resources.MENU_EDIT_CONDITIONS = _("Edit Conditions...")
 resources.MENU_SETTINGS = _("Settings...")
 resources.MENU_TASK_HISTORY = _("Task History...")
 resources.MENU_PAUSE = _("Pause")
-resources.MENU_RESET_CONDS = _("Reset tests")
+resources.MENU_RESET_CONDS = _("Reset Tests")
 resources.MENU_ABOUT = _("About...")
 resources.MENU_QUIT = _("Quit")
 
@@ -2375,7 +2375,7 @@ class Conditions(object):
 # note that the flag name is not mangled, so it can be used as it is
 # TODO: transition to either a condition method or a non private variable
 def reset_conditions():
-    applet_log.info("MAIN: resetting conditions after wakeup event")
+    applet_log.info("MAIN: resetting success flag on all conditions")
     applet_lock.acquire()
     for condition in conditions:
         condition._has_succeeded = False
