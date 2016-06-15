@@ -78,8 +78,8 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.12~beta.2'
-APPLET_TAGDESC = 'Optionally reset condition check after wakeup events'
+APPLET_VERSION = '0.9.12~beta.3'
+APPLET_TAGDESC = 'Work around an issue occurring on unsupported locales'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -572,9 +572,12 @@ def load_applet_dialog(name):
 
 
 # setup i18n for both applet text and dialogs
-locale.setlocale(locale.LC_ALL, locale.getlocale())
-locale.bindtextdomain(APPLET_NAME, APP_LOCALE_FOLDER)
-locale.textdomain(APPLET_NAME)
+try:
+    locale.setlocale(locale.LC_ALL, locale.getlocale())
+    locale.bindtextdomain(APPLET_NAME, APP_LOCALE_FOLDER)
+    locale.textdomain(APPLET_NAME)
+except locale.Error:
+    locale.setlocale(locale.LC_ALL, 'C')
 _ = locale.gettext
 
 
