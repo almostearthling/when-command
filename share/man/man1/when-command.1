@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "WHEN-COMMAND" "1" "January 12, 2016" "0.9" "When Documentation"
+.TH "WHEN-COMMAND" "1" "May 22, 2016" "0.9" "When Documentation"
 .SH NAME
 when-command \- When Documentation
 .
@@ -51,7 +51,7 @@ configuration or persistent state \-\- consisting of \fItasks\fP, \fIconditions\
 something has gone the wrong way \-\- such as the \fB\-\-show\-settings\fP switch
 mentioned above, or the \fB\-I\fP (or \fB\-\-show\-icon\fP) switch, to recover from an
 unwantedly hidden icon. There are also switches that grant access to "advanced"
-features, which are better covered in the next sections.
+features, which are better covered in the online documentation.
 .sp
 The available options are:
 .INDENT 0.0
@@ -72,15 +72,19 @@ show the condition dialog box of an existing instance
 .TP
 .B \-d\fP,\fB  \-\-show\-signals
 show the DBus signal handler editor box for an
-existing instance [1]
+existing instance
 .TP
 .B \-R\fP,\fB  \-\-reset\-config
 reset applet configuration to default, requires the
 applet to be shut down with an appropriate switch
 .TP
+.B \-E\fP,\fB  \-\-restart\-conditions
+reset conditions to be checked as if they had not
+been already successful: it allows to restore checks
+also for conditions that are not recurrent
+.TP
 .B \-I\fP,\fB  \-\-show\-icon
-show applet icon, the icon will be shown at the next
-startup
+show applet icon
 .TP
 .B \-T\fP,\fB  \-\-install
 install or reinstall application icon and autostart
@@ -241,7 +245,12 @@ in the configuration file
 will remain paused upon applet restart if it was paused when the applet (or
 session) was closed. Please notice that the indicator icon gives feedback
 anyway about the paused/non\-paused state. Use \fBpreserve pause\fP in the
-configuration file.
+configuration file
+.IP \(bu 2
+\fIReset Condition Tests on Wakeup Events\fP: automatically restore condition
+checks for non recurring conditions also on wakeup (usually from suspended
+state) as if the applet were restarted. The option is \fBwakeup reset\fP in
+the configuration.
 .UNINDENT
 .UNINDENT
 .UNINDENT
@@ -286,20 +295,10 @@ configuration entry is \fBenvironment vars\fP\&.
 .UNINDENT
 .UNINDENT
 .sp
-The configuration is \fIimmediately stored upon confirmation\fP to the
-configuration file, although some settings (such as \fINotifications\fP,
-\fIIcon Theme\fP, and most advanced settings) might require a restart of the
-applet. The configuration file can be edited with a standard text editor, and
-it follows some conventions common to most configuration files. The sections
+The configuration file can be edited with a standard text editor, and it
+follows some conventions common to most configuration files. The sections
 in the file might slightly differ from the tabs in the \fISettings\fP dialog, but
 the entries are easily recognizable.
-.sp
-Manual configuration can be particularly useful to bring back the program
-icon once the user decided to hide it losing access to the menu,
-by setting the \fBshow icon\fP entry to \fBtrue\fP\&. Another way to force access to
-the \fISettings\fP dialog box when the icon is hidden is to invoke the applet from
-the command line using the \fB\-\-show\-settings\fP (or \fB\-s\fP) switch when an
-instance is running.
 .SH ITEM DEFINITION FILE
 .sp
 The \fIitems\fP (\fItasks\fP, \fIconditions\fP and especially \fIsignal handlers\fP) managed
@@ -402,7 +401,7 @@ is specified and set to either \fIstdout\fP or \fIstderr\fP\&.
 .SS Signal Handlers
 .sp
 Signal handlers are an advanced feature, and cannot be defined if they are
-not enabled in the configuration: read the appropriate section on how to
+not enabled in the configuration: read the appropriate paragraph on how to
 enable \fIuser defined events\fP\&. If user events are enabled, the following
 entries can be used:
 .INDENT 0.0
@@ -711,10 +710,6 @@ where the \fBfilename.dump\fP parameter must correspond to a file previously
 generated using the \fB\-\-export\fP switch. If no argument is given, \fBWhen\fP
 expects that items have been exported giving no file specification to the
 \fB\-\-export\fP switch. After import \fBWhen\fP can be restarted.
-.IP [1] 5
-This is an advanced feature and is not available by default.
-It has to be enabled in the program settings to be accessible. Refer to the
-appropriate chapter for more information.
 .SH AUTHOR
 Francesco Garosi
 .SH COPYRIGHT
