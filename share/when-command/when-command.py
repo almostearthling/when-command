@@ -78,8 +78,8 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.12~beta.3'
-APPLET_TAGDESC = 'Work around an issue occurring on unsupported locales'
+APPLET_VERSION = '0.9.12~beta.4'
+APPLET_TAGDESC = 'Fix issue when selecting hour based interval'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -5135,7 +5135,7 @@ class ConditionDialog(object):
             idx = o('cbType').get_active()
             if idx == 0:
                 v = int(o('txtInterval').get_text())
-                if o('cbTimeUnit').get_active == 0:
+                if o('cbTimeUnit').get_active() == 0:
                     interval = v * 60 * 60
                 else:
                     interval = v * 60
