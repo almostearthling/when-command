@@ -20,6 +20,8 @@ $ sudo apt-get update
 $ sudo apt-get install when-command
 ```
 
+> *Note:* on Ubuntu 16.04 *"Xenial Xerus"* the required dependency `python-support` is not available through regular updates. However it can be installed by [downloading](http://launchpadlibrarian.net/109052632/python-support_1.0.15_all.deb) it from the official [repository](https://launchpad.net/ubuntu/xenial/amd64/python-support/1.0.15) and issuing `sudo dpkg --install python-support_1.0.15_all.deb` on a terminal window from the download directory, before attempting to install **When** using the provided PPA.
+
 If the PPA is used, **When** can be started from the *Dash* immediately: once started, it can be configured for autostart using the *Settings* dialog box.
 
 ## Alternate Interface
