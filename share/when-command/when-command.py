@@ -78,8 +78,8 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.12~beta.4'
-APPLET_TAGDESC = 'Fix issue when selecting hour based interval'
+APPLET_VERSION = '0.9.12~beta.5'
+APPLET_TAGDESC = 'Signal registration verification and portable battery events'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -198,6 +198,19 @@ NM_STATE_CONNECTED_LOCAL = 50
 NM_STATE_CONNECTED_SITE = 60
 NM_STATE_CONNECTED_GLOBAL = 70
 
+# DBus battery states: see https://upower.freedesktop.org/docs/Device.html
+BATTERY_UPOWER_UNKNOWN = 0
+BATTERY_UPOWER_CHARGING = 1
+BATTERY_UPOWER_DISCHARGING = 2
+BATTERY_UPOWER_EMPTY = 3
+BATTERY_UPOWER_FULL = 4
+BATTERY_UPOWER_PENDINGCHARGE = 5
+BATTERY_UPOWER_PENDINGDISCHARGE = 6
+
+# this will be changed at first battery check if any
+BATTERY_LEVEL_LOW = None
+BATTERY_LEVEL_LOW_DEFAULT = 20
+
 # file notification constants: from inotify.h here are the constants
 # IN_ACCESS		   0x00000001	/* File was accessed */
 # IN_MODIFY		   0x00000002	/* File was modified */
@@ -252,6 +265,11 @@ current_system_event = None
 current_deferred_events = None
 current_changed_path = None
 current_deferred_changed_paths = None
+
+# battery status checks
+current_battery_status_charging = False
+current_battery_status_discharging = False
+current_battery_status_low = False
 
 applet_log_handler = logging.NullHandler()
 applet_log_formatter = logging.Formatter(fmt=LOG_FORMAT, datefmt='%Y-%m-%d %H:%M:%S')
@@ -367,55 +385,69 @@ stock_event_definitions = {
             lambda iface, *args: iface.state() in [NM_STATE_DISCONNECTED]
         ),
     ],
+    # see the following post for a hint on alternate interfaces
+    # on reddit: https://www.reddit.com/r/Fedora/comments/3bssp9/
     EVENT_SYSTEM_BATTERY_CHARGE: [
         event_definition(
             EVENT_SYSTEM_BATTERY_CHARGE, True,
             'system',
-            'org.freedesktop.UPower', '/org/freedesktop/UPower',
-            'org.freedesktop.UPower', 'Changed',
+            'org.freedesktop.UPower',
+            '/org/freedesktop/UPower/devices/battery_BAT0',
+            'org.freedesktop.UPower.Device', 'Changed',
             None,
-            lambda iface, *args: (
-                not iface.proxy_object.Get(
-                    'org.freedesktop.UPower', 'OnBattery',
-                    dbus_interface='org.freedesktop.DBus.Properties') and
-                not iface.proxy_object.Get(
-                    'org.freedesktop.UPower', 'OnLowBattery',
-                    dbus_interface='org.freedesktop.DBus.Properties')
-            )
+            lambda iface, *args: battery_changed_charging(iface)
+        ),
+        # Xenial
+        event_definition(
+            EVENT_SYSTEM_BATTERY_CHARGE, True,
+            'system',
+            'org.freedesktop.UPower',
+            '/org/freedesktop/UPower/devices/battery_BAT0',
+            'org.freedesktop.DBus.Properties', 'PropertiesChanged',
+            None,
+            lambda iface, *args: battery_changed_charging(iface)
         ),
     ],
     EVENT_SYSTEM_BATTERY_DISCHARGING: [
         event_definition(
             EVENT_SYSTEM_BATTERY_DISCHARGING, True,
             'system',
-            'org.freedesktop.UPower', '/org/freedesktop/UPower',
-            'org.freedesktop.UPower', 'Changed',
+            'org.freedesktop.UPower',
+            '/org/freedesktop/UPower/devices/battery_BAT0',
+            'org.freedesktop.UPower.Device', 'Changed',
             None,
-            lambda iface, *args: (
-                iface.proxy_object.Get(
-                    'org.freedesktop.UPower', 'OnBattery',
-                    dbus_interface='org.freedesktop.DBus.Properties') and
-                not iface.proxy_object.Get(
-                    'org.freedesktop.UPower', 'OnLowBattery',
-                    dbus_interface='org.freedesktop.DBus.Properties')
-            )
+            lambda iface, *args: battery_changed_discharging(iface)
+        ),
+        # Xenial
+        event_definition(
+            EVENT_SYSTEM_BATTERY_DISCHARGING, True,
+            'system',
+            'org.freedesktop.UPower',
+            '/org/freedesktop/UPower/devices/battery_BAT0',
+            'org.freedesktop.DBus.Properties', 'PropertiesChanged',
+            None,
+            lambda iface, *args: battery_changed_discharging(iface)
         ),
     ],
     EVENT_SYSTEM_BATTERY_LOW: [
         event_definition(
             EVENT_SYSTEM_BATTERY_LOW, True,
             'system',
-            'org.freedesktop.UPower', '/org/freedesktop/UPower',
-            'org.freedesktop.UPower', 'Changed',
+            'org.freedesktop.UPower',
+            '/org/freedesktop/UPower/devices/battery_BAT0',
+            'org.freedesktop.UPower.Device', 'Changed',
             None,
-            lambda iface, *args: (
-                iface.proxy_object.Get(
-                    'org.freedesktop.UPower', 'OnBattery',
-                    dbus_interface='org.freedesktop.DBus.Properties') and
-                iface.proxy_object.Get(
-                    'org.freedesktop.UPower', 'OnLowBattery',
-                    dbus_interface='org.freedesktop.DBus.Properties')
-            )
+            lambda iface, *args: battery_changed_low(iface)
+        ),
+        # Xenial
+        event_definition(
+            EVENT_SYSTEM_BATTERY_LOW, True,
+            'system',
+            'org.freedesktop.UPower',
+            '/org/freedesktop/UPower/devices/battery_BAT0',
+            'org.freedesktop.DBus.Properties', 'PropertiesChanged',
+            None,
+            lambda iface, *args: battery_changed_low(iface)
         ),
     ],
     EVENT_SYSTEM_DEVICE_ATTACH: [
@@ -924,6 +956,95 @@ def config_loghandler(max_size=None, max_backups=None):
     applet_log.removeHandler(applet_log_handler)
     applet_log_handler = handler
     applet_log.addHandler(applet_log_handler)
+
+
+#############################################################################
+# battery status retrieval utilities
+def check_battery_low(level):
+    global BATTERY_LEVEL_LOW
+    if BATTERY_LEVEL_LOW is None:
+        try:
+            setting = Gio.Settings.new(
+                'org.gnome.settings-daemon.plugins.power')
+            BATTERY_LEVEL_LOW = setting.get_int('percentage-low')
+        except:
+            BATTERY_LEVEL_LOW = BATTERY_LEVEL_LOW_DEFAULT
+        applet_log.info("MAIN: battery low alert level is set to %s" % BATTERY_LEVEL_LOW)
+    return level <= BATTERY_LEVEL_LOW
+
+
+def battery_changed_discharging(iface):
+    global current_battery_status_charging
+    global current_battery_status_discharging
+    global current_battery_status_low
+    value = iface.proxy_object.Get(
+        'org.freedesktop.UPower.Device', 'State',
+        dbus_interface='org.freedesktop.DBus.Properties')
+    if value in [BATTERY_UPOWER_DISCHARGING,
+                 BATTERY_UPOWER_PENDINGDISCHARGE,
+                 BATTERY_UPOWER_EMPTY]:
+        if not current_battery_status_discharging:
+            applet_log.info("MAIN: battery status changed to DISCHARGING")
+            current_battery_status_charging = False
+            current_battery_status_discharging = True
+            return True
+        else:
+            return False
+    else:
+        current_battery_status_discharging = False
+        return False
+
+
+def battery_changed_charging(iface):
+    global current_battery_status_charging
+    global current_battery_status_discharging
+    global current_battery_status_low
+    value = iface.proxy_object.Get(
+        'org.freedesktop.UPower.Device', 'State',
+        dbus_interface='org.freedesktop.DBus.Properties')
+    if value in [BATTERY_UPOWER_CHARGING,
+                 BATTERY_UPOWER_PENDINGCHARGE,
+                 BATTERY_UPOWER_FULL]:
+        if not current_battery_status_charging:
+            applet_log.info("MAIN: battery status changed to CHARGING")
+            current_battery_status_charging = True
+            current_battery_status_discharging = False
+            current_battery_status_low = False
+            return True
+        else:
+            return False
+    else:
+        current_battery_status_charging = False
+        return False
+
+
+def battery_changed_low(iface):
+    global current_battery_status_charging
+    global current_battery_status_discharging
+    global current_battery_status_low
+    value = iface.proxy_object.Get(
+        'org.freedesktop.UPower.Device', 'State',
+        dbus_interface='org.freedesktop.DBus.Properties')
+    if value in [BATTERY_UPOWER_DISCHARGING,
+                 BATTERY_UPOWER_PENDINGDISCHARGE,
+                 BATTERY_UPOWER_EMPTY]:
+        charge = iface.proxy_object.Get(
+            'org.freedesktop.UPower.Device', 'Percentage',
+            dbus_interface='org.freedesktop.DBus.Properties')
+        if check_battery_low(charge):
+            if not current_battery_status_low:
+                applet_log.info("MAIN: battery status changed to LOW")
+                current_battery_status_charging = False
+                current_battery_status_low = True
+                return True
+            else:
+                return False
+        else:
+            current_battery_status_low = False
+            return False
+    else:
+        current_battery_status_low = False
+        return False
 
 
 #############################################################################
@@ -4229,16 +4350,31 @@ class SignalHandler(object):
             elif self.bus == 'system':
                 bus = dbus.SystemBus()
             else:
-                self._error("NTBS: invalid bus specification %s: not registering %s:%s handler" % (self.bus, self.interface, self.signal))
+                self._error("NTBS: invalid bus specification %s: not registering [%s:%s]%s:%s handler" % (self.bus, self.bus_name, self.bus_path, self.interface, self.signal))
                 return None
             proxy = bus.get_object(self.bus_name, self.bus_path)
+            # introspect interface to verify that signal is handled (ugly)
+            # (see: https://developer.gnome.org/glibmm/stable/classGio_1_1DBus_1_1NodeInfo.html)
+            i = dbus.Interface(proxy, 'org.freedesktop.DBus.Introspectable')
+            n = Gio.DBusNodeInfo.new_for_xml(i.Introspect())
+            if n is not None:
+                s = n.lookup_interface(self.interface).signals
+                if self.signal not in [x.name for x in s]:
+                    self._warning("signal not found registering [%s:%s]%s:%s handler" % (self.bus_name, self.bus_path, self.interface, self.signal))
+                    return None
+            else:
+                self._warning("introspection not supported registering [%s:%s]%s:%s handler" % (self.bus_name, self.bus_path, self.interface, self.signal))
+                return None
             manager = dbus.Interface(proxy, self.interface)
             self.signal_match = manager.connect_to_signal(
                 self.signal, self.signal_handler_callback)
-            self._info("signal handler %s:%s correctly registered" % (self.interface, self.signal))
+            self._info("signal handler [%s:%s]%s:%s correctly registered" % (self.bus_name, self.bus_path, self.interface, self.signal))
             return manager
         except dbus.exceptions.DBusException:
-            self._warning("error registering %s:%s handler" % (self.interface, self.signal))
+            self._warning("DBus error registering [%s:%s]%s:%s handler" % (self.bus_name, self.bus_path, self.interface, self.signal))
+            return None
+        except Exception as e:
+            self._warning("error registering [%s:%s]%s:%s handler (%s)" % (self.bus_name, self.bus_path, self.interface, self.signal, _x(e)))
             return None
 
     def unregister(self):
@@ -4379,12 +4515,12 @@ class StockSignalHandler(SignalHandler):
 
     # convert provided callback to something that never raises exceptions
     def _callback_normalize(self, f):
-        def _normalized(proxy, *args):
+        def _normalized(iface, *args):
             if not self.registered:
                 self._debug("stock signal test skipped: not registered")
                 return False
             try:
-                return bool(f(proxy, *args))
+                return bool(f(iface, *args))
             except Exception as e:
                 self._info("failed stock signal test with exception: %s" % _x(e))
                 return False
