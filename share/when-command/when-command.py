@@ -1022,12 +1022,7 @@ def battery_changed_low(iface):
     global current_battery_status_charging
     global current_battery_status_discharging
     global current_battery_status_low
-    value = iface.proxy_object.Get(
-        'org.freedesktop.UPower.Device', 'State',
-        dbus_interface='org.freedesktop.DBus.Properties')
-    if value in [BATTERY_UPOWER_DISCHARGING,
-                 BATTERY_UPOWER_PENDINGDISCHARGE,
-                 BATTERY_UPOWER_EMPTY]:
+    if current_battery_status_discharging:
         charge = iface.proxy_object.Get(
             'org.freedesktop.UPower.Device', 'Percentage',
             dbus_interface='org.freedesktop.DBus.Properties')
@@ -4355,11 +4350,12 @@ class SignalHandler(object):
             proxy = bus.get_object(self.bus_name, self.bus_path)
             # introspect interface to verify that signal is handled (ugly)
             # (see: https://developer.gnome.org/glibmm/stable/classGio_1_1DBus_1_1NodeInfo.html)
-            i = dbus.Interface(proxy, 'org.freedesktop.DBus.Introspectable')
-            n = Gio.DBusNodeInfo.new_for_xml(i.Introspect())
-            if n is not None:
-                s = n.lookup_interface(self.interface).signals
-                if self.signal not in [x.name for x in s]:
+            inspect = dbus.Interface(proxy,
+                                     'org.freedesktop.DBus.Introspectable')
+            nodeinfo = Gio.DBusNodeInfo.new_for_xml(inspect.Introspect())
+            if nodeinfo is not None:
+                siglist = nodeinfo.lookup_interface(self.interface).signals
+                if self.signal not in [x.name for x in siglist]:
                     self._warning("signal not found registering [%s:%s]%s:%s handler" % (self.bus_name, self.bus_path, self.interface, self.signal))
                     return None
             else:
