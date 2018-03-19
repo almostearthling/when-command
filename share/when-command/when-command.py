@@ -3,7 +3,7 @@
 #
 # When
 #
-# Copyright (c) 2015-2016 Francesco Garosi
+# Copyright (c) 2015-2018 Francesco Garosi
 # Released under the BSD License (see LICENSE file)
 #
 # Small startup applet that runs tasks when particular conditions are met.
@@ -78,8 +78,8 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.12~beta.5'
-APPLET_TAGDESC = 'Signal registration verification and portable battery events'
+APPLET_VERSION = '0.9.13~beta.1'
+APPLET_TAGDESC = 'Remove python-support from build requirements'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -654,6 +654,7 @@ ui_add_signal = None
 class Resources(object):
     pass
 
+
 resources = Resources()
 resources.DLG_CONFIRM_DELETE_TASK = _("Are you sure you want to delete task %s?")
 resources.DLG_CONFIRM_DELETE_CONDITION = _("Are you sure you want to delete condition %s?")
@@ -967,7 +968,7 @@ def check_battery_low(level):
             setting = Gio.Settings.new(
                 'org.gnome.settings-daemon.plugins.power')
             BATTERY_LEVEL_LOW = setting.get_int('percentage-low')
-        except:
+        except Exception:
             BATTERY_LEVEL_LOW = BATTERY_LEVEL_LOW_DEFAULT
         applet_log.info("MAIN: battery low alert level is set to %s" % BATTERY_LEVEL_LOW)
     return level <= BATTERY_LEVEL_LOW
@@ -3578,7 +3579,7 @@ class CommandBasedCondition(Condition):
                             else:
                                 if re.search(expected, returned, flags) is not None:
                                     return True
-                        except:
+                        except Exception:
                             self._warning("invalid regular expression (skipped)")
                     else:
                         if not self.case_sensitive:
@@ -3609,7 +3610,7 @@ class CommandBasedCondition(Condition):
                             else:
                                 if re.search(expected, returned, flags) is not None:
                                     return True
-                        except:
+                        except Exception:
                             self._warning("invalid regular expression (skipped)")
                     else:
                         if not self.case_sensitive:
@@ -5528,7 +5529,7 @@ class SignalDialog(object):
             if value_idx < 0:
                 applet_log.debug("DLGSIG: not removing signal check with bad param index")
                 return
-        except:
+        except Exception:
             applet_log.debug("DLGSIG: not removing signal check with bad param index")
             return
         sub_idx = o('txtValueSub').get_text()
@@ -6931,7 +6932,7 @@ def import_item_data(filename=None, verbose=False):
     try:
         with open(filename, 'r') as f:
             json_dic = json.load(f)
-    except:
+    except Exception:
         oerr(resources.OERR_IMPORT_DATA_FAIL)
         sys.exit(2)
     clear_item_data(verbose)
