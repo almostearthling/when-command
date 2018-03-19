@@ -67,7 +67,7 @@ if 'when_command' not in sys.modules:
 APPLET_NAME = 'when-command'
 APPLET_FULLNAME = 'When Gnome Scheduler'
 APPLET_SHORTNAME = 'When'
-APPLET_COPYRIGHT = '(c) 2015-2016 Francesco Garosi'
+APPLET_COPYRIGHT = '(c) 2015-2018 Francesco Garosi'
 APPLET_URL = 'http://almostearthling.github.io/when-command/'
 APPLET_ID = 'it.jks.WhenCommand'
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
