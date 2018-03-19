@@ -3,7 +3,7 @@
 #
 # When (setup script)
 #
-# Copyright (c) 2015-2016 Francesco Garosi
+# Copyright (c) 2015-2018 Francesco Garosi
 # Released under the BSD License (see LICENSE file)
 #
 # This script is used to install When in a Debian-compatible way.
@@ -86,7 +86,7 @@ with open(os.path.join(HERE, 'share/when-command/when-command.py')) as f:
 AUTHOR = (os.environ['DEBFULLNAME'] if 'DEBFULLNAME' in os.environ
           else "Francesco Garosi (AlmostEarthling)")
 AUTHOR_EMAIL = (os.environ['DEBEMAIL'] if 'DEBEMAIL' in os.environ
-                else "franz.g@no-spam-please.infinito.it")
+                else "franz@no-spam-please.jks.it")
 
 
 # this and the MANIFEST.in file should be enough for a suitable sdist

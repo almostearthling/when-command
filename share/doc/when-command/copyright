@@ -3,7 +3,7 @@ Upstream-Name: when-command
 Source: https://github.com/almostearthling/when-command
 
 Files: *
-Copyright: 2015-2016 Francesco Garosi (AlmostEarthling) <franz.g@infinito.it>
+Copyright: 2015-2018 Francesco Garosi (AlmostEarthling) <franz@no-spam-please.jks.it>
 License: BSD
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
