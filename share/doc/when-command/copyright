@@ -31,7 +31,7 @@ License: BSD
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Files: debian/*
-Copyright: 2015 Francesco Garosi (AlmostEarthling) <franz.g@infinito.it>
+Copyright: 2015-2018 Francesco Garosi (AlmostEarthling) <franz@no-spam-please.jks.it>
 License: GPL-2+
  This package is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
