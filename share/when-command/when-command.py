@@ -3,7 +3,7 @@
 #
 # When
 #
-# Copyright (c) 2015-2018 Francesco Garosi
+# Copyright (c) 2015-2020 Francesco Garosi
 # Released under the BSD License (see LICENSE file)
 #
 # Small startup applet that runs tasks when particular conditions are met.
@@ -67,7 +67,7 @@ if 'when_command' not in sys.modules:
 APPLET_NAME = 'when-command'
 APPLET_FULLNAME = 'When Gnome Scheduler'
 APPLET_SHORTNAME = 'When'
-APPLET_COPYRIGHT = '(c) 2015-2018 Francesco Garosi'
+APPLET_COPYRIGHT = '(c) 2015-2020 Francesco Garosi'
 APPLET_URL = 'http://almostearthling.github.io/when-command/'
 APPLET_ID = 'it.jks.WhenCommand'
 APPLET_BUS_NAME = '%s.BusService' % APPLET_ID
@@ -78,8 +78,8 @@ APPLET_LONGDESC = "When is a configurable user task scheduler for Gnome."
 # * the first holds the version ID that build utilities can extract
 # * the second one includes a message that is used both as a commit message
 #   and as a tag-associated message (in `git tag -m`)
-APPLET_VERSION = '0.9.13~beta.1'
-APPLET_TAGDESC = 'Remove python-support from build requirements'
+APPLET_VERSION = '0.9.14~beta.1'
+APPLET_TAGDESC = 'Fix bug #97: Time conditions with days of the week...'
 
 # logging constants
 LOG_FORMAT = '%(asctime)s %(levelname)s: %(message)s'
@@ -337,6 +337,16 @@ stock_event_definitions = {
             None,
             None
         ),
+        # TEST: 20190702
+        # TODO: test on Ubuntu 18.04 and above
+        # Presence based
+        event_definition(
+            EVENT_SESSION_LOCK, True, 'session',
+            'org.gnome.SessionManager.Presence', '/org/gnome/SessionManager/Presence',
+            'org.gnome.SessionManager.Presence', 'StatusChanged',
+            [param_check(0, None, DBUS_CHECK_COMPARE_IS, True, 0)],
+            None
+        ),
     ],
     EVENT_SESSION_UNLOCK: [
         event_definition(
@@ -361,6 +371,16 @@ stock_event_definitions = {
             'org.freedesktop.login1', '/org/freedesktop/login1',
             'org.freedesktop.login1.Manager', 'UnlockSession',
             None,
+            None
+        ),
+        # TEST: 20190702
+        # TODO: test on Ubuntu 18.04 and above
+        # Presence based
+        event_definition(
+            EVENT_SESSION_UNLOCK, True, 'session',
+            'org.gnome.SessionManager.Presence', '/org/gnome/SessionManager/Presence',
+            'org.gnome.SessionManager.Presence', 'StatusChanged',
+            [param_check(0, None, DBUS_CHECK_COMPARE_IS, False, 0)],
             None
         ),
     ],
@@ -3471,12 +3491,14 @@ class TimeBasedCondition(Condition):
             self.minute if self.minute is not None else now[4],
             0,
             now[6],
-            self.weekday if self.weekday is not None else now[6],
+            now[7],
             now[8],
         )
         test_time = time.mktime(test_tuple)
         span = max(self.tick_seconds, self.skip_seconds)
         self._debug("checking %.3f - %.3f (=%.3f) in [0-%s]" % (cur_time, test_time, cur_time - test_time, span))
+        if self.weekday is not None and now[6] != self.weekday:
+            return False
         if 0 < cur_time - test_time <= span:
             return True
         else:
