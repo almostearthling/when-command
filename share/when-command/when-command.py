@@ -30,13 +30,19 @@ import traceback
 
 import gi
 gi.require_version('Gtk', '3.0')
-gi.require_version('AppIndicator3', '0.1')
+try:
+    gi.require_version('AppIndicator3', '0.1')
+except ValueError as e:
+    gi.require_version('AyatanaAppIndicator3', '0.1')
 gi.require_version('Notify', '0.7')
 
 from gi.repository import GLib, Gio
 from gi.repository import GObject
 from gi.repository import Gtk
-from gi.repository import AppIndicator3 as AppIndicator
+try:
+    from gi.repository import AppIndicator3 as AppIndicator
+except ImportError as e:
+    from gi.repository import AyatanaAppIndicator3 as AppIndicator
 from gi.repository import Notify
 from gi.repository import Pango
 
