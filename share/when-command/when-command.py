@@ -2223,7 +2223,7 @@ class Config(object):
             with open(self._config_file, mode='w') as f:
                 self._config_parser.write(f)
         except IOError as e:
-            applet_log.error("CONFIG: cannot write file %s [%s]" % (_config_file, _x(e)))
+            applet_log.error("CONFIG: cannot write file %s [%s]" % (self._config_file, _x(e)))
 
 
 # scheduler logic, see http://stackoverflow.com/a/18906292 for details
@@ -6635,7 +6635,7 @@ def call_show_box(box='about', verbose=False):
         oerr(resources.OERR_ERR_DBUS_SERVICE, verbose)
 
 
-def call_show_icon(show=True, running=True):
+def call_show_icon(show=True, running=True, verbose=False):
     if running:
         bus = dbus.SessionBus()
         proxy = bus.get_object(APPLET_BUS_NAME, APPLET_BUS_PATH)
