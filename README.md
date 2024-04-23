@@ -1,50 +1,51 @@
-# When (*when-command*)
-**When** is a configurable user task scheduler for modern Gnome environments. It interacts with the user through a GUI, where the user can define tasks and conditions, as well as relationships of causality that bind conditions to tasks.
+# When
 
-![Screenshot](https://raw.githubusercontent.com/almostearthling/when-command-docs/master/_static/when_screenshot_part.png)
+This document describes the new version of **When**, a Python-based automation tool for the desktop. This version, instead of incorporating the scheduler, relies on the [**whenever**](https://github.com/almostearthling/whenever) automation tool, which focuses on reliability and lightweightness, while trying to achieve a good performance even when running at low priority. In this sense, **When** acts as a _wrapper_ for **whenever**, both providing a simple interface for configuration and an easy way to control the scheduler via an icon sitting in the tray area of your desktop. This version of **When** aims at being cross-platform, dynamically providing access to the features of **whenever** that are supported on the host environment.
 
-The purpose of this small utility is to provide the user, possibly without administrative credentials, the ability to define conditions that do not only depend on time, but also on particular states of the session, result of commands run in a shell or other events that may occur while the system is being used. The scheduler runs in the background, and displays an indicator applet icon for user interaction.
+This is still in its early development stage and still contains a lot of bugs and errors, yet it is capable of running **whenever** in the background and to control it via an icon in the system tray, create and edit a simple configuration file, capture the log and display a history window. All of this trying to mimic the behaviour of the old, _Ubuntu 16-to-18_ based **When** tool, which is entirely Python based and is now not actively developed anymore because of the difficulty of adapting all needed DBus signals and checks to the ever-changing interface of the various Linux distributions.
 
-It is not generally intended as a replacement to [_cron_](https://en.wikipedia.org/wiki/Cron) and the [Gnome Task Scheduler](http://gnome-schedule.sourceforge.net/), although to some extent these utilities might overlap. **When** is intended to be more flexible, although less precise, and to provide an alternative to more complicated solutions -- such as the implementation of _cron_ jobs that check for a particular condition and execute commands when the condition is verified. In such spirit, **When** is not as fine-grained in terms of doing things on a strict time schedule: the **When** approach is that "_when_ a certain condition is met, _then_ something has to be done". The condition is checked periodically, and the countermeasure is taken _subsequently_ in a relaxed fashion, which means that it might not occur _immediately_ in most cases.
+![MainWindow](support/docs/graphics/when-config-main.png)
 
-[![Documentation Status](https://readthedocs.org/projects/when-documentation/badge/?version=latest)](http://when-documentation.readthedocs.io/en/latest/?badge=latest)
+Most of the interface of this release of **When** tries to be similar to the old version, although the need for cross-platform components pushes towards the adoption of the most diffused GUI library for Python, that is [tkinter](https://docs.python.org/3/library/tkinter.html).
 
-The complete documentation for **When** can be found online [here](http://when-documentation.readthedocs.io/). Documentation for contributors has a separate [site](http://contributing-to-when.readthedocs.io/).
+![EditCmdCond](support/docs/graphics/when-config-cmdcond.png)
 
-## Installation
-Besides manual installation from source as explained in the [documentation](http://when-documentation.readthedocs.io/en/latest/install.html#install-from-the-source), packages suitable for Ubuntu can be found in the [releases](https://github.com/almostearthling/when-command/releases) page. A PPA for Ubuntu is also available: to install from the PPA and get automatic updates, the following commands can be used from a terminal window:
+The documenttion is still underway, and the features are reduced compared to the old version of **When**. However the design of this new version is modular, and the design of **whenever** allows for the maximum flexibility in term of definitions of tasks, conditions, and events, so that new types of _usable_ events can be defined along with the forms to edit them easily and write a well-formed configuration file.
 
+
+## Usage
+
+This version of **When** uses [poetry](https://python-poetry.org/): after running `poetry install` in the project directory to install all necessary Python dependencies, **When** can be launched as follows:
+
+```shell
+when COMMAND [OPTIONS]
 ```
-$ sudo add-apt-repository ppa:franzg/when-command
-$ sudo apt-get update
-$ sudo apt-get install when-command
-```
 
-If the PPA is used, **When** can be started from the *Dash* immediately: once started, it can be configured for autostart using the *Settings* dialog box.
+where `COMMAND` is one of the following:
 
-## Alternate Interface
-Besides being fully configurable and accessible from both the command line interface and the graphical user interface, an alternate and more streamlined GUI for **When** is being actively developed: the [When Wizard](https://github.com/almostearthling/when-wizard) suite can be used to create actions in **When** in a possibly easier way.
+- `config` to launch the configuration utility, without staying resident (i.e. no system tray icon)
+- `start` to launch the **whenever** wrapper displaying the control icon on the system tray area
+- `version` to display version information.
+
+More commands might be supported in the future. `OPTIONS` are the possible options, some of which are command specific.
+
+- `-D`/`--dir-appdata` _PATH_: specify the application data and configuration directory (default: _%APPDATA%\Whenever_ on Windows, _~/.whenever_ on Linux)
+- `-W`/`--whenever` _PATH_: specify the path to the whenever executable (defaults to the one found in the PATH if any, otherwise exit with error)
+- `-L`/`--log-level` _LEVEL_: specify the log level, all **whenever** levels are supported (default: _info_, specific to `start`)
+- `-h`/`--help`: print help for the specific command
+
+**NOTE**: For now **When** runs in _debug mode_, this means that it will sport a green-ish window style, will not catch exceptions, and will use a _DEBUG_ suffix for the application data directory. This behaviour can be modified by setting `'DEBUG': False` in the instantiation of `AppConfig` in _lib/repocfg.py_, instead of the current `True` value.
+
+**When** will only work if a working version of **whenever** is available, either in the system _PATH_ or specified via the command line interface by using the `-W` switch.
+
 
 ## Credits
-Open Source Software relies on collaboration, and I'm more than happy to receive help from other developers. Here I'll list the main contributions.
-- Adolfo Jayme-Barrientos, aka [fitojb](https://github.com/fitojb), for the Spanish translation
 
-Also, I'd like to thank everyone who contributes to the development of **When** by commenting, filing bugs, suggesting features and testing. Every kind of help is welcome.
+The clock [icon](http://www.graphicsfuel.com/2012/08/alarm-clock-icon-psd/) used for the application logo has been created by Rafi and is available at [GraphicsFuel](http://www.graphicsfuel.com/). All other icons have been found on [Icons8](https://icons8.com/):
 
-The top panel icons and the emblems used in the application were selected within Google's [Material Design](https://materialdesignicons.com/) icon collection.
+* [Alarm Clock](https://icons8.com/icon/13026/alarm-clock)
+* [Exclamation Mark](https://icons8.com/icon/j1rPetruM5Fl/exclamation-mark)
+* [Question Mark](https://icons8.com/icon/cjUb4tRvBCNt/question-mark)
+* [Settings Gear](https://icons8.com/icon/12784/settings)
 
-Application [icon](http://www.graphicsfuel.com/2012/08/alarm-clock-icon-psd/) by Rafi at [GraphicsFuel](http://www.graphicsfuel.com/).
-
-## Resources
-The resources that I have found particularly useful in the development of **When** are:
-- [Python 3.x Documentation](https://docs.python.org/3/)
-- [PyGTK 3.x Tutorial](http://python-gtk-3-tutorial.readthedocs.io/en/latest/index.html)
-- [PyGTK 2.x Documentation](https://developer.gnome.org/pygtk/stable/)
-- [PyGObject Documentation](https://developer.gnome.org/pygobject/stable/)
-- [GTK 3.0 Documentation](http://lazka.github.io/pgi-docs/Gtk-3.0/index.html)
-- [DBus Documentation](http://www.freedesktop.org/wiki/Software/dbus/)
-- [pyinotify Documentation](https://github.com/seb-m/pyinotify/wiki)
-
-The guidelines specified in [UnityLaunchersAndDesktopFiles](https://help.ubuntu.com/community/UnityLaunchersAndDesktopFiles) have been roughly followed to create the launcher from within the application.
-
-Many hints taken on [StackOverflow](http://stackoverflow.com/) and the like.
+This program uses a fork of [PySimpleGUI](https://www.pysimplegui.com/), namely [FreeSimpleGUI](https://github.com/spyoungtech/FreeSimpleGUI) which is on PyPI. The latest version of _PySimpleGUI_ is not open source anymore, and I'm fine with it: it is a useful package and deserves all possible support. However, **When** is an OSS project, and for the moment being I prefer to rely on libraries that do not require the end user to accept non-OSS license terms or to install third party license keys.

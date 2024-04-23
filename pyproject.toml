@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "when"
+version = "1.9.0-alpha"
+description = "Interface for the **whenever** automation tool"
+authors = ["Francesco Garosi <francesco.garosi@gmail.com>"]
+license = 'BSD 3-Clause "New" or "Revised" License'
+readme = "README.md"
+packages = [
+    { include = "lib" },
+    { include = "when" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+freesimplegui = "^5.0.0"
+dbus-next = "^0.2.3"
+tomlkit = "^0.12.4"
+pystray = "^0.19.5"
+pillow = "^10.3.0"
+darkdetect = "^0.8.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

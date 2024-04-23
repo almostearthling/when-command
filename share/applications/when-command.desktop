@@ -1,8 +1,0 @@
-[Desktop Entry]
-Name=When
-Comment=When Gnome Scheduler
-Icon=when-command
-Terminal=false
-Type=Application
-Categories=Utility;Application;System;
-Exec=/usr/bin/when-command

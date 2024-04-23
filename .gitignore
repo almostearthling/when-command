@@ -1,5 +1,9 @@
-tags
-.tags
-.temp/*
-.ropeproject/*
 *~
+.*
+__pycache__
+*.code-workspace
+OLD/
+_scratch/
+_local/
+.vscode/
+TODO.md
