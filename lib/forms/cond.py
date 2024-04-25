@@ -4,8 +4,15 @@ from lib.i18n.strings import *
 
 from lib.utility import sg
 from lib.icons import APP_ICON32 as APP_ICON
+from lib.icons import XMARK_ICON48 as XMARK_ICON
 
 from lib.items.cond import Condition
+
+import re
+
+
+# regular expression for item name checking
+_RE_VALIDNAME = re.compile("^[a-zA-Z_][a-zA-Z0-9_]*$")
 
 
 # layout generator: this is a base form and supports an extra layout for
@@ -77,6 +84,9 @@ class form_Condition(object):
         self._data = {}
         self._results = []
         self.__dont_update = []
+        self.__datachecks = [
+            ('-NAME-', UI_FORM_NAME_SC, lambda x: _RE_VALIDNAME.match(x)),
+        ]
         if item:
             self.set_item(item)
         else:
@@ -130,9 +140,12 @@ class form_Condition(object):
         self._item.execute_sequence = self._data['-EXEC_SEQUENCE-']
         self._item.tasks = self._data['-TASKS-'].copy()
 
+
+    # list of keys of elements that should not be updated
     def dont_update(self, *keys):
         self.__dont_update += keys
 
+    # set and remove the associated item
     def set_item(self, item):
         assert(isinstance(item, Condition))
         try:
@@ -145,15 +158,42 @@ class form_Condition(object):
         self._item = None
         self._updatedata()
 
+
+    # derived objects should use this function to add checks to be performed
+    # on fields, as it avoids adding rules for already existing keys
+    def add_checks(self, *checks):
+        existing = list(x[0] for x in self.__datachecks)
+        for check in checks:
+            if check[0] not in existing:
+                self.__datachecks.append(check)
+
+    # data check function: returns None if the checks pass, a map of failed
+    # entries (form item key: (label, value)) otherwise; both ValueError and
+    # TypeError are treated as invalid data; should not be overridden
+    def check_data(self):
+        failed = {}
+        for k, label, func in self.__datachecks:
+            if label.endswith(":"):
+                label = label[:-1]
+            try:
+                if not func(self._data[k]):
+                    failed[k] = (label, self._data[k])
+            except ValueError:
+                failed[k] = (label, self._data[k])
+            except TypeError:
+                failed[k] = (label, self._data[k])
+        return failed or None
+
+
+    # event processor: should always be overridden, and the parent
+    # version has to be called first
     def process_event(self, event, values):
         if values:
             self._data = values.copy()
         self._data['-TASKS-'] = self._item.tasks.copy()     # it has been overwritten
         if event in [sg.WIN_CLOSED, '-CANCEL-']:
-            self._form.close()
             return False
         elif event == '-OK-':
-            self._form.close()
             return True
         elif event == '-ADD_TASK-':
             if self._data['-TASKS_AVAILABLE-']:
@@ -167,6 +207,7 @@ class form_Condition(object):
             self._data['-TASKS_AVAILABLE-'] = values['-TASKS-'][0]
         return None
 
+    # main loop handler: should not be overridden
     def run(self):
         self._updateform()
         while True:             # Event Loop
@@ -174,12 +215,18 @@ class form_Condition(object):
             ret = self.process_event(event, values)
             if ret is not None:
                 if ret:
-                    break
+                    check = self.check_data()
+                    if check is None:
+                        self._form.close()
+                        break
+                    else:
+                        checks = "\n".join("- %s" % check[k][0] for k in check)
+                        sg.Popup(UI_POPUP_INVALIDPARAMETERS_T % checks, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
                 else:
+                    self._form.close()
                     return None
             self._updateform()
         self._updateitem()
-        self._form.close()
         return self._item
 
 

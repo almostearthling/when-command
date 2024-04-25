@@ -3,7 +3,7 @@
 from lib.i18n.strings import *
 
 from lib.utility import sg
-from lib.icons import APP_ICON32 as APP_ICON
+from lib.icons import XMARK_ICON48 as XMARK_ICON
 
 from lib.forms.cond import form_Condition
 from lib.items.cond_time import TimeCondition, TimeSpec
@@ -199,6 +199,8 @@ class form_TimeCondition(form_Condition):
                     if not present:
                         self._timespecs.append(cur_spec)
                     self._clearspec()
+                else:
+                    sg.Popup(UI_POPUP_INVALIDTIMESPEC, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
             elif event == '-REMOVE-':
                 cur_spec = self._getspec()
                 if cur_spec:

@@ -57,7 +57,7 @@ ALL_AVAILABLE_ITEMS = [
     ('cond_time',                   ITEM_COND_TIME,         form_TimeCondition,         None,       None        ),
     # ...
 
-    ('event_cli',                   ITEM_EVENT_CLI,         form_CommandEvent,          None,       None        ),
+    # ('event_cli',                   ITEM_EVENT_CLI,         form_CommandEvent,          None,       None        ),
     ('event_fschange',              ITEM_EVENT_FSCHANGE,    form_FilesystemChangeEvent, None,       None        ),
     # ...
 ]

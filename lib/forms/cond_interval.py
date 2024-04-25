@@ -29,6 +29,9 @@ class form_IntervalCondition(form_Condition):
             item = IntervalCondition()
         extra_layout = _form_layout()
         form_Condition.__init__(self, UI_TITLE_INTERVALCOND, tasks_available, extra_layout, item)
+        self.add_checks(
+            ('-INTERVAL-', UI_FORM_DELAYSPEC, lambda x: int(x) > 0),
+        )
 
     def _updatedata(self):
         form_Condition._updatedata(self)

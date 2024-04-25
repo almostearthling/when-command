@@ -3,11 +3,17 @@
 from lib.i18n.strings import *
 
 from lib.utility import sg
-from lib.icons import APP_ICON32 as APP_ICON
+from lib.icons import XMARK_ICON48 as XMARK_ICON
 
 from lib.utility import guess_typed_value
 from lib.forms.cond import form_Condition
 from lib.items.cond_lua import LuaScriptCondition
+
+import re
+
+
+# regular expression for item name checking
+_RE_VALIDNAME = re.compile("^[a-zA-Z_][a-zA-Z0-9_]*$")
 
 
 # (extra) layout generator
@@ -60,6 +66,9 @@ class form_LuaScriptCondition(form_Condition):
             self.set_item(item)
         else:
             self.reset_item()
+        self.add_checks(
+            ('-CHECK_AFTER-', UI_FORM_EXTRADELAYSPEC, lambda x: int(x) > 0),
+        )
 
     def _updatedata(self):
         form_Condition._updatedata(self)
@@ -114,9 +123,12 @@ class form_LuaScriptCondition(form_Condition):
                 self._data['-LUAVAR_VALUE-'] = self._results[self._data['-LUA_RESULTS-'][0]][1]
             elif event == '-UPDATE_LUAVAR-':
                 if self._data['-LUAVAR_NAME-'] and self._data['-LUAVAR_VALUE-']:
-                    r = list(e for e in self._results if e[0] != self._data['-LUAVAR_NAME-'])
-                    r.append([self._data['-LUAVAR_NAME-'], self._data['-LUAVAR_VALUE-']])
-                    self._results = r
+                    if _RE_VALIDNAME.match(self._data['-LUAVAR_NAME-']):
+                        r = list(e for e in self._results if e[0] != self._data['-LUAVAR_NAME-'])
+                        r.append([self._data['-LUAVAR_NAME-'], self._data['-LUAVAR_VALUE-']])
+                        self._results = r
+                    else:
+                        sg.Popup(UI_POPUP_INVALIDVARNAME, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
             elif event == '-DELETE_LUAVAR-':
                 if self._data['-LUAVAR_NAME-']:
                     r = list(e for e in self._results if e[0] != self._data['-LUAVAR_NAME-'])

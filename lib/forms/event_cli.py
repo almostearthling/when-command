@@ -1,4 +1,5 @@
 # command event form
+# this form is here only for completeness and **must never** be displayed
 
 from lib.i18n.strings import *
 

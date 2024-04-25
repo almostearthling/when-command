@@ -92,6 +92,13 @@ class form_Config(object):
         self._form['-RANDOM_CHECKS-'].bind('<Button-1>' , '+-click-')
         self._form['-TICK_INTERVAL-'].bind('<KeyRelease>' , '+-keyrelease-')
 
+        # the list of checks that should be performed on form data: a list
+        # of tuples whose members are the form entry key, the corresponding
+        # label, and a functions that checks the value
+        self.__datachecks = [
+            ('-TICK_INTERVAL-', UI_FORM_TICKINTERVAL_SC, lambda x: int(x) > 1),
+        ]
+
         # the configuration file should be well formed, so load it
         cfgfile = get_configfile()
         self._form['-CONFIG_FILE-'].update(cfgfile)
@@ -166,6 +173,24 @@ class form_Config(object):
         )
 
 
+    # data check function: returns None if the checks pass, a map of failed
+    # entries (form item key: (label, value)) otherwise; both ValueError and
+    # TypeError are treated as invalid data
+    def check_data(self):
+        failed = {}
+        for k, label, func in self.__datachecks:
+            if label.endswith(":"):
+                label = label[:-1]
+            try:
+                if not func(self._data[k]):
+                    failed[k] = (label, self._data[k])
+            except ValueError:
+                failed[k] = (label, self._data[k])
+            except TypeError:
+                failed[k] = (label, self._data[k])
+        return failed or None
+
+
     # form event loop: react to events and update the inner data accordingly
     def run(self):
         self._updateform()
@@ -175,7 +200,11 @@ class form_Config(object):
 
             # exit from the form and possibly the application itself
             if event in [sg.WIN_CLOSED, '-EXIT-']:
-                break
+                if self._changed:
+                    if sg.PopupYesNo(UI_POPUP_DISCARDCONFIG_Q, title=UI_POPUP_T_CONFIRM, icon=QMARK_ICON).upper() == 'YES':
+                        break
+                else:
+                    break
 
             # load the configuration file: if the configuration had changed
             # ask for confirmation as all changes would be lost on load
@@ -194,17 +223,28 @@ class form_Config(object):
                     sg.popup_error(UI_POPUP_FILENOTFOUND_ERR, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
 
             # save the configuration file, asking for confirmation if it
-            # exists, which is almost always true
+            # exists, which is almost always true, after checking for
+            # errors in the provided values
             elif event == '-SAVE-':
                 fn = values['-CONFIG_FILE-']
                 if os.path.exists(fn):
                     if self._changed:
                         if sg.PopupYesNo(UI_POPUP_OVERWRITEFILE_Q, title=UI_POPUP_T_CONFIRM, icon=QMARK_ICON).upper() == 'YES':
-                            self._save_config(fn)
-                            self._changed = False
+                            check = self.check_data()
+                            if check is None:
+                                self._save_config(fn)
+                                self._changed = False
+                            else:
+                                checks = "\n".join("- %s" % check[k][0] for k in check)
+                                sg.Popup(UI_POPUP_INVALIDPARAMETERS_T % checks, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
                 else:
-                    self._save_config(fn)
-                    self._changed = False
+                    check = self.check_data()
+                    if check is None:
+                        self._save_config(fn)
+                        self._changed = False
+                    else:
+                        checks = "\n".join(x[0] for x in check)
+                        sg.Popup(UI_POPUP_INVALIDPARAMETERS_T % checks, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
 
             # edit an existing item: this opens the appropriate form, which
             # in turn displays the actual data for the provided item; this
@@ -265,10 +305,10 @@ class form_Config(object):
                     # event items
                     elif item_type == 'event':
                         event_conds = list(x for x in self._conditions if self._conditions[x].type == 'event')
-                        if item_sub == 'cli':
-                            e = form_CommandEvent(event_conds, self._events[item_name])
                         if item_sub == 'fschange':
                             e = form_FilesystemChangeEvent(event_conds, self._events[item_name])
+                        # elif item_sub == 'cli':
+                        #     e = form_CommandEvent(event_conds, self._events[item_name])
                         # ...
                         # newly supported event items will be inserted here
                         else:

@@ -7,10 +7,34 @@ from lib.i18n.strings import *
 from shlex import split as arg_split, quote
 
 from lib.utility import sg
-from lib.icons import APP_ICON32 as APP_ICON
+from lib.icons import XMARK_ICON48 as XMARK_ICON
 
 from lib.forms.task import form_Task
 from lib.items.task_command import CommandTask
+
+import re
+import os
+import shutil
+
+
+# regular expression for item name checking
+_RE_VALIDNAME = re.compile("^[a-zA-Z_][a-zA-Z0-9_]*$")
+
+
+# functions to check existence of commands and directories
+def _is_command(s):
+    if os.path.exists(s) and os.access(s, os.X_OK):
+        return True
+    elif shutil.which(s):
+        return True
+    else:
+        return False
+
+def _is_dir(s):
+    if os.path.exists(os.path.join(s, '.')):
+        return True
+    else:
+        return False
 
 
 # (extra) layout generator
@@ -23,9 +47,9 @@ def _form_layout():
                 [ sg.T(UI_FORM_STARTUPPATH_SC) ],
             ]),
             sg.Column([
-                [ sg.I(key='-COMMAND-', expand_x=True), sg.FileBrowse(UI_BROWSE) ],
+                [ sg.I(key='-COMMAND-', expand_x=True), sg.FileBrowse(UI_BROWSE, key='-COMMAND_B-') ],
                 [ sg.I(key='-COMMAND_ARGS-', expand_x=True) ],
-                [ sg.I(key='-COMMAND_WORKFOLDER-', expand_x=True), sg.FolderBrowse(UI_BROWSE) ],
+                [ sg.I(key='-COMMAND_WORKFOLDER-', expand_x=True), sg.FolderBrowse(UI_BROWSE, key='-COMMAND_WORKFOLDER_B-') ],
             ], expand_x=True),
         ]], expand_x=True) ],
 
@@ -70,8 +94,13 @@ class form_CommandTask(form_Task):
             item = CommandTask()
         extra_layout = _form_layout()
         form_Task.__init__(self, UI_TITLE_COMMANDTASK, extra_layout, item)
-        self._form['-COMMAND_ENVVARS-'].bind('<Double-Button-1>' , '+-dblclick-')
         self._envvars = []
+        self._form['-COMMAND_ENVVARS-'].bind('<Double-Button-1>' , '+-dblclick-')
+        self.dont_update('-COMMAND_B-', '-COMMAND_WORKFOLDER_B-')   # must force it, I don't know why
+        self.add_checks(
+            ('-COMMAND-', UI_FORM_COMMAND_SC, _is_command),
+            ('-COMMAND_WORKFOLDER-', UI_FORM_STARTUPPATH_SC, _is_dir),
+        )
 
     def _updatedata(self):
         form_Task._updatedata(self)
@@ -188,15 +217,25 @@ class form_CommandTask(form_Task):
             if event == '-COMMAND_ENVVARS-+-dblclick-':
                 self._data['-ENVVAR_NAME-'] = self._envvars[self._data['-COMMAND_ENVVARS-'][0]][0]
                 self._data['-ENVVAR_VALUE-'] = self._envvars[self._data['-COMMAND_ENVVARS-'][0]][1]
+
             elif event == '-UPDATE_ENVVAR-':
                 if self._data['-ENVVAR_NAME-'] and self._data['-ENVVAR_VALUE-']:
-                    r = list(e for e in self._envvars if e[0] != self._data['-ENVVAR_NAME-'])
-                    r.append([self._data['-ENVVAR_NAME-'], self._data['-ENVVAR_VALUE-']])
-                    self._envvars = r
+                    if _RE_VALIDNAME.match(self._data['-ENVVAR_NAME-']):
+                        r = list(e for e in self._envvars if e[0] != self._data['-ENVVAR_NAME-'])
+                        r.append([self._data['-ENVVAR_NAME-'], self._data['-ENVVAR_VALUE-']])
+                        self._envvars = r
+                    else:
+                        sg.Popup(UI_POPUP_INVALIDVARNAME, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
+                else:
+                    sg.Popup(UI_POPUP_EMPTYVARVALUE, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
+
             elif event == '-DELETE_ENVVAR-':
                 if self._data['-ENVVAR_NAME-']:
                     r = list(e for e in self._envvars if e[0] != self._data['-ENVVAR_NAME-'])
                     self._envvars = r
+                else:
+                    sg.Popup(UI_POPUP_EMPTYVARVALUE, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
+
             # ...
             self._data['-COMMAND_ENVVARS-'] = []
             for l in self._envvars:

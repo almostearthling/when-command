@@ -29,6 +29,9 @@ class form_IdleCondition(form_Condition):
             item = IdleCondition()
         extra_layout = _form_layout()
         form_Condition.__init__(self, UI_TITLE_IDLECOND, tasks_available, extra_layout, item)
+        self.add_checks(
+            ('-IDLE-', UI_FORM_IDLEDURATION, lambda x: int(x) > 0),
+        )
 
     def _updatedata(self):
         form_Condition._updatedata(self)

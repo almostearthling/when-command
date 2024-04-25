@@ -1,11 +1,11 @@
 # filesystem monitor event form
 
-from os.path import normpath
+from os.path import normpath, exists
 
 from lib.i18n.strings import *
 
 from lib.utility import sg
-from lib.icons import APP_ICON32 as APP_ICON
+from lib.icons import XMARK_ICON48 as XMARK_ICON
 
 from lib.forms.event import form_Event
 from lib.items.event_fschange import FilesystemChangeEvent
@@ -64,8 +64,13 @@ class form_FilesystemChangeEvent(form_Event):
                 self._data['-ITEM-'] = self._data['-WATCH-'][0]
             elif event == '-ADD-':
                 item = normpath(self._data['-ITEM-'])
-                if item and item not in self._watch:
-                    self._watch.append(item)
+                try:
+                    if exists(item) and item not in self._watch:
+                        self._watch.append(item)
+                    else:
+                        sg.Popup(UI_POPUP_INVALIDFILEORDIR, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
+                except Exception:
+                    sg.Popup(UI_POPUP_INVALIDFILEORDIR, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
             elif event == '-DEL-':
                 item = self._data['-ITEM-']
                 if item in self._watch:
