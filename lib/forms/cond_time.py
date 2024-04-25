@@ -153,15 +153,18 @@ class form_TimeCondition(form_Condition):
                 dow = None
         else:
             dow = None
-        return TimeSpec(
-            year=int(self._data['-YEAR-']) if self._data['-YEAR-'] else None,
-            month=month,
-            day=self._data['-DAY-'] if self._data['-DAY-'] else None,
-            weekday=dow,
-            hour=int(self._data['-HOUR-']) if self._data['-HOUR-'] != '' else None,
-            minute=int(self._data['-MINUTE-']) if self._data['-MINUTE-'] != '' else None,
-            second=int(self._data['-SECOND-']) if self._data['-SECOND-'] != '' else None,
-        )
+        try:
+            return TimeSpec(
+                year=int(self._data['-YEAR-']) if self._data['-YEAR-'] else None,
+                month=month,
+                day=self._data['-DAY-'] if self._data['-DAY-'] else None,
+                weekday=dow,
+                hour=int(self._data['-HOUR-']) if self._data['-HOUR-'] != '' else None,
+                minute=int(self._data['-MINUTE-']) if self._data['-MINUTE-'] != '' else None,
+                second=int(self._data['-SECOND-']) if self._data['-SECOND-'] != '' else None,
+            )
+        except ValueError:
+            return None
 
     def _setspec(self, spec: TimeSpec):
         self._data['-YEAR-'] = spec.year
