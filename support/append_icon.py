@@ -1,4 +1,11 @@
 #!/usr/bin/env python
+#
+# This small utility is used to append graphics/icons to the `lib/icons.py`
+# resource file, as base64 encoded binary strings. To use it, just launch
+#
+# $ python support/append_icon.py VARNAME path/to/iconfile.png
+#
+# from the project base directory to update the resource file automatically.
 
 import os
 import sys
@@ -11,7 +18,7 @@ import re
 RE_VARNAME = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*$")
 
 ICON_PLACEHOLDER = "# APPEND_ICONS_HERE"
-ICON_SOURCE = "lib\icons.py"
+ICON_SOURCE = "lib/icons.py"
 
 
 # verbose output shortcut

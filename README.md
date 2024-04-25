@@ -12,6 +12,8 @@ Most of the interface of this release of **When** tries to be similar to the old
 
 The documenttion is still underway, and the features are reduced compared to the old version of **When**. However the design of this new version is modular, and the design of **whenever** allows for the maximum flexibility in term of definitions of tasks, conditions, and events, so that new types of _usable_ events can be defined along with the forms to edit them easily and write a well-formed configuration file.
 
+For the moment this version of **When** is not much more than a proof-of-concept. Still, the application may show a lot of problems due to lack of exception handling, absence of checks on correctness of values entered via the UI or interdependency of items (that is, tasks referenced in conditions and conditions referenced in events). The UI itself is far from being really usable: reactions to common gestures such as double clicks are not respected and sometimes inconsistently handled, and some usual graphic elements (pop-up boxes, buttons, and so on) are still incomplete and not consistent with the rest of the application. Graphic widgets, which are sometimes helpful within the forms, are for now either primitive or absent.
+
 
 ## Usage
 
@@ -24,7 +26,7 @@ when COMMAND [OPTIONS]
 where `COMMAND` is one of the following:
 
 - `config` to launch the configuration utility, without staying resident (i.e. no system tray icon)
-- `start` to launch the **whenever** wrapper displaying the control icon on the system tray area
+- `start` to launch the resident **whenever** wrapper displaying the control icon on the system tray area
 - `version` to display version information.
 
 More commands might be supported in the future. `OPTIONS` are the possible options, some of which are command specific.
@@ -37,6 +39,68 @@ More commands might be supported in the future. `OPTIONS` are the possible optio
 **NOTE**: For now **When** runs in _debug mode_, this means that it will sport a green-ish window style, will not catch exceptions, and will use a _DEBUG_ suffix for the application data directory. This behaviour can be modified by setting `'DEBUG': False` in the instantiation of `AppConfig` in _lib/repocfg.py_, instead of the current `True` value.
 
 **When** will only work if a working version of **whenever** is available, either in the system _PATH_ or specified via the command line interface by using the `-W` switch.
+
+
+## Roadmap
+
+The first goal is to obtain a fully functional version of this **When** edition, although supporting a minimal set of configuration items -- the ones that were supported at the time of the first launch of the old application. In this first stage of development, the effort will be devoted to amend bugs, enforce checks, handle possible exceptions that might occur in secondary threads and which may cause the application to become unstable, and overall to make the application consistent in terms of both the user interface and the handling of the **whenever** subprocess, _without_ adding new features. Once the minimal **When** application has reached an almost stable condition, new features (such as specific items and the _tool box_ mentioned below) will be added.
+
+All in all, expectations and fulfillments for this version of **When** follow:
+
+### Editors
+
+Editor forms for the items supported by **whenever**: should behave in a way similar to how the original _When_ used to handle these items. Moreover, a main form is provided to access global configuration parameters and to create new items and edit or delete existing ones. Caveats: items that are referenced in other configuration items (eg. tasks in conditions, conditions in events) should not be deleteable.
+
+- [x] Main Form (_to be completed_)
+- [x] Task: Command
+- [x] Task: Lua Script
+- [x] Condition: Interval
+- [x] Condition: Idle Session
+- [x] Condition: Time
+- [x] Condition: Command
+- [x] Condition: Lua Script
+- [x] Condition: Event (aka Bucket)
+- [x] Event: Filesystem Monitoring
+- [x] Event: Command Line (direct command sent to _stdin_, implemented for now, however this should be used for events handled by the wrapper itself, thus not directly accessed by the user)
+
+Specific command/Lua based tasks, command/Lua/DBus based conditions, DBus based events should be supported to mimic the old **When** behaviour:
+
+- [ ] Task: Shut down the system
+- [ ] Task: Lock the system
+- [ ] Condition: Startup and Shutdown
+- [ ] Condition: Suspend and Resume
+- [ ] Condition: Session Lock and Unlock
+- [ ] Condition: Screensaver
+- [ ] Condition: Storage Device Connect and Disconnect
+- [ ] Condition: Join or Leave a Network
+- [ ] Condition: Battery is Charging, Discharging or Low
+
+### Other forms
+
+The following forms, not related to the configuration application, are or should be only available from menus on the system tray:
+
+- [x] History Box
+- [ ] Tool Box: configure/unconfigure startup link (also for **whenever_tray**), config file conversion tool (old **When** --> new **When**)
+
+### UI wrapper for the **whenever** scheduler
+
+The following action should be supported by a resident part of the application that only shows an icon in the tray area, and allows to select entries from a popup menu.
+
+- [x] Show an About Box (to be improved)
+- [x] Show the task history, including execution time and outcome
+- [ ] Suspend and resume conditions
+- [x] Reset conditions
+- [x] Pause and resume the scheduler
+- [ ] Restart the scheduler
+- [x] Load the configuration utility (to be improved)
+
+Other features that might be useful:
+
+- [ ] Preserve paused state
+- [ ] Log rotation and max number of old logs
+- [ ] Reset conditions on wakeups from suspension or hibernation
+
+The resident part of the application should **not** load the configuration utility at startup: it should only be loaded when the appropriate menu entry is selected, and all the modules should be removed from memory after the configuration utility has been left by the user.
 
 
 ## Credits
