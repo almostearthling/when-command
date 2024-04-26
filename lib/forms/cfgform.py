@@ -201,7 +201,7 @@ class form_Config(object):
             # exit from the form and possibly the application itself
             if event in [sg.WIN_CLOSED, '-EXIT-']:
                 if self._changed:
-                    if sg.PopupYesNo(UI_POPUP_DISCARDCONFIG_Q, title=UI_POPUP_T_CONFIRM, icon=QMARK_ICON).upper() == 'YES':
+                    if sg.popup_yes_no(UI_POPUP_DISCARDCONFIG_Q, title=UI_POPUP_T_CONFIRM, icon=QMARK_ICON).upper() == 'YES':
                         break
                 else:
                     break
@@ -212,7 +212,7 @@ class form_Config(object):
                 fn = values['-CONFIG_FILE-']
                 if os.path.exists(fn):
                     if self._changed:
-                        if sg.PopupYesNo(UI_POPUP_DISCARDCONFIG_Q, title=UI_POPUP_T_CONFIRM, icon=QMARK_ICON).upper() == 'YES':
+                        if sg.popup_yes_no(UI_POPUP_DISCARDCONFIG_Q, title=UI_POPUP_T_CONFIRM, icon=QMARK_ICON).upper() == 'YES':
                             self._load_config(fn)
                             self._changed = False
                     else:
@@ -220,7 +220,7 @@ class form_Config(object):
                         self._changed = False
                     self._updateform()
                 else:
-                    sg.popup_error(UI_POPUP_FILENOTFOUND_ERR, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
+                    sg.popup(UI_POPUP_FILENOTFOUND_ERR, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
 
             # save the configuration file, asking for confirmation if it
             # exists, which is almost always true, after checking for
@@ -229,14 +229,14 @@ class form_Config(object):
                 fn = values['-CONFIG_FILE-']
                 if os.path.exists(fn):
                     if self._changed:
-                        if sg.PopupYesNo(UI_POPUP_OVERWRITEFILE_Q, title=UI_POPUP_T_CONFIRM, icon=QMARK_ICON).upper() == 'YES':
+                        if sg.popup_yes_no(UI_POPUP_OVERWRITEFILE_Q, title=UI_POPUP_T_CONFIRM, icon=QMARK_ICON).upper() == 'YES':
                             check = self.check_data()
                             if check is None:
                                 self._save_config(fn)
                                 self._changed = False
                             else:
                                 checks = "\n".join("- %s" % check[k][0] for k in check)
-                                sg.Popup(UI_POPUP_INVALIDPARAMETERS_T % checks, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
+                                sg.popup(UI_POPUP_INVALIDPARAMETERS_T % checks, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
                 else:
                     check = self.check_data()
                     if check is None:
@@ -244,7 +244,7 @@ class form_Config(object):
                         self._changed = False
                     else:
                         checks = "\n".join(x[0] for x in check)
-                        sg.Popup(UI_POPUP_INVALIDPARAMETERS_T % checks, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
+                        sg.popup(UI_POPUP_INVALIDPARAMETERS_T % checks, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
 
             # edit an existing item: this opens the appropriate form, which
             # in turn displays the actual data for the provided item; this
@@ -326,14 +326,30 @@ class form_Config(object):
             elif event == '-DEL_ITEM-':
                 t = values['-ITEMS-']
                 if t:
-                    if sg.PopupYesNo(UI_POPUP_DELETEITEM_Q, title=UI_POPUP_T_CONFIRM, icon=QMARK_ICON).upper() == 'YES':
+                    if sg.popup_yes_no(UI_POPUP_DELETEITEM_Q, title=UI_POPUP_T_CONFIRM, icon=QMARK_ICON).upper() == 'YES':
                         item_row = self._itemlistentries[t[0]]
                         item_name = item_row[0]
                         item_type, item_sub = item_row[2].split(':')
                         if item_type == 'task':
-                            del self._tasks[item_name]
+                            referenced = False
+                            for _, v in self._conditions.items():
+                                if item_name in v.tasks:
+                                    referenced = True
+                                    break
+                            if not referenced:
+                                del self._tasks[item_name]
+                            else:
+                                sg.popup(UI_POPUP_REFERENCEDTASK, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
                         elif item_type == 'condition':
-                            del self._conditions[item_name]
+                            referenced = False
+                            for _, v in self._events.items():
+                                if item_name == v.condition:
+                                    referenced = True
+                                    break
+                            if not referenced:
+                                del self._conditions[item_name]
+                            else:
+                                sg.popup(UI_POPUP_REFERENCEDCOND, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
                         elif item_type == 'event':
                             del self._events[item_name]
                         self._changed = True
@@ -355,7 +371,7 @@ class form_Config(object):
                         if event_conds:
                             form = form_class(event_conds)
                         else:
-                            sg.popup_error(UI_POPUP_NOEVENTCONDITIONS_ERR, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
+                            sg.popup(UI_POPUP_NOEVENTCONDITIONS_ERR, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
                             form = None
                     try:
                         if form is not None:

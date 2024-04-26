@@ -68,9 +68,9 @@ class form_FilesystemChangeEvent(form_Event):
                     if exists(item) and item not in self._watch:
                         self._watch.append(item)
                     else:
-                        sg.Popup(UI_POPUP_INVALIDFILEORDIR, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
+                        sg.popup(UI_POPUP_INVALIDFILEORDIR, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
                 except Exception:
-                    sg.Popup(UI_POPUP_INVALIDFILEORDIR, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
+                    sg.popup(UI_POPUP_INVALIDFILEORDIR, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
             elif event == '-DEL-':
                 item = self._data['-ITEM-']
                 if item in self._watch:

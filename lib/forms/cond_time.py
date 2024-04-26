@@ -207,7 +207,7 @@ class form_TimeCondition(form_Condition):
                         self._timespecs.append(cur_spec)
                     self._clearspec()
                 else:
-                    sg.Popup(UI_POPUP_INVALIDTIMESPEC, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
+                    sg.popup(UI_POPUP_INVALIDTIMESPEC, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
             elif event == '-REMOVE-':
                 cur_spec = self._getspec()
                 if cur_spec:

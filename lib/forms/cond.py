@@ -221,7 +221,7 @@ class form_Condition(object):
                         break
                     else:
                         checks = "\n".join("- %s" % check[k][0] for k in check)
-                        sg.Popup(UI_POPUP_INVALIDPARAMETERS_T % checks, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
+                        sg.popup(UI_POPUP_INVALIDPARAMETERS_T % checks, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
                 else:
                     self._form.close()
                     return None

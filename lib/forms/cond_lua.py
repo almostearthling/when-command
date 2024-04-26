@@ -128,7 +128,7 @@ class form_LuaScriptCondition(form_Condition):
                         r.append([self._data['-LUAVAR_NAME-'], self._data['-LUAVAR_VALUE-']])
                         self._results = r
                     else:
-                        sg.Popup(UI_POPUP_INVALIDVARNAME, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
+                        sg.popup(UI_POPUP_INVALIDVARNAME, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
             elif event == '-DELETE_LUAVAR-':
                 if self._data['-LUAVAR_NAME-']:
                     r = list(e for e in self._results if e[0] != self._data['-LUAVAR_NAME-'])

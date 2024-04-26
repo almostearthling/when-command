@@ -225,16 +225,16 @@ class form_CommandTask(form_Task):
                         r.append([self._data['-ENVVAR_NAME-'], self._data['-ENVVAR_VALUE-']])
                         self._envvars = r
                     else:
-                        sg.Popup(UI_POPUP_INVALIDVARNAME, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
+                        sg.popup(UI_POPUP_INVALIDVARNAME, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
                 else:
-                    sg.Popup(UI_POPUP_EMPTYVARVALUE, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
+                    sg.popup(UI_POPUP_EMPTYVARVALUE, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
 
             elif event == '-DELETE_ENVVAR-':
                 if self._data['-ENVVAR_NAME-']:
                     r = list(e for e in self._envvars if e[0] != self._data['-ENVVAR_NAME-'])
                     self._envvars = r
                 else:
-                    sg.Popup(UI_POPUP_EMPTYVARVALUE, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
+                    sg.popup(UI_POPUP_EMPTYVARVALUE, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
 
             # ...
             self._data['-COMMAND_ENVVARS-'] = []
