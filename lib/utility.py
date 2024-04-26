@@ -1,24 +1,5 @@
 # various utility functions and objects
 
-# use the still-FOSS fork of PySimpleGUI
-import FreeSimpleGUI as sg
-
-
-# constants to modify the GUI library
-_BUTTON_WIDTH = 12
-_DEFAULT_THEME_DARK = 'DarkGray4'
-_DEFAULT_THEME_LIGHT = 'Default1'
-_DEFAULT_THEME_DEBUG = 'DarkGreen5'
-
-
-# modifications to the GUI library:
-# 1. make all buttons of the same width
-sg._B = sg.B
-sg.B = lambda *args, **kwargs: sg._B(
-    *args, size=_BUTTON_WIDTH,
-    **{k: v for k, v in kwargs.items() if k != 'size'})
-
-
 # import all other modules
 import sys
 import os
@@ -34,6 +15,8 @@ from time import time
 import darkdetect
 
 from lib.repocfg import AppConfig
+
+from lib.sgmod import sg
 
 
 # check that all passed arguments are not None
@@ -138,14 +121,15 @@ def get_logfile():
 def set_UI_theme(new_theme=None):
     if not new_theme:
         if AppConfig.get('DEBUG'):
-            sg.theme(_DEFAULT_THEME_DEBUG)
+            sg.theme(sg.DEFAULT_THEME_DEBUG)
         else:
             if darkdetect.isDark():
-                sg.theme(_DEFAULT_THEME_DARK)
+                sg.theme(sg.DEFAULT_THEME_DARK)
             else:
-                sg.theme(_DEFAULT_THEME_LIGHT)
+                sg.theme(sg.DEFAULT_THEME_LIGHT)
     else:
         sg.theme(new_theme)
+
 
 # ...
 

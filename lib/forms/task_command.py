@@ -65,10 +65,10 @@ def _form_layout():
                 expand_x=True, expand_y=True,
             ) ],
             [
-                sg.Column([[sg.T(UI_FORM_VARNAME_SC)], [sg.I(key='-ENVVAR_NAME-', expand_x=True)]], expand_x=True),
-                sg.Column([[sg.T(UI_FORM_NEWVALUE_SC)], [sg.I(key='-ENVVAR_VALUE-', expand_x=True)]], expand_x=True),
+                sg.Column([[ sg.T(UI_FORM_VARNAME_SC) ], [ sg.I(key='-ENVVAR_NAME-', expand_x=True)] ], expand_x=True),
+                sg.Column([[ sg.T(UI_FORM_NEWVALUE_SC) ], [ sg.I(key='-ENVVAR_VALUE-', expand_x=True) ]], expand_x=True),
             ],
-            [ sg.Push(), sg.B(UI_UPDATE, key='-UPDATE_ENVVAR-'), sg.B(UI_DEL, key='-DELETE_ENVVAR-') ],
+            [ sg.Push(), sg.B_ADD(UI_UPDATE, key='-UPDATE_ENVVAR-'), sg.B_DEL(UI_DEL, key='-DELETE_ENVVAR-') ],
         ], expand_x=True, expand_y=True)],
 
         [ sg.Frame(UI_FORM_CHECKS, [[
@@ -77,9 +77,9 @@ def _form_layout():
                     [ sg.Combo([UI_OUTCOME_NONE, UI_OUTCOME_SUCCESS, UI_OUTCOME_FAILURE], key='-CHECK_FOR-', default_value=UI_OUTCOME_NONE, readonly=True) ],
                 ], vertical_alignment='top'),
                 sg.Column([
-                    [sg.T(UI_FORM_TESTVAL)],
-                    [sg.Combo([UI_EXIT_CODE, UI_STREAM_STDOUT, UI_STREAM_STDERR], key='-CHECK_WHAT-', default_value=UI_EXIT_CODE, readonly=True), sg.I(key='-CHECK_VALUE-', expand_x=True)],
-                    [sg.CB(UI_FORM_MATCHEXACT, key='-CHECK_EXACT-'), sg.CB(UI_FORM_CASESENSITIVE, key='-CHECK_CASE_SENSITIVE-'), sg.CB(UI_FORM_MATCHREGEXP, key='-CHECK_REGEXP-'), ],
+                    [ sg.T(UI_FORM_TESTVAL)],
+                    [ sg.Combo([UI_EXIT_CODE, UI_STREAM_STDOUT, UI_STREAM_STDERR], key='-CHECK_WHAT-', default_value=UI_EXIT_CODE, readonly=True), sg.I(key='-CHECK_VALUE-', expand_x=True)],
+                    [ sg.CB(UI_FORM_MATCHEXACT, key='-CHECK_EXACT-'), sg.CB(UI_FORM_CASESENSITIVE, key='-CHECK_CASE_SENSITIVE-'), sg.CB(UI_FORM_MATCHREGEXP, key='-CHECK_REGEXP-'), ],
                 ], expand_x=True)
         ]], expand_x=True) ],
     ]

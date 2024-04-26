@@ -88,14 +88,18 @@ def _form_layout():
                 sg.T(UI_FORM_OR),
                 sg.T(UI_FORM_DOW_SC), sg.Combo(_WEEKDAYS, key='-DOW-'),
                 sg.Push(),
-                sg.T(UI_FORM_TIME_SC), sg.I(key='-HOUR-', size=(3, None)), sg.T(":"), sg.I(key='-MINUTE-', size=(3, None)), sg.T(":"), sg.I(key='-SECOND-', size=(3, None)),
+                sg.T(UI_FORM_TIME_SC),
+                sg.I(key='-HOUR-', size=(4, None), justification='right'), sg.T(":"),
+                sg.I(key='-MINUTE-', size=(4, None), justification='right'), sg.T(":"),
+                sg.I(key='-SECOND-', size=(4, None), justification='right'),
                 sg.Push(),
-                sg.B(UI_ADD, key='-ADD-'), sg.B(UI_DEL, key='-REMOVE-'), sg.B(UI_CLEAR, key='-CLEAR-'),
+                sg.B_NEW(UI_CLEAR, key='-CLEAR-'),
             ],
+            [ sg.Push(), sg.B_ADD(UI_ADD, key='-ADD-'), sg.B_DEL(UI_DEL, key='-REMOVE-') ],
             [ sg.Push() ],
             [ sg.T(UI_FORM_CURRENTTIMESPECS_SC) ],
             [ sg.LBox([], key='-TIMESPECS-', expand_x=True, expand_y=True) ],
-            [ sg.Push(), sg.B(UI_CLEARALL, key='-CLEARALL-') ],
+            [ sg.Push(), sg.B_BLANK(UI_CLEARALL, key='-CLEARALL-') ],
         ], expand_x=True, expand_y=True) ]
     ]
 

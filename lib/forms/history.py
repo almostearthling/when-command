@@ -35,7 +35,7 @@ def layout_main():
             col_widths=(15, 16, 16, 7, 4, 38),
             expand_x=True, expand_y=True,
         ) ],
-        [ sg.Push(), sg.B(UI_OK, key='-OK-') ]
+        [ sg.Push(), sg.B_OK(UI_OK, key='-OK-') ]
     ]
 
 

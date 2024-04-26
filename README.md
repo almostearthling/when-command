@@ -111,5 +111,18 @@ The clock [icon](http://www.graphicsfuel.com/2012/08/alarm-clock-icon-psd/) used
 * [Exclamation Mark](https://icons8.com/icon/j1rPetruM5Fl/exclamation-mark)
 * [Question Mark](https://icons8.com/icon/cjUb4tRvBCNt/question-mark)
 * [Settings Gear](https://icons8.com/icon/12784/settings)
+* [OK (Check Mark) Button](https://icons8.com/icon/70yRC8npwT3d/check-mark)
+* [Cancel Button](https://icons8.com/icon/fYgQxDaH069W/cancel)
+* [Close Window](https://icons8.com/icon/rmf1Fvj5nBib/close-window)
+* [Save](https://icons8.com/icon/yFBJCjFJpLXw/save)
+* [Enter](https://icons8.com/icon/U5AcCk9kUWMk/enter)
+* [Add](https://icons8.com/icon/IA4hgI5aWiHD/add)
+* [Remove](https://icons8.com/icon/9lB4p3bBjCNX/remove)
+* [Error](https://icons8.com/icon/hP6pCUyT8QGk/error)
+* [New Document](https://icons8.com/icon/8tcDgihugAYf/new-document)
+* [Pencil Drawing](https://icons8.com/icon/FnCPHMRRKpyL/pencil-drawing)
+* [Delete](https://icons8.com/icon/pre7LivdxKxJ/delete)
+* [File](https://icons8.com/icon/XWoSyGbnshH2/file)
+* [Folder](https://icons8.com/icon/dINnkNb1FBl4/folder)
 
 This program uses a fork of [PySimpleGUI](https://www.pysimplegui.com/), namely [FreeSimpleGUI](https://github.com/spyoungtech/FreeSimpleGUI) which is on PyPI. The latest version of _PySimpleGUI_ is not open source anymore, and I'm fine with it: it is a useful package and deserves all possible support. However, **When** is an OSS project, and for the moment being I prefer to rely on libraries that do not require the end user to accept non-OSS license terms or to install third party license keys.

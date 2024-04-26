@@ -47,8 +47,8 @@ def _form_layout(tasks_available, extra_layout=[]):
                     [
                         sg.T(UI_FORM_TASK_SC),
                         sg.Combo(tasks_available, key='-TASKS_AVAILABLE-', expand_x=True, readonly=True),
-                        sg.B(UI_ADD, key='-ADD_TASK-'),
-                        sg.B(UI_DEL, key='-DEL_TASK-'),
+                        sg.B_ADD(UI_ADD, key='-ADD_TASK-'),
+                        sg.B_DEL(UI_DEL, key='-DEL_TASK-'),
                     ],
                     [ sg.CB(UI_FORM_RUNTASKSSEQUENTIALLY, default=True, key='-EXEC_SEQUENCE-') ],
                     [
@@ -64,7 +64,7 @@ def _form_layout(tasks_available, extra_layout=[]):
         ]], expand_x=True, expand_y=True, tab_location='topleft') ],
 
         # form control section
-        [ sg.Push(), sg.B(UI_OK, key='-OK-'), sg.B(UI_CANCEL, key='-CANCEL-') ],
+        [ sg.Push(), sg.B_OK(UI_OK, key='-OK-'), sg.B_CANCEL(UI_CANCEL, key='-CANCEL-') ],
     ]
 
 

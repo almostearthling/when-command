@@ -63,10 +63,10 @@ def layout_main():
                 justification='left',
                 expand_x=True, expand_y=True,
             ) ],
-            [ sg.B(UI_NEW, key='-ADD_ITEM-'), sg.Push(), sg.B(UI_EDIT, key='-EDIT_ITEM-'), sg.B(UI_DEL, key='-DEL_ITEM-') ]
+            [ sg.B_NEW(UI_NEW, key='-ADD_ITEM-'), sg.Push(), sg.B_EDIT(UI_EDIT, key='-EDIT_ITEM-'), sg.B_DEL(UI_DEL, key='-DEL_ITEM-') ]
         ], expand_x=True, expand_y=True) ],
 
-        [ sg.Push(), sg.B(UI_LOAD, key='-LOAD-'), sg.B(UI_SAVE, key='-SAVE-'), sg.B(UI_EXIT, key='-EXIT-') ],
+        [ sg.Push(), sg.B_LOAD(UI_LOAD, key='-LOAD-'), sg.B_SAVE(UI_SAVE, key='-SAVE-'), sg.B_EXIT(UI_EXIT, key='-EXIT-') ],
     ]
 
 

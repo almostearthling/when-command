@@ -44,8 +44,8 @@ def _form_layout():
             [
                 sg.CB(UI_FORM_MATCHALLRESULTS, key='-LUAVAR_MATCH_ALL-', default=False),
                 sg.Push(),
-                sg.B(UI_UPDATE, key='-UPDATE_LUAVAR-'),
-                sg.B(UI_DEL, key='-DELETE_LUAVAR-'),
+                sg.B_ADD(UI_UPDATE, key='-UPDATE_LUAVAR-'),
+                sg.B_DEL(UI_DEL, key='-DELETE_LUAVAR-'),
             ],
         ], expand_x=True)],
     ]

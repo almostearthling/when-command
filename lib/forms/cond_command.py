@@ -74,7 +74,7 @@ def _form_layout():
                 sg.Column([[ sg.T(UI_FORM_VARNAME_SC) ], [ sg.I(key='-ENVVAR_NAME-', expand_x=True) ]], expand_x=True),
                 sg.Column([[ sg.T(UI_FORM_NEWVALUE_SC) ], [ sg.I(key='-ENVVAR_VALUE-', expand_x=True) ]], expand_x=True),
             ],
-            [ sg.Push(), sg.B(UI_UPDATE, key='-UPDATE_ENVVAR-'), sg.B(UI_DEL, key='-DELETE_ENVVAR-') ],
+            [ sg.Push(), sg.B_ADD(UI_UPDATE, key='-UPDATE_ENVVAR-'), sg.B_DEL(UI_DEL, key='-DELETE_ENVVAR-') ],
         ], expand_x=True, expand_y=True) ],
 
         [sg.Frame(UI_FORM_CHECKS, [[

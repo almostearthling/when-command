@@ -33,7 +33,7 @@ def _form_layout():
         ) ],
 
         # form control section
-        [ sg.Push(), sg.B(UI_OK, key='-OK-'), sg.B(UI_CANCEL, key='-CANCEL-') ],
+        [ sg.Push(), sg.B_OK(UI_OK, key='-OK-'), sg.B_CANCEL(UI_CANCEL, key='-CANCEL-') ],
     ]
 
 

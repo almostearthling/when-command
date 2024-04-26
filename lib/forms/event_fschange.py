@@ -22,7 +22,7 @@ def _form_layout():
                 sg.I(key='-ITEM-', expand_x=True),
                 sg.FileBrowse(UI_BROWSE, key='-BROWSE_FILE-'),
             ],
-            [ sg.CB(UI_FORM_RECURSIVE, key='-RECURSIVE-'), sg.Push(), sg.B(UI_ADD, key='-ADD-'), sg.B(UI_DEL, key='-DEL-'), ],
+            [ sg.CB(UI_FORM_RECURSIVE, key='-RECURSIVE-'), sg.Push(), sg.B_ADD(UI_ADD, key='-ADD-'), sg.B_DEL(UI_DEL, key='-DEL-'), ],
         ], expand_x=True, expand_y=True)]
     ]
 
