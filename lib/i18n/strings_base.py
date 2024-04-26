@@ -271,7 +271,6 @@ in a desktop environment.
 """ % (UI_APP, UI_APP_COPYRIGHT)
 
 
-
 # tray icon menu entries
 UI_TRAY_MENU_ABOUT = "About..."
 UI_TRAY_MENU_EXIT = "Exit"
@@ -280,6 +279,12 @@ UI_TRAY_MENU_RESUMESCHEDULER = "Resume Scheduler"
 UI_TRAY_MENU_RESETCONDITIONS = "Reset Conditions"
 UI_TRAY_MENU_HISTORY = "Show History..."
 UI_TRAY_MENU_CONFIGURE = "Configurator..."
+
+
+# symbols
+SYM_OK = "✓"
+SYM_FAIL = "✕"
+SYM_UNKNOWN = "∅"
 
 
 # CLI strings

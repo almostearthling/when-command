@@ -74,7 +74,7 @@ class form_History(object):
                 x['task'],
                 x['trigger'],
                 ("%.2fs" % x['duration'].total_seconds()).ljust(7),
-                "✓" if x['success'] == 'OK' else "?" if x['success'] == 'IND' else "✕",  # might have to change these
+                SYM_OK if x['success'] == 'OK' else SYM_UNKNOWN if x['success'] == 'IND' else SYM_FAIL,
                 x['message'],
             ]
             for x in history
