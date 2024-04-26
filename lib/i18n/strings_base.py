@@ -217,7 +217,7 @@ UI_TITLE_NEWITEM = "%s: Select New Item" % UI_APP
 UI_TITLE_COMMANDTASK = "%s: Command Task Editor" % UI_APP
 UI_TITLE_LUATASK = "%s: Lua Script Task Editor" % UI_APP
 
-UI_TITLE_COMMANDCOND = "%s: Command Task Editor" % UI_APP
+UI_TITLE_COMMANDCOND = "%s: Command Condition Editor" % UI_APP
 UI_TITLE_LUACOND = "%s: Lua Script Condition Editor" % UI_APP
 UI_TITLE_INTERVALCOND = "%s: Interval Condition Editor" % UI_APP
 UI_TITLE_IDLECOND = "%s: Idle Session Condition Editor" % UI_APP
