@@ -21,6 +21,10 @@ from lib.forms.cond import form_Condition
 from lib.items.cond_command import CommandCondition
 
 
+# imports specific to this module
+import shutil
+
+
 # resource strings (not internationalized)
 ITEM_COND_SYSLOAD = "System Load Below Treshold Condition"
 
@@ -35,8 +39,14 @@ _DEFAULT_LOW_LOAD_PERC = 3
 
 # check for availability: for now only check platform
 def _available():
-    if sys.platform in ('win32', 'linux'):
-        return True
+    if sys.platform == 'win32':
+        if shutil.which("pwsh.exe"):
+            return True
+        return False
+    elif sys.platform == 'linux':
+        if shutil.which("bash") and shutil.which("vmstat") and shutil.which("bc"):
+            return True
+        return False
     else:
         return False
 
