@@ -126,19 +126,21 @@ class form_TimeCondition(form_Condition):
         self._timespecs = []
         if self._item:
             l = []
-            for elem in self._item.time_specifications:
-                spec = TimeSpec(elem)
-                self._timespecs.append(spec)
-                l.append(str(spec))
+            if self._item.time_specifications:
+                for elem in self._item.time_specifications:
+                    spec = TimeSpec(elem)
+                    self._timespecs.append(spec)
+                    l.append(str(spec))
             self._data['-TIMESPECS-'] = l
         else:
             self._data['-TIMESPECS-'] = []
 
     def _updateitem(self):
         form_Condition._updateitem(self)
-        self._item.time_specifications = []
+        e = []
         for spec in self._timespecs:
-            self._item.time_specifications.append(spec.as_dict())
+            e.append(spec.as_dict())
+        self._item.time_specifications = e or None
 
     def _getspec(self):
         if self._data['-MONTH-']:

@@ -204,11 +204,13 @@ DEFAULT_TIME_SPECIFICATIONS = [{ 'hour': 12, 'minute': 30 }]
 # a time based condition
 class TimeCondition(Condition):
 
+    # availability at class level
+    available = True
+
     def __init__(self, t: items.Table=None) -> None:
         Condition.__init__(self, t)
         self.type = 'time'
         self.hrtype = ITEM_COND_TIME
-        # self.spec_keys = ['year', 'month', 'day', 'weekday', 'hour', 'minute', 'seconds']
         if t:
             self.time_specifications = t.get('time_specifications')
         else:

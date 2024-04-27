@@ -25,6 +25,9 @@ from lib.utility import check_not_none, append_not_none, generate_item_name
 # derived methods, as they perform base initialization and checks
 class Condition(object):
 
+    # availability at class level
+    available = False
+
     def __init__(self, t: items.Table=None) -> None:
         self.type = None
         self.hrtype = None
@@ -39,10 +42,10 @@ class Condition(object):
             if tasks:
                 self.tasks = list(tasks)
             else:
-                self.tasks = []
+                self.tasks = None
             tags = t.get('tags')
             if tags:
-                self.tags = list(tags)
+                self.tags = dict(tags)
             else:
                 self.tags = None
         else:

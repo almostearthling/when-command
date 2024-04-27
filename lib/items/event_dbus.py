@@ -16,6 +16,9 @@ DEFAULT_RULE = "type='signal',sender='org.gnome.TypingMonitor',interface='org.gn
 # a DBus signal based event
 class DBusEvent(Event):
 
+    # availability at class level
+    available = False
+
     def __init__(self, t: items.Table=None) -> None:
         Event.__init__(self, t)
         self.type = 'dbus'

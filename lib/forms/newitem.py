@@ -5,7 +5,7 @@ from lib.i18n.strings import *
 from lib.utility import sg
 from lib.icons import APP_ICON32 as APP_ICON
 
-from lib.items.item import ALL_AVAILABLE_ITEMS, ALL_AVAILABLE_ITEMS_D
+from lib.items.item import ALL_AVAILABLE_ITEMS
 
 
 # layout generator (fixed)
@@ -73,7 +73,9 @@ class form_NewItem(object):
             self._data['-EVENT-'] = True
         else:
             raise ValueError("Invalid choice for item type")
-        self._subtypes = list(x for x in ALL_AVAILABLE_ITEMS if x[0].startswith('%s_' % self._type))
+        self._subtypes = list(x for x in ALL_AVAILABLE_ITEMS
+                              if x[0].startswith('%s:' % self._type)
+                              and x[3].available)
         self._subtypes_display = list([x[1], x[0]] for x in self._subtypes)
         self._data['-SUBTYPES-'] = self._subtypes_display.copy()
 

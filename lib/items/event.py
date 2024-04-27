@@ -19,15 +19,24 @@ from lib.utility import check_not_none, append_not_none, generate_item_name
 # derived methods, as they perform base initialization and checks
 class Event(object):
 
+    # availability at class level
+    available = False
+
     def __init__(self, t: items.Table=None) -> None:
         self.type = None
         self.hrtype = None
         if t:
             self.name = t.get('name')
             self.condition = t.get('condition')
+            tags = t.get('tags')
+            if tags:
+                self.tags = dict(tags)
+            else:
+                self.tags = None
         else:
             self.name = generate_item_name(self)
             self.condition = None
+            self.tags = None
 
     def __str__(self):
         return "[[event]]\n%s" % self.as_table().as_string()
@@ -42,6 +51,7 @@ class Event(object):
         t.append('name', self.name)
         t.append('type', self.type)
         t = append_not_none(t, 'condition', self.condition)
+        t = append_not_none(t, 'tags', self.tags)
         return t
 
 

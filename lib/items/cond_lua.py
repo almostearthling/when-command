@@ -15,6 +15,9 @@ DEFAULT_LUASCRIPT = "-- write your Lua script here"
 # a Lua script based condition
 class LuaScriptCondition(Condition):
 
+    # availability at class level
+    available = True
+
     def __init__(self, t: items.Table=None) -> None:
         Condition.__init__(self, t)
         self.type = 'lua'

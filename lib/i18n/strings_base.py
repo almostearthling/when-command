@@ -231,7 +231,8 @@ UI_TITLE_CLIEVENT = "%s: Direct Command Event Editor" % UI_APP
 
 UI_TITLE_HISTORY = "%s: Task History" % UI_APP
 
-UI_CAPTION_NOSPECIFICPARAMS = "This type of item does not support any specific parameter"
+UI_CAPTION_NOSPECIFICPARAMS = "This type of item does not require any specific parameter"
+UI_CAPTION_NOTSUPPORTED = "This type of item is not supported"
 
 
 # popup titles and messages

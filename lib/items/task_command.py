@@ -17,6 +17,10 @@ DEFAULT_STARTUP_PATH = expanduser('~')
 
 # a command based task
 class CommandTask(Task):
+
+    # availability at class level
+    available = True
+
     def __init__(self, t: items.Table=None) -> None:
         Task.__init__(self, t)
         self.type = 'command'

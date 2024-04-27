@@ -39,7 +39,10 @@ class form_FilesystemChangeEvent(form_Event):
         self.dont_update('-BROWSE_FILE-')
         self._form['-WATCH-'].bind('<Double-Button-1>' , '+-dblclick-')
         if item:
-            self._watch = item.watch.copy()
+            if item.watch:
+                self._watch = item.watch.copy()
+            else:
+                self._watch = []
             self.set_item(item)
         else:
             self._watch = []
@@ -49,12 +52,15 @@ class form_FilesystemChangeEvent(form_Event):
         form_Event._updatedata(self)
         self._data['-ITEM-'] = ''
         self._data['-WATCH-'] = self._item.watch.copy()
-        self._watch = self._item.watch.copy()
+        if self._item.watch:
+            self._watch = self._item.watch.copy()
+        else:
+            self._watch = []
         self._data['-RECURSIVE-'] = self._item.recursive
 
     def _updateitem(self):
         form_Event._updateitem(self)
-        self._item.watch = self._watch.copy()
+        self._item.watch = self._watch.copy() or None
         self._item.recursive = self._data['-RECURSIVE-']
 
     def process_event(self, event, values):

@@ -6,22 +6,11 @@ import os
 from lib.i18n.strings import *
 
 from lib.utility import sg, get_configfile
+from lib.items.item import ALL_AVAILABLE_ITEMS_D
+
 from lib.icons import APP_ICON32 as APP_ICON
 from lib.icons import QMARK_ICON48 as QMARK_ICON
 from lib.icons import XMARK_ICON48 as XMARK_ICON
-
-from lib.forms.task_command import form_CommandTask
-from lib.forms.task_lua import form_LuaScriptTask
-
-from lib.forms.cond_lua import form_LuaScriptCondition
-from lib.forms.cond_command import form_CommandCondition
-from lib.forms.cond_interval import form_IntervalCondition
-from lib.forms.cond_idle import form_IdleCondition
-from lib.forms.cond_event import form_EventCondition
-from lib.forms.cond_time import form_TimeCondition
-
-from lib.forms.event_cli import form_CommandEvent
-from lib.forms.event_fschange import form_FilesystemChangeEvent
 
 from lib.forms.newitem import form_NewItem
 
@@ -96,7 +85,7 @@ class form_Config(object):
         # of tuples whose members are the form entry key, the corresponding
         # label, and a functions that checks the value
         self.__datachecks = [
-            ('-TICK_INTERVAL-', UI_FORM_TICKINTERVAL_SC, lambda x: int(x) > 1),
+            ('-TICK_INTERVAL-', UI_FORM_TICKINTERVAL_SC, lambda x: int(x) >= 1),
         ]
 
         # the configuration file should be well formed, so load it
@@ -110,15 +99,30 @@ class form_Config(object):
     # update the associated data according to what is in the form
     def _updatedata(self):
         self._itemlistentries = []
+        # encode the invisible list field with the same signature that is used in
+        # the _item_ module, so that the corresponding form and item factories can
+        # be retrieved dynamically
         for key in self._tasks:
             item = self._tasks[key]
-            self._itemlistentries.append([item.name, item.hrtype, 'task:%s' % item.type])
+            if item.tags:
+                signature = "task:%s:%s" % (item.type, item.tags.get('subtype'))
+            else:
+                signature = "task:%s" % item.type
+            self._itemlistentries.append([item.name, item.hrtype, signature])
         for key in self._conditions:
             item = self._conditions[key]
-            self._itemlistentries.append([item.name, item.hrtype, 'condition:%s' % item.type])
+            if item.tags:
+                signature = "cond:%s:%s" % (item.type, item.tags.get('subtype'))
+            else:
+                signature = "cond:%s" % item.type
+            self._itemlistentries.append([item.name, item.hrtype, signature])
         for key in self._events:
             item = self._events[key]
-            self._itemlistentries.append([item.name, item.hrtype, 'event:%s' % item.type])
+            if item.tags:
+                signature = "event:%s:%s" % (item.type, item.tags.get('subtype'))
+            else:
+                signature = "event:%s" % item.type
+            self._itemlistentries.append([item.name, item.hrtype, signature])
         self._itemlistentries.sort(key=lambda x: x[0])
         try:
             t = int(self._data['-TICK_INTERVAL-'])
@@ -254,16 +258,14 @@ class form_Config(object):
                 if t:
                     item_row = self._itemlistentries[t[0]]
                     item_name = item_row[0]
-                    item_type, item_sub = item_row[2].split(':')
+                    item_signature = item_row[2]
+                    item_type, _ = item_signature.split(':', 1)
 
                     # task items
                     if item_type == 'task':
-                        if item_sub == 'command':
-                            e = form_CommandTask(self._tasks[item_name])
-                        elif item_sub == 'lua':
-                            e = form_LuaScriptTask(self._tasks[item_name])
-                        # ...
-                        # newly supported task items will be inserted here
+                        _, fform, fitem = ALL_AVAILABLE_ITEMS_D.get(item_signature)
+                        if fform and fitem.available:
+                            e = fform(self._tasks[item_name])
                         else:
                             e = None
                         if e:
@@ -276,21 +278,10 @@ class form_Config(object):
                             del e
 
                     # condition items
-                    elif item_type == 'condition':
-                        if item_sub == 'lua':
-                            e = form_LuaScriptCondition(list(self._tasks.keys()), self._conditions[item_name])
-                        elif item_sub == 'command':
-                            e = form_CommandCondition(list(self._tasks.keys()), self._conditions[item_name])
-                        elif item_sub == 'interval':
-                            e = form_IntervalCondition(list(self._tasks.keys()), self._conditions[item_name])
-                        elif item_sub == 'idle':
-                            e = form_IdleCondition(list(self._tasks.keys()), self._conditions[item_name])
-                        elif item_sub == 'time':
-                            e = form_TimeCondition(list(self._tasks.keys()), self._conditions[item_name])
-                        elif item_sub == 'event':
-                            e = form_EventCondition(list(self._tasks.keys()), self._conditions[item_name])
-                        # ...
-                        # newly supported condition items will be inserted here
+                    elif item_type == 'cond':
+                        _, fform, fitem = ALL_AVAILABLE_ITEMS_D.get(item_signature)
+                        if fform and fitem.available:
+                            e = fform(list(self._tasks.keys()), self._conditions[item_name])
                         else:
                             e = None
                         if e:
@@ -305,12 +296,9 @@ class form_Config(object):
                     # event items
                     elif item_type == 'event':
                         event_conds = list(x for x in self._conditions if self._conditions[x].type == 'event')
-                        if item_sub == 'fschange':
-                            e = form_FilesystemChangeEvent(event_conds, self._events[item_name])
-                        # elif item_sub == 'cli':
-                        #     e = form_CommandEvent(event_conds, self._events[item_name])
-                        # ...
-                        # newly supported event items will be inserted here
+                        _, fform, fitem = ALL_AVAILABLE_ITEMS_D.get(item_signature)
+                        if fform and fitem.available:
+                            e = fform(event_conds, self._events[item_name])
                         else:
                             e = None
                         if e:

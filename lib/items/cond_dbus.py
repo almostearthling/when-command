@@ -19,10 +19,13 @@ DEFAULT_METHOD = 'List'
 # a DBus inspaction based condition
 class DBusCondition(Condition):
 
+    # availability at class level
+    available = False
+
     def __init__(self, t: items.Table=None) -> None:
         Condition.__init__(self, t)
         self.type = 'dbus'
-        self.hrtype = ITEM_COND_COMMAND
+        self.hrtype = ITEM_COND_DBUS
         if t:
             assert(t.get('type') == self.type)
             self.check_after = t.get('check_after')

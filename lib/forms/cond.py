@@ -111,7 +111,10 @@ class form_Condition(object):
             self._data['-RECURRING-'] = bool(self._item.recurring)
             self._data['-SUSPENDED-'] = bool(self._item.suspended)
             self._data['-EXEC_SEQUENCE-'] = bool(self._item.execute_sequence)
-            self._data['-TASKS-'] = self._item.tasks.copy()
+            if self._item.tasks:
+                self._data['-TASKS-'] = self._item.tasks.copy()
+            else:
+                self._data['-TASKS-'] = []
         else:
             self._data['-NAME-'] = ''
             self._data['-BREAK_NEVER-'] = True
@@ -138,7 +141,10 @@ class form_Condition(object):
         self._item.break_on_failure = self._data['-BREAK_ON_FAILURE-']
         self._item.break_on_success = self._data['-BREAK_ON_SUCCESS-']
         self._item.execute_sequence = self._data['-EXEC_SEQUENCE-']
-        self._item.tasks = self._data['-TASKS-'].copy()
+        if self._data['-TASKS-']:
+            self._item.tasks = self._data['-TASKS-'].copy()
+        else:
+            self._item.tasks = None
 
 
     # list of keys of elements that should not be updated
@@ -190,19 +196,26 @@ class form_Condition(object):
     def process_event(self, event, values):
         if values:
             self._data = values.copy()
-        self._data['-TASKS-'] = self._item.tasks.copy()     # it has been overwritten
+        if self._item.tasks:
+            self._data['-TASKS-'] = self._item.tasks.copy()     # it has been overwritten
+        else:
+            self._data['-TASKS-'] = []
         if event in [sg.WIN_CLOSED, '-CANCEL-']:
             return False
         elif event == '-OK-':
             return True
         elif event == '-ADD_TASK-':
             if self._data['-TASKS_AVAILABLE-']:
+                if self._item.tasks is None:
+                    self._item.tasks = []
                 self._item.tasks.append(self._data['-TASKS_AVAILABLE-'])
                 self._data['-TASKS-'] = self._item.tasks.copy()
         elif event == '-DEL_TASK-':
             if self._data['-TASKS_AVAILABLE-']:
                 self._item.tasks = list(x for x in self._item.tasks if x != self._data['-TASKS_AVAILABLE-'])
                 self._data['-TASKS-'] = self._item.tasks.copy()
+                if not self._item.tasks:
+                    self._item.tasks = None
         elif event == '-TASKS-+-dblclick-':
             self._data['-TASKS_AVAILABLE-'] = values['-TASKS-'][0]
         return None

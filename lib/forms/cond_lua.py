@@ -90,9 +90,10 @@ class form_LuaScriptCondition(form_Condition):
             self._data['-LUAVAR_MATCH_ALL-'] = self._item.expect_all
             self._data['-LUA_RESULTS-'] = []
             self._results = []
-            for k in self._item.expected_results:
-                self._data['-LUA_RESULTS-'].append([k, self._item.expected_results[k]])
-                self._results.append([k, self._item.expected_results[k]])
+            if self._item.expected_results:
+                for k in self._item.expected_results:
+                    self._data['-LUA_RESULTS-'].append([k, self._item.expected_results[k]])
+                    self._results.append([k, self._item.expected_results[k]])
         else:
             self._data['-SCRIPT-'] = ''
             self._data['-LUAVAR_MATCH_ALL-'] = False
@@ -103,8 +104,10 @@ class form_LuaScriptCondition(form_Condition):
         self._item.script = self._data['-SCRIPT-']
         self._item.expect_all = self._data['-LUAVAR_MATCH_ALL-']
         self._item.expected_results = {}
+        e = {}
         for l in self._results:
-            self._item.expected_results[l[0]] = guess_typed_value(str(l[1]))
+            e[l[0]] = guess_typed_value(str(l[1]))
+        self._item.expected_results = e or None
         if self._data['-CHECK_AFTER-']:
             if self._data['-CHECK_AFTER_UNIT-'] == UI_TIME_HOURS:
                 self._item.check_after = int(self._data['-CHECK_AFTER-']) * 3600

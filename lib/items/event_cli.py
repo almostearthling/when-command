@@ -11,6 +11,9 @@ from lib.items.event import Event
 # a direct command based event
 class CommandEvent(Event):
 
+    # availability at class level
+    available = False
+
     def __init__(self, t: items.Table=None) -> None:
         Event.__init__(self, t)
         self.type = 'cli'

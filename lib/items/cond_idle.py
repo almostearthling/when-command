@@ -15,6 +15,9 @@ DEFAULT_IDLE_SECONDS = 600
 # an idle session based condition
 class IdleCondition(Condition):
 
+    # availability at class level
+    available = True
+
     def __init__(self, t: items.Table=None) -> None:
         Condition.__init__(self, t)
         self.type = 'idle'

@@ -15,6 +15,9 @@ from lib.items.cond import Condition
 # an event based condition: this does not support the 'bucket' keyword!
 class EventCondition(Condition):
 
+    # availability at class level
+    available = True
+
     def __init__(self, t: items.Table=None) -> None:
         Condition.__init__(self, t)
         self.type = 'event'

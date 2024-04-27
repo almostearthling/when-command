@@ -197,9 +197,10 @@ class form_CommandCondition(form_Condition):
         self._item.command_arguments = arg_split(self._data['-COMMAND_ARGS-'])
         self._item.startup_path = normpath(self._data['-COMMAND_WORKFOLDER-'])
         self._item.include_environment = self._data['-COMMAND_KEEP_ENV-']
-        self._item.environment_variables = {}
+        e = {}
         for l in self._envvars:
-            self._item.environment_variables[l[0]] = str(l[1])
+            e[l[0]] = str(l[1])
+        self._item.environment_variables = e or None
         self._item.success_status = None
         self._item.success_stdout = None
         self._item.success_stderr = None

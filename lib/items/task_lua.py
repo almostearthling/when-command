@@ -15,6 +15,9 @@ DEFAULT_LUASCRIPT = "-- write your Lua script here"
 # a Lua script based task
 class LuaScriptTask(Task):
 
+    # availability at class level
+    available = True
+
     def __init__(self, t: items.Table=None) -> None:
         Task.__init__(self, t)
         self.type = 'lua'
