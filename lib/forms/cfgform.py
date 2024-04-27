@@ -375,6 +375,7 @@ class form_Config(object):
                             self._conditions[new_item.name] = new_item
                         elif t == 'event':
                             self._events[new_item.name] = new_item
+                        self._changed = True
 
             # reactions to input that cause the form to consider data changed
             elif event == '-RANDOM_CHECKS-+-click-':
