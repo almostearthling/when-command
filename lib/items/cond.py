@@ -70,12 +70,12 @@ class Condition(object):
         t = table()
         t.append('name', self.name)
         t.append('type', self.type)
+        t.append('tasks', self.tasks)
         t = append_not_none(t, 'recurring', self.recurring)
         t = append_not_none(t, 'execute_sequence', self.execute_sequence)
         t = append_not_none(t, 'break_on_failure', self.break_on_failure)
         t = append_not_none(t, 'break_on_success', self.break_on_success)
         t = append_not_none(t, 'suspended', self.suspended)
-        t = append_not_none(t, 'tasks', self.tasks)
         t = append_not_none(t, 'tags', self.tags)
         return t
 

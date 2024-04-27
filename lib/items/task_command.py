@@ -50,7 +50,7 @@ class CommandTask(Task):
             if environment_variables:
                 self.environment_variables = dict(environment_variables)
             else:
-                self.environment_variables = {}
+                self.environment_variables = None
         else:
             self.startup_path = DEFAULT_STARTUP_PATH
             self.command = DEFAULT_COMMAND
@@ -67,18 +67,19 @@ class CommandTask(Task):
             self.case_sensitive = False
             self.include_environment = True
             self.set_environment_variables = True
-            self.environment_variables = {}
+            self.environment_variables = None
 
     def as_table(self):
         if not check_not_none(
-            self.startup_path,
             self.command,
+            self.command_arguments,
+            self.startup_path,
         ):
             raise ValueError("Invalid Command Task: mandatory field(s) missing")
         t = Task.as_table(self)
         t.append('startup_path', self.startup_path)
         t.append('command', self.command)
-        t = append_not_none(t, 'command_arguments', self.command_arguments)
+        t.append('command_arguments', self.command_arguments)
         t = append_not_none(t, 'match_exact', self.match_exact)
         t = append_not_none(t, 'match_regular_expression', self.match_regular_expression)
         t = append_not_none(t, 'success_stdout', self.success_stdout)

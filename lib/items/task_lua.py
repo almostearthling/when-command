@@ -30,7 +30,7 @@ class LuaScriptTask(Task):
             if expected_results:
                 self.expected_results = dict(expected_results)
             else:
-                self.expected_results = {}
+                self.expected_results = None
         else:
             self.script = DEFAULT_LUASCRIPT
             self.expect_all = None

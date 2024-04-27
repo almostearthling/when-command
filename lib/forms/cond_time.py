@@ -4,6 +4,7 @@ from lib.i18n.strings import *
 
 from lib.utility import sg
 from lib.icons import XMARK_ICON48 as XMARK_ICON
+from lib.icons import QMARK_ICON48 as QMARK_ICON
 
 from lib.forms.cond import form_Condition
 from lib.items.cond_time import TimeCondition, TimeSpec
@@ -84,7 +85,10 @@ def _form_layout():
     return [
         [ sg.Frame(UI_FORM_TIMESPECS, [
             [
-                sg.T(UI_FORM_DATE_SC), sg.Combo(_YEARS, key='-YEAR-'), sg.T("/"), sg.Combo(_MONTHS, key='-MONTH-'), sg.T("/"), sg.Combo(_DAYS, key='-DAY-'),
+                sg.T(UI_FORM_DATE_SC),
+                sg.Combo(_YEARS, key='-YEAR-'), sg.T("/"),
+                sg.Combo(_MONTHS, key='-MONTH-'), sg.T("/"),
+                sg.Combo(_DAYS, key='-DAY-'),
                 sg.T(UI_FORM_OR),
                 sg.T(UI_FORM_DOW_SC), sg.Combo(_WEEKDAYS, key='-DOW-'),
                 sg.Push(),
@@ -128,9 +132,9 @@ class form_TimeCondition(form_Condition):
             l = []
             if self._item.time_specifications:
                 for elem in self._item.time_specifications:
-                    spec = TimeSpec(elem)
-                    self._timespecs.append(spec)
-                    l.append(str(spec))
+                    timespec = TimeSpec(elem)
+                    self._timespecs.append(timespec)
+                    l.append(str(timespec))
             self._data['-TIMESPECS-'] = l
         else:
             self._data['-TIMESPECS-'] = []
@@ -138,8 +142,8 @@ class form_TimeCondition(form_Condition):
     def _updateitem(self):
         form_Condition._updateitem(self)
         e = []
-        for spec in self._timespecs:
-            e.append(spec.as_dict())
+        for timespec in self._timespecs:
+            e.append(timespec.as_dict())
         self._item.time_specifications = e or None
 
     def _getspec(self):
@@ -195,15 +199,15 @@ class form_TimeCondition(form_Condition):
         if ret is None:
             if event == '-TIMESPECS-+-dblclick-':
                 idx = self._form['-TIMESPECS-'].get_indexes()[0]
-                spec = self._timespecs[idx]
+                timespec = self._timespecs[idx]
                 self._clearspec()
-                self._setspec(spec)
+                self._setspec(timespec)
             elif event == '-ADD-':
                 cur_spec = self._getspec()
                 if cur_spec:
                     present = False
-                    for spec in self._timespecs:
-                        if cur_spec == spec:
+                    for timespec in self._timespecs:
+                        if cur_spec == timespec:
                             present = True
                     if not present:
                         self._timespecs.append(cur_spec)
@@ -214,22 +218,22 @@ class form_TimeCondition(form_Condition):
                 cur_spec = self._getspec()
                 if cur_spec:
                     newspecs = []
-                    for spec in self._timespecs:
-                        print("%s != %s ?" % (spec, cur_spec))
-                        if cur_spec != spec:
-                            newspecs.append(spec)
+                    for timespec in self._timespecs:
+                        print("%s != %s ?" % (timespec, cur_spec))
+                        if cur_spec != timespec:
+                            newspecs.append(timespec)
                     self._timespecs = newspecs
             elif event == '-CLEAR-':
                 self._clearspec()
             elif event == '-CLEARALL-':
-                # maybe first we should ask the user whether he is sure!
-                self._timespecs = []
-                self._clearspec()
+                if sg.popup_yes_no(UI_POPUP_DELETETSPECS_Q, title=UI_POPUP_T_CONFIRM, icon=QMARK_ICON).upper() == 'YES':
+                    self._timespecs = []
+                    self._clearspec()
             # update list again because self._data['-TIMESPECS-'] now only
             # contains a line because of how it is updated
             l = []
-            for spec in self._timespecs:
-                l.append(str(spec))
+            for timespec in self._timespecs:
+                l.append(str(timespec))
             self._data['-TIMESPECS-'] = l
         else:
             return ret

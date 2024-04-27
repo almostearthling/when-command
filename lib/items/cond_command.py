@@ -51,7 +51,7 @@ class CommandCondition(Condition):
             if environment_variables:
                 self.environment_variables = dict(environment_variables)
             else:
-                self.environment_variables = {}
+                self.environment_variables = None
         else:
             self.check_after = None
             self.startup_path = DEFAULT_STARTUP_PATH
@@ -69,7 +69,7 @@ class CommandCondition(Condition):
             self.case_sensitive = False
             self.include_environment = True
             self.set_environment_variables = True
-            self.environment_variables = {}
+            self.environment_variables = None
 
     def as_table(self):
         if not check_not_none(
@@ -82,7 +82,7 @@ class CommandCondition(Condition):
         t = append_not_none(t, 'check_after', self.check_after)
         t.append('startup_path', self.startup_path)
         t.append('command', self.command)
-        t = append_not_none(t, 'command_arguments', self.command_arguments)
+        t.append('command_arguments', self.command_arguments)
         t = append_not_none(t, 'match_exact', self.match_exact)
         t = append_not_none(t, 'match_regular_expression', self.match_regular_expression)
         t = append_not_none(t, 'success_stdout', self.success_stdout)

@@ -50,6 +50,7 @@ class form_Event(object):
         self.__dont_update = []
         self.__datachecks = [
             ('-NAME-', UI_FORM_NAME_SC, lambda x: _RE_VALIDNAME.match(x)),
+            ('-CONDITION-', UI_FORM_COND_SC, lambda x: x in conditions_available),
         ]
         if item:
             self.set_item(item)

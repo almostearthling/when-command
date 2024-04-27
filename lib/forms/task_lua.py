@@ -81,7 +81,6 @@ class form_LuaScriptTask(form_Task):
         form_Task._updateitem(self)
         self._item.script = self._data['-SCRIPT-']
         self._item.expect_all = self._data['-LUAVAR_MATCH_ALL-']
-        self._item.expected_results = {}
         e = {}
         for l in self._results:
             e[l[0]] = guess_typed_value(str(l[1]))

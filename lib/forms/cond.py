@@ -138,13 +138,13 @@ class form_Condition(object):
         self._item.name = self._data['-NAME-']
         self._item.recurring = self._data['-RECURRING-']
         self._item.suspended = self._data['-SUSPENDED-']
-        self._item.break_on_failure = self._data['-BREAK_ON_FAILURE-']
-        self._item.break_on_success = self._data['-BREAK_ON_SUCCESS-']
+        self._item.break_on_failure = self._data['-BREAK_ON_FAILURE-'] or None
+        self._item.break_on_success = self._data['-BREAK_ON_SUCCESS-'] or None
         self._item.execute_sequence = self._data['-EXEC_SEQUENCE-']
         if self._data['-TASKS-']:
             self._item.tasks = self._data['-TASKS-'].copy()
         else:
-            self._item.tasks = None
+            self._item.tasks = []
 
 
     # list of keys of elements that should not be updated
@@ -196,10 +196,7 @@ class form_Condition(object):
     def process_event(self, event, values):
         if values:
             self._data = values.copy()
-        if self._item.tasks:
-            self._data['-TASKS-'] = self._item.tasks.copy()     # it has been overwritten
-        else:
-            self._data['-TASKS-'] = []
+        self._data['-TASKS-'] = self._item.tasks.copy()     # it has been overwritten
         if event in [sg.WIN_CLOSED, '-CANCEL-']:
             return False
         elif event == '-OK-':

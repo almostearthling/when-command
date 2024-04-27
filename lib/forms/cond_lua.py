@@ -67,7 +67,7 @@ class form_LuaScriptCondition(form_Condition):
         else:
             self.reset_item()
         self.add_checks(
-            ('-CHECK_AFTER-', UI_FORM_EXTRADELAYSPEC, lambda x: int(x) > 0),
+            ('-CHECK_AFTER-', UI_FORM_EXTRADELAYSPEC, lambda x: x == '' or int(x) > 0),
         )
 
     def _updatedata(self):
@@ -103,7 +103,6 @@ class form_LuaScriptCondition(form_Condition):
         form_Condition._updateitem(self)
         self._item.script = self._data['-SCRIPT-']
         self._item.expect_all = self._data['-LUAVAR_MATCH_ALL-']
-        self._item.expected_results = {}
         e = {}
         for l in self._results:
             e[l[0]] = guess_typed_value(str(l[1]))

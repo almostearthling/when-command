@@ -54,7 +54,10 @@ def _form_layout():
         ]], expand_x=True) ],
 
         [sg.Frame(UI_FORM_ENVIRONMENT, [
-            [ sg.Checkbox(UI_FORM_PRESERVEENVIRONMENT, key='-COMMAND_KEEP_ENV-', default=True) ],
+            [
+                sg.Checkbox(UI_FORM_PRESERVEENVIRONMENT, key='-COMMAND_KEEP_ENV-', default=True),
+                sg.Checkbox(UI_FORMSETWENVIRONMENT, key='-COMMAND_SET_WENV-', default=True),
+            ],
             [ sg.T(UI_FORM_VARIABLES_SC, ) ],
             [ sg.Table(
                 [['' for x in range(2)] for y in range(3)],
@@ -110,7 +113,8 @@ class form_CommandTask(form_Task):
             self._data['-COMMAND-'] = self._item.command
             self._data['-COMMAND_ARGS-'] = ' '.join(quote(x) for x in self._item.command_arguments) if self._item.command_arguments else None
             self._data['-COMMAND_WORKFOLDER-'] = self._item.startup_path
-            self._data['-COMMAND_KEEP_ENV-'] = self._item.include_environment
+            self._data['-COMMAND_KEEP_ENV-'] = self._item.include_environment or self._item.include_environment is None
+            self._data['-COMMAND_SET_WENV-'] = self._item.set_environment_variables or self._item.set_environment_variables is None
             self._data['-CHECK_EXACT-'] = self._item.match_exact
             self._data['-CHECK_CASE_SENSITIVE-'] = self._item.case_sensitive
             self._data['-CHECK_REGEXP-'] = self._item.match_regular_expression
@@ -154,7 +158,8 @@ class form_CommandTask(form_Task):
             self._data['-COMMAND-'] = ''
             self._data['-COMMAND_ARGS-'] = ''
             self._data['-COMMAND_WORKFOLDER-'] = ''
-            self._data['-COMMAND_KEEP_ENV-'] = False
+            self._data['-COMMAND_KEEP_ENV-'] = True
+            self._data['-COMMAND_SET_WENV-'] = True
             self._data['-CHECK_FOR-'] = UI_OUTCOME_NONE
             self._data['-CHECK_WHAT-'] = UI_EXIT_CODE
             self._data['-CHECK_VALUE-'] = ''
@@ -168,7 +173,8 @@ class form_CommandTask(form_Task):
         self._item.command = normpath(self._data['-COMMAND-'])
         self._item.command_arguments = arg_split(self._data['-COMMAND_ARGS-'])
         self._item.startup_path = normpath(self._data['-COMMAND_WORKFOLDER-'])
-        self._item.include_environment = self._data['-COMMAND_KEEP_ENV-']
+        self._item.include_environment = None if self._data['-COMMAND_KEEP_ENV-'] else False
+        self._item.set_environment_variables = self._data['-COMMAND_SET_WENV-'] if self._data['-COMMAND_SET_WENV-'] else False
         e = {}
         for l in self._envvars:
             e[l[0]] = str(l[1])
@@ -187,30 +193,30 @@ class form_CommandTask(form_Task):
         if check_for != UI_OUTCOME_NONE:
             if check_for == UI_OUTCOME_SUCCESS:
                 if check_what == UI_EXIT_CODE:
-                    self._item.success_status = int(self._data['-CHECK_VALUE-'])
+                    self._item.success_status = int(self._data['-CHECK_VALUE-']) if self._data['-CHECK_VALUE-'] != '' else None
                 elif check_what == UI_STREAM_STDOUT:
-                    self._item.success_stdout = str(self._data['-CHECK_VALUE-'])
-                    self._item.match_exact = bool(self._data['-CHECK_EXACT-'])
-                    self._item.match_regular_expression = bool(self._data['-CHECK_REGEXP-'])
-                    self._item.case_sensitive = bool(self._data['-CHECK_CASE_SENSITIVE-'])
+                    self._item.success_stdout = str(self._data['-CHECK_VALUE-']) or None
+                    self._item.match_exact = bool(self._data['-CHECK_EXACT-']) or None
+                    self._item.match_regular_expression = bool(self._data['-CHECK_REGEXP-']) or None
+                    self._item.case_sensitive = bool(self._data['-CHECK_CASE_SENSITIVE-']) or None
                 elif check_what == UI_STREAM_STDERR:
-                    self._item.success_stderr = str(self._data['-CHECK_VALUE-'])
-                    self._item.match_exact = bool(self._data['-CHECK_EXACT-'])
-                    self._item.match_regular_expression = bool(self._data['-CHECK_REGEXP-'])
-                    self._item.case_sensitive = bool(self._data['-CHECK_CASE_SENSITIVE-'])
+                    self._item.success_stderr = str(self._data['-CHECK_VALUE-']) or None
+                    self._item.match_exact = bool(self._data['-CHECK_EXACT-']) or None
+                    self._item.match_regular_expression = bool(self._data['-CHECK_REGEXP-']) or None
+                    self._item.case_sensitive = bool(self._data['-CHECK_CASE_SENSITIVE-']) or None
             elif check_for == UI_OUTCOME_FAILURE:
                 if check_what == UI_EXIT_CODE:
-                    self._item.failure_status = int(self._data['-CHECK_VALUE-'])
+                    self._item.failure_status = int(self._data['-CHECK_VALUE-']) if self._data['-CHECK_VALUE-'] != '' else None
                 elif check_what == UI_STREAM_STDOUT:
-                    self._item.failure_stdout = str(self._data['-CHECK_VALUE-'])
-                    self._item.match_exact = bool(self._data['-CHECK_EXACT-'])
-                    self._item.match_regular_expression = bool(self._data['-CHECK_REGEXP-'])
-                    self._item.case_sensitive = bool(self._data['-CHECK_CASE_SENSITIVE-'])
+                    self._item.failure_stdout = str(self._data['-CHECK_VALUE-']) or None
+                    self._item.match_exact = bool(self._data['-CHECK_EXACT-']) or None
+                    self._item.match_regular_expression = bool(self._data['-CHECK_REGEXP-']) or None
+                    self._item.case_sensitive = bool(self._data['-CHECK_CASE_SENSITIVE-']) or None
                 elif check_what == UI_STREAM_STDERR:
-                    self._item.failure_stderr = str(self._data['-CHECK_VALUE-'])
-                    self._item.match_exact = bool(self._data['-CHECK_EXACT-'])
-                    self._item.match_regular_expression = bool(self._data['-CHECK_REGEXP-'])
-                    self._item.case_sensitive = bool(self._data['-CHECK_CASE_SENSITIVE-'])
+                    self._item.failure_stderr = str(self._data['-CHECK_VALUE-']) or None
+                    self._item.match_exact = bool(self._data['-CHECK_EXACT-']) or None
+                    self._item.match_regular_expression = bool(self._data['-CHECK_REGEXP-']) or None
+                    self._item.case_sensitive = bool(self._data['-CHECK_CASE_SENSITIVE-']) or None
 
     def process_event(self, event, values):
         ret = super().process_event(event, values)
