@@ -211,8 +211,6 @@ class form_Condition(object):
             if self._data['-TASKS_AVAILABLE-']:
                 self._item.tasks = list(x for x in self._item.tasks if x != self._data['-TASKS_AVAILABLE-'])
                 self._data['-TASKS-'] = self._item.tasks.copy()
-                if not self._item.tasks:
-                    self._item.tasks = None
         elif event == '-TASKS-+-dblclick-':
             self._data['-TASKS_AVAILABLE-'] = values['-TASKS-'][0]
         return None

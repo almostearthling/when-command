@@ -38,11 +38,7 @@ class Condition(object):
             self.break_on_success = t.get('break_on_success', False)
             self.suspended = t.get('suspended', False)
             self.recurring = t.get('recurring', False)
-            tasks = t.get('tasks')
-            if tasks:
-                self.tasks = list(tasks)
-            else:
-                self.tasks = None
+            self.tasks = t.get('tasks')
             tags = t.get('tags')
             if tags:
                 self.tags = dict(tags)
@@ -55,7 +51,7 @@ class Condition(object):
             self.break_on_failure = None
             self.break_on_success = None
             self.suspended = None
-            self.tasks = None
+            self.tasks = []
             self.tags = None
 
     def __str__(self):
