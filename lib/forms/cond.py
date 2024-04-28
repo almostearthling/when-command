@@ -136,15 +136,12 @@ class form_Condition(object):
 
     def _updateitem(self):
         self._item.name = self._data['-NAME-']
-        self._item.recurring = self._data['-RECURRING-']
-        self._item.suspended = self._data['-SUSPENDED-']
+        self._item.recurring = self._data['-RECURRING-'] or None
+        self._item.suspended = self._data['-SUSPENDED-'] or None
         self._item.break_on_failure = self._data['-BREAK_ON_FAILURE-'] or None
         self._item.break_on_success = self._data['-BREAK_ON_SUCCESS-'] or None
-        self._item.execute_sequence = self._data['-EXEC_SEQUENCE-']
-        if self._data['-TASKS-']:
-            self._item.tasks = self._data['-TASKS-'].copy()
-        else:
-            self._item.tasks = []
+        self._item.execute_sequence = self._data['-EXEC_SEQUENCE-'] if not self._data['-EXEC_SEQUENCE-'] else None
+        self._item.tasks = self._data['-TASKS-'].copy()
 
 
     # list of keys of elements that should not be updated

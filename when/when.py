@@ -28,7 +28,7 @@ def exiterror(s, code=2):
 
 
 # main program: it actually perform CLI parsing
-if __name__ == '__main__':
+def main():
 
     default_appdata = get_default_configdir()
     default_whenever = shutil.which('whenever')
@@ -134,6 +134,11 @@ if __name__ == '__main__':
 
     else:
         exiterror("unknown command: %s" % command)
+
+
+# standard startup
+if __name__ == '__main__':
+    main()
 
 
 # end
