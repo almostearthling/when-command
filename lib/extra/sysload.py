@@ -1,10 +1,12 @@
-# sysloadlow condition module
+# sysload condition module
 #
 # use a command to check whether the system load is low: it uses
 # - vmstat on Linux
 # - (Get-CimInstance -Class Win32_Processor).LoadPercentage on Windows
 #
 # for now no availability on Mac
+#
+# This module serves as a template for possible other extra modules.
 
 # this header is common to all extra modules
 from lib.i18n.strings import *
@@ -28,7 +30,7 @@ import shutil
 # resource strings (not internationalized)
 ITEM_COND_SYSLOAD = "System Load Below Treshold Condition"
 
-_UI_TITLE_SYSLOAD = "%s: System Load Condition Editor"
+_UI_TITLE_SYSLOAD = "%s: System Load Condition Editor" % UI_APP
 _UI_FORM_SYSLOAD = "System Load"
 _UI_FORM_SYSLOADTRESHOLD_SC = "Load is Below:"
 
@@ -37,7 +39,7 @@ _UI_FORM_SYSLOADTRESHOLD_SC = "Load is Below:"
 _DEFAULT_LOW_LOAD_PERC = 3
 
 
-# check for availability: for now only check platform
+# check for availability: in this case check all needed commands
 def _available():
     if sys.platform == 'win32':
         if shutil.which("pwsh.exe"):
@@ -51,16 +53,23 @@ def _available():
         return False
 
 
-# specific item is derived from the actual parent item
+
+# the specific item is derived from the actual parent item
 class SystemLoadCondition(CommandCondition):
 
-    # availability at class level
+    # availability at class level: these variables *MUST* be set for all items
+    item_type = 'command'
+    item_subtype = 'sysload'
+    item_hrtype = ITEM_COND_SYSLOAD
     available = _available()
 
     def __init__(self, t: items.Table=None) -> None:
+        # first initialize the base class
         CommandCondition.__init__(self, t)
-        self.subtype = 'sysload'
-        self.hrtype = ITEM_COND_SYSLOAD
+        # then set type (same as base), subtype and human readable name
+        self.type = self.item_type
+        self.subtype = self.item_subtype
+        self.hrtype = self.item_hrtype
         if t:
             assert(t.get('type') == self.type)
             self.tags = t.get('tags')
@@ -110,7 +119,7 @@ class form_SystemLoadCondition(form_Condition):
         extra_layout = _form_layout()
         form_Condition.__init__(self, _UI_TITLE_SYSLOAD, tasks_available, extra_layout, item)
         self.add_checks(
-            ('-TRESHOLD-', UI_FORM_IDLEDURATION, lambda x: 0 < int(x) < 100),
+            ('-TRESHOLD-', _UI_FORM_SYSLOADTRESHOLD_SC, lambda x: 0 < int(x) < 100),
         )
 
     def _updatedata(self):
@@ -127,8 +136,11 @@ class form_SystemLoadCondition(form_Condition):
         else:
             self._item.tags['treshold'] = None
 
-    def process_event(self, event, values):
-        return super().process_event(event, values)
+
+
+# function common to all extra modules to declare class items as factories
+def factories():
+    return (SystemLoadCondition, form_SystemLoadCondition)
 
 
 # end.

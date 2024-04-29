@@ -33,6 +33,11 @@ from lib.items.event_cli import CommandEvent
 from lib.items.event_dbus import DBusEvent
 from lib.items.event_fschange import FilesystemChangeEvent
 
+# to dynamically determine nature of extra items
+from lib.items.task import Task
+from lib.items.cond import Condition
+from lib.items.event import Event
+
 
 # extra modules
 from lib.extra.sysload import SystemLoadCondition, form_SystemLoadCondition, ITEM_COND_SYSLOAD
@@ -66,27 +71,45 @@ from lib.extra.sysload import SystemLoadCondition, form_SystemLoadCondition, ITE
 # form identifiers); the <spec> part is optional, omitted for items that are
 # native to **whenever**.
 ALL_AVAILABLE_ITEMS = [
-    # signature                     hr name                 form                        item
-    ('task:command',                ITEM_TASK_COMMAND,      form_CommandTask,           CommandTask),
-    ('task:lua',                    ITEM_TASK_LUA,          form_LuaScriptTask,         LuaScriptTask),
+    # signature                     hr name                             form                        item
+    ('task:command',                ITEM_TASK_COMMAND,                  form_CommandTask,           CommandTask),
+    ('task:lua',                    ITEM_TASK_LUA,                      form_LuaScriptTask,         LuaScriptTask),
 
-    ('cond:command',                ITEM_COND_COMMAND,      form_CommandCondition,      CommandCondition),
-    ('cond:dbus',                   ITEM_COND_DBUS,         form_DBusCondition,         DBusCondition),
-    ('cond:event',                  ITEM_COND_EVENT,        form_EventCondition,        EventCondition),
-    ('cond:idle',                   ITEM_COND_IDLE,         form_IdleCondition,         IdleCondition),
-    ('cond:interval',               ITEM_COND_INTERVAL,     form_IntervalCondition,     IntervalCondition),
-    ('cond:lua',                    ITEM_COND_LUA,          form_LuaScriptCondition,    LuaScriptCondition),
-    ('cond:time',                   ITEM_COND_TIME,         form_TimeCondition,         TimeCondition),
+    ('cond:command',                ITEM_COND_COMMAND,                  form_CommandCondition,      CommandCondition),
+    ('cond:dbus',                   ITEM_COND_DBUS,                     form_DBusCondition,         DBusCondition),
+    ('cond:event',                  ITEM_COND_EVENT,                    form_EventCondition,        EventCondition),
+    ('cond:idle',                   ITEM_COND_IDLE,                     form_IdleCondition,         IdleCondition),
+    ('cond:interval',               ITEM_COND_INTERVAL,                 form_IntervalCondition,     IntervalCondition),
+    ('cond:lua',                    ITEM_COND_LUA,                      form_LuaScriptCondition,    LuaScriptCondition),
+    ('cond:time',                   ITEM_COND_TIME,                     form_TimeCondition,         TimeCondition),
 
-    ('event:cli',                   ITEM_EVENT_CLI,         form_CommandEvent,          CommandEvent),
-    ('event:dbus',                  ITEM_EVENT_DBUS,        form_DBusEvent,             DBusEvent),
-    ('event:fschange',              ITEM_EVENT_FSCHANGE,    form_FilesystemChangeEvent, FilesystemChangeEvent),
+    ('event:cli',                   ITEM_EVENT_CLI,                     form_CommandEvent,          CommandEvent),
+    ('event:dbus',                  ITEM_EVENT_DBUS,                    form_DBusEvent,             DBusEvent),
+    ('event:fschange',              ITEM_EVENT_FSCHANGE,                form_FilesystemChangeEvent, FilesystemChangeEvent),
     
     # extra modules
-    ('cond:command:sysload',        ITEM_COND_SYSLOAD,      form_SystemLoadCondition,   SystemLoadCondition),
+    # ('cond:command:sysload',        SystemLoadCondition.hrtype,         form_SystemLoadCondition,   SystemLoadCondition),
     
     # ...
 ]
+
+
+# dynamically load modules from the `extra` package
+from lib import extra
+
+for m in extra.factories:
+    item_class, item_form = extra.factories[m]
+    if issubclass(item_class, Task):
+        prefix = 'task'
+    elif issubclass(item_class, Condition):
+        prefix = 'cond'
+    elif issubclass(item_class, Event):
+        prefix = 'event'
+    else:
+        prefix = None
+    if prefix:
+        signature = '%s:%s:%s' % (prefix, item_class.item_type, item_class.item_subtype)
+        ALL_AVAILABLE_ITEMS.append((signature, item_class.item_hrtype, item_form, item_class))
 
 
 # a dictionary version of the above list

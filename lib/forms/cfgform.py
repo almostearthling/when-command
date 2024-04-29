@@ -317,7 +317,7 @@ class form_Config(object):
                     if sg.popup_yes_no(UI_POPUP_DELETEITEM_Q, title=UI_POPUP_T_CONFIRM, icon=QMARK_ICON).upper() == 'YES':
                         item_row = self._itemlistentries[t[0]]
                         item_name = item_row[0]
-                        item_type, item_sub = item_row[2].split(':')
+                        item_type, _ = item_row[2].split(':', 1)
                         if item_type == 'task':
                             referenced = False
                             for _, v in self._conditions.items():
@@ -328,7 +328,7 @@ class form_Config(object):
                                 del self._tasks[item_name]
                             else:
                                 sg.popup(UI_POPUP_REFERENCEDTASK, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
-                        elif item_type == 'condition':
+                        elif item_type == 'cond':
                             referenced = False
                             for _, v in self._events.items():
                                 if item_name == v.condition:
