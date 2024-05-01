@@ -4,13 +4,11 @@ This document describes the new version of **When**, a Python-based automation t
 
 This is still in its early development stage and still contains a lot of bugs and errors, yet it is capable of running **whenever** in the background and to control it via an icon in the system tray, create and edit a simple configuration file, capture the log and display a history window. All of this trying to mimic the behaviour of the old, _Ubuntu 16-to-18_ based **When** tool, which is entirely Python based and is now not actively developed anymore because of the difficulty of adapting all needed DBus signals and checks to the ever-changing interface of the various Linux distributions.
 
-![MainWindow](support/docs/graphics/when-config-main.png)
+![MainWindow](support/docs/graphics/when-application.png)
 
 Most of the interface of this release of **When** tries to be similar to the old version, although the need for cross-platform components pushes towards the adoption of the most diffused GUI library for Python, that is [tkinter](https://docs.python.org/3/library/tkinter.html).
 
-![EditCmdCond](support/docs/graphics/when-config-cmdcond.png)
-
-The documenttion is still underway, and the features are reduced compared to the old version of **When**. However the design of this new version is modular, and the design of **whenever** allows for the maximum flexibility in term of definitions of tasks, conditions, and events, so that new types of _usable_ events can be defined along with the forms to edit them easily and write a well-formed configuration file.
+The [documentation](support/docs/main.md) is still underway, and the features are reduced compared to recent releases of the old version of **When**. However the structure of this new version is modular, and the design of **whenever** allows for the maximum flexibility in term of definitions of tasks, conditions, and events, so that new types of _usable_ events can be defined along with the forms to edit them easily and write a well-formed configuration file.
 
 For the moment this version of **When** is not much more than a proof-of-concept. Still, the application may show a lot of problems due to lack of targeted exception handling, and genericity of checks on correctness of values entered via the UI. The UI itself is far from being really usable: reactions to common gestures such as double clicks are not respected and sometimes inconsistently handled, and some usual graphic elements (pop-up boxes, buttons, and so on) are still incomplete and not consistent with the rest of the application. Graphic widgets, which are sometimes helpful within the forms, are for now either primitive or absent.
 
