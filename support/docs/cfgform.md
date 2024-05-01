@@ -19,7 +19,7 @@ By clicking the _New..._ button, a dialog will pop up asking which type of item 
 
 ## Remove Items
 
-Just clicking the _Remove_ button after selecting the item that has to be delete will actually remove it from the configuration file, obviously after prompting for confirmation.
+Just clicking the _Remove_ button after selecting the item that has to be deleted will actually remove it from the configuration file, obviously after prompting for confirmation.
 
 
 ## Scheduler Parameters
