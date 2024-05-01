@@ -71,26 +71,21 @@ from lib.extra.sysload import SystemLoadCondition, form_SystemLoadCondition, ITE
 # form identifiers); the <spec> part is optional, omitted for items that are
 # native to **whenever**.
 ALL_AVAILABLE_ITEMS = [
-    # signature                     hr name                             form                        item
-    ('task:command',                ITEM_TASK_COMMAND,                  form_CommandTask,           CommandTask),
-    ('task:lua',                    ITEM_TASK_LUA,                      form_LuaScriptTask,         LuaScriptTask),
+    # signature        hr name              form                        item
+    ('task:command',   ITEM_TASK_COMMAND,   form_CommandTask,           CommandTask),
+    ('task:lua',       ITEM_TASK_LUA,       form_LuaScriptTask,         LuaScriptTask),
 
-    ('cond:command',                ITEM_COND_COMMAND,                  form_CommandCondition,      CommandCondition),
-    ('cond:dbus',                   ITEM_COND_DBUS,                     form_DBusCondition,         DBusCondition),
-    ('cond:event',                  ITEM_COND_EVENT,                    form_EventCondition,        EventCondition),
-    ('cond:idle',                   ITEM_COND_IDLE,                     form_IdleCondition,         IdleCondition),
-    ('cond:interval',               ITEM_COND_INTERVAL,                 form_IntervalCondition,     IntervalCondition),
-    ('cond:lua',                    ITEM_COND_LUA,                      form_LuaScriptCondition,    LuaScriptCondition),
-    ('cond:time',                   ITEM_COND_TIME,                     form_TimeCondition,         TimeCondition),
+    ('cond:command',   ITEM_COND_COMMAND,   form_CommandCondition,      CommandCondition),
+    ('cond:dbus',      ITEM_COND_DBUS,      form_DBusCondition,         DBusCondition),
+    ('cond:event',     ITEM_COND_EVENT,     form_EventCondition,        EventCondition),
+    ('cond:idle',      ITEM_COND_IDLE,      form_IdleCondition,         IdleCondition),
+    ('cond:interval',  ITEM_COND_INTERVAL,  form_IntervalCondition,     IntervalCondition),
+    ('cond:lua',       ITEM_COND_LUA,       form_LuaScriptCondition,    LuaScriptCondition),
+    ('cond:time',      ITEM_COND_TIME,      form_TimeCondition,         TimeCondition),
 
-    ('event:cli',                   ITEM_EVENT_CLI,                     form_CommandEvent,          CommandEvent),
-    ('event:dbus',                  ITEM_EVENT_DBUS,                    form_DBusEvent,             DBusEvent),
-    ('event:fschange',              ITEM_EVENT_FSCHANGE,                form_FilesystemChangeEvent, FilesystemChangeEvent),
-    
-    # extra modules
-    # ('cond:command:sysload',        SystemLoadCondition.hrtype,         form_SystemLoadCondition,   SystemLoadCondition),
-    
-    # ...
+    ('event:cli',      ITEM_EVENT_CLI,      form_CommandEvent,          CommandEvent),
+    ('event:dbus',     ITEM_EVENT_DBUS,     form_DBusEvent,             DBusEvent),
+    ('event:fschange', ITEM_EVENT_FSCHANGE, form_FilesystemChangeEvent, FilesystemChangeEvent),
 ]
 
 
