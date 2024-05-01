@@ -90,6 +90,7 @@ class SystemLoadCondition(CommandCondition):
             ]
             self.startup_path = "."
             self.success_stdout = "OK"
+            self.check_after = 60       # for now keep it fixed to one minute
         elif sys.platform == 'linux':
             self.command = "bash"
             self.command_arguments = [
@@ -98,6 +99,7 @@ class SystemLoadCondition(CommandCondition):
             ]
             self.startup_path = "."
             self.success_stdout = "1"
+            self.check_after = 60       # for now keep it fixed to one minute
 
 
 # the specialized form is directly derived from the generic condition form

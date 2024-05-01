@@ -83,20 +83,24 @@ def _form_layout():
         [sg.Frame(UI_FORM_CHECKS, [[
                 sg.Column([
                     [ sg.T(UI_FORM_CHECKFOR_SC) ],
-                    [ sg.Combo([UI_OUTCOME_NONE, UI_OUTCOME_SUCCESS, UI_OUTCOME_FAILURE], key='-CHECK_FOR-', default_value=UI_OUTCOME_NONE, readonly=True) ]
+                    [ sg.Combo([UI_OUTCOME_SUCCESS, UI_OUTCOME_FAILURE], key='-CHECK_FOR-', default_value=UI_OUTCOME_SUCCESS, readonly=True) ]
                 ], vertical_alignment='top'),
                 sg.Column([
                     [ sg.T(UI_FORM_TESTVAL) ],
                     [
                         sg.Combo([UI_EXIT_CODE, UI_STREAM_STDOUT, UI_STREAM_STDERR], key='-CHECK_WHAT-', default_value=UI_EXIT_CODE, readonly=True),
-                        sg.I(key='-CHECK_VALUE-', expand_x=True),
+                        sg.I(key='-CHECK_VALUE-', expand_x=True, default_text="0"),
                     ],
                     [
                         sg.CB(UI_FORM_MATCHEXACT, key='-CHECK_EXACT-'),
                         sg.CB(UI_FORM_CASESENSITIVE, key='-CHECK_CASE_SENSITIVE-'),
                         sg.CB(UI_FORM_MATCHREGEXP, key='-CHECK_REGEXP-'),
                     ],
-                ], expand_x=True)
+                ], expand_x=True),
+                sg.Column([
+                    [ sg.T(UI_FORM_TIMEOUTSECS_SC) ],
+                    [ sg.I(key='-TIMEOUT-', size=10) ],
+                ], vertical_alignment='top'),
         ]], expand_x=True) ],
     ]
 
@@ -117,6 +121,7 @@ class form_CommandCondition(form_Condition):
             ('-COMMAND-', UI_FORM_COMMAND_SC, _is_command),
             ('-COMMAND_WORKFOLDER-', UI_FORM_STARTUPPATH_SC, _is_dir),
             ('-CHECK_AFTER-', UI_FORM_EXTRADELAYSPEC, lambda x: x == '' or int(x) > 0),
+            ('-TIMEOUT-', UI_FORM_TIMEOUTSECS_SC, lambda x: x == '' or int(x) > 0),
         )
 
     def _updatedata(self):
@@ -133,6 +138,7 @@ class form_CommandCondition(form_Condition):
             self._data['-CHECK_EXACT-'] = self._item.match_exact
             self._data['-CHECK_CASE_SENSITIVE-'] = self._item.case_sensitive
             self._data['-CHECK_REGEXP-'] = self._item.match_regular_expression
+            self._data['-TIMEOUT-'] = self._item.timeout_seconds
             check_for = UI_OUTCOME_NONE
             check_what = UI_EXIT_CODE
             check_value = ''
@@ -186,12 +192,13 @@ class form_CommandCondition(form_Condition):
             self._data['-COMMAND_WORKFOLDER-'] = ''
             self._data['-COMMAND_KEEP_ENV-'] = True
             self._data['-COMMAND_SET_WENV-'] = True
-            self._data['-CHECK_FOR-'] = UI_OUTCOME_NONE
+            self._data['-CHECK_FOR-'] = UI_OUTCOME_SUCCESS
             self._data['-CHECK_WHAT-'] = UI_EXIT_CODE
-            self._data['-CHECK_VALUE-'] = ''
+            self._data['-CHECK_VALUE-'] = '0'
             self._data['-CHECK_EXACT-'] = False
             self._data['-CHECK_CASE_SENSITIVE-'] = False
             self._data['-CHECK_REGEXP-'] = False
+            self._data['-TIMEOUT-'] = ''
             self._data['-COMMAND_ENVVARS-'] = []
             self._data['-CHECK_AFTER-'] = None
             self._data['-CHECK_AFTER_UNIT-'] = UI_TIME_SECONDS
@@ -216,6 +223,7 @@ class form_CommandCondition(form_Condition):
         self._item.match_exact = None
         self._item.match_regular_expression = None
         self._item.case_sensitive = None
+        self._item.timeout_seconds = self._data['-TIMEOUT-'] or None
         check_for = self._data['-CHECK_FOR-']
         check_what = self._data['-CHECK_WHAT-']
         if check_for != UI_OUTCOME_NONE:

@@ -163,6 +163,13 @@ class Wrapper(object):
         self._thread = threading.Thread(target=_logreader, args=[self])
         self._running = True
         self._thread.start()
+        sleep_seconds = _MSECS_BETWEEN_READS / 1000.0
+        time.sleep(sleep_seconds)
+        if self._pipe.poll() is not None:
+            self._thread.join()
+            for line in iter(self._pipe.stdout.readline, ""):
+                self.process_output(line.strip())
+            return False
         return True
 
 

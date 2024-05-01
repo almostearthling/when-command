@@ -121,7 +121,8 @@ def main():
     )
 
     # start a _secondary_ thread to run **whenever** and read its stdout
-    wrapper.start()
+    if not wrapper.start():
+        raise Exception("could not launch the scheduler")
 
     # show the tray icon
     tray.run()
