@@ -5,11 +5,11 @@ The condition items described in this section depend on time checking, therefore
 
 ## Interval
 
-Interval based conditions are possibily te simplest ones: verification depends on the passing of a certain amount of time since the start of the scheduler. In combination with the _recurring_ flag (in the common section) leads to _periodic_ conditions, that is, verifiyng every time the specified interval passes.
+Interval based conditions are possibly the simplest ones: verification depends on the passing of a certain amount of time since the start of the scheduler. In combination with the _recurring_ flag (in the common section) leads to _periodic_ conditions, that is, occurring every time the specified interval passes.
 
 ![WhenCondInterval](graphics/when-cond-interval.png)
 
-The only available parameter is the _interval duration_, that may be specified in seconds, minutes, and hours.
+The only available parameter is the _interval duration_, that may be specified in seconds, minutes, or hours.
 
 
 ## Time Specification
@@ -29,4 +29,9 @@ This condition occurs after a certain time has passed since there was any type o
 
 ![WhenCondIdle](graphics/when-cond-idle.png)
 
-The only available parameter is the _duration of the idle session_, that may be specified in seconds, minutes, and hours. In this case specifying the condition as _recurring_ will cause it to occur again if the session exits its idle state first, and then returns idle for the same amount of time.
+The only available parameter is the _duration of the idle session_, that may be specified in seconds, minutes, or hours. In this case specifying the condition as _recurring_ will cause it to occur again if the session exits its idle state first, and then returns idle for the same amount of time.
+
+> **Note**: formally _Wayland_ based Linux desktops are supported by **whenever** and therefore by **When**. However, due to the lack of _X.org_ libraries, the **whenever** binary must be specifically built for these platforms: these binaries calculate the _idle time_ as the time spent when the session is _locked_ instead of considering the last time that an user interacted with the desktop. The provided binary distributions actually support _X.org_ based desktops.
+
+
+[`◀ Conditions`](conditions.md)

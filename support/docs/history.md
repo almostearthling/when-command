@@ -4,7 +4,7 @@ This simple dialog shows the tasks that have been executed by the scheduler in r
 
 ![HistoryBox](graphics/when-history.png)
 
-The list, representing the last run tasks in descending time order (that is, the first row shows the last task), shows the following information about tasks:
+The list, representing the last completed tasks in descending time order (that is, the first row shows the most recent task), shows the following information:
 
 * _Time_: the time at which the task started running
 * _Task_: the name of the executed task
@@ -14,3 +14,6 @@ The list, representing the last run tasks in descending time order (that is, the
 * _Message_: additional information provided by **whenever**
 
 The history box does not capture results in real time, it just displays the results at the time of its display. Only the latest 100 results are displayed -- this might become a configurable parameter in further versions.
+
+
+[`◀ Main`](main.md)

@@ -29,7 +29,7 @@ The two global scheduler related parameters that are avaiable through this form 
 * _Tick Interval_: the amount of seconds that the scheduler will wait between subsequent checks that the defined, active conditions are verified: the default value is 5 seconds, which is actually frequent enough to ensure a quick reaction to external events;
 * _Randomize Checks Within Ticks_: whether or not the actual execution of tests for each condition (excluding those that strictly depend on time) have to be performed at random instants within the tick interval or at the exact time when the interval has actually passed.
 
-The second option, if checked, allows the scheduler to try to run tests for different conditions randomly during the whole duration of the interval between ticks. This allows to avoid running all the condition tests at the same time, which could in certain cases cause a significant load on the local machine. Unless there are specific reasons not to, it is advisable to check this option.
+The second option, if checked, allows the scheduler to try to run tests for different conditions at a random instant within the interval between ticks. This allows to avoid running all the condition tests at the same time, which could in certain cases cause a significant load on the local machine. Unless there are specific reasons not to, it is advisable to check this option.
 
 
 ## Application Data
@@ -54,3 +54,6 @@ However, it might be more useful _not_ to specify a custom _APPDATA_ directory u
 The _Exit_ button has different behaviours depending on how the main configuration form was entered: if a configuration-only session was launched using the `config` command, then the button allows for completely leaving the application. If the form was launched through the _Configurator..._ entry in the system tray menu, the resident part of **When** remains active, and only the configuration utility is exited. Please note that writing a new configuration file will not cause the main scheduler to automatically reload it.
 
 Also note that, if anything had changed since the configuration file was last saved, the configuration form will ask anyway to save it again -- no matter whether it had been launched via the `config` command or via the system tray menu.
+
+
+[`◀ Main`](main.md)
