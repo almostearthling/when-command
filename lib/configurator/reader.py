@@ -22,45 +22,48 @@ def read_whenever_config(filename):
         'scheduler_tick_seconds': doc.get('scheduler_tick_seconds', 5),
         'randomize_checks_within_ticks': doc.get('randomize_checks_within_ticks', False),
     }
-    for item_table in doc['task']:
-        signature = 'task:%s' % item_table['type']
-        tags = item_table.get('tags')
-        if tags:
-            signature = '%s:%s' % (signature, tags['subtype'])
-        t = ALL_AVAILABLE_ITEMS_D.get(signature)
-        if t:
-            factory = t[2]
-            item = factory(item_table)
-        else:
-            item = None
-        if item:
-            res_tasks.append(item)
-    for item_table in doc['condition']:
-        signature = 'cond:%s' % item_table['type']
-        tags = item_table.get('tags')
-        if tags:
-            signature = '%s:%s' % (signature, tags['subtype'])
-        t = ALL_AVAILABLE_ITEMS_D.get(signature)
-        if t:
-            factory = t[2]
-            item = factory(item_table)
-        else:
-            item = None
-        if item:
-            res_conditions.append(item)
-    for item_table in doc['event']:
-        signature = 'event:%s' % item_table['type']
-        tags = item_table.get('tags')
-        if tags:
-            signature = '%s:%s' % (signature, tags['subtype'])
-        t = ALL_AVAILABLE_ITEMS_D.get(signature)
-        if t:
-            factory = t[2]
-            item = factory(item_table)
-        else:
-            item = None
-        if item:
-            res_events.append(item)
+    if 'task' in doc:
+        for item_table in doc['task']:
+            signature = 'task:%s' % item_table['type']
+            tags = item_table.get('tags')
+            if tags:
+                signature = '%s:%s' % (signature, tags['subtype'])
+            t = ALL_AVAILABLE_ITEMS_D.get(signature)
+            if t:
+                factory = t[2]
+                item = factory(item_table)
+            else:
+                item = None
+            if item:
+                res_tasks.append(item)
+    if 'condition' in doc:
+        for item_table in doc['condition']:
+            signature = 'cond:%s' % item_table['type']
+            tags = item_table.get('tags')
+            if tags:
+                signature = '%s:%s' % (signature, tags['subtype'])
+            t = ALL_AVAILABLE_ITEMS_D.get(signature)
+            if t:
+                factory = t[2]
+                item = factory(item_table)
+            else:
+                item = None
+            if item:
+                res_conditions.append(item)
+    if 'event' in doc:
+        for item_table in doc['event']:
+            signature = 'event:%s' % item_table['type']
+            tags = item_table.get('tags')
+            if tags:
+                signature = '%s:%s' % (signature, tags['subtype'])
+            t = ALL_AVAILABLE_ITEMS_D.get(signature)
+            if t:
+                factory = t[2]
+                item = factory(item_table)
+            else:
+                item = None
+            if item:
+                res_events.append(item)
     return (res_tasks, res_conditions, res_events, res_globals)
 
 
