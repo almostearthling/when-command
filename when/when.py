@@ -13,7 +13,7 @@ if not BASEDIR:
     BASEDIR = '.'
 sys.path.append(BASEDIR)
 
-from lib.utility import get_default_configdir, get_configfile, set_UI_theme
+from lib.utility import get_default_configdir, get_configfile, set_UI_theme, is_whenever_running
 from lib.repocfg import AppConfig
 
 
@@ -86,8 +86,8 @@ def main():
 
     # open the configuration utility and exit after its use
     elif command == 'config':
+        set_UI_theme()
         if DEBUG:
-            set_UI_theme()
             configfile = get_configfile()
             if not os.path.exists(configfile):
                 try:
@@ -99,7 +99,6 @@ def main():
             main()
         else:
             try:
-                set_UI_theme()
                 configfile = get_configfile()
                 if not os.path.exists(configfile):
                     try:
@@ -114,8 +113,10 @@ def main():
 
     # start the resident application and display an icon on the tray area
     elif command == 'start':
+        if is_whenever_running():
+            exiterror(CLI_ERR_ALREADY_RUNNING)
+        set_UI_theme()
         if DEBUG:
-            set_UI_theme()
             whenever = AppConfig.get('WHENEVER')
             if whenever is None or not os.path.exists(whenever) or not os.access(whenever, os.X_OK):
                 exiterror(CLI_ERR_WHENEVER_NOT_FOUND)
@@ -123,7 +124,6 @@ def main():
             main()
         else:
             try:
-                set_UI_theme()
                 whenever = AppConfig.get('WHENEVER')
                 if whenever is None or not os.path.exists(whenever) or not os.access(whenever, os.X_OK):
                     exiterror(CLI_ERR_WHENEVER_NOT_FOUND)

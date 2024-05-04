@@ -304,6 +304,7 @@ CLI_ARG_HELP_WHENEVER = "Path to a specific `whenever` executable"
 CLI_ERR_WHENEVER_NOT_FOUND = "Executable for `whenever` not found or invalid"
 CLI_ERR_DATADIR_UNACCESSIBLE = "The data directory could neither be found nor created"
 CLI_ERR_CONFIG_UNACCESSIBLE = "The `whenever` configuration file could neither be found nor created"
+CLI_ERR_ALREADY_RUNNING = "Another instance of the scheduler is running: cannot start"
 
 
 # end.

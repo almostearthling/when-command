@@ -106,6 +106,25 @@ def get_whenever_version():
         return None
 
 
+# check whether the scheduler is running
+def is_whenever_running():
+    whenever_path = AppConfig.get('WHENEVER')
+    result = subprocess.run(
+        [whenever_path, '--check-running', '--quiet'],
+        stdout = subprocess.PIPE,
+        stderr = subprocess.PIPE,
+        universal_newlines = True,
+        text=True,
+    )
+    if result:
+        if result.returncode == 0:
+            return True
+        else:
+            return False
+    else:
+        return None
+
+
 # return the configuration file path
 def get_configfile():
     basename = "%s.toml" % AppConfig.get('CFGNAME').lower()
