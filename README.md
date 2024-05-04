@@ -18,7 +18,7 @@ For the moment this version of **When** is not much more than a proof-of-concept
 This version of **When** uses [poetry](https://python-poetry.org/): after running `poetry install` in the project directory to install all necessary Python dependencies, **When** can be launched as follows:
 
 ```shell
-when COMMAND [OPTIONS]
+poetry run when COMMAND [OPTIONS]
 ```
 
 where `COMMAND` is one of the following:
@@ -36,7 +36,7 @@ More commands might be supported in the future. `OPTIONS` are the possible optio
 
 **NOTE**: For now **When** runs in _debug mode_, this means that it will sport a green-ish window style, will not catch exceptions, and will use a _DEBUG_ suffix for the application data directory. This behaviour can be modified by setting `'DEBUG': False` in the instantiation of `AppConfig` in _lib/repocfg.py_, instead of the current `True` value. This is useful when testing the application when an existing instance of **whenever** is running in production mode, possibly using the **whenever_tray** utility that normally shares the application dataa directory with **When** (starting with release 0.1.6). Note that a debug version of **whenever** should be used when a release version is running, because a debug version will not refuse to start sensing that the scheduler is already running. The full path to the desired **whenever** executable can be provided on the command line using the `-W` option.
 
-**When** will be able to act as a wrapper only if a working and recent (not below 0.1.22) version of **whenever** is available, either in the system _PATH_ or specified via the command line interface by using the `-W` switch.
+**When** will be able to act as a wrapper only if a working and recent (not below [0.1.23](https://github.com/almostearthling/whenever/releases/tag/v0.1.23%2Btray0.1.6)) version of **whenever** is available, either in the system _PATH_ or specified via the command line interface by using the `-W` switch.
 
 
 ## Roadmap
@@ -100,6 +100,19 @@ Other features that might be useful:
 - [ ] Reset conditions on wakeups from suspension or hibernation
 
 The resident part of the application should **not** load the configuration utility at startup: it should only be loaded when the appropriate menu entry is selected, and all the modules should be removed from memory after the configuration utility has been left by the user.
+
+
+## Compatibility
+
+**When** has been successfully tested on Windows (10 and 11) and Linux (Debian 12). On Debian 12, however, it does not run OOTB: some additional package are needed, as it does not ship with Tkinter support by default, nor supports the _AppIndicator_ protocol in a Gnome session. Thus both `python3-tk` and `gir1.2-ayatanaappindicator3` need to be installed using the _apt_ package manager. Moreover, on _Wayland_ sessions the UI appears mangled and the graphic elements are actually unusable: it looks like Tkinter only works well in _Xorg_ sessions. Since Gnome does not support indicator icons direcltly, a Gnome shell extension capablle of implementing this protocol has to be installed, such as [AppIndicator and KStatusNotifierItem Support](https://extensions.gnome.org/extension/615/appindicator-support/).
+
+Before starting **When** on Debian 12, and before the `poetry install` step described [above](#usage), the following option needs to be set in order to let the Python virtual environment access all the needed system modules:
+
+```shell
+poetry config virtualenvs.options.system-site-packages false
+```
+
+otherwise Python would not reach the modules needed to display the system tray icon and menu.
 
 
 ## Credits
