@@ -1,50 +1,140 @@
-# When (*when-command*)
-**When** is a configurable user task scheduler for modern Gnome environments. It interacts with the user through a GUI, where the user can define tasks and conditions, as well as relationships of causality that bind conditions to tasks.
+# When
 
-![Screenshot](https://raw.githubusercontent.com/almostearthling/when-command-docs/master/_static/when_screenshot_part.png)
+This document describes the new version of **When**, a Python-based automation tool for the desktop. This version, instead of incorporating the scheduler, relies on the [**whenever**](https://github.com/almostearthling/whenever) automation tool, which focuses on reliability and lightweightness, while trying to achieve a good performance even when running at low priority. In this sense, **When** acts as a _wrapper_ for **whenever**, both providing a simple interface for configuration and an easy way to control the scheduler via an icon sitting in the tray area of your desktop. This version of **When** aims at being cross-platform, dynamically providing access to the features of **whenever** that are supported on the host environment.
 
-The purpose of this small utility is to provide the user, possibly without administrative credentials, the ability to define conditions that do not only depend on time, but also on particular states of the session, result of commands run in a shell or other events that may occur while the system is being used. The scheduler runs in the background, and displays an indicator applet icon for user interaction.
+This is still in its early development stage and still contains a lot of bugs and errors, yet it is capable of running **whenever** in the background and to control it via an icon in the system tray, create and edit a simple configuration file, capture the log and display a history window. All of this trying to mimic the behaviour of the old, _Ubuntu 16-to-18_ based **When** tool, which is entirely Python based and is now not actively developed anymore because of the difficulty of adapting all needed DBus signals and checks to the ever-changing interface of the various Linux distributions.
 
-It is not generally intended as a replacement to [_cron_](https://en.wikipedia.org/wiki/Cron) and the [Gnome Task Scheduler](http://gnome-schedule.sourceforge.net/), although to some extent these utilities might overlap. **When** is intended to be more flexible, although less precise, and to provide an alternative to more complicated solutions -- such as the implementation of _cron_ jobs that check for a particular condition and execute commands when the condition is verified. In such spirit, **When** is not as fine-grained in terms of doing things on a strict time schedule: the **When** approach is that "_when_ a certain condition is met, _then_ something has to be done". The condition is checked periodically, and the countermeasure is taken _subsequently_ in a relaxed fashion, which means that it might not occur _immediately_ in most cases.
+![MainWindow](support/docs/graphics/when-application.png)
 
-[![Documentation Status](https://readthedocs.org/projects/when-documentation/badge/?version=latest)](http://when-documentation.readthedocs.io/en/latest/?badge=latest)
+Most of the interface of this release of **When** tries to be similar to the old version, although the need for cross-platform components pushes towards the adoption of the most diffused GUI library for Python, that is [tkinter](https://docs.python.org/3/library/tkinter.html).
 
-The complete documentation for **When** can be found online [here](http://when-documentation.readthedocs.io/). Documentation for contributors has a separate [site](http://contributing-to-when.readthedocs.io/).
+The [documentation](support/docs/main.md) is still underway, and the features are reduced compared to recent releases of the old version of **When**. However the structure of this new version is modular, and the design of **whenever** allows for the maximum flexibility in term of definitions of tasks, conditions, and events, so that new types of _usable_ events can be defined along with the forms to edit them easily and write a well-formed configuration file.
 
-## Installation
-Besides manual installation from source as explained in the [documentation](http://when-documentation.readthedocs.io/en/latest/install.html#install-from-the-source), packages suitable for Ubuntu can be found in the [releases](https://github.com/almostearthling/when-command/releases) page. A PPA for Ubuntu is also available: to install from the PPA and get automatic updates, the following commands can be used from a terminal window:
+For the moment this version of **When** is not much more than a proof-of-concept. Still, the application may show problems due to lack of targeted exception handling, and genericity of checks on correctness of values provided via the UI. The UI itself is far from being effective: the semantic of common gestures such as double clicks is not always respected, and some usual graphic elements (pop-up boxes, buttons, and so on) are still incomplete and not consistent with the rest of the application. Graphic widgets, which are sometimes helpful within the forms, are for now either rudimental or absent.
 
+
+## Usage
+
+This version of **When** uses [poetry](https://python-poetry.org/): after running `poetry install` in the project directory to install all necessary Python dependencies, **When** can be launched as follows:
+
+```shell
+poetry run when COMMAND [OPTIONS]
 ```
-$ sudo add-apt-repository ppa:franzg/when-command
-$ sudo apt-get update
-$ sudo apt-get install when-command
+
+where `COMMAND` is one of the following:
+
+- `config` to launch the configuration utility, without staying resident (i.e. no system tray icon)
+- `start` to launch the resident **whenever** wrapper displaying the control icon on the system tray area
+- `version` to display version information.
+
+More commands might be supported in the future. `OPTIONS` are the possible options, some of which are command specific.
+
+- `-D`/`--dir-appdata` _PATH_: specify the application data and configuration directory (default: _%APPDATA%\Whenever_ on Windows, _~/.whenever_ on Linux)
+- `-W`/`--whenever` _PATH_: specify the path to the whenever executable (defaults to the one found in the PATH if any, otherwise exit with error)
+- `-L`/`--log-level` _LEVEL_: specify the log level, all **whenever** levels are supported (default: _info_, specific to `start`)
+- `-h`/`--help`: print help for the specific command
+
+**NOTE**: For now **When** runs in _debug mode_, this means that it will sport a green-ish window style, will not catch exceptions, and will use a _DEBUG_ suffix for the application data directory. This behaviour can be modified by setting `'DEBUG': False` in the instantiation of `AppConfig` in _lib/repocfg.py_, instead of the current `True` value. This is useful when testing the application when an existing instance of **whenever** is running in production mode, possibly using the **whenever_tray** utility that normally shares the application dataa directory with **When** (starting with release 0.1.6). Note that a debug version of **whenever** should be used when a release version is running, because a debug version will not refuse to start sensing that the scheduler is already running. The full path to the desired **whenever** executable can be provided on the command line using the `-W` option.
+
+**When** will be able to act as a wrapper only if a working and recent (not below [0.1.23](https://github.com/almostearthling/whenever/releases/tag/v0.1.23%2Btray0.1.6)) version of **whenever** is available, either in the system _PATH_ or specified via the command line interface by using the `-W` switch.
+
+
+## Roadmap
+
+The first goal is to obtain a fully functional version of this **When** edition, although supporting a minimal set of configuration items -- the ones that were supported at the time of the first launch of the old application. In this first stage of development, the effort will be devoted to amend bugs, enforce checks, handle possible exceptions that might occur in secondary threads and which may cause the application to become unstable, and more in general to make the application consistent in terms of both the user interface and the handling of the **whenever** subprocess, _without_ adding new features. Once the minimal **When** application has reached an almost stable condition, new features (such as specific items and the _tool box_ mentioned below) will be added.
+
+Expectations and fulfillments for this version of **When** follow:
+
+### Editors
+
+Editor forms for the items supported by **whenever**: should behave in a way similar to how the original _When_ used to handle these items. Moreover, a main form is provided to access global configuration parameters and to create new items and edit or delete existing ones.
+
+- [x] Main Form
+- [x] Task: Command
+- [x] Task: _Lua_ Script
+- [x] Condition: Interval
+- [x] Condition: Idle Session
+- [x] Condition: Time
+- [x] Condition: Command
+- [x] Condition: _Lua_ Script
+- [x] Condition: Event (aka Bucket)
+- [x] Event: Filesystem Monitoring
+- [ ] ~~Event: Command Line~~ (implemented but not available)
+
+Specific command/_Lua_ based tasks, command/_Lua_/DBus based conditions, DBus based events should be supported to mimic the old **When** behaviour:
+
+- [ ] Task: Shut down the system
+- [ ] Task: Lock the system
+- [ ] Condition: Startup and Shutdown
+- [ ] Condition: Suspend and Resume
+- [ ] Condition: Session Lock and Unlock
+- [ ] Condition: Screensaver
+- [ ] Condition: Storage Device Connect and Disconnect
+- [ ] Condition: Join or Leave a Network
+- [ ] Condition: Battery is Charging, Discharging or Low
+- [x] Condition: System Load is Below a Certain Treshold
+
+### Other forms
+
+The following forms, not related to the configuration application, are or should be only available from menus on the system tray:
+
+- [x] History Box
+- [ ] Tool Box: configure/unconfigure startup link (also for **whenever_tray**), config file conversion tool (old **When** --> new **When**)
+
+### UI wrapper for the **whenever** scheduler
+
+The following action should be supported by a resident part of the application that only shows an icon in the tray area, and allows to select entries from a popup menu.
+
+- [x] Show an About Box (to be improved)
+- [x] Show the task history, including execution time and outcome
+- [ ] Suspend and resume conditions
+- [x] Reset conditions
+- [x] Pause and resume the scheduler
+- [ ] Restart the scheduler
+- [x] Load the configuration utility (to be improved)
+
+Other features that might be useful:
+
+- [ ] Preserve paused state
+- [ ] Log rotation and max number of old logs
+- [ ] Reset conditions on wakeups from suspension or hibernation
+
+The resident part of the application should **not** load the configuration utility at startup: it should only be loaded when the appropriate menu entry is selected, and all the modules should be removed from memory after the configuration utility has been left by the user.
+
+
+## Compatibility
+
+**When** has been successfully tested on Windows (10 and 11) and Linux (Debian 12). On Debian 12, however, it does not run OOTB: some additional package are needed, as it does not ship with Tkinter support by default, nor supports the _AppIndicator_ protocol in a Gnome session. Thus both `python3-tk` and `gir1.2-ayatanaappindicator3` need to be installed using the _apt_ package manager. Moreover, on _Wayland_ sessions the UI appears mangled and the graphic elements are actually unusable: it looks like Tkinter only works well in _Xorg_ sessions. Since Gnome does not support indicator icons direcltly, a Gnome shell extension capablle of implementing this protocol has to be installed, such as [AppIndicator and KStatusNotifierItem Support](https://extensions.gnome.org/extension/615/appindicator-support/).
+
+Before starting **When** on Debian 12, and before the `poetry install` step described [above](#usage), the following option needs to be set in order to let the Python virtual environment access all the needed system modules:
+
+```shell
+poetry config virtualenvs.options.system-site-packages false
 ```
 
-If the PPA is used, **When** can be started from the *Dash* immediately: once started, it can be configured for autostart using the *Settings* dialog box.
+otherwise Python would not reach the modules needed to display the system tray icon and menu.
 
-## Alternate Interface
-Besides being fully configurable and accessible from both the command line interface and the graphical user interface, an alternate and more streamlined GUI for **When** is being actively developed: the [When Wizard](https://github.com/almostearthling/when-wizard) suite can be used to create actions in **When** in a possibly easier way.
 
 ## Credits
-Open Source Software relies on collaboration, and I'm more than happy to receive help from other developers. Here I'll list the main contributions.
-- Adolfo Jayme-Barrientos, aka [fitojb](https://github.com/fitojb), for the Spanish translation
 
-Also, I'd like to thank everyone who contributes to the development of **When** by commenting, filing bugs, suggesting features and testing. Every kind of help is welcome.
+The clock [icon](http://www.graphicsfuel.com/2012/08/alarm-clock-icon-psd/) used for the application logo has been created by Rafi and is available at [GraphicsFuel](http://www.graphicsfuel.com/). All other icons have been found on [Icons8](https://icons8.com/):
 
-The top panel icons and the emblems used in the application were selected within Google's [Material Design](https://materialdesignicons.com/) icon collection.
+* [Alarm Clock](https://icons8.com/icon/13026/alarm-clock)
+* [Exclamation Mark](https://icons8.com/icon/j1rPetruM5Fl/exclamation-mark)
+* [Question Mark](https://icons8.com/icon/cjUb4tRvBCNt/question-mark)
+* [Settings Gear](https://icons8.com/icon/12784/settings)
+* [OK (Check Mark) Button](https://icons8.com/icon/70yRC8npwT3d/check-mark)
+* [Cancel Button](https://icons8.com/icon/fYgQxDaH069W/cancel)
+* [Close Window](https://icons8.com/icon/rmf1Fvj5nBib/close-window)
+* [Save](https://icons8.com/icon/yFBJCjFJpLXw/save)
+* [Enter](https://icons8.com/icon/U5AcCk9kUWMk/enter)
+* [Add](https://icons8.com/icon/IA4hgI5aWiHD/add)
+* [Remove](https://icons8.com/icon/9lB4p3bBjCNX/remove)
+* [Error](https://icons8.com/icon/hP6pCUyT8QGk/error)
+* [New Document](https://icons8.com/icon/8tcDgihugAYf/new-document)
+* [Pencil Drawing](https://icons8.com/icon/FnCPHMRRKpyL/pencil-drawing)
+* [Delete](https://icons8.com/icon/pre7LivdxKxJ/delete)
+* [File](https://icons8.com/icon/XWoSyGbnshH2/file)
+* [Folder](https://icons8.com/icon/dINnkNb1FBl4/folder)
 
-Application [icon](http://www.graphicsfuel.com/2012/08/alarm-clock-icon-psd/) by Rafi at [GraphicsFuel](http://www.graphicsfuel.com/).
-
-## Resources
-The resources that I have found particularly useful in the development of **When** are:
-- [Python 3.x Documentation](https://docs.python.org/3/)
-- [PyGTK 3.x Tutorial](http://python-gtk-3-tutorial.readthedocs.io/en/latest/index.html)
-- [PyGTK 2.x Documentation](https://developer.gnome.org/pygtk/stable/)
-- [PyGObject Documentation](https://developer.gnome.org/pygobject/stable/)
-- [GTK 3.0 Documentation](http://lazka.github.io/pgi-docs/Gtk-3.0/index.html)
-- [DBus Documentation](http://www.freedesktop.org/wiki/Software/dbus/)
-- [pyinotify Documentation](https://github.com/seb-m/pyinotify/wiki)
-
-The guidelines specified in [UnityLaunchersAndDesktopFiles](https://help.ubuntu.com/community/UnityLaunchersAndDesktopFiles) have been roughly followed to create the launcher from within the application.
-
-Many hints taken on [StackOverflow](http://stackoverflow.com/) and the like.
+This program uses a fork of [PySimpleGUI](https://www.pysimplegui.com/), namely [FreeSimpleGUI](https://github.com/spyoungtech/FreeSimpleGUI) which is on PyPI. The latest version of _PySimpleGUI_ is not open source anymore, and I'm fine with it: it is a useful package and deserves all possible support. However, **When** is an OSS project, and for the moment being I prefer to rely on libraries that do not require the end user to accept non-OSS license terms or to install third party license keys.

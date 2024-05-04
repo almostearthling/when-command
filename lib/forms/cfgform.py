@@ -1,0 +1,396 @@
+# main
+# the application main form
+
+import os
+
+from lib.i18n.strings import *
+
+from lib.utility import sg, get_configfile
+from lib.items.item import ALL_AVAILABLE_ITEMS_D
+
+from lib.icons import APP_ICON32 as APP_ICON
+from lib.icons import QMARK_ICON48 as QMARK_ICON
+from lib.icons import XMARK_ICON48 as XMARK_ICON
+
+from lib.forms.newitem import form_NewItem
+
+from lib.configurator.reader import read_whenever_config
+from lib.configurator.writer import write_whenever_config
+
+
+# layout generator (fixed)
+def layout_main():
+    return [
+        [ sg.Frame(UI_FORM_FILE, [
+            [
+                # NOTE: the configuration file is fixed and its path only
+                # depends on the location of the application data and config
+                # folder: usually the default should be used so that the
+                # actual **whenever** configuration can also be used by other
+                # wrappers such as **whenever_tray**
+                sg.T(UI_FORM_PATH_SC), sg.I(key='-CONFIG_FILE-', expand_x=True, disabled=True),
+                # sg.FileBrowse(UI_BROWSE, file_types=['TOML \{toml\}']),
+            ],
+        ], expand_x=True) ],
+
+        [ sg.Frame(UI_FORM_GLOBALS, [[
+            sg.T(UI_FORM_TICKINTERVAL_SC),
+            sg.I(key='-TICK_INTERVAL-', size=(5, None)),
+            sg.Push(),
+            sg.CB(UI_FORM_RANDCHECKSINTICKS, key='-RANDOM_CHECKS-', default=False),
+        ]], expand_x=True) ],
+
+        [ sg.Frame(UI_FORM_ITEMS, [
+            [ sg.T(UI_FORM_CURRENTITEMS_SC) ],
+            [ sg.Table(
+                [['' for x in range(3)] for y in range(5)],
+                auto_size_columns=True,
+                visible_column_map=(True, True, False),
+                headings=[UI_FORM_NAME, UI_FORM_TYPE, 'TYPE_CODE'],
+                key='-ITEMS-',
+                num_rows=6,
+                justification='left',
+                expand_x=True, expand_y=True,
+            ) ],
+            [ sg.B_NEW(UI_NEW, key='-ADD_ITEM-'), sg.Push(), sg.B_EDIT(UI_EDIT, key='-EDIT_ITEM-'), sg.B_DEL(UI_DEL, key='-DEL_ITEM-') ]
+        ], expand_x=True, expand_y=True) ],
+
+        [ sg.Push(), sg.B_LOAD(UI_LOAD, key='-LOAD-'), sg.B_SAVE(UI_SAVE, key='-SAVE-'), sg.B_EXIT(UI_EXIT, key='-EXIT-') ],
+    ]
+
+
+# configuration editor form: this is a work in progress as new types of item
+# are created on top of the items directly supported by **whenever**; also
+# this is a fixed form and will not be derived for specialized purposes
+class form_Config(object):
+
+    def __init__(self):
+        self._form = sg.Window(UI_APP, layout=layout_main(), icon=APP_ICON, size=(960, 640), finalize=True)
+
+        # reset data, both actuaal and visualizable
+        self._tasks = {}
+        self._conditions = {}
+        self._events = {}
+        self._data = {}
+        self._itemlistentries = []
+        self._globals = {
+            'scheduler_tick_seconds': 5,
+            'randomize_checks_within_ticks': False,
+        }
+        self._changed = False
+        self._form['-RANDOM_CHECKS-'].bind('<Button-1>' , '+-click-')
+        self._form['-TICK_INTERVAL-'].bind('<KeyRelease>' , '+-keyrelease-')
+
+        # the list of checks that should be performed on form data: a list
+        # of tuples whose members are the form entry key, the corresponding
+        # label, and a functions that checks the value
+        self.__datachecks = [
+            ('-TICK_INTERVAL-', UI_FORM_TICKINTERVAL_SC, lambda x: int(x) >= 1),
+        ]
+
+        # the configuration file should be well formed, so load it
+        cfgfile = get_configfile()
+        self._form['-CONFIG_FILE-'].update(cfgfile)
+        self._load_config(cfgfile)
+        self._updatedata()
+        self._updateform()
+
+
+    # update the associated data according to what is in the form
+    def _updatedata(self):
+        self._itemlistentries = []
+        # encode the invisible list field with the same signature that is used in
+        # the _item_ module, so that the corresponding form and item factories can
+        # be retrieved dynamically
+        for key in self._tasks:
+            item = self._tasks[key]
+            if item.tags:
+                signature = "task:%s:%s" % (item.type, item.tags.get('subtype'))
+            else:
+                signature = "task:%s" % item.type
+            self._itemlistentries.append([item.name, item.hrtype, signature])
+        for key in self._conditions:
+            item = self._conditions[key]
+            if item.tags:
+                signature = "cond:%s:%s" % (item.type, item.tags.get('subtype'))
+            else:
+                signature = "cond:%s" % item.type
+            self._itemlistentries.append([item.name, item.hrtype, signature])
+        for key in self._events:
+            item = self._events[key]
+            if item.tags:
+                signature = "event:%s:%s" % (item.type, item.tags.get('subtype'))
+            else:
+                signature = "event:%s" % item.type
+            self._itemlistentries.append([item.name, item.hrtype, signature])
+        self._itemlistentries.sort(key=lambda x: x[0])
+        try:
+            t = int(self._data['-TICK_INTERVAL-'])
+        except ValueError:
+            t = None
+        self._globals['scheduler_tick_seconds'] = t
+        self._globals['randomize_checks_within_ticks'] = self._data['-RANDOM_CHECKS-']
+
+    # update the form fields according to the associated actual data
+    def _updateform(self):
+        self._form['-ITEMS-'].update(self._itemlistentries)
+        t = self._globals['scheduler_tick_seconds']
+        self._form['-TICK_INTERVAL-'].update(str(t) if t else '')
+        self._form['-RANDOM_CHECKS-'].update(self._globals['randomize_checks_within_ticks'])
+
+    # reset all associated data in the form (does not update fields)
+    def _resetdata(self):
+        self._tasks = {}
+        self._conditions = {}
+        self._events = {}
+        self._globals = {
+            'scheduler_tick_seconds': 5,
+            'randomize_checks_within_ticks': False,
+        }
+
+
+    # load the configuration from a TOML file
+    def _load_config(self, fn):
+        self._resetdata()
+        tasks, conditions, events, self._globals = read_whenever_config(fn)
+        for item in tasks:
+            self._tasks[item.name] = item
+        for item in conditions:
+            self._conditions[item.name] = item
+        for item in events:
+            self._events[item.name] = item
+        # the following updates are necessary to avoid retrieved form data to
+        # overwrite the inner data that has just been loaded from the file
+        if self._globals['randomize_checks_within_ticks']:
+            self._data['-RANDOM_CHECKS-'] = self._globals['randomize_checks_within_ticks']
+        if self._globals['scheduler_tick_seconds']:
+            self._data['-TICK_INTERVAL-'] = self._globals['scheduler_tick_seconds']
+
+    # save the configuration to a TOML file
+    def _save_config(self, fn):
+        write_whenever_config(
+            fn,
+            [self._tasks[k] for k in self._tasks],
+            [self._conditions[k] for k in self._conditions],
+            [self._events[k] for k in self._events],
+            self._globals,
+        )
+
+
+    # data check function: returns None if the checks pass, a map of failed
+    # entries (form item key: (label, value)) otherwise; both ValueError and
+    # TypeError are treated as invalid data
+    def check_data(self):
+        failed = {}
+        for k, label, func in self.__datachecks:
+            if label.endswith(":"):
+                label = label[:-1]
+            try:
+                if not func(self._data[k]):
+                    failed[k] = (label, self._data[k])
+            except ValueError:
+                failed[k] = (label, self._data[k])
+            except TypeError:
+                failed[k] = (label, self._data[k])
+        return failed or None
+
+
+    # form event loop: react to events and update the inner data accordingly
+    def run(self):
+        self._updateform()
+        while True:             # Event Loop
+            event, values = self._form.read()
+            self._data = values
+
+            # exit from the form and possibly the application itself
+            if event in [sg.WIN_CLOSED, '-EXIT-']:
+                if self._changed:
+                    if sg.popup_yes_no(UI_POPUP_DISCARDCONFIG_Q, title=UI_POPUP_T_CONFIRM, icon=QMARK_ICON).upper() == 'YES':
+                        break
+                else:
+                    break
+
+            # load the configuration file: if the configuration had changed
+            # ask for confirmation as all changes would be lost on load
+            elif event == '-LOAD-':
+                fn = values['-CONFIG_FILE-']
+                if os.path.exists(fn):
+                    if self._changed:
+                        if sg.popup_yes_no(UI_POPUP_DISCARDCONFIG_Q, title=UI_POPUP_T_CONFIRM, icon=QMARK_ICON).upper() == 'YES':
+                            self._load_config(fn)
+                            self._changed = False
+                    else:
+                        self._load_config(fn)
+                        self._changed = False
+                    self._updateform()
+                else:
+                    sg.popup(UI_POPUP_FILENOTFOUND_ERR, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
+
+            # save the configuration file, asking for confirmation if it
+            # exists, which is almost always true, after checking for
+            # errors in the provided values
+            elif event == '-SAVE-':
+                fn = values['-CONFIG_FILE-']
+                if os.path.exists(fn):
+                    if self._changed:
+                        if sg.popup_yes_no(UI_POPUP_OVERWRITEFILE_Q, title=UI_POPUP_T_CONFIRM, icon=QMARK_ICON).upper() == 'YES':
+                            check = self.check_data()
+                            if check is None:
+                                self._save_config(fn)
+                                self._changed = False
+                            else:
+                                checks = "\n".join("- %s" % check[k][0] for k in check)
+                                sg.popup(UI_POPUP_INVALIDPARAMETERS_T % checks, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
+                else:
+                    check = self.check_data()
+                    if check is None:
+                        self._save_config(fn)
+                        self._changed = False
+                    else:
+                        checks = "\n".join(x[0] for x in check)
+                        sg.popup(UI_POPUP_INVALIDPARAMETERS_T % checks, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
+
+            # edit an existing item: this opens the appropriate form, which
+            # in turn displays the actual data for the provided item; this
+            # part will possibly grow as new item typer are supported
+            elif event == '-EDIT_ITEM-':
+                t = values['-ITEMS-']
+                if t:
+                    item_row = self._itemlistentries[t[0]]
+                    item_name = item_row[0]
+                    item_signature = item_row[2]
+                    item_type, _ = item_signature.split(':', 1)
+
+                    # task items
+                    if item_type == 'task':
+                        _, fform, fitem = ALL_AVAILABLE_ITEMS_D.get(item_signature)
+                        if fform and fitem.available:
+                            e = fform(self._tasks[item_name])
+                        else:
+                            e = None
+                        if e:
+                            new_item = e.run()
+                            if new_item:
+                                if new_item.name != item_name:
+                                    del(self._tasks[item_name])
+                                self._tasks[new_item.name] = new_item
+                                self._changed = True
+                            del e
+
+                    # condition items
+                    elif item_type == 'cond':
+                        _, fform, fitem = ALL_AVAILABLE_ITEMS_D.get(item_signature)
+                        if fform and fitem.available:
+                            e = fform(list(self._tasks.keys()), self._conditions[item_name])
+                        else:
+                            e = None
+                        if e:
+                            new_item = e.run()
+                            if new_item:
+                                if new_item.name != item_name:
+                                    del(self._conditions[item_name])
+                                self._conditions[new_item.name] = new_item
+                                self._changed = True
+                            del e
+
+                    # event items
+                    elif item_type == 'event':
+                        event_conds = list(x for x in self._conditions if self._conditions[x].type == 'event')
+                        _, fform, fitem = ALL_AVAILABLE_ITEMS_D.get(item_signature)
+                        if fform and fitem.available:
+                            e = fform(event_conds, self._events[item_name])
+                        else:
+                            e = None
+                        if e:
+                            new_item = e.run()
+                            if new_item:
+                                if new_item.name != item_name:
+                                    del(self._events[item_name])
+                                self._events[new_item.name] = new_item
+                                self._changed = True
+                            del e
+
+            # delete an item: ask for confirmation before actual removal
+            elif event == '-DEL_ITEM-':
+                t = values['-ITEMS-']
+                if t:
+                    if sg.popup_yes_no(UI_POPUP_DELETEITEM_Q, title=UI_POPUP_T_CONFIRM, icon=QMARK_ICON).upper() == 'YES':
+                        item_row = self._itemlistentries[t[0]]
+                        item_name = item_row[0]
+                        item_type, _ = item_row[2].split(':', 1)
+                        if item_type == 'task':
+                            referenced = False
+                            for _, v in self._conditions.items():
+                                if item_name in v.tasks:
+                                    referenced = True
+                                    break
+                            if not referenced:
+                                del self._tasks[item_name]
+                            else:
+                                sg.popup(UI_POPUP_REFERENCEDTASK, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
+                        elif item_type == 'cond':
+                            referenced = False
+                            for _, v in self._events.items():
+                                if item_name == v.condition:
+                                    referenced = True
+                                    break
+                            if not referenced:
+                                del self._conditions[item_name]
+                            else:
+                                sg.popup(UI_POPUP_REFERENCEDCOND, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
+                        elif item_type == 'event':
+                            del self._events[item_name]
+                        self._changed = True
+            elif event == '-ADD_ITEM-':
+                e = form_NewItem()
+                r = e.run()
+                del e
+                if r:
+                    t, form_class = r
+                    if t == 'task':
+                        form = form_class()
+                    elif t == 'cond':
+                        form = form_class(list(self._tasks.keys()))
+                    # note that, since providing a suitable event based
+                    # condition is mandatory for an event, the form will
+                    # refuse to create a new event
+                    elif t == 'event':
+                        event_conds = list(x for x in self._conditions if self._conditions[x].type == 'event')
+                        if event_conds:
+                            form = form_class(event_conds)
+                        else:
+                            sg.popup(UI_POPUP_NOEVENTCONDITIONS_ERR, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
+                            form = None
+                    try:
+                        if form is not None:
+                            new_item = form.run()
+                    except ValueError:
+                        new_item = None
+                    if form is not None:
+                        del form
+                    if new_item:
+                        if t == 'task':
+                            self._tasks[new_item.name] = new_item
+                        elif t == 'cond':
+                            self._conditions[new_item.name] = new_item
+                        elif t == 'event':
+                            self._events[new_item.name] = new_item
+                        self._changed = True
+
+            # reactions to input that cause the form to consider data changed
+            elif event == '-RANDOM_CHECKS-+-click-':
+                self._changed = True
+            elif event == '-TICK_INTERVAL-+-keyrelease-':
+                self._changed = True
+            # ...
+            # more events might be added here
+
+            # perform the usual chores: first update the inner data, then refresh
+            self._updatedata()
+            self._updateform()
+
+        # destroy the form
+        self._form.close()
+
+
+# end.
