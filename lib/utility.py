@@ -1,5 +1,7 @@
 # various utility functions and objects
 
+from lib.i18n.strings import *
+
 # import all other modules
 import sys
 import os
@@ -148,6 +150,15 @@ def set_UI_theme(new_theme=None):
                 sg.theme(sg.DEFAULT_THEME_LIGHT)
     else:
         sg.theme(new_theme)
+
+
+# write a warning to stderr
+def write_warning(s):
+    sys.stderr.write("%s warning: %s" % (UI_APP, s))
+
+# write an error to stderr
+def write_error(s):
+    sys.stderr.write("%s error: %s" % (UI_APP, s))
 
 
 # ...
