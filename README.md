@@ -58,8 +58,10 @@ Editor forms for the items supported by **whenever**: should behave in a way sim
 - [x] Condition: Command
 - [x] Condition: _Lua_ Script
 - [x] Condition: Event (aka Bucket)
+- [ ] ~~Condition: DBus Method call~~ (was not available in the original edition)
 - [x] Event: Filesystem Monitoring
 - [ ] ~~Event: Command Line~~ (implemented but not available)
+- [ ] ~~Event: DBus Signal~~ (was barely usable and restricted in the original edition)
 
 Specific command/_Lua_ based tasks, command/_Lua_/DBus based conditions, DBus based events should be supported to mimic the old **When** behaviour:
 
