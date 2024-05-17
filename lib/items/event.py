@@ -9,7 +9,7 @@
 # events and trigger dedicated command line reactions when certain events
 # not known to the scheduler occur.
 
-from tomlkit import items, table
+from tomlkit import table
 from lib.utility import check_not_none, append_not_none, generate_item_name
 
 
@@ -22,7 +22,7 @@ class Event(object):
     # availability at class level
     available = False
 
-    def __init__(self, t: items.Table=None) -> None:
+    def __init__(self, t: table=None) -> None:
         self.type = None
         self.hrtype = None
         if t:

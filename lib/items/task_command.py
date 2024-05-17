@@ -2,7 +2,7 @@
 
 from lib.i18n.strings import *
 
-from tomlkit import items
+from tomlkit import table
 from lib.utility import check_not_none, append_not_none
 
 from lib.items.task import Task
@@ -21,7 +21,7 @@ class CommandTask(Task):
     # availability at class level
     available = True
 
-    def __init__(self, t: items.Table=None) -> None:
+    def __init__(self, t: table=None) -> None:
         Task.__init__(self, t)
         self.type = 'command'
         self.hrtype = ITEM_TASK_COMMAND

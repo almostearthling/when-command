@@ -2,7 +2,7 @@
 
 from lib.i18n.strings import *
 
-from tomlkit import items
+from tomlkit import table
 from lib.utility import check_not_none, append_not_none
 
 from lib.items.cond import Condition
@@ -18,7 +18,7 @@ class IntervalCondition(Condition):
     # availability at class level
     available = True
 
-    def __init__(self, t: items.Table=None) -> None:
+    def __init__(self, t: table=None) -> None:
         Condition.__init__(self, t)
         self.type = 'interval'
         self.hrtype = ITEM_COND_INTERVAL

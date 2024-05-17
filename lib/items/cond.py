@@ -28,7 +28,7 @@ class Condition(object):
     # availability at class level
     available = False
 
-    def __init__(self, t: items.Table=None) -> None:
+    def __init__(self, t: table=None) -> None:
         self.type = None
         self.hrtype = None
         if t:

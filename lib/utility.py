@@ -7,7 +7,7 @@ import sys
 import os
 import subprocess
 
-from tomlkit.items import Table
+from tomlkit import table
 from hashlib import blake2s
 from base64 import decodebytes as b64_decodeb
 from io import BytesIO
@@ -30,7 +30,7 @@ def check_not_none(*l) -> bool:
 
 
 # append an item to a TOML table if it is not none
-def append_not_none(table: Table, key: str, value) -> Table:
+def append_not_none(table: table, key: str, value) -> table:
     if value is not None:
         table.append(key, value)
     return table
