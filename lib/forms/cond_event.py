@@ -1,41 +1,34 @@
 # event condition form
 
-from lib.i18n.strings import *
+from ..i18n.strings import *
 
-from lib.utility import sg
-from lib.icons import APP_ICON32 as APP_ICON
+import tkinter as tk
+import ttkbootstrap as ttk
 
-from lib.forms.cond import form_Condition
-from lib.items.cond_event import EventCondition
+from .ui import *
 
-
-# (extra) layout generator
-def _form_layout():
-    return [
-        [ sg.Frame(UI_FORM_EVENT, [[
-            sg.T(UI_CAPTION_NOSPECIFICPARAMS),
-        ]], expand_x=True, expand_y=True) ]
-    ]
+from ..forms.cond import form_Condition
+from ..items.cond_event import EventCondition
 
 
 # specialized subform
 class form_EventCondition(form_Condition):
+    
     def __init__(self, tasks_available, item=None):
         if item:
             assert(isinstance(item, EventCondition))
         else:
             item = EventCondition()
-        extra_layout = _form_layout()
-        form_Condition.__init__(self, UI_TITLE_EVENTCOND, tasks_available, extra_layout, item)
+        super().__init__(UI_TITLE_EVENTCOND, tasks_available, item)
 
-    def _updatedata(self):
-        form_Condition._updatedata(self)
+        area = ttk.Frame(super().contents)
+        area.grid(row=0, column=0, sticky=tk.NSEW)
+        PAD = WIDGET_PADDING_PIXELS
 
-    def _updateitem(self):
-        form_Condition._updateitem(self)
+        l_noParams = ttk.Label(area, text=UI_CAPTION_NOSPECIFICPARAMS)
+        l_noParams.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
 
-    def process_event(self, event, values):
-        return super().process_event(event, values)
+        self._updateform()
 
 
 # end.

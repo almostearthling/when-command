@@ -12,7 +12,6 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.10"
-freesimplegui = "^5.0.0"
 dbus-next = "^0.2.3"
 tomlkit = "^0.12.4"
 pystray = "^0.19.5"
@@ -21,6 +20,7 @@ darkdetect = "^0.8.0"
 # Pygments = "^2.17.2"
 # tklinenums = "^1.7.1"
 # chlorophyll = "^0.4.1"
+ttkbootstrap = "^1.10.1"
 
 [tool.poetry.scripts]
 when = "when.when:main"

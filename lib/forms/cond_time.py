@@ -1,13 +1,15 @@
 # time specification condition form
 
-from lib.i18n.strings import *
+from ..i18n.strings import *
 
-from lib.utility import sg
-from lib.icons import XMARK_ICON48 as XMARK_ICON
-from lib.icons import QMARK_ICON48 as QMARK_ICON
+import tkinter as tk
+import ttkbootstrap as ttk
+from tkinter import messagebox
 
-from lib.forms.cond import form_Condition
-from lib.items.cond_time import TimeCondition, TimeSpec
+from .ui import *
+
+from .cond import form_Condition
+from ..items.cond_time import TimeCondition, TimeSpec
 
 from time import localtime
 
@@ -80,163 +82,199 @@ _today = localtime()
 _YEARS = list(map(str, range(_today.tm_year, _today.tm_year + 10)))
 
 
-# (extra) layout generator
-def _form_layout():
-    return [
-        [ sg.Frame(UI_FORM_TIMESPECS, [
-            [
-                sg.T(UI_FORM_DATE_SC),
-                sg.Combo(_YEARS, key='-YEAR-'), sg.T("/"),
-                sg.Combo(_MONTHS, key='-MONTH-'), sg.T("/"),
-                sg.Combo(_DAYS, key='-DAY-'),
-                sg.T(UI_FORM_OR),
-                sg.T(UI_FORM_DOW_SC), sg.Combo(_WEEKDAYS, key='-DOW-'),
-                sg.Push(),
-                sg.T(UI_FORM_TIME_SC),
-                sg.I(key='-HOUR-', size=(4, None), justification='right'), sg.T(":"),
-                sg.I(key='-MINUTE-', size=(4, None), justification='right'), sg.T(":"),
-                sg.I(key='-SECOND-', size=(4, None), justification='right'),
-                sg.Push(),
-                sg.B_NEW(UI_CLEAR, key='-CLEAR-'),
-            ],
-            [ sg.Push(), sg.B_ADD(UI_ADD, key='-ADD-'), sg.B_DEL(UI_DEL, key='-REMOVE-') ],
-            [ sg.Push() ],
-            [ sg.T(UI_FORM_CURRENTTIMESPECS_SC) ],
-            [ sg.LBox([], key='-TIMESPECS-', expand_x=True, expand_y=True) ],
-            [ sg.Push(), sg.B_BLANK(UI_CLEARALL, key='-CLEARALL-') ],
-        ], expand_x=True, expand_y=True) ]
-    ]
-
-
 # specialized subform
 class form_TimeCondition(form_Condition):
+
     def __init__(self, tasks_available, item=None):
         if item:
             assert(isinstance(item, TimeCondition))
         else:
             item = TimeCondition()
-        extra_layout = _form_layout()
-        form_Condition.__init__(self, UI_TITLE_TIMECOND, tasks_available, extra_layout, item)
-        self._form['-TIMESPECS-'].bind('<Double-Button-1>' , '+-dblclick-')
-        self._data['-TIMESPECS-'] = []
+        super().__init__(UI_TITLE_TIMECOND, tasks_available, item)
         self._timespecs = []
-        if item:
-            self.set_item(item)
-        else:
-            self.reset_item()
+        if self._item.time_specifications:
+            for ts in self._item.time_specifications:
+                timespec = TimeSpec(ts)
+                self._timespecs.append(timespec)
 
-    def _updatedata(self):
-        form_Condition._updatedata(self)
-        self._timespecs = []
-        if self._item:
-            l = []
-            if self._item.time_specifications:
-                for elem in self._item.time_specifications:
-                    timespec = TimeSpec(elem)
-                    self._timespecs.append(timespec)
-                    l.append(str(timespec))
-            self._data['-TIMESPECS-'] = l
-        else:
-            self._data['-TIMESPECS-'] = []
+        area = ttk.Frame(super().contents)
+        area.grid(row=0, column=0, sticky=tk.NSEW)
+        PAD = WIDGET_PADDING_PIXELS
 
-    def _updateitem(self):
-        form_Condition._updateitem(self)
-        e = []
-        for timespec in self._timespecs:
-            e.append(timespec.as_dict())
-        self._item.time_specifications = e or None
+        # the time specification area is quite complex and must be
+        # carefully built, therefore it deserves a frame
+        area_tspec = ttk.Frame(area)
+        l_tsDate = ttk.Label(area_tspec, text=UI_FORM_DATE_SC)
+        cb_tsYear = ttk.Combobox(area_tspec, width=5, values=_YEARS, state='readonly')
+        l_sep1 = ttk.Label(area_tspec, text="/")
+        cb_tsMonth = ttk.Combobox(area_tspec, width=11, values=_MONTHS, state='readonly')
+        l_sep2 = ttk.Label(area_tspec, text="/")
+        cb_tsDay = ttk.Combobox(area_tspec, width=3, values=_DAYS, state='readonly')
+        l_tsOr = ttk.Label(area_tspec, text=UI_FORM_OR)
+        l_tsDayOfWeek = ttk.Label(area_tspec, text=UI_FORM_DOW_SC)
+        cb_tsDayOfWeek = ttk.Combobox(area_tspec, width=12, values=_WEEKDAYS, state='readonly')
+        f_sep3 = ttk.Frame(area_tspec)
+        l_tsTime = ttk.Label(area_tspec, text=UI_FORM_TIME_SC)
+        e_tsHour = ttk.Entry(area_tspec, width=4, justify=tk.RIGHT)
+        l_sep4 = ttk.Label(area_tspec, text=":")
+        e_tsMin = ttk.Entry(area_tspec, width=4, justify=tk.RIGHT)
+        l_sep5 = ttk.Label(area_tspec, text=":")
+        e_tsSec = ttk.Entry(area_tspec, width=4, justify=tk.RIGHT)
+        f_sep5 = ttk.Frame(area_tspec)
+        b_tsClear = ttk.Button(area_tspec, text=UI_CLEAR, command=self.clear_timespec)
 
-    def _getspec(self):
-        if self._data['-MONTH-']:
+        self.data_bind('ts_year', cb_tsYear, TYPE_INT)
+        self.data_bind('ts_month', cb_tsMonth, TYPE_STRING)
+        self.data_bind('ts_day', cb_tsDay, TYPE_INT)
+        self.data_bind('ts_dow', cb_tsDayOfWeek, TYPE_STRING)
+        self.data_bind('ts_hour', e_tsHour, TYPE_INT, lambda x: 0 <= x < 24)
+        self.data_bind('ts_min', e_tsMin, TYPE_INT, lambda x: 0 <= x < 60)
+        self.data_bind('ts_sec', e_tsSec, TYPE_INT, lambda x: 0 <= x < 60)
+
+        l_tsDate.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        cb_tsYear.grid(row=0, column=1, sticky=tk.W, padx=PAD, pady=PAD)
+        l_sep1.grid(row=0, column=2, sticky=tk.W, padx=PAD, pady=PAD)
+        cb_tsMonth.grid(row=0, column=3, sticky=tk.W, padx=PAD, pady=PAD)
+        l_sep2.grid(row=0, column=4, sticky=tk.W, padx=PAD, pady=PAD)
+        cb_tsDay.grid(row=0, column=5, sticky=tk.W, padx=PAD, pady=PAD)
+        l_tsOr.grid(row=0, column=6, sticky=tk.W, padx=PAD, pady=PAD)
+        l_tsDayOfWeek.grid(row=0, column=7, sticky=tk.W, padx=PAD, pady=PAD)
+        cb_tsDayOfWeek.grid(row=0, column=8, sticky=tk.W, padx=PAD, pady=PAD)
+        f_sep3.grid(row=0, column=9, sticky=tk.W, padx=PAD, pady=PAD)
+        l_tsTime.grid(row=0, column=10, sticky=tk.W, padx=PAD, pady=PAD)
+        e_tsHour.grid(row=0, column=11, sticky=tk.W, padx=PAD, pady=PAD)
+        l_sep4.grid(row=0, column=12, sticky=tk.W, padx=PAD, pady=PAD)
+        e_tsMin.grid(row=0, column=13, sticky=tk.W, padx=PAD, pady=PAD)
+        l_sep5.grid(row=0, column=14, sticky=tk.W, padx=PAD, pady=PAD)
+        e_tsSec.grid(row=0, column=15, sticky=tk.W, padx=PAD, pady=PAD)
+        f_sep5.grid(row=0, column=16, sticky=tk.W, padx=PAD, pady=PAD)
+        b_tsClear.grid(row=0, column=17, sticky=tk.W, padx=PAD, pady=PAD)
+        area_tspec.columnconfigure(9, weight=1)
+        area_tspec.columnconfigure(16, weight=1)
+        area_tspec.grid(row=0, column=0, sticky=tk.EW)
+
+        area_addrm = ttk.Frame(area)
+        f_sep6 = ttk.Frame(area_addrm)
+        b_tsAdd = ttk.Button(area_addrm, width=BUTTON_STANDARD_WIDTH, text=UI_ADD, command=self.add_timespec)
+        b_tsDel = ttk.Button(area_addrm, width=BUTTON_STANDARD_WIDTH, text=UI_DEL, command=self.del_timespec)
+        f_sep7 = ttk.Frame(area_addrm)
+        f_sep6.grid(row=0, column=0, sticky=tk.EW)
+        b_tsAdd.grid(row=0, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        b_tsDel.grid(row=0, column=2, sticky=tk.EW, padx=PAD, pady=PAD)
+        f_sep7.grid(row=0, column=3, sticky=tk.EW)
+        area_addrm.columnconfigure(0, weight=1)
+        area_addrm.columnconfigure(3, weight=1)
+        area_addrm.grid(row=1, column=0, sticky=tk.EW)
+
+        s_sep10 = ttk.Separator(area)
+        s_sep10.grid(row=10, column=0, sticky=tk.EW)
+
+        area_tslist = ttk.Frame(area)
+        l_timeSpecs = ttk.Label(area_tslist, text=UI_FORM_CURRENTTIMESPECS_SC)
+        tv_timeSpecs = ttk.Treeview(area_tslist, columns=('seq', 'specs'), show='', displaycolumns=(1,), height=5)
+        b_clearSpecs = ttk.Button(area_tslist, width=BUTTON_STANDARD_WIDTH, text=UI_CLEARALL, command=self.clear_alltimespecs)
+        l_timeSpecs.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        tv_timeSpecs.grid(row=1, column=0, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        b_clearSpecs.grid(row=0, column=0, sticky=tk.E, padx=PAD, pady=PAD)
+        self.data_bind('timespec_selection', tv_timeSpecs)
+        self._tv_timeSpecs = tv_timeSpecs
+        self._tv_timeSpecs.bind('<ButtonRelease-1>', lambda _: self.recall_timespec())
+
+        area_tslist.grid(row=11, column=0, sticky=tk.NSEW)
+        area_tslist.columnconfigure(0, weight=1)
+        area_tslist.rowconfigure(1, weight=1)
+
+        area.columnconfigure(0, weight=1)
+        area.rowconfigure(11, weight=1)
+
+        self._updateform()
+
+
+    def clear_timespec(self):
+        self.data_set('ts_year')
+        self.data_set('ts_month')
+        self.data_set('ts_day')
+        self.data_set('ts_dow')
+        self.data_set('ts_hour')
+        self.data_set('ts_min')
+        self.data_set('ts_sec')
+
+    def add_timespec(self):
+        if m := self.data_get('ts_month'):
             try:
-                month = _MONTHS_MAP[self._data['-MONTH-']]
+                month = _MONTHS_MAP[m]
             except ValueError:
                 # come on, you can do better
                 month = None
         else:
             month = None
-        if self._data['-DOW-']:
+        if d := self.data_get('ts_dow'):
             try:
-                dow = _WEEKDAYS_MAP[self._data['-DOW-']]
+                dow = _WEEKDAYS_MAP[d]
             except ValueError:
                 # see above
                 dow = None
         else:
             dow = None
+        year = self.data_get('ts_year')
+        day = self.data_get('ts_day')
+        hour = self.data_get('ts_hour')
+        min = self.data_get('ts_min')
+        sec = self.data_get('ts_sec')
         try:
-            return TimeSpec(
-                year=int(self._data['-YEAR-']) if self._data['-YEAR-'] else None,
+            spec = TimeSpec(
+                year=year,
                 month=month,
-                day=self._data['-DAY-'] if self._data['-DAY-'] else None,
+                day=day,
                 weekday=dow,
-                hour=int(self._data['-HOUR-']) if self._data['-HOUR-'] != '' else None,
-                minute=int(self._data['-MINUTE-']) if self._data['-MINUTE-'] != '' else None,
-                second=int(self._data['-SECOND-']) if self._data['-SECOND-'] != '' else None,
+                hour=hour,
+                minute=min,
+                second=sec,
             )
         except ValueError:
-            return None
+            spec = None
+        if spec:
+            self._timespecs.append(spec)
 
-    def _setspec(self, spec: TimeSpec):
-        self._data['-YEAR-'] = spec.year
-        self._data['-MONTH-'] = "{:02}".format(spec.month) if spec.month is not None else None
-        self._data['-DAY-'] = "{:02}".format(spec.day) if spec.day is not None else None
-        self._data['-DOW-'] = _WEEKDAYS_DISPLAY.get(spec.weekday)
-        self._data['-HOUR-'] = spec.hour
-        self._data['-MINUTE-'] = "{:02}".format(spec.minute) if spec.minute is not None else None
-        self._data['-SECOND-'] = "{:02}".format(spec.second) if spec.second is not None else None
+    def del_timespec(self):
+        idx = self.data_get('timespec_selection')[0]
+        del self._timespecs[idx]
+        self._updateform
 
-    def _clearspec(self):
-        self._data['-YEAR-'] = None
-        self._data['-MONTH-'] = None
-        self._data['-DAY-'] = None
-        self._data['-DOW-'] = None
-        self._data['-HOUR-'] = None
-        self._data['-MINUTE-'] = None
-        self._data['-SECOND-'] = None
+    def recall_timespec(self):
+        sel = self.data_get('timespec_selection')
+        if sel:
+            spec = self._timespecs[self.data_get('timespec_selection')[0]]
+            self.data_set('ts_year', spec.year)
+            self.data_set('ts_month', _MONTHS[spec.month] if spec.month is not None else None)
+            self.data_set('ts_day', spec.day)
+            self.data_set('ts_dow', _WEEKDAYS_DISPLAY[spec.weekday] if spec.weekday else None)
+            self.data_set('ts_hour', spec.hour)
+            self.data_set('ts_min', spec.minute)
+            self.data_set('ts_sec', spec.second)
 
-    def process_event(self, event, values):
-        ret = super().process_event(event, values)
-        if ret is None:
-            if event == '-TIMESPECS-+-dblclick-':
-                idx = self._form['-TIMESPECS-'].get_indexes()[0]
-                timespec = self._timespecs[idx]
-                self._clearspec()
-                self._setspec(timespec)
-            elif event == '-ADD-':
-                cur_spec = self._getspec()
-                if cur_spec:
-                    present = False
-                    for timespec in self._timespecs:
-                        if cur_spec == timespec:
-                            present = True
-                    if not present:
-                        self._timespecs.append(cur_spec)
-                    self._clearspec()
-                else:
-                    sg.popup(UI_POPUP_INVALIDTIMESPEC, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
-            elif event == '-REMOVE-':
-                cur_spec = self._getspec()
-                if cur_spec:
-                    newspecs = []
-                    for timespec in self._timespecs:
-                        print("%s != %s ?" % (timespec, cur_spec))
-                        if cur_spec != timespec:
-                            newspecs.append(timespec)
-                    self._timespecs = newspecs
-            elif event == '-CLEAR-':
-                self._clearspec()
-            elif event == '-CLEARALL-':
-                if sg.popup_yes_no(UI_POPUP_DELETETSPECS_Q, title=UI_POPUP_T_CONFIRM, icon=QMARK_ICON).upper() == 'YES':
-                    self._timespecs = []
-                    self._clearspec()
-            # update list again because self._data['-TIMESPECS-'] now only
-            # contains a line because of how it is updated
-            l = []
-            for timespec in self._timespecs:
-                l.append(str(timespec))
-            self._data['-TIMESPECS-'] = l
-        else:
-            return ret
+    def clear_alltimespecs(self):
+        # TODO: ask for confirmation
+        self._timespecs = []
+        self._updateform()
+
+    def _updatedata(self):
+        e = []
+        for timespec in self._timespecs:
+            e.append(timespec.as_dict())
+        self._item.time_specifications = e or None
+        return super()._updatedata()
+
+    def _updateform(self):
+        self._tv_timeSpecs.delete(*self._tv_timeSpecs.get_children())
+        idx = 0
+        for ts in self._timespecs:
+            hrspec = str(ts)
+            self._tv_timeSpecs.insert('', iid=idx, values=(idx, hrspec), index=tk.END)
+            idx += 1
+        self.clear_timespec()
+        return super()._updateform()
+
 
 
 # end.

@@ -18,8 +18,13 @@ import darkdetect
 
 from lib.repocfg import AppConfig
 
-from lib.sgmod import sg
+import tkinter as tk
+import ttkbootstrap as ttk
 
+
+# main root window, to be withdrawn
+_root = tk.Tk()
+_root.withdraw()
 
 # check that all passed arguments are not None
 def check_not_none(*l) -> bool:
@@ -138,19 +143,42 @@ def get_logfile():
     return os.path.join(AppConfig.get('APPDATA'), basename)
 
 
-# set the GUI theme according to system theme or DEBUG mode
-def set_UI_theme(new_theme=None):
-    if not new_theme:
-        if AppConfig.get('DEBUG'):
-            sg.theme(sg.DEFAULT_THEME_DEBUG)
-        else:
-            if darkdetect.isDark():
-                sg.theme(sg.DEFAULT_THEME_DARK)
-            else:
-                sg.theme(sg.DEFAULT_THEME_LIGHT)
+# get the GUI theme according to system theme or DEBUG mode
+def get_UI_theme():
+    if AppConfig.get('DEBUG'):
+        return AppConfig.get('DEFAULT_THEME_DEBUG')
     else:
-        sg.theme(new_theme)
+        if darkdetect.isDark():
+            return AppConfig.get('DEFAULT_THEME_DARK')
+        else:
+            return AppConfig.get('DEFAULT_THEME_LIGHT')
 
+# get the editor theme according to system theme or DEBUG mode
+def get_editor_theme():
+    if AppConfig.get('DEBUG'):
+        return AppConfig.get('EDITOR_THEME_DEBUG')
+    else:
+        if darkdetect.isDark():
+            return AppConfig.get('EDITOR_THEME_DARK')
+        else:
+            return AppConfig.get('EDITOR_THEME_LIGHT')
+
+
+
+# set the GUI theme according to system theme or DEBUG mode
+def setup_windows():
+    global _root
+    _root = tk.Tk()
+    _root.withdraw()
+    style = ttk.Style()
+    style.theme_use(get_UI_theme())
+
+
+# cleanup the root window: only to be called at exit
+def cleanup_windows():
+    global _root
+    _root.destroy()
+    del _root
 
 # write a warning to stderr
 def write_warning(s):

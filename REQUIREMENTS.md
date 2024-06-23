@@ -5,4 +5,5 @@
 * tomlkit: https://github.com/sdispater/tomlkit
 * pystray: https://github.com/moses-palmer/pystray
 * darkdetect: https://github.com/albertosottile/darkdetect
+* ttkbootstrap: https://github.com/israel-dryer/ttkbootstrap
 

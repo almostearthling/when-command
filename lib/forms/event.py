@@ -1,12 +1,15 @@
 # base event form
 
-from lib.i18n.strings import *
+from ..i18n.strings import *
+from ..repocfg import AppConfig
 
-from lib.utility import sg
-from lib.icons import APP_ICON32 as APP_ICON
-from lib.icons import XMARK_ICON48 as XMARK_ICON
+import tkinter as tk
+import ttkbootstrap as ttk
+from tkinter import messagebox
 
-from lib.items.event import Event
+from .ui import *
+
+from ..items.event import Event
 
 import re
 
@@ -15,72 +18,75 @@ import re
 _RE_VALIDNAME = re.compile("^[a-zA-Z_][a-zA-Z0-9_]*$")
 
 
-# layout generator: this is a base form and supports an extra layout for
-# specific item forms, which will inherit the surrounding form layout
-def _form_layout(conditions_available, extra_layout=[]):
-    return [
-        # common layout
-        [ sg.Frame(UI_FORM_COMMON_PARAMS, [[
-            sg.Column([
-                [ sg.T(UI_FORM_NAME_SC) ],
-                [ sg.T(UI_FORM_COND_SC) ],
-            ]),
-            sg.Column([
-                [ sg.I(key='-NAME-', expand_x=True) ],
-                [ sg.Combo(conditions_available, key='-CONDITION-', expand_x=True, readonly=True) ],
-            ], expand_x=True),
-        ]], expand_x=True) ],
+# event box base class: since this is the class that will be used in derived
+# forms too, in order to avoid variable name conflicts, all variable names
+# used here are prefixed with '@': agreeing that base values are prefixed
+# and specific values are not, consistent names can be used in derived forms
+class form_Event(ApplicationForm):
 
-        # extra layout
-        extra_layout,
+    def __init__(self, title, conditions_available, item=None):
+        size = AppConfig.get('SIZE_EDITOR_FORM')
+        bbox = (BBOX_OK, BBOX_CANCEL)
+        super().__init__(title, size, None, bbox)
 
-        # form control section
-        [ sg.Push(), sg.B_OK(UI_OK, key='-OK-'), sg.B_CANCEL(UI_CANCEL, key='-CANCEL-') ],
-    ]
+        conditions_available = conditions_available.copy()
+        conditions_available.sort()
 
+        # build the UI
+        area = ttk.Frame(super().contents)
+        area.grid(row=0, column=0, sticky=tk.NSEW)
+        PAD = WIDGET_PADDING_PIXELS
 
-# base form for event items: this is never used as-is, but declined instead
-# into more specific forms that will invoke the base `__init__` providing the
-# extra layout that is suitable for the specific item
-class form_Event(object):
-    def __init__(self, title, conditions_available, extra_layout, item=None):
-        layout = _form_layout(conditions_available, extra_layout)
-        self._form = sg.Window(title, layout=layout, icon=APP_ICON, size=(960, 640), finalize=True)
-        self._data = {}
-        self.__dont_update = []
-        self.__datachecks = [
-            ('-NAME-', UI_FORM_NAME_SC, lambda x: _RE_VALIDNAME.match(x)),
-            ('-CONDITION-', UI_FORM_COND_SC, lambda x: x in conditions_available),
-        ]
+        l_itemName = ttk.Label(area, text=UI_FORM_NAME_SC)
+        e_itemName = ttk.Entry(area)
+        l_associatedCondition = ttk.Label(area, text=UI_FORM_COND_SC)
+        cb_associatedCondition = ttk.Combobox(area, values=conditions_available, state='readonly')
+        self.data_bind('@name', e_itemName, TYPE_STRING)
+        self.data_bind('@condition', cb_associatedCondition, TYPE_STRING)
+        sep = ttk.Separator(area)
+        l_itemName.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        e_itemName.grid(row=0, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        l_associatedCondition.grid(row=1, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        cb_associatedCondition.grid(row=1, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        sep.grid(row=2, column=0, sticky=tk.EW, columnspan=2, padx=PAD, pady=PAD)
+
+        self._sub_contents = ttk.Frame(area)
+        self._sub_contents.rowconfigure(0, weight=1)
+        self._sub_contents.columnconfigure(0, weight=1)
+        self._sub_contents.grid(row=10, column=0, columnspan=2, sticky=tk.NSEW)
+
+        area.columnconfigure(1, weight=1)
+        area.rowconfigure(10, weight=1)
+
         if item:
             self.set_item(item)
         else:
             self.reset_item()
+        self.changed = False
 
-    def _updatedata(self):
-        if self._item:
-            self._data['-NAME-'] = self._item.name
-            self._data['-CONDITION-'] = self._item.condition
-        else:
-            self._data['-NAME-'] = ''
-            self._data['-CONDITION-'] = ''
+
+    # contents is the root for slave widgets
+    @property
+    def contents(self):
+        return self._sub_contents
+
 
     def _updateform(self):
-        for k in self._data:
-            if k not in self.__dont_update:
-                v = self._data[k]
-                if v is None:
-                    v = ''
-                self._form[k].update(v)
-        self._form.refresh()
-
-    def _updateitem(self):
-        self._item.name = self._data['-NAME-']
+        if self._item:
+            self.data_set('@name', self._item.name)
+            self.data_set('@condition', self._item.condition or '')
+        else:
+            self.data_set('@name', '')
+            self.data_set('@condition', '')
 
 
-    # list of keys of elements that should not be updated
-    def dont_update(self, *keys):
-        self.__dont_update += keys
+    # the data update utility loads data into the item
+    def _updatedata(self):
+        name = self.data_get('@name')
+        if name is not None:
+            self._item.name = name
+            self._item.condition = self.data_get('@condition')
+
 
     # set and remove the associated item
     def set_item(self, item):
@@ -89,71 +95,30 @@ class form_Event(object):
             self._item = item.__class__(item.as_table())    # get an exact copy to mess with
         except ValueError:
             self._item = item                               # item was newly created: use it
-        self._updatedata()
 
     def reset_item(self):
         self._item = None
-        self._updatedata()
 
 
-    # derived objects should use this function to add checks to be performed
-    # on fields, as it avoids adding rules for already existing keys
-    def add_checks(self, *checks):
-        existing = list(x[0] for x in self.__datachecks)
-        for check in checks:
-            if check[0] not in existing:
-                self.__datachecks.append(check)
+    # command button reactions: cancel deletes the current item so that None
+    # is returned upon dialog close, while ok finalizes item initialization
+    # and lets the run() function return a configured item
+    def exit_cancel(self):
+        self._item = None
+        return super().exit_cancel()
 
-    # data check function: returns None if the checks pass, a map of failed
-    # entries (form item key: (label, value)) otherwise; both ValueError and
-    # TypeError are treated as invalid data; should not be overridden
-    def check_data(self):
-        failed = {}
-        for k, label, func in self.__datachecks:
-            if label.endswith(":"):
-                label = label[:-1]
-            try:
-                if not func(self._data[k]):
-                    failed[k] = (label, self._data[k])
-            except ValueError:
-                failed[k] = (label, self._data[k])
-            except TypeError:
-                failed[k] = (label, self._data[k])
-        return failed or None
+    def exit_ok(self):
+        name = self.data_get('@name')
+        if name is not None:
+            self._updatedata()
+            return super().exit_ok()
+        else:
+            messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDITEMNAME)
 
 
-    # event processor: should always be overridden, and the parent
-    # version has to be called first
-    def process_event(self, event, values):
-        if values:
-            self._data = values.copy()
-            self._item.condition = self._data['-CONDITION-']
-        if event in [sg.WIN_CLOSED, '-CANCEL-']:
-            return False
-        elif event == '-OK-':
-            return True
-        return None
-
-    # main loop handler: should not be overridden
+    # main loop: returns the current item if any
     def run(self):
-        self._updateform()
-        while True:             # Event Loop
-            event, values = self._form.read()
-            ret = self.process_event(event, values)
-            if ret is not None:
-                if ret:
-                    check = self.check_data()
-                    if check is None:
-                        self._form.close()
-                        break
-                    else:
-                        checks = "\n".join("- %s" % check[k][0] for k in check)
-                        sg.popup(UI_POPUP_INVALIDPARAMETERS_T % checks, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
-                else:
-                    self._form.close()
-                    return None
-            self._updateform()
-        self._updateitem()
+        super().run()
         return self._item
 
 

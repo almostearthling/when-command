@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # application launcher and command line interpreter
 
-from lib.i18n.strings import *
-
 import sys
 import os.path
 import argparse
@@ -13,7 +11,8 @@ if not BASEDIR:
     BASEDIR = '.'
 sys.path.append(BASEDIR)
 
-from lib.utility import get_default_configdir, get_configfile, set_UI_theme, is_whenever_running
+from lib.i18n.strings import *
+from lib.utility import get_default_configdir, get_configfile, is_whenever_running, setup_windows, cleanup_windows
 from lib.repocfg import AppConfig
 
 
@@ -86,7 +85,7 @@ def main():
 
     # open the configuration utility and exit after its use
     elif command == 'config':
-        set_UI_theme()
+        setup_windows()
         if DEBUG:
             configfile = get_configfile()
             if not os.path.exists(configfile):
@@ -94,9 +93,11 @@ def main():
                     with open(configfile, 'w') as f:
                         f.write("# Created by: %s v%s" % (UI_APP, UI_APP_VERSION))
                 except Exception as e:
+                    cleanup_windows()
                     exiterror(CLI_ERR_CONFIG_UNACCESSIBLE)
             from lib.cfgapp import main
             main()
+            cleanup_windows()
         else:
             try:
                 configfile = get_configfile()
@@ -105,31 +106,39 @@ def main():
                         with open(configfile, 'w') as f:
                             f.write("# Created by: %s v%s" % (UI_APP, UI_APP_VERSION))
                     except Exception as e:
+                        cleanup_windows()
                         exiterror(CLI_ERR_CONFIG_UNACCESSIBLE)
                 from lib.cfgapp import main
                 main()
+                cleanup_windows()
             except Exception as e:
+                cleanup_windows()
                 exiterror("unexpected exception '%s'" % e)
 
     # start the resident application and display an icon on the tray area
     elif command == 'start':
+        setup_windows()
         if is_whenever_running():
             exiterror(CLI_ERR_ALREADY_RUNNING)
-        set_UI_theme()
         if DEBUG:
             whenever = AppConfig.get('WHENEVER')
             if whenever is None or not os.path.exists(whenever) or not os.access(whenever, os.X_OK):
+                cleanup_windows()
                 exiterror(CLI_ERR_WHENEVER_NOT_FOUND)
             from lib.trayapp import main
             main()
+            cleanup_windows()
         else:
             try:
                 whenever = AppConfig.get('WHENEVER')
                 if whenever is None or not os.path.exists(whenever) or not os.access(whenever, os.X_OK):
+                    cleanup_windows()
                     exiterror(CLI_ERR_WHENEVER_NOT_FOUND)
                 from lib.trayapp import main
                 main()
+                cleanup_windows()
             except Exception as e:
+                cleanup_windows()
                 exiterror("unexpected exception '%s'" % e)
 
     else:

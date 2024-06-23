@@ -1,42 +1,34 @@
 # command event form
 # this form is here only for completeness and **must never** be displayed
 
-from lib.i18n.strings import *
+from ..i18n.strings import *
 
-from lib.utility import sg
-from lib.icons import APP_ICON32 as APP_ICON
+import tkinter as tk
+import ttkbootstrap as ttk
 
-from lib.forms.event import form_Event
-from lib.items.event_cli import CommandEvent
-
-
-# (extra) layout generator
-def _form_layout():
-    return [
-        [ sg.Frame(UI_FORM_SPECIFIC_PARAMS, [[
-            sg.T(UI_CAPTION_NOSPECIFICPARAMS),
-        ]], expand_x=True, expand_y=True) ]
-    ]
+from .ui import *
+from .event import form_Event
+from ..items.event_cli import CommandEvent
 
 
 # specialized subform
 class form_CommandEvent(form_Event):
+
     def __init__(self, conditions_available, item=None):
         if item:
             assert(isinstance(item, CommandEvent))
         else:
             item = CommandEvent()
-        extra_layout = _form_layout()
-        form_Event.__init__(self, UI_TITLE_CLIEVENT, conditions_available, extra_layout, item)
+        form_Event.__init__(self, UI_TITLE_CLIEVENT, conditions_available, item)
 
-    def _updatedata(self):
-        form_Event._updatedata(self)
+        area = ttk.Frame(super().contents)
+        area.grid(row=0, column=0, sticky=tk.NSEW)
+        PAD = WIDGET_PADDING_PIXELS
 
-    def _updateitem(self):
-        form_Event._updateitem(self)
+        l_noParams = ttk.Label(area, text=UI_CAPTION_NOSPECIFICPARAMS)
+        l_noParams.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
 
-    def process_event(self, event, values):
-        return super().process_event(event, values)
+        self._updateform()
 
 
 # end.

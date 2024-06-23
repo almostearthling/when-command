@@ -1,42 +1,35 @@
 # DBus condition form (unsupported)
 # this form is here only for completeness and **must never** be displayed
 
-from lib.i18n.strings import *
+from ..i18n.strings import *
 
-from lib.utility import sg
-from lib.icons import APP_ICON32 as APP_ICON
+import tkinter as tk
+import ttkbootstrap as ttk
 
-from lib.forms.cond import form_Condition
-from lib.items.cond_dbus import DBusCondition
+from .ui import *
 
-
-# (extra) layout generator
-def _form_layout():
-    return [
-        [ sg.Frame(UI_FORM_EVENT, [[
-            sg.T(UI_CAPTION_NOSPECIFICPARAMS),
-        ]], expand_x=True, expand_y=True) ]
-    ]
+from .cond import form_Condition
+from ..items.cond_dbus import DBusCondition
 
 
 # specialized subform
 class form_DBusCondition(form_Condition):
+    
     def __init__(self, tasks_available, item=None):
         if item:
             assert(isinstance(item, DBusCondition))
         else:
             item = DBusCondition()
-        extra_layout = _form_layout()
-        form_Condition.__init__(self, UI_TITLE_DBUSCOND, tasks_available, extra_layout, item)
+        super().__init__(UI_TITLE_DBUSCOND, tasks_available, item)
 
-    def _updatedata(self):
-        form_Condition._updatedata(self)
+        area = ttk.Frame(super().contents)
+        area.grid(row=0, column=0, sticky=tk.NSEW)
+        PAD = WIDGET_PADDING_PIXELS
 
-    def _updateitem(self):
-        form_Condition._updateitem(self)
+        l_unsupported = ttk.Label(area, text=UI_CAPTION_NOTSUPPORTED)
+        l_unsupported.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
 
-    def process_event(self, event, values):
-        return super().process_event(event, values)
+        self._updateform()
 
 
 # end.

@@ -1,125 +1,92 @@
 # form to select what type of new item should be created
 
-from lib.i18n.strings import *
+from ..i18n.strings import *
+from ..repocfg import AppConfig
 
-from lib.utility import sg
-from lib.icons import APP_ICON32 as APP_ICON
+from ..icons import APP_ICON32 as APP_ICON
 
-from lib.items.item import ALL_AVAILABLE_ITEMS
+import tkinter as tk
+import ttkbootstrap as ttk
+from tkinter import messagebox
 
+from .ui import *
 
-# layout generator (fixed)
-def _form_layout():
-    return [
-        [ sg.Frame(
-            UI_FORM_ITEMTYPE,
-            [
-                [sg.Radio(ITEM_TASK, 'item', True, key='-TASK-')],
-                [sg.Radio(ITEM_COND, 'item', False, key='-CONDITION-')],
-                [sg.Radio(ITEM_EVENT, 'item', False, key='-EVENT-')],
-            ],
-            expand_x=True,
-        ) ],
-        [ sg.T(UI_FORM_ITEMSUBTYPES) ],
-        [ sg.Table(
-            auto_size_columns=True,
-            headings=[UI_FORM_ITEM, 'ITEM_CODE'],
-            visible_column_map=(True, False),
-            values=[],
-            key='-SUBTYPES-',
-            num_rows=5,
-            justification='left',
-            expand_x=True, expand_y=True,
-        ) ],
-
-        # form control section
-        [ sg.Push(), sg.B_OK(UI_OK, key='-OK-'), sg.B_CANCEL(UI_CANCEL, key='-CANCEL-') ],
-    ]
+from ..items.item import ALL_AVAILABLE_ITEMS, ALL_AVAILABLE_ITEMS_D
 
 
 # form class: this form is fixed and will not be derived
-class form_NewItem(object):
+class form_NewItem(ApplicationForm):
+    
     def __init__(self):
-        self._form = sg.Window(
-            UI_TITLE_NEWITEM,
-            layout=_form_layout(),
-            icon=APP_ICON,
-            size=(640, 400),
-            finalize=True,
-        )
-        # self._form['-SUBTYPES-'].bind('<Button-1>' , '+-click-')
-        self._form['-TASK-'].bind('<Button-1>' , '+-click-')
-        self._form['-CONDITION-'].bind('<Button-1>' , '+-click-')
-        self._form['-EVENT-'].bind('<Button-1>' , '+-click-')
-        self.__dont_update = []
-        self._subtypes = []
+        size = AppConfig.get('SIZE_NEWITEM_FORM')
+        bbox = (BBOX_OK, BBOX_CANCEL)
+        super().__init__(UI_APP, size, APP_ICON, bbox)
+
         self._subtypes_display = []
         self._type = 'task'
-        self._data = {}
-        self._updatedata()
+        self._ret = None
 
-    def _updatedata(self):
-        if self._type == 'task':
-            self._data['-TASK-'] = True
-            self._data['-CONDITION-'] = False
-            self._data['-EVENT-'] = False
-        elif self._type == 'cond':
-            self._data['-TASK-'] = False
-            self._data['-CONDITION-'] = True
-            self._data['-EVENT-'] = False
-        elif self._type == 'event':
-            self._data['-TASK-'] = False
-            self._data['-CONDITION-'] = False
-            self._data['-EVENT-'] = True
-        else:
-            raise ValueError("Invalid choice for item type")
-        self._subtypes = list(x for x in ALL_AVAILABLE_ITEMS
-                              if x[0].startswith('%s:' % self._type)
-                              and x[3].available)
-        self._subtypes_display = list([x[1], x[0]] for x in self._subtypes)
-        self._data['-SUBTYPES-'] = self._subtypes_display.copy()
+        # build the UI
+        area = ttk.Frame(self.contents)
+        area.grid(row=0, column=0, sticky=tk.NSEW)
+        PAD = WIDGET_PADDING_PIXELS
+
+        l_itemType = ttk.Label(area, text=UI_FORM_ITEMTYPE)
+        rb_itemTask = ttk.Radiobutton(area, text=ITEM_TASK, value='task', command=lambda : self.set_itemtype())
+        rb_itemCond = ttk.Radiobutton(area, text=ITEM_COND, value='cond', command=lambda : self.set_itemtype())
+        rb_itemEvent = ttk.Radiobutton(area, text=ITEM_EVENT, value='event', command=lambda : self.set_itemtype())
+        l_itemSubTypes = ttk.Label(area, text=UI_FORM_ITEMSUBTYPES)
+        tv_itemSubTypes = ttk.Treeview(area, columns=('type', 'code'), displaycolumns=('type',), show='', height=5)
+        tv_itemSubTypes.heading('type', anchor=tk.W, text=UI_FORM_ITEM)
+        self._tv_itemtypes = tv_itemSubTypes
+
+        self.data_bind('item_type', (rb_itemTask, rb_itemCond, rb_itemEvent), TYPE_STRING)
+        self.data_bind('item_selection', tv_itemSubTypes)
+
+        l_itemType.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        rb_itemTask.grid(row=1, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        rb_itemCond.grid(row=2, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        rb_itemEvent.grid(row=3, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        l_itemSubTypes.grid(row=10, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        tv_itemSubTypes.grid(row=11, column=0, sticky=tk.NSEW, padx=PAD, pady=PAD)
+
+        area.columnconfigure(0, weight=1)
+        area.rowconfigure(11, weight=1)
+
+        subtypes = list(x for x in ALL_AVAILABLE_ITEMS
+                        if x[0].startswith('%s:' % self._type)
+                        and x[3].available)
+        self._subtypes_display = list([x[1], x[0]] for x in subtypes)
+        self._subtypes_display.sort(key=lambda x: x[0])
+
+        self._updateform()
+
+
+    def set_itemtype(self):
+        self._type = self.data_get('item_type')
+        subtypes = list(x for x in ALL_AVAILABLE_ITEMS
+                        if x[0].startswith('%s:' % self._type)
+                        and x[3].available)
+        self._subtypes_display = list([x[1], x[0]] for x in subtypes)
+        self._subtypes_display.sort(key=lambda x: x[0])
+        self._updateform()
 
     def _updateform(self):
-        for k in self._data:
-            if k not in self.__dont_update:
-                v = self._data[k]
-                if v is None:
-                    v = ''
-                self._form[k].update(v)
-        self._form.refresh()
+        self.data_set('item_type', self._type)
+        self._tv_itemtypes.delete(*self._tv_itemtypes.get_children())
+        for entry in self._subtypes_display:
+            self._tv_itemtypes.insert('', iid=entry[1], values=entry, index=ttk.END)
 
-    def dont_update(self, *keys):
-        self.__dont_update += keys
+    def exit_ok(self):
+        choice = self.data_get('item_selection')
+        if choice:
+            self._ret = self._type, ALL_AVAILABLE_ITEMS_D[choice[1]][1]
+        return super().exit_ok()
+
 
     def run(self):
-        ok = False
-        self._updateform()
-        while True:             # Event Loop
-            event, values = self._form.read()
-            self._data = values
-            if event in [sg.WIN_CLOSED, '-CANCEL-']:
-                self._form.close()
-                break
-            elif event == '-TASK-+-click-':
-                self._type = 'task'
-            elif event == '-CONDITION-+-click-':
-                self._type = 'cond'
-            elif event == '-EVENT-+-click-':
-                self._type = 'event'
-            elif event == '-OK-':
-                self._form.close()
-                ok = True
-                break
-            self._updatedata()
-            self._updateform()
+        super().run()
+        return self._ret
 
-        if ok:
-            choice = self._data['-SUBTYPES-']
-            if choice:
-                return self._type, self._subtypes[choice[0]][2]
-            else:
-                return None
-        else:
-            return None
 
 # end.
