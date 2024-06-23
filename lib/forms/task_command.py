@@ -49,149 +49,154 @@ class form_CommandTask(form_Task):
         else:
             item = CommandTask()
         super().__init__(UI_TITLE_COMMANDTASK, item)
+
+        # form data
         self._envvars = []
 
-        # this area hosts other panes, each with custom grid layout, and the
-        # separators that act as borders between the sections
+        # build the UI: build widgets, arrange them in the box, bind data
+
+        # client area
         area = ttk.Frame(super().contents)
         area.grid(row=0, column=0, sticky=tk.NSEW)
-        area.columnconfigure(0, weight=1)
         PAD = WIDGET_PADDING_PIXELS
 
-        # command: use a separate area to customize layout
-        a_area = ttk.Frame(area)
-        a_area.grid(row=0, column=0, sticky=tk.NSEW)
+        # command section: use a separate area to customize layout
+        area_command = ttk.Frame(area)
+        l_command = ttk.Label(area_command, text=UI_FORM_COMMAND_SC)
+        e_command = ttk.Entry(area_command)
+        b_commandBrowse = ttk.Button(area_command, text=UI_BROWSE, command=self.browse_command)
+        l_args = ttk.Label(area_command, text=UI_FORM_ARGS_SC)
+        e_args = ttk.Entry(area_command)
+        l_startupPath = ttk.Label(area_command, text=UI_FORM_STARTUPPATH_SC)
+        e_startupPath = ttk.Entry(area_command)
+        b_startupPathBrowse = ttk.Button(area_command, text=UI_BROWSE, command=self.browse_startup_path)
+        sep1 = ttk.Separator(area)
 
-        l_command = ttk.Label(a_area, text=UI_FORM_COMMAND_SC)
-        e_command = ttk.Entry(a_area)
-        b_commandBrowse = ttk.Button(a_area, text=UI_BROWSE)
+        # arrange widgets in frame
         l_command.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         e_command.grid(row=0, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
         b_commandBrowse.grid(row=0, column=2, sticky=tk.EW, padx=PAD, pady=PAD)
-        self.data_bind('command', e_command, TYPE_STRING, _is_command)
-
-        l_args = ttk.Label(a_area, text=UI_FORM_ARGS_SC)
-        e_args = ttk.Entry(a_area)
         l_args.grid(row=1, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         e_args.grid(row=1, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
-        self.data_bind('command_arguments', e_args, TYPE_STRING)
-
-        l_startupPath = ttk.Label(a_area, text=UI_FORM_STARTUPPATH_SC)
-        e_startupPath = ttk.Entry(a_area)
-        b_startupPathBrowse = ttk.Button(a_area, text=UI_BROWSE)
         l_startupPath.grid(row=2, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         e_startupPath.grid(row=2, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
         b_startupPathBrowse.grid(row=2, column=2, sticky=tk.EW, padx=PAD, pady=PAD)
-        self.data_bind('startup_path', e_startupPath, TYPE_STRING, _is_dir)
 
-        a_area.columnconfigure(1, weight=1)
-
-        sep1 = ttk.Separator(area)
-        sep1.grid(row=1, column=0, columnspan=2, sticky=tk.EW, pady=PAD)
-
-        # environment: deserves an area to customize layout
-        v_area = ttk.Frame(area)
-        v_area.grid(row=3, column=0, sticky=tk.NSEW)
-        v_area.columnconfigure(0, weight=1)
-        v_area.columnconfigure(1, weight=1)
-
-        # grow this part of the form
-        area.rowconfigure(3, weight=1)
-
-        # subarea for checkboxes
-        vv_area1 = ttk.Frame(v_area)
-        vv_area1.grid(row=0, column=0, columnspan=2, sticky=tk.EW)
-        ck_preserveEnv = ttk.Checkbutton(vv_area1, text=UI_FORM_PRESERVEENVIRONMENT)
-        ck_setEnvVars = ttk.Checkbutton(vv_area1, text=UI_FORM_SETWENVIRONMENT)
-        ck_preserveEnv.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
-        ck_setEnvVars.grid(row=0, column=1, sticky=tk.W, padx=PAD, pady=PAD)
-        self.data_bind('include_environment', ck_preserveEnv)
-        self.data_bind('set_environment_variables', ck_setEnvVars)
-
-        l_vars = ttk.Label(v_area, text=UI_FORM_VARIABLES_SC)
-        tv_vars = ttk.Treeview(v_area, columns=('name', 'value'), show='headings', height=5)
-        l_vars.grid(row=1, column=0, sticky=tk.W, padx=PAD, pady=PAD)
-        tv_vars.grid(row=2, column=0, columnspan=2, sticky=tk.NSEW, padx=PAD, pady=PAD)
-        tv_vars.heading('name', anchor=tk.W, text=UI_FORM_VARNAME)
-        tv_vars.heading('value', anchor=tk.W, text=UI_FORM_VARVALUE)
-        self._tv_vars = tv_vars
-        self.data_bind('envvar_selection', tv_vars)
-
+        # environment section: deserves an area to customize layout
+        area_vars = ttk.Frame(area)
+        l_vars = ttk.Label(area_vars, text=UI_FORM_VARIABLES_SC)
+        tv_vars = ttk.Treeview(area_vars, columns=('name', 'value'), show='headings', height=5)
+        tv_vars.heading('name', anchor=tk.W, text=UI_FORM_NAME)
+        tv_vars.heading('value', anchor=tk.W, text=UI_FORM_VALUE)
         # bind double click to variable recall
-        self._tv_vars.bind('<Double-Button-1>', lambda _: self.recall_var())
+        tv_vars.bind('<Double-Button-1>', lambda _: self.recall_var())
+        l_varName = ttk.Label(area_vars, text=UI_FORM_VARNAME_SC)
+        e_varName = ttk.Entry(area_vars)
+        l_varValue = ttk.Label(area_vars, text=UI_FORM_NEWVALUE_SC)
+        e_varValue = ttk.Entry(area_vars)
+        b_addVar = ttk.Button(area_vars, text=UI_UPDATE, width=BUTTON_STANDARD_WIDTH, command=self.add_var)
+        b_delVar = ttk.Button(area_vars, text=UI_DEL, width=BUTTON_STANDARD_WIDTH, command=self.del_var)
+        sep2 = ttk.Separator(area)
 
-        l_varName = ttk.Label(v_area, text=UI_FORM_VARNAME_SC)
-        e_varName = ttk.Entry(v_area)
-        l_varValue = ttk.Label(v_area, text=UI_FORM_NEWVALUE_SC)
-        e_varValue = ttk.Entry(v_area)
+        # environment section: subarea for checkboxes
+        area_vars_flags = ttk.Frame(area)
+        ck_preserveEnv = ttk.Checkbutton(area_vars_flags, text=UI_FORM_PRESERVEENVIRONMENT)
+        ck_setEnvVars = ttk.Checkbutton(area_vars_flags, text=UI_FORM_SETWENVIRONMENT)
+
+        # environment section: arrange widgets in frame
+        l_vars.grid(row=1, column=0, columnspan=4, sticky=tk.W, padx=PAD, pady=PAD)
+        tv_vars.grid(row=2, column=0, columnspan=4, sticky=tk.NSEW, padx=PAD, pady=PAD)
         l_varName.grid(row=3, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         l_varValue.grid(row=3, column=1, sticky=tk.W, padx=PAD, pady=PAD)
         e_varName.grid(row=4, column=0, sticky=tk.EW, padx=PAD, pady=PAD)
         e_varValue.grid(row=4, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
-        self.data_bind('varname', e_varName, TYPE_STRING, lambda x: x == '' or _RE_VALIDNAME.match(x))
-        self.data_bind('newvalue', e_varValue, TYPE_STRING)
+        b_addVar.grid(row=4, column=2, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        b_delVar.grid(row=4, column=3, sticky=tk.NSEW, padx=PAD, pady=PAD)
 
-        # subarea for buttons - TODO: align buttons with entries, makes the dialog more compact
-        vv_area2 = ttk.Frame(v_area)
-        vv_area2.grid(row=5, column=0, columnspan=2, sticky=tk.NSEW)
-        b_addVar = ttk.Button(vv_area2, text=UI_UPDATE, width=BUTTON_STANDARD_WIDTH, command=self.add_var)
-        b_delVar = ttk.Button(vv_area2, text=UI_DEL, width=BUTTON_STANDARD_WIDTH, command=self.del_var)
-        b_addVar.grid(row=0, column=1, sticky=tk.NSEW, padx=PAD, pady=PAD)
-        b_delVar.grid(row=0, column=2, sticky=tk.NSEW, padx=PAD, pady=PAD)
-        vv_area2.columnconfigure(0, weight=1)
+        # environment section: arrange widgets in frame
+        ck_preserveEnv.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        ck_setEnvVars.grid(row=0, column=1, sticky=tk.W, padx=PAD, pady=PAD)
 
-        sep2 = ttk.Separator(area)
-        sep2.grid(row=4, column=0, columnspan=2, sticky=tk.EW, pady=PAD)
-
-        # checks: deserves an area to customize layout
-        c_area = ttk.Frame(area)
-        c_area.grid(row=5, column=0, sticky=tk.NSEW)
-
-        l_checkFor = ttk.Label(c_area, text=UI_FORM_CHECKFOR_SC)
+        # checks section: deserves an area to customize layout
+        area_checks = ttk.Frame(area)
+        l_checkFor = ttk.Label(area_checks, text=UI_FORM_CHECKFOR_SC)
         cb_checkFor = ttk.Combobox(
-            c_area,
+            area_checks,
             values=(UI_OUTCOME_NONE, UI_OUTCOME_SUCCESS, UI_OUTCOME_FAILURE),
             state='readonly',
             )
-        l_checkFor.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
-        cb_checkFor.grid(row=1, column=0, sticky=tk.EW, padx=PAD, pady=PAD)
-        l_checkWhat = ttk.Label(c_area, text=UI_FORM_CHECKAGAINST_SC)
+        l_checkWhat = ttk.Label(area_checks, text=UI_FORM_CHECKAGAINST_SC)
         cb_checkWhat = ttk.Combobox(
-            c_area,
+            area_checks,
             values=(UI_EXIT_CODE, UI_STREAM_STDOUT, UI_STREAM_STDERR),
             state='readonly',
             )
-        l_checkValue = ttk.Label(c_area, text=UI_FORM_TESTVAL_SC)
-        e_checkValue = ttk.Entry(c_area)
+        l_checkValue = ttk.Label(area_checks, text=UI_FORM_TESTVAL_SC)
+        e_checkValue = ttk.Entry(area_checks)
+        l_timeoutSecs = ttk.Label(area_checks, text=UI_FORM_TIMEOUTSECS_SC)
+        e_timeoutSecs = ttk.Entry(area_checks)
+
+        # checks section: arrange widgets in frame
+        l_checkFor.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        cb_checkFor.grid(row=1, column=0, sticky=tk.EW, padx=PAD, pady=PAD)
         l_checkWhat.grid(row=0, column=1, sticky=tk.W, padx=PAD, pady=PAD)
         cb_checkWhat.grid(row=1, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
         l_checkValue.grid(row=0, column=2, sticky=tk.W, padx=PAD, pady=PAD)
         e_checkValue.grid(row=1, column=2, sticky=tk.EW, padx=PAD, pady=PAD)
-        self.data_bind('check_for', cb_checkFor, TYPE_STRING)
-        self.data_bind('check_what', cb_checkWhat, TYPE_STRING)
-        self.data_bind('check_value', e_checkValue, TYPE_STRING)
-
-        l_timeoutSecs = ttk.Label(c_area, text=UI_FORM_TIMEOUTSECS_SC)
-        e_timeoutSecs = ttk.Entry(c_area)
         l_timeoutSecs.grid(row=0, column=3, sticky=tk.W, padx=PAD, pady=PAD)
         e_timeoutSecs.grid(row=1, column=3, sticky=tk.EW, padx=PAD, pady=PAD)
-        self.data_bind('timeout_seconds', e_timeoutSecs, TYPE_INT, lambda x: x >= 0)
 
-        # subarea for checkboxes
-        cc_area = ttk.Frame(c_area)
-        cc_area.grid(row=3, column=2, columnspan=2, sticky=tk.EW)
-        ck_matchExact = ttk.Checkbutton(cc_area, text=UI_FORM_MATCHEXACT)
-        ck_caseSensitive = ttk.Checkbutton(cc_area, text=UI_FORM_CASESENSITIVE)
-        ck_matchRegExp = ttk.Checkbutton(cc_area, text=UI_FORM_MATCHREGEXP)
+        # checks section: subarea for checkboxes
+        area_checks_flags = ttk.Frame(area)
+        ck_matchExact = ttk.Checkbutton(area_checks_flags, text=UI_FORM_MATCHEXACT)
+        ck_caseSensitive = ttk.Checkbutton(area_checks_flags, text=UI_FORM_CASESENSITIVE)
+        ck_matchRegExp = ttk.Checkbutton(area_checks_flags, text=UI_FORM_MATCHREGEXP)
+
+        # checks section: arrange widgets in frame
         ck_matchExact.grid(row=0, column=0, sticky=tk.EW, padx=PAD, pady=PAD)
         ck_caseSensitive.grid(row=0, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
         ck_matchRegExp.grid(row=0, column=2, sticky=tk.EW, padx=PAD, pady=PAD)
+
+        # arrange top items in the grid
+        area_command.grid(row=0, column=0, sticky=tk.NSEW)
+        sep1.grid(row=1, column=0, sticky=tk.EW, pady=PAD)
+        area_vars.grid(row=2, column=0, sticky=tk.NSEW)
+        area_vars_flags.grid(row=3, column=0, sticky=tk.NSEW)
+        sep2.grid(row=4, column=0, sticky=tk.EW, pady=PAD)
+        area_checks.grid(row=5, column=0, sticky=tk.NSEW)
+        area_checks_flags.grid(row=6, column=0, sticky=tk.NSEW)
+
+        # expand appropriate sections
+        area.rowconfigure(2, weight=1)
+        area.columnconfigure(0, weight=1)
+        area_command.columnconfigure(1, weight=1)
+        area_vars.columnconfigure(0, weight=1)
+        area_vars.columnconfigure(1, weight=1)
+        area_checks.columnconfigure(2, weight=1)
+
+        # bind data to widgets
+        self.data_bind('command', e_command, TYPE_STRING, _is_command)
+        self.data_bind('command_arguments', e_args, TYPE_STRING)
+        self.data_bind('startup_path', e_startupPath, TYPE_STRING, _is_dir)
+        self.data_bind('include_environment', ck_preserveEnv)
+        self.data_bind('set_environment_variables', ck_setEnvVars)
+        self.data_bind('envvar_selection', tv_vars)
+        self.data_bind('varname', e_varName, TYPE_STRING, lambda x: x == '' or _RE_VALIDNAME.match(x))
+        self.data_bind('newvalue', e_varValue, TYPE_STRING)
+        self.data_bind('check_for', cb_checkFor, TYPE_STRING)
+        self.data_bind('check_what', cb_checkWhat, TYPE_STRING)
+        self.data_bind('check_value', e_checkValue, TYPE_STRING)
+        self.data_bind('timeout_seconds', e_timeoutSecs, TYPE_INT, lambda x: x >= 0)
         self.data_bind('match_exact', ck_matchExact)
         self.data_bind('case_sensitive', ck_caseSensitive)
         self.data_bind('match_regular_expression', ck_matchRegExp)
 
-        c_area.columnconfigure(2, weight=1)
+        # propagate widgets that need to be accessed
+        self._tv_vars = tv_vars
+
+        # update the form
         self._updateform()
+
 
 
     # the data update utility loads data into the item
@@ -251,7 +256,6 @@ class form_CommandTask(form_Task):
                     self._item.match_regular_expression = bool(match_regular_expression) or None
                     self._item.case_sensitive = bool(case_sensitive) or None
         return super()._updatedata()
-
 
     def _updateform(self):
         self.data_set('varname', '')
@@ -342,6 +346,12 @@ class form_CommandTask(form_Task):
         value = entry[1]
         self.data_set('varname', name)
         self.data_set('newvalue', value)
+
+    def browse_command(self):
+        pass
+
+    def browse_startup_path(self):
+        pass
 
 
 # end.

@@ -1,7 +1,6 @@
 # Lua condition form
 
-from ..i18n.strings import *
-
+import re
 import tkinter as tk
 import ttkbootstrap as ttk
 from tkinter import messagebox
@@ -9,14 +8,13 @@ from tkinter import messagebox
 import pygments.lexers
 from chlorophyll import CodeView
 
-from ..utility import guess_typed_value, get_editor_theme
-
+from ..i18n.strings import *
 from .ui import *
+
+from ..utility import guess_typed_value, get_editor_theme
 
 from .cond import form_Condition
 from ..items.cond_lua import LuaScriptCondition
-
-import re
 
 
 # regular expression for item name checking
@@ -32,64 +30,67 @@ class form_LuaScriptCondition(form_Condition):
             item = LuaScriptCondition()
         super().__init__(UI_TITLE_LUACOND, tasks_available, item)
 
+        # form data
         self._results = []
 
-        # this area hosts other panes, each with custom grid layout, and the
-        # separators that act as borders between the sections
+        # build the UI: build widgets, arrange them in the box, bind data
+
+        # client area
         area = ttk.Frame(super().contents)
         area.grid(row=0, column=0, sticky=tk.NSEW)
-        area.columnconfigure(0, weight=1)
         PAD = WIDGET_PADDING_PIXELS
 
-        # script
+        # script section
         l_luaScript = ttk.Label(area, text=UI_FORM_SCRIPT)
         cv_luaScript = CodeView(area, pygments.lexers.LuaLexer, font='TkFixedFont', height=8, color_scheme=get_editor_theme())
-        self.data_bind('script', cv_luaScript, TYPE_STRING)
         sep1 = ttk.Separator(area)
 
+        # results section
         l_luaVars = ttk.Label(area, text=UI_FORM_EXPECTRESULTS)
         tv_luaVars = ttk.Treeview(area, columns=('variable', 'value'), show='headings', height=5)
         tv_luaVars.heading('variable', anchor=tk.W, text=UI_FORM_VARNAME)
         tv_luaVars.heading('value', anchor=tk.W, text=UI_FORM_VARVALUE)
-        self._tv_vars = tv_luaVars
-        self.data_bind('luavar_selection', tv_luaVars)
-
         # bind double click to variable recall
-        self._tv_vars.bind('<Double-Button-1>', lambda _: self.recall_var())
-
+        tv_luaVars.bind('<Double-Button-1>', lambda _: self.recall_var())
         l_varName = ttk.Label(area, text=UI_FORM_VARNAME_SC)
         e_varName = ttk.Entry(area)
         l_varValue = ttk.Label(area, text=UI_FORM_NEWVALUE_SC)
         e_varValue = ttk.Entry(area)
         b_addVar = ttk.Button(area, text=UI_UPDATE, width=BUTTON_STANDARD_WIDTH, command=self.add_var)
         b_delVar = ttk.Button(area, text=UI_DEL, width=BUTTON_STANDARD_WIDTH, command=self.del_var)
-        self.data_bind('varname', e_varName, TYPE_STRING, lambda x: x == '' or _RE_VALIDNAME.match(x))
-        self.data_bind('newvalue', e_varValue, TYPE_STRING)
-
         ck_expectAll = ttk.Checkbutton(area, text=UI_FORM_MATCHALLRESULTS)
-        self.data_bind('expect_all', ck_expectAll)
 
+        # arrange top items in the grid
         l_luaScript.grid(row=0, column=0, columnspan=4, sticky=tk.W, padx=PAD, pady=PAD)
         cv_luaScript.grid(row=1, column=0, columnspan=4, sticky=tk.NSEW, padx=PAD, pady=PAD)
-        sep1.grid(row=2, column=0, columnspan=4, sticky=tk.EW, padx=PAD, pady=PAD)
-
+        sep1.grid(row=2, column=0, columnspan=4, sticky=tk.EW, pady=PAD)
         l_luaVars.grid(row=10, column=0, columnspan=4, sticky=tk.W, padx=PAD, pady=PAD)
         tv_luaVars.grid(row=11, column=0, columnspan=4, sticky=tk.NSEW, padx=PAD, pady=PAD)
-        
         l_varName.grid(row=12, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         l_varValue.grid(row=12, column=1, sticky=tk.W, padx=PAD, pady=PAD)
         e_varName.grid(row=13, column=0, sticky=tk.EW, padx=PAD, pady=PAD)
         e_varValue.grid(row=13, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
         b_addVar.grid(row=13, column=2, sticky=tk.EW, padx=PAD, pady=PAD)
         b_delVar.grid(row=13, column=3, sticky=tk.EW, padx=PAD, pady=PAD)
-
         ck_expectAll.grid(row=20, column=0, sticky=tk.W, padx=PAD, pady=PAD)
 
+        # expand appropriate sections
         area.rowconfigure(1, weight=1)
         area.rowconfigure(11, weight=1)
         area.columnconfigure(0, weight=1)
         area.columnconfigure(1, weight=1)
 
+        # bind data to widgets
+        self.data_bind('luavar_selection', tv_luaVars)
+        self.data_bind('script', cv_luaScript, TYPE_STRING)
+        self.data_bind('varname', e_varName, TYPE_STRING, lambda x: x == '' or _RE_VALIDNAME.match(x))
+        self.data_bind('newvalue', e_varValue, TYPE_STRING)
+        self.data_bind('expect_all', ck_expectAll)
+
+        # propagate widgets that need to be accessed
+        self._tv_vars = tv_luaVars
+
+        # update the form
         self._updateform()
 
     def add_var(self):
@@ -141,7 +142,7 @@ class form_LuaScriptCondition(form_Condition):
             e[l[0]] = guess_typed_value(str(l[1]))
         self._item.expected_results = e or None
         return super()._updatedata()
-    
+
     def _updateform(self):
         self.data_set('script', self._item.script)
         self.data_set('expect_all', self._item.expect_all)

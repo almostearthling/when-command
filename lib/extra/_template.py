@@ -1,14 +1,14 @@
 # template for extra modules
 
 # this header is common to all extra modules
-from ..i18n.strings import *
-from ..utility import check_not_none, append_not_none
-
 from tomlkit import items, table
 
 import tkinter as tk
 import ttkbootstrap as ttk
 from tkinter import messagebox
+
+from ..i18n.strings import *
+from ..utility import check_not_none, append_not_none
 
 from ..forms.ui import *
 

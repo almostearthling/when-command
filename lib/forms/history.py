@@ -22,15 +22,19 @@ class form_History(ApplicationForm):
         bbox = (BBOX_CLOSE,)
         super().__init__(UI_APP, size, APP_ICON, bbox, main)
 
+        # form data
         self._history = []
         if history:
             self.set_history(history)
         
-        # build the UI
+        # build the UI: build widgets, arrange them in the box, bind data
+
+        # client area
         area = ttk.Frame(self.contents)
         area.grid(row=0, column=0, sticky=tk.NSEW)
         PAD = WIDGET_PADDING_PIXELS
 
+        # history list section
         l_history = ttk.Label(area, text=UI_FORM_HISTORYITEMS_SC)
         tv_history = ttk.Treeview(
             area,
@@ -55,12 +59,19 @@ class form_History(ApplicationForm):
         tv_history.heading(4, anchor=tk.CENTER, text=UI_FORM_HS_SUCCESS)
         tv_history.heading(5, anchor=tk.W, text=UI_FORM_HS_MESSAGE)
 
+        # arrange items in the grid
         l_history.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         tv_history.grid(row=1, column=0, sticky=tk.NSEW, padx=PAD, pady=PAD)
-        self._tv_history = tv_history
 
+        # expand appropriate sections
         area.rowconfigure(1, weight=1)
         area.columnconfigure(0, weight=1)
+
+        # bind data to widgets
+        # NOTE: no data to bind
+
+        # propagate widgets that need to be accessed
+        self._tv_history = tv_history
 
         self._updateform()
 

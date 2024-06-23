@@ -1,17 +1,16 @@
 # time specification condition form
 
-from ..i18n.strings import *
-
+from time import localtime
 import tkinter as tk
 import ttkbootstrap as ttk
 from tkinter import messagebox
 
+from ..i18n.strings import *
 from .ui import *
 
 from .cond import form_Condition
 from ..items.cond_time import TimeCondition, TimeSpec
 
-from time import localtime
 
 
 # these lists and maps are used for visualization and conversion of dates
@@ -91,16 +90,22 @@ class form_TimeCondition(form_Condition):
         else:
             item = TimeCondition()
         super().__init__(UI_TITLE_TIMECOND, tasks_available, item)
+
+        # form data
         self._timespecs = []
         if self._item.time_specifications:
             for ts in self._item.time_specifications:
                 timespec = TimeSpec(ts)
                 self._timespecs.append(timespec)
 
+        # build the UI: build widgets, arrange them in the box, bind data
+
+        # client area
         area = ttk.Frame(super().contents)
         area.grid(row=0, column=0, sticky=tk.NSEW)
         PAD = WIDGET_PADDING_PIXELS
 
+        # time specification section
         # the time specification area is quite complex and must be
         # carefully built, therefore it deserves a frame
         area_tspec = ttk.Frame(area)
@@ -122,20 +127,16 @@ class form_TimeCondition(form_Condition):
         e_tsSec = ttk.Entry(area_tspec, width=4, justify=tk.RIGHT)
         f_sep5 = ttk.Frame(area_tspec)
         b_tsClear = ttk.Button(area_tspec, text=UI_CLEAR, command=self.clear_timespec)
+        # alternate layout: looks more polished than the other one
+        b_tsAdd = ttk.Button(area_tspec, width=BUTTON_STANDARD_WIDTH_SMALL, text=UI_ADD, command=self.add_timespec)
+        b_tsDel = ttk.Button(area_tspec, width=BUTTON_STANDARD_WIDTH_SMALL, text=UI_DEL, command=self.del_timespec)
 
-        self.data_bind('ts_year', cb_tsYear, TYPE_INT)
-        self.data_bind('ts_month', cb_tsMonth, TYPE_STRING)
-        self.data_bind('ts_day', cb_tsDay, TYPE_INT)
-        self.data_bind('ts_dow', cb_tsDayOfWeek, TYPE_STRING)
-        self.data_bind('ts_hour', e_tsHour, TYPE_INT, lambda x: 0 <= x < 24)
-        self.data_bind('ts_min', e_tsMin, TYPE_INT, lambda x: 0 <= x < 60)
-        self.data_bind('ts_sec', e_tsSec, TYPE_INT, lambda x: 0 <= x < 60)
-
+        # time specification section: arrange items in frame
         l_tsDate.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         cb_tsYear.grid(row=0, column=1, sticky=tk.W, padx=PAD, pady=PAD)
-        l_sep1.grid(row=0, column=2, sticky=tk.W, padx=PAD, pady=PAD)
+        l_sep1.grid(row=0, column=2, sticky=tk.W, pady=PAD)
         cb_tsMonth.grid(row=0, column=3, sticky=tk.W, padx=PAD, pady=PAD)
-        l_sep2.grid(row=0, column=4, sticky=tk.W, padx=PAD, pady=PAD)
+        l_sep2.grid(row=0, column=4, sticky=tk.W, pady=PAD)
         cb_tsDay.grid(row=0, column=5, sticky=tk.W, padx=PAD, pady=PAD)
         l_tsOr.grid(row=0, column=6, sticky=tk.W, padx=PAD, pady=PAD)
         l_tsDayOfWeek.grid(row=0, column=7, sticky=tk.W, padx=PAD, pady=PAD)
@@ -143,50 +144,73 @@ class form_TimeCondition(form_Condition):
         f_sep3.grid(row=0, column=9, sticky=tk.W, padx=PAD, pady=PAD)
         l_tsTime.grid(row=0, column=10, sticky=tk.W, padx=PAD, pady=PAD)
         e_tsHour.grid(row=0, column=11, sticky=tk.W, padx=PAD, pady=PAD)
-        l_sep4.grid(row=0, column=12, sticky=tk.W, padx=PAD, pady=PAD)
+        l_sep4.grid(row=0, column=12, sticky=tk.W, pady=PAD)
         e_tsMin.grid(row=0, column=13, sticky=tk.W, padx=PAD, pady=PAD)
-        l_sep5.grid(row=0, column=14, sticky=tk.W, padx=PAD, pady=PAD)
+        l_sep5.grid(row=0, column=14, sticky=tk.W, pady=PAD)
         e_tsSec.grid(row=0, column=15, sticky=tk.W, padx=PAD, pady=PAD)
         f_sep5.grid(row=0, column=16, sticky=tk.W, padx=PAD, pady=PAD)
         b_tsClear.grid(row=0, column=17, sticky=tk.W, padx=PAD, pady=PAD)
-        area_tspec.columnconfigure(9, weight=1)
-        area_tspec.columnconfigure(16, weight=1)
-        area_tspec.grid(row=0, column=0, sticky=tk.EW)
+        # alternate layout: looks more polished than the other one
+        b_tsAdd.grid(row=0, column=18, sticky=tk.EW, padx=PAD, pady=PAD)
+        b_tsDel.grid(row=0, column=19, sticky=tk.EW, padx=PAD, pady=PAD)
 
-        area_addrm = ttk.Frame(area)
-        f_sep6 = ttk.Frame(area_addrm)
-        b_tsAdd = ttk.Button(area_addrm, width=BUTTON_STANDARD_WIDTH, text=UI_ADD, command=self.add_timespec)
-        b_tsDel = ttk.Button(area_addrm, width=BUTTON_STANDARD_WIDTH, text=UI_DEL, command=self.del_timespec)
-        f_sep7 = ttk.Frame(area_addrm)
-        f_sep6.grid(row=0, column=0, sticky=tk.EW)
-        b_tsAdd.grid(row=0, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
-        b_tsDel.grid(row=0, column=2, sticky=tk.EW, padx=PAD, pady=PAD)
-        f_sep7.grid(row=0, column=3, sticky=tk.EW)
-        area_addrm.columnconfigure(0, weight=1)
-        area_addrm.columnconfigure(3, weight=1)
-        area_addrm.grid(row=1, column=0, sticky=tk.EW)
+        # add/remove section
+        # area_addrm = ttk.Frame(area)
+        # f_sep6 = ttk.Frame(area_addrm)
+        # b_tsAdd = ttk.Button(area_addrm, width=BUTTON_STANDARD_WIDTH, text=UI_ADD, command=self.add_timespec)
+        # b_tsDel = ttk.Button(area_addrm, width=BUTTON_STANDARD_WIDTH, text=UI_DEL, command=self.del_timespec)
+        # f_sep7 = ttk.Frame(area_addrm)
+
+        # add/remove section: arrange items in frame
+        # f_sep6.grid(row=0, column=0, sticky=tk.EW, padx=PAD, pady=PAD)
+        # b_tsAdd.grid(row=0, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        # b_tsDel.grid(row=0, column=2, sticky=tk.EW, padx=PAD, pady=PAD)
+        # f_sep7.grid(row=0, column=3, sticky=tk.EW, padx=PAD, pady=PAD)
 
         s_sep10 = ttk.Separator(area)
-        s_sep10.grid(row=10, column=0, sticky=tk.EW)
 
+        # timespec list section
         area_tslist = ttk.Frame(area)
         l_timeSpecs = ttk.Label(area_tslist, text=UI_FORM_CURRENTTIMESPECS_SC)
         tv_timeSpecs = ttk.Treeview(area_tslist, columns=('seq', 'specs'), show='', displaycolumns=(1,), height=5)
-        b_clearSpecs = ttk.Button(area_tslist, width=BUTTON_STANDARD_WIDTH, text=UI_CLEARALL, command=self.clear_alltimespecs)
+        tv_timeSpecs.bind('<ButtonRelease-1>', lambda _: self.recall_timespec())
+        # b_clearSpecs = ttk.Button(area_tslist, width=BUTTON_STANDARD_WIDTH, text=UI_CLEARALL, command=self.clear_alltimespecs)
+
+        # timespec list section: arrange items in frame
         l_timeSpecs.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         tv_timeSpecs.grid(row=1, column=0, sticky=tk.NSEW, padx=PAD, pady=PAD)
-        b_clearSpecs.grid(row=0, column=0, sticky=tk.E, padx=PAD, pady=PAD)
-        self.data_bind('timespec_selection', tv_timeSpecs)
-        self._tv_timeSpecs = tv_timeSpecs
-        self._tv_timeSpecs.bind('<ButtonRelease-1>', lambda _: self.recall_timespec())
+        # b_clearSpecs.grid(row=0, column=0, sticky=tk.E, padx=PAD, pady=PAD)
 
+        # arrange top items in the grid
+        area_tspec.grid(row=0, column=0, sticky=tk.EW)
+        # area_addrm.grid(row=1, column=0, sticky=tk.EW)
+        s_sep10.grid(row=10, column=0, sticky=tk.EW, pady=PAD)
         area_tslist.grid(row=11, column=0, sticky=tk.NSEW)
-        area_tslist.columnconfigure(0, weight=1)
-        area_tslist.rowconfigure(1, weight=1)
 
+        # expand appropriate sections
         area.columnconfigure(0, weight=1)
         area.rowconfigure(11, weight=1)
+        area_tspec.columnconfigure(9, weight=1)
+        area_tspec.columnconfigure(16, weight=1)
+        area_tslist.columnconfigure(0, weight=1)
+        area_tslist.rowconfigure(1, weight=1)
+        # area_addrm.columnconfigure(0, weight=1)
+        # area_addrm.columnconfigure(3, weight=1)
 
+        # bind data to widgets
+        self.data_bind('ts_year', cb_tsYear, TYPE_INT)
+        self.data_bind('ts_month', cb_tsMonth, TYPE_STRING)
+        self.data_bind('ts_day', cb_tsDay, TYPE_INT)
+        self.data_bind('ts_dow', cb_tsDayOfWeek, TYPE_STRING)
+        self.data_bind('ts_hour', e_tsHour, TYPE_INT, lambda x: 0 <= x < 24)
+        self.data_bind('ts_min', e_tsMin, TYPE_INT, lambda x: 0 <= x < 60)
+        self.data_bind('ts_sec', e_tsSec, TYPE_INT, lambda x: 0 <= x < 60)
+        self.data_bind('timespec_selection', tv_timeSpecs)
+
+        # propagate widgets that need to be accessed
+        self._tv_timeSpecs = tv_timeSpecs
+
+        # update the form
         self._updateform()
 
 

@@ -1,17 +1,16 @@
 # base event form
 
-from ..i18n.strings import *
-from ..repocfg import AppConfig
-
+import re
 import tkinter as tk
 import ttkbootstrap as ttk
 from tkinter import messagebox
 
+from ..i18n.strings import *
 from .ui import *
 
-from ..items.event import Event
+from ..repocfg import AppConfig
 
-import re
+from ..items.event import Event
 
 
 # regular expression for item name checking
@@ -32,32 +31,42 @@ class form_Event(ApplicationForm):
         conditions_available = conditions_available.copy()
         conditions_available.sort()
 
-        # build the UI
+        # build the UI: build widgets, arrange them in the box, bind data
+
+        # client area
         area = ttk.Frame(super().contents)
         area.grid(row=0, column=0, sticky=tk.NSEW)
         PAD = WIDGET_PADDING_PIXELS
 
+        # common widgets
         l_itemName = ttk.Label(area, text=UI_FORM_NAME_SC)
         e_itemName = ttk.Entry(area)
         l_associatedCondition = ttk.Label(area, text=UI_FORM_COND_SC)
         cb_associatedCondition = ttk.Combobox(area, values=conditions_available, state='readonly')
-        self.data_bind('@name', e_itemName, TYPE_STRING)
-        self.data_bind('@condition', cb_associatedCondition, TYPE_STRING)
         sep = ttk.Separator(area)
+
+        # the following is the client area that is exposed to derived forms
+        self._sub_contents = ttk.Frame(area)
+        self._sub_contents.rowconfigure(0, weight=1)
+        self._sub_contents.columnconfigure(0, weight=1)
+        self._sub_contents.grid(row=10, column=0, columnspan=2, sticky=tk.NSEW)
+
+        # arrange top items in the grid
         l_itemName.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         e_itemName.grid(row=0, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
         l_associatedCondition.grid(row=1, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         cb_associatedCondition.grid(row=1, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
         sep.grid(row=2, column=0, sticky=tk.EW, columnspan=2, padx=PAD, pady=PAD)
 
-        self._sub_contents = ttk.Frame(area)
-        self._sub_contents.rowconfigure(0, weight=1)
-        self._sub_contents.columnconfigure(0, weight=1)
-        self._sub_contents.grid(row=10, column=0, columnspan=2, sticky=tk.NSEW)
-
+        # expand appropriate sections
         area.columnconfigure(1, weight=1)
         area.rowconfigure(10, weight=1)
 
+        # bind data to widgets
+        self.data_bind('@name', e_itemName, TYPE_STRING, lambda x: _RE_VALIDNAME.match(x))
+        self.data_bind('@condition', cb_associatedCondition, TYPE_STRING)
+
+        # finally set the item
         if item:
             self.set_item(item)
         else:
@@ -78,7 +87,6 @@ class form_Event(ApplicationForm):
         else:
             self.data_set('@name', '')
             self.data_set('@condition', '')
-
 
     # the data update utility loads data into the item
     def _updatedata(self):

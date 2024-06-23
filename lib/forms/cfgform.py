@@ -3,26 +3,23 @@
 
 import os
 
-from ..i18n.strings import *
-from ..repocfg import AppConfig
-
 import tkinter as tk
 import ttkbootstrap as ttk
 from tkinter import messagebox
 
+from ..i18n.strings import *
+from ..icons import APP_ICON32 as APP_ICON
 from .ui import *
 
-from ..utility import get_configfile, get_UI_theme
-
+from ..repocfg import AppConfig
+from ..utility import get_configfile
 from ..items.item import ALL_AVAILABLE_ITEMS_D
-
-from ..icons import APP_ICON32 as APP_ICON
-
-from .newitem import form_NewItem
 
 from ..configurator.reader import read_whenever_config
 from ..configurator.writer import write_whenever_config
 from ..configurator.defaults import *
+
+from .newitem import form_NewItem
 
 
 # configuration box class
@@ -33,6 +30,7 @@ class form_Config(ApplicationForm):
         bbox = (BBOX_NEW, BBOX_EDIT, BBOX_DELETE, BBOX_SEPARATOR, BBOX_SAVE, BBOX_QUIT)
         super().__init__(UI_APP, size, APP_ICON, bbox, main)
 
+        # form data
         self._tasks = {}
         self._conditions = {}
         self._events = {}
@@ -44,48 +42,58 @@ class form_Config(ApplicationForm):
         }
         self._changed = False
 
-        # build the UI
+        # build the UI: build widgets, arrange them in the box, bind data
+
+        # client area
         area = ttk.Frame(self.contents)
         area.grid(row=0, column=0, sticky=tk.NSEW)
         PAD = WIDGET_PADDING_PIXELS
 
+        # configuration file section
         l_cfgFile = ttk.Label(area, text=CONFIGFORM_LBL_FILELOCATION_SC)
         e_cfgFile = ttk.Entry(area, state=['disabled'])
-        l_cfgFile.grid(row=0, column=0, padx=PAD, pady=PAD, sticky=tk.W)
-        e_cfgFile.grid(row=0, column=1, columnspan=4, sticky=tk.EW, padx=PAD, pady=PAD)
-        self.data_bind('config_file', e_cfgFile, TYPE_STRING)
         # sep1 = ttk.Separator(area)
-        # sep1.grid(row=1, column=0, columnspan=4, pady=PAD, sticky=tk.EW)
 
+        # global flags and parameters
         l_tickSeconds = ttk.Label(area, text=CONFIGFORM_LBL_TICKDURATION_SC)
         e_tickSeconds = ttk.Entry(area, width=5)
-        self.data_bind('scheduler_tick_seconds', e_tickSeconds, TYPE_INT, lambda x: x is None or x > 0)
         ck_randChecks = ttk.Checkbutton(area, text=CONFIGFORM_LBL_RANDOMCHECKS)
-        self.data_bind('randomize_checks_within_ticks', ck_randChecks)
         fill1 = ttk.Frame(area)
-        l_tickSeconds.grid(row=10, column=0, padx=PAD, pady=PAD)
-        e_tickSeconds.grid(row=10, column=1, sticky=tk.W, padx=PAD, pady=PAD)
-        fill1.grid(row=10, column=2, sticky=tk.NSEW)
-        ck_randChecks.grid(row=10, column=3, sticky=tk.W, padx=PAD, pady=PAD)
         sep2 = ttk.Separator(area)
-        sep2.grid(row=11, column=0, columnspan=4, pady=PAD, sticky=tk.EW)
 
+        # item list box
         l_items = ttk.Label(area, text=CONFIGFORM_LBL_ITEMS_SC)
         tv_items = ttk.Treeview(area, columns=('name', 'type', 'signature'), displaycolumns=('name', 'type'), show='headings', height=5)
-        self.data_bind('item_selection', tv_items)
         tv_items.heading('name', anchor=tk.W, text=CONFIGFORM_LHD_NAME)
         tv_items.heading('type', anchor=tk.W, text=CONFIGFORM_LHD_TYPE)
+
+        # arrange items in the grid
+        l_cfgFile.grid(row=0, column=0, padx=PAD, pady=PAD, sticky=tk.W)
+        e_cfgFile.grid(row=0, column=1, columnspan=4, sticky=tk.EW, padx=PAD, pady=PAD)
+        # sep1.grid(row=1, column=0, columnspan=4, pady=PAD, sticky=tk.EW)
+        l_tickSeconds.grid(row=10, column=0, padx=PAD, pady=PAD)
+        e_tickSeconds.grid(row=10, column=1, sticky=tk.W, padx=PAD, pady=PAD)
+        ck_randChecks.grid(row=10, column=3, sticky=tk.W, padx=PAD, pady=PAD)
+        fill1.grid(row=10, column=2, sticky=tk.NSEW)
+        sep2.grid(row=11, column=0, columnspan=4, pady=PAD, sticky=tk.EW)
         l_items.grid(row=20, column=0, columnspan=4, sticky=tk.W, padx=PAD, pady=PAD)
         tv_items.grid(row=21, column=0, columnspan=4, sticky=tk.NSEW, padx=PAD, pady=PAD)
 
+        # expand appropriate sections
         area.rowconfigure(index=21, weight=1)
         area.columnconfigure(2, weight=1)
 
-        # propagate the items list so that it can be used outside from here
-        self._tv_items = tv_items
+        # bind data to widgets
+        self.data_bind('config_file', e_cfgFile, TYPE_STRING)
+        self.data_bind('scheduler_tick_seconds', e_tickSeconds, TYPE_INT, lambda x: x is None or x > 0)
+        self.data_bind('randomize_checks_within_ticks', ck_randChecks)
+        self.data_bind('item_selection', tv_items)
 
-        # bind double click to item editor
-        self._tv_items.bind('<Double-Button-1>', lambda _: self.edit())
+        # bind double click in list to item editor
+        tv_items.bind('<Double-Button-1>', lambda _: self.edit())
+
+        # propagate widgets that need to be accessed
+        self._tv_items = tv_items
 
         # load the configuration file and update the form
         config_file = get_configfile()
@@ -193,7 +201,6 @@ class form_Config(ApplicationForm):
             else:
                 self._save_config(fn)
 
-
     # edit a specific item: to be complete, this is also bound
     # to the double click event for an element of the list
     def edit(self):
@@ -240,7 +247,8 @@ class form_Config(ApplicationForm):
                         self._events[new_item.name] = new_item
                         self._changed = True
 
-
+    # create a new item: open the item type selection dialog and, if an
+    # item type is chosen, open the appropriate form with default values
     def new(self):
         e = form_NewItem()
         if e is not None:

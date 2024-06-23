@@ -1,10 +1,9 @@
 # idle session condition form
 
-from ..i18n.strings import *
-
 import tkinter as tk
 import ttkbootstrap as ttk
 
+from ..i18n.strings import *
 from .ui import *
 
 from .cond import form_Condition
@@ -25,24 +24,37 @@ class form_IdleCondition(form_Condition):
             item = IdleCondition()
         super().__init__(UI_TITLE_IDLECOND, tasks_available, item)
 
+        # build the UI: build widgets, arrange them in the box, bind data
+
+        # client area
         area = ttk.Frame(super().contents)
         area.grid(row=0, column=0, sticky=tk.NSEW)
         PAD = WIDGET_PADDING_PIXELS
 
+        # parameters section
         l_intervalTime = ttk.Label(area, text=UI_FORM_IDLEDURATION)
         e_intervalTime = ttk.Entry(area)
         cb_timeUnit = ttk.Combobox(area, values=[UI_TIME_SECONDS, UI_TIME_MINUTES, UI_TIME_HOURS], state='readonly')
-        self.data_bind('idle_time', e_intervalTime, TYPE_INT, lambda x: x > 0)
-        self.data_bind('time_unit', cb_timeUnit, TYPE_STRING)
         pad = ttk.Frame(area)
+
+        # arrange top items in the grid
         l_intervalTime.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         e_intervalTime.grid(row=0, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
         cb_timeUnit.grid(row=0, column=2, sticky=tk.E, padx=PAD, pady=PAD)
         pad.grid(row=1, column=0, columnspan=3, sticky=tk.NSEW)
 
+        # expand appropriate sections
         area.columnconfigure(1, weight=1)
         area.rowconfigure(1, weight=1)
 
+        # bind data to widgets
+        self.data_bind('idle_time', e_intervalTime, TYPE_INT, lambda x: x > 0)
+        self.data_bind('time_unit', cb_timeUnit, TYPE_STRING)
+
+        # propagate widgets that need to be accessed
+        # NOTE: no data to propagate
+
+        # update the form
         self._updateform()
 
 

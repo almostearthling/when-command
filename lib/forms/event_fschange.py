@@ -24,12 +24,17 @@ class form_FilesystemChangeEvent(form_Event):
             item = FilesystemChangeEvent()
         super().__init__(UI_TITLE_FSCHANGEEVENT, conditions_available, item)
 
+        # form data
         self._watch = self._item.watch.copy() if self._item.watch else []
 
+        # build the UI: build widgets, arrange them in the box, bind data
+
+        # client area
         area = ttk.Frame(super().contents)
         area.grid(row=0, column=0, sticky=tk.NSEW)
         PAD = WIDGET_PADDING_PIXELS
 
+        # parameters section
         ck_recursive = ttk.Checkbutton(area, text=UI_FORM_RECURSIVE)
         l_monitored = ttk.Label(area, text=UI_FORM_MONITOREDFSITEMS_SC)
         tv_monitored = ttk.Treeview(area, columns=('seq', 'items'), show='', displaycolumns=(1,), height=5)
@@ -39,6 +44,7 @@ class form_FilesystemChangeEvent(form_Event):
         b_addEntry = ttk.Button(area, text=UI_ADD, width=BUTTON_STANDARD_WIDTH, command=self.add_fsitem)
         b_delEntry = ttk.Button(area, text=UI_DEL, width=BUTTON_STANDARD_WIDTH, command=self.del_fsitem)
 
+        # arrange top items in the grid
         ck_recursive.grid(row=0, column=0, columnspan=5, sticky=tk.W, padx=PAD, pady=PAD)
         l_monitored.grid(row=1, column=0, columnspan=5, sticky=tk.W, padx=PAD, pady=PAD)
         tv_monitored.grid(row=2, column=0, columnspan=5, sticky=tk.NSEW, padx=PAD, pady=PAD)
@@ -47,17 +53,23 @@ class form_FilesystemChangeEvent(form_Event):
         b_browse.grid(row=3, column=2, sticky=tk.EW, padx=PAD, pady=PAD)
         b_addEntry.grid(row=3, column=3, sticky=tk.EW, padx=PAD, pady=PAD)
         b_delEntry.grid(row=3, column=4, sticky=tk.EW, padx=PAD, pady=PAD)
-        self._tv_monitored = tv_monitored
-        self._tv_monitored.bind('<ButtonRelease-1>', lambda _: self.recall_fsitem())
-        self.data_bind('recursive', ck_recursive)
-        # the following might be actually too strict
-        # self.data_bind('item_monitor', e_monEntry, TYPE_STRING, exists)
-        self.data_bind('item_monitor', e_monEntry, TYPE_STRING)
-        self.data_bind('item_selection', tv_monitored)
+        tv_monitored.bind('<ButtonRelease-1>', lambda _: self.recall_fsitem())
 
+        # expand appropriate sections
         area.columnconfigure(1, weight=1)
         area.rowconfigure(2, weight=1)
 
+        # bind data to widgets
+        # the following might be actually too strict
+        # self.data_bind('item_monitor', e_monEntry, TYPE_STRING, exists)
+        self.data_bind('recursive', ck_recursive)
+        self.data_bind('item_monitor', e_monEntry, TYPE_STRING)
+        self.data_bind('item_selection', tv_monitored)
+
+        # propagate widgets that need to be accessed
+        self._tv_monitored = tv_monitored
+
+        # update the form
         self._updateform()
 
 

@@ -1,22 +1,20 @@
 # base condition form
 
-from ..i18n.strings import *
-from ..repocfg import AppConfig
-
+import re
 import tkinter as tk
 import ttkbootstrap as ttk
 from tkinter import messagebox
 
+from ..i18n.strings import *
 from .ui import *
 
-from ..items.cond import Condition
+from ..repocfg import AppConfig
 
-import re
+from ..items.cond import Condition
 
 
 # regular expression for item name checking
 _RE_VALIDNAME = re.compile("^[a-zA-Z_][a-zA-Z0-9_]*$")
-
 
 
 # condition box base class: since this is the class that will be used in
@@ -34,76 +32,95 @@ class form_Condition(ApplicationForm):
         tasks_available = tasks_available.copy()
         tasks_available.sort()
 
-        # build the UI
+        # build the UI: build widgets, arrange them in the box, bind data
+
+        # client area
         area = ttk.Frame(super().contents)
         area.grid(row=0, column=0, sticky=tk.NSEW)
         area.rowconfigure(0, weight=1)
         area.columnconfigure(0, weight=1)
         PAD = WIDGET_PADDING_PIXELS
 
+        # enclosing notebook
         nb_item = ttk.Notebook(area)
         area_common = ttk.Frame(nb_item)
+
+        # the following is the client area that is exposed to derived forms
         self._area_specific = ttk.Frame(nb_item)
+
+        # feed the notebook
         nb_item.add(area_common, text=UI_FORM_COMMON_PARAMS)
         nb_item.add(self._area_specific, text=UI_FORM_SPECIFIC_PARAMS)
         nb_item.grid(row=0, column=0, sticky=tk.NSEW)
 
+        # top level widgets section
         l_itemName = ttk.Label(area_common, text=UI_FORM_NAME_SC)
         e_itemName = ttk.Entry(area_common)
         ck_itemRecurring = ttk.Checkbutton(area_common, text=UI_FORM_CHECKCONDRECURRENT)
         ck_itemSuspended = ttk.Checkbutton(area_common, text=UI_FORM_SUSPENDCONDATSTARTUP)
-        self.data_bind('@name', e_itemName, TYPE_STRING, lambda x: _RE_VALIDNAME.match(x))
-        self.data_bind('@recurring', ck_itemRecurring)
-        self.data_bind('@suspended', ck_itemSuspended)
-        l_itemName.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
-        e_itemName.grid(row=0, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
-        ck_itemRecurring.grid(row=1, column=1, sticky=tk.W, padx=PAD, pady=PAD)
-        ck_itemSuspended.grid(row=2, column=1, sticky=tk.W, padx=PAD, pady=PAD)
-
         sep1 = ttk.Separator(area_common)
-        sep1.grid(row=3, column=0, columnspan=2, sticky=tk.EW, pady=PAD)
 
         l_tasks = ttk.Label(area_common, text=UI_FORM_ACTIVETASKS_SC)
         tv_tasks = ttk.Treeview(area_common, columns=('seq', 'tasks'), show='', displaycolumns=(1,), height=5)
-        l_tasks.grid(row=10, column=0, columnspan=2, sticky=tk.W, padx=PAD, pady=PAD)
-        tv_tasks.grid(row=11, column=0, columnspan=2, sticky=tk.NSEW, padx=PAD, pady=PAD)
-        self.data_bind('@tasks_selection', tv_tasks)
-        self._tv_tasks = tv_tasks
         # self._tv_tasks.bind('<Double-Button-1>', lambda _: self.recall_task())
+        ck_execSequence = ttk.Checkbutton(area_common, text=UI_FORM_RUNTASKSSEQUENTIALLY)
 
-        taskchoose = ttk.Frame(area_common)
-        taskchoose.grid(row=12, column=0, columnspan=2, sticky=tk.EW)
-        l_chooseTask = ttk.Label(taskchoose, text=UI_FORM_TASK_SC)
-        cb_chooseTask = ttk.Combobox(taskchoose, values=tasks_available, state='readonly')
-        self.data_bind('@choose_task', cb_chooseTask, TYPE_STRING)
-        b_addTask = ttk.Button(taskchoose, text=UI_ADD, width=BUTTON_STANDARD_WIDTH, command=self.add_task)
-        b_delTask = ttk.Button(taskchoose, text=UI_DEL, width=BUTTON_STANDARD_WIDTH, command=self.del_task)
+        # choose task section
+        area_taskchoose = ttk.Frame(area_common)
+        l_chooseTask = ttk.Label(area_taskchoose, text=UI_FORM_TASK_SC)
+        cb_chooseTask = ttk.Combobox(area_taskchoose, values=tasks_available, state='readonly')
+        b_addTask = ttk.Button(area_taskchoose, text=UI_ADD, width=BUTTON_STANDARD_WIDTH, command=self.add_task)
+        b_delTask = ttk.Button(area_taskchoose, text=UI_DEL, width=BUTTON_STANDARD_WIDTH, command=self.del_task)
+
+        # choose task section: arrange items
         l_chooseTask.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         cb_chooseTask.grid(row=0, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
         b_addTask.grid(row=0, column=2, sticky=tk.E, padx=PAD, pady=PAD)
         b_delTask.grid(row=0, column=3, sticky=tk.E, padx=PAD, pady=PAD)
-        taskchoose.columnconfigure(1, weight=1)
 
-        ck_execSequence = ttk.Checkbutton(area_common, text=UI_FORM_RUNTASKSSEQUENTIALLY)
-        self.data_bind('@execute_sequence', ck_execSequence)
-        ck_execSequence.grid(row=13, column=0, columnspan=2, sticky=tk.EW, padx=PAD, pady=PAD)
-
-        ctlflow = ttk.Frame(area_common)
-        ctlflow.grid(row=14, column=0, columnspan=2, sticky=tk.EW)
-        rb_noCheck = ttk.Radiobutton(ctlflow, text=UI_FORM_BREAKNEVER, value='break_none')
-        rb_breakFailure = ttk.Radiobutton(ctlflow, text=UI_FORM_BREAKONFAILURE, value='break_failure')
-        rb_breakSuccess = ttk.Radiobutton(ctlflow, text=UI_FORM_BREAKONSUCCESS, value='break_success')
-        self.data_bind('@control_flow', (rb_noCheck, rb_breakFailure, rb_breakSuccess), TYPE_STRING)
+        # control flow section
+        area_ctlflow = ttk.Frame(area_common)
+        rb_noCheck = ttk.Radiobutton(area_ctlflow, text=UI_FORM_BREAKNEVER, value='break_none')
+        rb_breakFailure = ttk.Radiobutton(area_ctlflow, text=UI_FORM_BREAKONFAILURE, value='break_failure')
+        rb_breakSuccess = ttk.Radiobutton(area_ctlflow, text=UI_FORM_BREAKONSUCCESS, value='break_success')
+        
+        # control flow section: arrange widgets
         rb_noCheck.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         rb_breakFailure.grid(row=1, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         rb_breakSuccess.grid(row=2, column=0, sticky=tk.W, padx=PAD, pady=PAD)
 
+        # arrange top items items in the appropriate notebook
+        l_itemName.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        e_itemName.grid(row=0, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        ck_itemRecurring.grid(row=1, column=1, sticky=tk.W, padx=PAD, pady=PAD)
+        ck_itemSuspended.grid(row=2, column=1, sticky=tk.W, padx=PAD, pady=PAD)
+        sep1.grid(row=3, column=0, columnspan=2, sticky=tk.EW, pady=PAD)
+        l_tasks.grid(row=10, column=0, columnspan=2, sticky=tk.W, padx=PAD, pady=PAD)
+        tv_tasks.grid(row=11, column=0, columnspan=2, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        area_taskchoose.grid(row=12, column=0, columnspan=2, sticky=tk.EW)
+        ck_execSequence.grid(row=13, column=0, columnspan=2, sticky=tk.EW, padx=PAD, pady=PAD)
+        area_ctlflow.grid(row=14, column=0, columnspan=2, sticky=tk.EW)
+
+        # expand appropriate sections
         area_common.rowconfigure(index=11, weight=1)
         area_common.columnconfigure(1, weight=1)
-
+        area_taskchoose.columnconfigure(1, weight=1)
         self._area_specific.rowconfigure(index=0, weight=1)
         self._area_specific.columnconfigure(index=0, weight=1)
 
+        # bind data to widgets
+        self.data_bind('@name', e_itemName, TYPE_STRING, lambda x: _RE_VALIDNAME.match(x))
+        self.data_bind('@recurring', ck_itemRecurring)
+        self.data_bind('@suspended', ck_itemSuspended)
+        self.data_bind('@tasks_selection', tv_tasks)
+        self.data_bind('@choose_task', cb_chooseTask, TYPE_STRING)
+        self.data_bind('@execute_sequence', ck_execSequence)
+        self.data_bind('@control_flow', (rb_noCheck, rb_breakFailure, rb_breakSuccess), TYPE_STRING)
+
+        # propagate widgets that need to be accessed
+        self._tv_tasks = tv_tasks
+
+        # finally set the item
         if item:
             self.set_item(item)
         else:
