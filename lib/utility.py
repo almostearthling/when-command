@@ -169,8 +169,6 @@ def get_editor_theme():
 def setup_windows():
     global _root
     _root = tk.Tk()
-    _root.hold_image = ImageTk.PhotoImage(get_image(APP_ICON))
-    _root.iconphoto(True, _root.hold_image)
     _root.withdraw()
     style = ttk.Style()
     style.theme_use(get_UI_theme())
