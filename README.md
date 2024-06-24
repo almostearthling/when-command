@@ -6,7 +6,7 @@ This is still in its early development stage and still contains a lot of bugs an
 
 ![MainWindow](support/docs/graphics/when-application.png)
 
-Most of the interface of this release of **When** tries to be similar to the old version, although the need for cross-platform components pushes towards the adoption of the most diffused GUI library for Python, that is [_tkinter_](https://docs.python.org/3/library/tkinter.html).
+Most of the interface of this release of **When** tries to be similar to the old version, although the need for cross-platform components pushes towards the adoption of the most widespread GUI library for Python, that is [_tkinter_](https://docs.python.org/3/library/tkinter.html).
 
 The [documentation](support/docs/main.md) is still underway, and the features are reduced compared to recent releases of the old version of **When**. However the structure of this new version is modular, and the design of **whenever** allows for the maximum flexibility in term of definitions of tasks, conditions, and events, so that new types of _usable_ events can be defined along with the forms to edit them easily and write a well-formed configuration file.
 

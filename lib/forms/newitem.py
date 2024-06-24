@@ -56,6 +56,8 @@ class form_NewItem(ApplicationForm):
         rb_itemEvent.grid(row=3, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         l_itemSubTypes.grid(row=10, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         tv_itemSubTypes.grid(row=11, column=0, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        # bind double click to variable recall
+        tv_itemSubTypes.bind('<Double-Button-1>', lambda _: self.exit_ok())
 
         # expand appropriate sections
         area.columnconfigure(0, weight=1)
