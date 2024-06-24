@@ -28,8 +28,6 @@ class form_EventCondition(form_Condition):
         PAD = WIDGET_PADDING_PIXELS
 
         # widgets section
-        # actually, the `check_after` parameter could be set, but it is mostly
-        # useless in the case of event based conditions
         l_noParams = ttk.Label(area, text=UI_CAPTION_NOSPECIFICPARAMS)
 
         # arrange items in the grid
