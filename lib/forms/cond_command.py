@@ -68,6 +68,9 @@ class form_CommandCondition(form_Condition):
         l_startupPath = ttk.Label(area_command, text=UI_FORM_STARTUPPATH_SC)
         e_startupPath = ttk.Entry(area_command)
         b_startupPathBrowse = ttk.Button(area_command, text=UI_BROWSE, command=self.browse_startup_path)
+        l_checkAfter = ttk.Label(area_command, text=UI_FORM_EXTRADELAY_SC)
+        e_checkAfter = ttk.Entry(area_command)
+        l_checkAfterSeconds = ttk.Label(area_command, text=UI_TIME_SECONDS)
         sep1 = ttk.Separator(area)
 
         # arrange widgets in frame
@@ -79,6 +82,9 @@ class form_CommandCondition(form_Condition):
         l_startupPath.grid(row=2, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         e_startupPath.grid(row=2, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
         b_startupPathBrowse.grid(row=2, column=2, sticky=tk.EW, padx=PAD, pady=PAD)
+        l_checkAfter.grid(row=3, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        e_checkAfter.grid(row=3, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        l_checkAfterSeconds.grid(row=3, column=2, sticky=tk.W, padx=PAD, pady=PAD)
 
         # environment section: deserves an area to customize layout
         area_vars = ttk.Frame(area)
@@ -179,6 +185,7 @@ class form_CommandCondition(form_Condition):
         # self.data_bind('command', e_command, TYPE_STRING, _is_command)
         self.data_bind('command_arguments', e_args, TYPE_STRING)
         self.data_bind('startup_path', e_startupPath, TYPE_STRING, _is_dir)
+        self.data_bind('check_after', e_checkAfter, TYPE_INT, lambda x: x >= 0)
         self.data_bind('include_environment', ck_preserveEnv)
         self.data_bind('set_environment_variables', ck_setEnvVars)
         self.data_bind('envvar_selection', tv_vars)
@@ -222,6 +229,7 @@ class form_CommandCondition(form_Condition):
         self._item.match_regular_expression = None
         self._item.case_sensitive = None
         self._item.timeout_seconds = self.data_get('timeout_seconds') or None
+        self._item.check_after = self.data_get('check_after') or None
         check_for = self.data_get('check_for')
         check_what = self.data_get('check_what')
         check_value = self.data_get('check_value')
@@ -269,6 +277,7 @@ class form_CommandCondition(form_Condition):
         self.data_set('case_sensitive', self._item.case_sensitive)
         self.data_set('match_regular_expression', self._item.match_regular_expression)
         self.data_set('timeout_seconds', self._item.timeout_seconds or 0)
+        self.data_set('check_after', self._item.check_after or 0)
         check_for = UI_OUTCOME_NONE
         check_what = UI_EXIT_CODE
         check_value = ''

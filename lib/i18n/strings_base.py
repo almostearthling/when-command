@@ -191,6 +191,7 @@ UI_FORM_ITEM_SC = "Item:"
 UI_FORM_CURRENTTIMESPECS_SC = "Active Time Specifications:"
 UI_FORM_MONITOREDFSITEMS_SC = "Monitored File System Items:"
 UI_FORM_HISTORYITEMS_SC = "Current History:"
+UI_FORM_EXTRADELAY_SC = "Additional Delay:"
 
 UI_FORM_RANDCHECKSINTICKS = "Randomize Checks within Ticks"
 UI_FORM_CHECKCONDRECURRENT = "Check Condition Recurrently"

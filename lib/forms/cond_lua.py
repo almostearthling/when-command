@@ -42,12 +42,12 @@ class form_LuaScriptCondition(form_Condition):
 
         # script section
         l_luaScript = ttk.Label(area, text=UI_FORM_SCRIPT)
-        cv_luaScript = CodeView(area, pygments.lexers.LuaLexer, font='TkFixedFont', height=8, color_scheme=get_editor_theme())
+        cv_luaScript = CodeView(area, pygments.lexers.LuaLexer, font='TkFixedFont', height=10, color_scheme=get_editor_theme())
         sep1 = ttk.Separator(area)
 
         # results section
         l_luaVars = ttk.Label(area, text=UI_FORM_EXPECTRESULTS)
-        tv_luaVars = ttk.Treeview(area, columns=('variable', 'value'), show='headings', height=5)
+        tv_luaVars = ttk.Treeview(area, columns=('variable', 'value'), show='headings', height=10)
         tv_luaVars.heading('variable', anchor=tk.W, text=UI_FORM_VARNAME)
         tv_luaVars.heading('value', anchor=tk.W, text=UI_FORM_VARVALUE)
         # bind double click to variable recall
@@ -60,10 +60,26 @@ class form_LuaScriptCondition(form_Condition):
         b_delVar = ttk.Button(area, text=UI_DEL, width=BUTTON_STANDARD_WIDTH, command=self.del_var)
         ck_expectAll = ttk.Checkbutton(area, text=UI_FORM_MATCHALLRESULTS)
 
+        # extra delay section
+        area_checkafter = ttk.Frame(area)
+        l_checkAfter = ttk.Label(area_checkafter, text=UI_FORM_EXTRADELAY_SC)
+        e_checkAfter = ttk.Entry(area_checkafter)
+        l_checkAfterSeconds = ttk.Label(area_checkafter, text=UI_TIME_SECONDS)
+
+        # arrange items in frame
+        l_checkAfter.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        e_checkAfter.grid(row=0, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        l_checkAfterSeconds.grid(row=0, column=2, sticky=tk.W, padx=PAD, pady=PAD)
+        area_checkafter.columnconfigure(1, weight=1)
+
+        sep2 = ttk.Separator(area)
+
         # arrange top items in the grid
         l_luaScript.grid(row=0, column=0, columnspan=4, sticky=tk.W, padx=PAD, pady=PAD)
         cv_luaScript.grid(row=1, column=0, columnspan=4, sticky=tk.NSEW, padx=PAD, pady=PAD)
         sep1.grid(row=2, column=0, columnspan=4, sticky=tk.EW, pady=PAD)
+        area_checkafter.grid(row=3, column=0, columnspan=4, sticky=tk.EW)
+        sep2.grid(row=4, column=0, columnspan=4, sticky=tk.EW, pady=PAD)
         l_luaVars.grid(row=10, column=0, columnspan=4, sticky=tk.W, padx=PAD, pady=PAD)
         tv_luaVars.grid(row=11, column=0, columnspan=4, sticky=tk.NSEW, padx=PAD, pady=PAD)
         l_varName.grid(row=12, column=0, sticky=tk.W, padx=PAD, pady=PAD)
@@ -86,6 +102,7 @@ class form_LuaScriptCondition(form_Condition):
         self.data_bind('varname', e_varName, TYPE_STRING, lambda x: x == '' or _RE_VALIDNAME.match(x))
         self.data_bind('newvalue', e_varValue, TYPE_STRING)
         self.data_bind('expect_all', ck_expectAll)
+        self.data_bind('check_after', e_checkAfter, TYPE_INT, lambda x: x >= 0)
 
         # propagate widgets that need to be accessed
         self._tv_vars = tv_luaVars
@@ -137,6 +154,7 @@ class form_LuaScriptCondition(form_Condition):
     def _updatedata(self):
         self._item.script = self.data_get('script') or ""
         self._item.expect_all = self.data_get('expect_all') or None
+        self._item.check_after = self.data_get('check_after') or None
         e = {}
         for l in self._results:
             e[l[0]] = guess_typed_value(str(l[1]))
@@ -146,6 +164,7 @@ class form_LuaScriptCondition(form_Condition):
     def _updateform(self):
         self.data_set('script', self._item.script)
         self.data_set('expect_all', self._item.expect_all)
+        self.data_set('check_after', self._item.check_after)
         self.data_set('varname')
         self.data_set('newvalue')
         self._results = []

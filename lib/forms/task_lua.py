@@ -44,12 +44,12 @@ class form_LuaScriptTask(form_Task):
 
         # script section
         l_luaScript = ttk.Label(area, text=UI_FORM_SCRIPT)
-        cv_luaScript = CodeView(area, pygments.lexers.LuaLexer, font='TkFixedFont', height=8, color_scheme=get_editor_theme())
+        cv_luaScript = CodeView(area, pygments.lexers.LuaLexer, font='TkFixedFont', height=10, color_scheme=get_editor_theme())
         sep1 = ttk.Separator(area)
 
         # results section
         l_luaVars = ttk.Label(area, text=UI_FORM_EXPECTRESULTS)
-        tv_luaVars = ttk.Treeview(area, columns=('variable', 'value'), show='headings', height=5)
+        tv_luaVars = ttk.Treeview(area, columns=('variable', 'value'), show='headings', height=10)
         tv_luaVars.heading('variable', anchor=tk.W, text=UI_FORM_VARNAME)
         tv_luaVars.heading('value', anchor=tk.W, text=UI_FORM_VARVALUE)
         # bind double click to variable recall
