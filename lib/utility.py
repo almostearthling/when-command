@@ -1,8 +1,5 @@
 # various utility functions and objects
 
-from lib.i18n.strings import *
-
-# import all other modules
 import sys
 import os
 import subprocess
@@ -11,20 +8,23 @@ from tomlkit import table
 from hashlib import blake2s
 from base64 import decodebytes as b64_decodeb
 from io import BytesIO
-from PIL import Image
+from PIL import Image, ImageTk
 from time import time
-
-import darkdetect
-
-from lib.repocfg import AppConfig
 
 import tkinter as tk
 import ttkbootstrap as ttk
 
+import darkdetect
+
+from .i18n.strings import *
+from .icons import APP_ICON32 as APP_ICON
+
+from .repocfg import AppConfig
+
 
 # main root window, to be withdrawn
-_root = tk.Tk()
-_root.withdraw()
+_root = None
+
 
 # check that all passed arguments are not None
 def check_not_none(*l) -> bool:
@@ -165,10 +165,12 @@ def get_editor_theme():
 
 
 
-# set the GUI theme according to system theme or DEBUG mode
+# create an invisible toplevel, so that none of the following is main/root
 def setup_windows():
     global _root
     _root = tk.Tk()
+    _root.hold_image = ImageTk.PhotoImage(get_image(APP_ICON))
+    _root.iconphoto(True, _root.hold_image)
     _root.withdraw()
     style = ttk.Style()
     style.theme_use(get_UI_theme())

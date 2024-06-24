@@ -83,7 +83,7 @@ class form_CommandCondition(form_Condition):
         # environment section: deserves an area to customize layout
         area_vars = ttk.Frame(area)
         l_vars = ttk.Label(area_vars, text=UI_FORM_VARIABLES_SC)
-        tv_vars = ttk.Treeview(area_vars, columns=('name', 'value'), show='headings', height=5)
+        tv_vars = ttk.Treeview(area_vars, columns=('name', 'value'), show='headings', height=7)
         tv_vars.heading('name', anchor=tk.W, text=UI_FORM_NAME)
         tv_vars.heading('value', anchor=tk.W, text=UI_FORM_VALUE)
         # bind double click to variable recall
@@ -102,14 +102,14 @@ class form_CommandCondition(form_Condition):
         ck_setEnvVars = ttk.Checkbutton(area_vars_flags, text=UI_FORM_SETWENVIRONMENT)
 
         # environment section: arrange widgets in frame
-        l_vars.grid(row=1, column=0, columnspan=4, sticky=tk.W, padx=PAD, pady=PAD)
-        tv_vars.grid(row=2, column=0, columnspan=4, sticky=tk.NSEW, padx=PAD, pady=PAD)
-        l_varName.grid(row=3, column=0, sticky=tk.W, padx=PAD, pady=PAD)
-        l_varValue.grid(row=3, column=1, sticky=tk.W, padx=PAD, pady=PAD)
-        e_varName.grid(row=4, column=0, sticky=tk.EW, padx=PAD, pady=PAD)
-        e_varValue.grid(row=4, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
-        b_addVar.grid(row=4, column=2, sticky=tk.NSEW, padx=PAD, pady=PAD)
-        b_delVar.grid(row=4, column=3, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        l_vars.grid(row=0, column=0, columnspan=4, sticky=tk.W, padx=PAD, pady=PAD)
+        tv_vars.grid(row=1, column=0, columnspan=4, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        l_varName.grid(row=2, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        l_varValue.grid(row=2, column=1, sticky=tk.W, padx=PAD, pady=PAD)
+        e_varName.grid(row=3, column=0, sticky=tk.EW, padx=PAD, pady=PAD)
+        e_varValue.grid(row=3, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        b_addVar.grid(row=3, column=2, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        b_delVar.grid(row=3, column=3, sticky=tk.NSEW, padx=PAD, pady=PAD)
 
         # environment section: arrange widgets in frame
         ck_preserveEnv.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
@@ -169,11 +169,14 @@ class form_CommandCondition(form_Condition):
         area.columnconfigure(0, weight=1)
         area_command.columnconfigure(1, weight=1)
         area_vars.columnconfigure(0, weight=1)
+        area_vars.rowconfigure(1, weight=1)
         area_vars.columnconfigure(1, weight=1)
         area_checks.columnconfigure(2, weight=1)
 
         # bind data to widgets
-        self.data_bind('command', e_command, TYPE_STRING, _is_command)
+        self.data_bind('command', e_command, TYPE_STRING)
+        # the following would be optimal, but it is too strict
+        # self.data_bind('command', e_command, TYPE_STRING, _is_command)
         self.data_bind('command_arguments', e_args, TYPE_STRING)
         self.data_bind('startup_path', e_startupPath, TYPE_STRING, _is_dir)
         self.data_bind('include_environment', ck_preserveEnv)

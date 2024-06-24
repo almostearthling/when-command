@@ -89,7 +89,7 @@ AppConfig = _AppConfiguration({
     # themes
     'DEFAULT_THEME_DARK': 'darkly',
     'DEFAULT_THEME_LIGHT': 'sandstone',
-    'DEFAULT_THEME_DEBUG': 'journal',
+    'DEFAULT_THEME_DEBUG': 'morph',
 
     # editor themes
     'EDITOR_THEME_DARK': 'ayu-dark',
