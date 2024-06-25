@@ -522,7 +522,7 @@ class ApplicationForm(object):
                 widget = self._widgets[dataname]
                 if isinstance(widget, tk.Text):
                     widget.delete(1.0, tk.END)
-                    widget.insert(tk.END, value)
+                    widget.insert(tk.END, '' if value is None else value)
             except TypeError:
                 raise ValueError("invalid value %s for entry `%s`" % (repr(value), dataname))
             except ValueError:
