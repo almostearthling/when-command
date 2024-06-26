@@ -37,7 +37,13 @@ class form_FilesystemChangeEvent(form_Event):
         # parameters section
         ck_recursive = ttk.Checkbutton(area, text=UI_FORM_RECURSIVE)
         l_monitored = ttk.Label(area, text=UI_FORM_MONITOREDFSITEMS_SC)
-        tv_monitored = ttk.Treeview(area, columns=('seq', 'items'), show='', displaycolumns=(1,), height=5)
+        # build a scrolled frame for the treeview
+        sftv_monitored = ttk.Frame(area)
+        tv_monitored = ttk.Treeview(sftv_monitored, columns=('seq', 'items'), show='', displaycolumns=(1,), height=5)
+        sb_monitored = ttk.Scrollbar(sftv_monitored, orient=tk.VERTICAL, command=tv_monitored.yview)
+        tv_monitored.configure(yscrollcommand=sb_monitored.set)
+        tv_monitored.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        sb_monitored.pack(side=tk.RIGHT, fill=tk.Y)
         l_monEntry = ttk.Label(area, text=UI_FORM_ITEM_SC)
         e_monEntry = ttk.Entry(area)
         b_browse = ttk.Button(area, text=UI_BROWSE, command=self.browse_fsitem)
@@ -47,12 +53,13 @@ class form_FilesystemChangeEvent(form_Event):
         # arrange top items in the grid
         ck_recursive.grid(row=0, column=0, columnspan=5, sticky=tk.W, padx=PAD, pady=PAD)
         l_monitored.grid(row=1, column=0, columnspan=5, sticky=tk.W, padx=PAD, pady=PAD)
-        tv_monitored.grid(row=2, column=0, columnspan=5, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        sftv_monitored.grid(row=2, column=0, columnspan=5, sticky=tk.NSEW, padx=PAD, pady=PAD)
         l_monEntry.grid(row=3, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         e_monEntry.grid(row=3, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
         b_browse.grid(row=3, column=2, sticky=tk.EW, padx=PAD, pady=PAD)
         b_addEntry.grid(row=3, column=3, sticky=tk.EW, padx=PAD, pady=PAD)
         b_delEntry.grid(row=3, column=4, sticky=tk.EW, padx=PAD, pady=PAD)
+
         tv_monitored.bind('<ButtonRelease-1>', lambda _: self.recall_fsitem())
 
         # expand appropriate sections

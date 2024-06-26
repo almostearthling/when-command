@@ -85,11 +85,15 @@ class form_CommandTask(form_Task):
         # environment section: deserves an area to customize layout
         area_vars = ttk.Frame(area)
         l_vars = ttk.Label(area_vars, text=UI_FORM_VARIABLES_SC)
-        tv_vars = ttk.Treeview(area_vars, columns=('name', 'value'), show='headings', height=7)
+        # build a scrolled frame for the treeview
+        sftv_vars = ttk.Frame(area_vars)
+        tv_vars = ttk.Treeview(sftv_vars, columns=('name', 'value'), show='headings', height=7)
         tv_vars.heading('name', anchor=tk.W, text=UI_FORM_NAME)
         tv_vars.heading('value', anchor=tk.W, text=UI_FORM_VALUE)
-        # bind double click to variable recall
-        tv_vars.bind('<Double-Button-1>', lambda _: self.recall_var())
+        sb_vars = ttk.Scrollbar(sftv_vars, orient=tk.VERTICAL, command=tv_vars.yview)
+        tv_vars.configure(yscrollcommand=sb_vars.set)
+        tv_vars.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        sb_vars.pack(side=tk.RIGHT, fill=tk.Y)
         l_varName = ttk.Label(area_vars, text=UI_FORM_VARNAME_SC)
         e_varName = ttk.Entry(area_vars)
         l_varValue = ttk.Label(area_vars, text=UI_FORM_NEWVALUE_SC)
@@ -105,13 +109,16 @@ class form_CommandTask(form_Task):
 
         # environment section: arrange widgets in frame
         l_vars.grid(row=0, column=0, columnspan=4, sticky=tk.W, padx=PAD, pady=PAD)
-        tv_vars.grid(row=1, column=0, columnspan=4, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        sftv_vars.grid(row=1, column=0, columnspan=4, sticky=tk.NSEW, padx=PAD, pady=PAD)
         l_varName.grid(row=2, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         l_varValue.grid(row=2, column=1, sticky=tk.W, padx=PAD, pady=PAD)
         e_varName.grid(row=3, column=0, sticky=tk.EW, padx=PAD, pady=PAD)
         e_varValue.grid(row=3, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
         b_addVar.grid(row=3, column=2, sticky=tk.NSEW, padx=PAD, pady=PAD)
         b_delVar.grid(row=3, column=3, sticky=tk.NSEW, padx=PAD, pady=PAD)
+
+        # bind double click to variable recall
+        tv_vars.bind('<Double-Button-1>', lambda _: self.recall_var())
 
         # environment section: arrange widgets in frame
         ck_preserveEnv.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)

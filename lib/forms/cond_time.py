@@ -172,14 +172,21 @@ class form_TimeCondition(form_Condition):
         # timespec list section
         area_tslist = ttk.Frame(area)
         l_timeSpecs = ttk.Label(area_tslist, text=UI_FORM_CURRENTTIMESPECS_SC)
-        tv_timeSpecs = ttk.Treeview(area_tslist, columns=('seq', 'specs'), show='', displaycolumns=(1,), height=5)
-        tv_timeSpecs.bind('<ButtonRelease-1>', lambda _: self.recall_timespec())
+        # build a scrolled frame for the treeview
+        sftv_timeSpecs = ttk.Frame(area)
+        tv_timeSpecs = ttk.Treeview(sftv_timeSpecs, columns=('seq', 'specs'), show='', displaycolumns=(1,), height=5)
+        sb_timeSpecs = ttk.Scrollbar(sftv_timeSpecs, orient=tk.VERTICAL, command=tv_timeSpecs.yview)
+        tv_timeSpecs.configure(yscrollcommand=sb_timeSpecs.set)
+        tv_timeSpecs.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        sb_timeSpecs.pack(side=tk.RIGHT, fill=tk.Y)
         # b_clearSpecs = ttk.Button(area_tslist, width=BUTTON_STANDARD_WIDTH, text=UI_CLEARALL, command=self.clear_alltimespecs)
 
         # timespec list section: arrange items in frame
         l_timeSpecs.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
-        tv_timeSpecs.grid(row=1, column=0, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        sftv_timeSpecs.grid(row=1, column=0, sticky=tk.NSEW, padx=PAD, pady=PAD)
         # b_clearSpecs.grid(row=0, column=0, sticky=tk.E, padx=PAD, pady=PAD)
+
+        tv_timeSpecs.bind('<ButtonRelease-1>', lambda _: self.recall_timespec())
 
         # arrange top items in the grid
         area_tspec.grid(row=0, column=0, sticky=tk.EW)

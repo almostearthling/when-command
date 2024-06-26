@@ -49,11 +49,15 @@ class form_LuaScriptTask(form_Task):
 
         # results section
         l_luaVars = ttk.Label(area, text=UI_FORM_EXPECTRESULTS)
-        tv_luaVars = ttk.Treeview(area, columns=('variable', 'value'), show='headings', height=10)
+        # build a scrolled frame for the treeview
+        sftv_luaVars = ttk.Frame(area)
+        tv_luaVars = ttk.Treeview(sftv_luaVars, columns=('variable', 'value'), show='headings', height=10)
         tv_luaVars.heading('variable', anchor=tk.W, text=UI_FORM_VARNAME)
         tv_luaVars.heading('value', anchor=tk.W, text=UI_FORM_VARVALUE)
-        # bind double click to variable recall
-        tv_luaVars.bind('<Double-Button-1>', lambda _: self.recall_var())
+        sb_luaVars = ttk.Scrollbar(sftv_luaVars, orient=tk.VERTICAL, command=tv_luaVars.yview)
+        tv_luaVars.configure(yscrollcommand=sb_luaVars.set)
+        tv_luaVars.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        sb_luaVars.pack(side=tk.RIGHT, fill=tk.Y)
         l_varName = ttk.Label(area, text=UI_FORM_VARNAME_SC)
         e_varName = ttk.Entry(area)
         l_varValue = ttk.Label(area, text=UI_FORM_NEWVALUE_SC)
@@ -67,7 +71,7 @@ class form_LuaScriptTask(form_Task):
         cv_luaScript.grid(row=1, column=0, columnspan=4, sticky=tk.NSEW, padx=PAD, pady=PAD)
         sep1.grid(row=2, column=0, columnspan=4, sticky=tk.EW, pady=PAD)
         l_luaVars.grid(row=10, column=0, columnspan=4, sticky=tk.W, padx=PAD, pady=PAD)
-        tv_luaVars.grid(row=11, column=0, columnspan=4, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        sftv_luaVars.grid(row=11, column=0, columnspan=4, sticky=tk.NSEW, padx=PAD, pady=PAD)
         l_varName.grid(row=12, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         l_varValue.grid(row=12, column=1, sticky=tk.W, padx=PAD, pady=PAD)
         e_varName.grid(row=13, column=0, sticky=tk.EW, padx=PAD, pady=PAD)
@@ -75,6 +79,9 @@ class form_LuaScriptTask(form_Task):
         b_addVar.grid(row=13, column=2, sticky=tk.EW, padx=PAD, pady=PAD)
         b_delVar.grid(row=13, column=3, sticky=tk.EW, padx=PAD, pady=PAD)
         ck_expectAll.grid(row=20, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+
+        # bind double click to variable recall
+        tv_luaVars.bind('<Double-Button-1>', lambda _: self.recall_var())
 
         # expand appropriate sections
         area.rowconfigure(1, weight=1)

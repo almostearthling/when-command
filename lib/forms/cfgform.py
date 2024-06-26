@@ -63,9 +63,15 @@ class form_Config(ApplicationForm):
 
         # item list box
         l_items = ttk.Label(area, text=CONFIGFORM_LBL_ITEMS_SC)
-        tv_items = ttk.Treeview(area, columns=('name', 'type', 'signature'), displaycolumns=('name', 'type'), show='headings', height=5)
+        # build a scrolled frame for the treeview
+        sftv_items = ttk.Frame(area)
+        tv_items = ttk.Treeview(sftv_items, columns=('name', 'type', 'signature'), displaycolumns=('name', 'type'), show='headings', height=5)
         tv_items.heading('name', anchor=tk.W, text=CONFIGFORM_LHD_NAME)
         tv_items.heading('type', anchor=tk.W, text=CONFIGFORM_LHD_TYPE)
+        sb_items = ttk.Scrollbar(sftv_items, orient=tk.VERTICAL, command=tv_items.yview)
+        tv_items.configure(yscrollcommand=sb_items.set)
+        tv_items.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        sb_items.pack(side=tk.RIGHT, fill=tk.Y)
 
         # arrange items in the grid
         l_cfgFile.grid(row=0, column=0, padx=PAD, pady=PAD, sticky=tk.W)
@@ -77,7 +83,7 @@ class form_Config(ApplicationForm):
         fill1.grid(row=10, column=2, sticky=tk.NSEW)
         sep2.grid(row=11, column=0, columnspan=4, pady=PAD, sticky=tk.EW)
         l_items.grid(row=20, column=0, columnspan=4, sticky=tk.W, padx=PAD, pady=PAD)
-        tv_items.grid(row=21, column=0, columnspan=4, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        sftv_items.grid(row=21, column=0, columnspan=4, sticky=tk.NSEW, padx=PAD, pady=PAD)
 
         # expand appropriate sections
         area.rowconfigure(index=21, weight=1)

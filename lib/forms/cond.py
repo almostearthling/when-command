@@ -61,8 +61,13 @@ class form_Condition(ApplicationForm):
         sep1 = ttk.Separator(area_common)
 
         l_tasks = ttk.Label(area_common, text=UI_FORM_ACTIVETASKS_SC)
-        tv_tasks = ttk.Treeview(area_common, columns=('seq', 'tasks'), show='', displaycolumns=(1,), height=5)
-        # self._tv_tasks.bind('<Double-Button-1>', lambda _: self.recall_task())
+        # build a scrolled frame for the treeview
+        sftv_tasks = ttk.Frame(area_common)
+        tv_tasks = ttk.Treeview(sftv_tasks, columns=('seq', 'tasks'), show='', displaycolumns=(1,), height=5)
+        sb_tasks = ttk.Scrollbar(sftv_tasks, orient=tk.VERTICAL, command=tv_tasks.yview)
+        tv_tasks.configure(yscrollcommand=sb_tasks.set)
+        tv_tasks.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        sb_tasks.pack(side=tk.RIGHT, fill=tk.Y)
         ck_execSequence = ttk.Checkbutton(area_common, text=UI_FORM_RUNTASKSSEQUENTIALLY)
 
         # choose task section
@@ -78,12 +83,14 @@ class form_Condition(ApplicationForm):
         b_addTask.grid(row=0, column=2, sticky=tk.E, padx=PAD, pady=PAD)
         b_delTask.grid(row=0, column=3, sticky=tk.E, padx=PAD, pady=PAD)
 
+        # self._tv_tasks.bind('<Double-Button-1>', lambda _: self.recall_task())
+
         # control flow section
         area_ctlflow = ttk.Frame(area_common)
         rb_noCheck = ttk.Radiobutton(area_ctlflow, text=UI_FORM_BREAKNEVER, value='break_none')
         rb_breakFailure = ttk.Radiobutton(area_ctlflow, text=UI_FORM_BREAKONFAILURE, value='break_failure')
         rb_breakSuccess = ttk.Radiobutton(area_ctlflow, text=UI_FORM_BREAKONSUCCESS, value='break_success')
-        
+
         # control flow section: arrange widgets
         rb_noCheck.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         rb_breakFailure.grid(row=1, column=0, sticky=tk.W, padx=PAD, pady=PAD)
@@ -96,7 +103,7 @@ class form_Condition(ApplicationForm):
         ck_itemSuspended.grid(row=2, column=1, sticky=tk.W, padx=PAD, pady=PAD)
         sep1.grid(row=3, column=0, columnspan=2, sticky=tk.EW, pady=PAD)
         l_tasks.grid(row=10, column=0, columnspan=2, sticky=tk.W, padx=PAD, pady=PAD)
-        tv_tasks.grid(row=11, column=0, columnspan=2, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        sftv_tasks.grid(row=11, column=0, columnspan=2, sticky=tk.NSEW, padx=PAD, pady=PAD)
         area_taskchoose.grid(row=12, column=0, columnspan=2, sticky=tk.EW)
         ck_execSequence.grid(row=13, column=0, columnspan=2, sticky=tk.EW, padx=PAD, pady=PAD)
         area_ctlflow.grid(row=14, column=0, columnspan=2, sticky=tk.EW)

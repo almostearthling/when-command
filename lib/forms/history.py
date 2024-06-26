@@ -26,7 +26,7 @@ class form_History(ApplicationForm):
         self._history = []
         if history:
             self.set_history(history)
-        
+
         # build the UI: build widgets, arrange them in the box, bind data
 
         # client area
@@ -36,12 +36,18 @@ class form_History(ApplicationForm):
 
         # history list section
         l_history = ttk.Label(area, text=UI_FORM_HISTORYITEMS_SC)
+        # build a scrolled frame for the treeview
+        sftv_history = ttk.Frame(area)
         tv_history = ttk.Treeview(
-            area,
+            sftv_history,
             columns=('time', 'task', 'trigger', 'duration', 'success', 'message'),
             show='headings',
             height=5,
         )
+        sb_history = ttk.Scrollbar(sftv_history, orient=tk.VERTICAL, command=tv_history.yview)
+        tv_history.configure(yscrollcommand=sb_history.set)
+        tv_history.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        sb_history.pack(side=tk.RIGHT, fill=tk.Y)
 
         # NOTE: widths are empirically determined, should be tested on
         # other platform to verify that they are suitable anyway
@@ -61,7 +67,8 @@ class form_History(ApplicationForm):
 
         # arrange items in the grid
         l_history.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
-        tv_history.grid(row=1, column=0, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        # tv_history.grid(row=1, column=0, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        sftv_history.grid(row=1, column=0, sticky=tk.NSEW, padx=PAD, pady=PAD)
 
         # expand appropriate sections
         area.rowconfigure(1, weight=1)

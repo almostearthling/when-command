@@ -46,8 +46,14 @@ class form_NewItem(ApplicationForm):
 
         # subtype section
         l_itemSubTypes = ttk.Label(area, text=UI_FORM_ITEMSUBTYPES)
-        tv_itemSubTypes = ttk.Treeview(area, columns=('type', 'code'), displaycolumns=('type',), show='', height=5)
+        # build a scrolled frame for the treeview
+        sftv_itemSubTypes = ttk.Frame(area)
+        tv_itemSubTypes = ttk.Treeview(sftv_itemSubTypes, columns=('type', 'code'), displaycolumns=('type',), show='', height=5)
         tv_itemSubTypes.heading('type', anchor=tk.W, text=UI_FORM_ITEM)
+        sb_itemSubTypes = ttk.Scrollbar(sftv_itemSubTypes, orient=tk.VERTICAL, command=tv_itemSubTypes.yview)
+        tv_itemSubTypes.configure(yscrollcommand=sb_itemSubTypes.set)
+        tv_itemSubTypes.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        sb_itemSubTypes.pack(side=tk.RIGHT, fill=tk.Y)
 
         # arrange items in the grid
         l_itemType.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
@@ -55,7 +61,8 @@ class form_NewItem(ApplicationForm):
         rb_itemCond.grid(row=2, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         rb_itemEvent.grid(row=3, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         l_itemSubTypes.grid(row=10, column=0, sticky=tk.W, padx=PAD, pady=PAD)
-        tv_itemSubTypes.grid(row=11, column=0, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        sftv_itemSubTypes.grid(row=11, column=0, sticky=tk.NSEW, padx=PAD, pady=PAD)
+
         # bind double click to variable recall
         tv_itemSubTypes.bind('<Double-Button-1>', lambda _: self.exit_ok())
 

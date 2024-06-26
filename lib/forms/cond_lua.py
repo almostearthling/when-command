@@ -47,11 +47,15 @@ class form_LuaScriptCondition(form_Condition):
 
         # results section
         l_luaVars = ttk.Label(area, text=UI_FORM_EXPECTRESULTS)
-        tv_luaVars = ttk.Treeview(area, columns=('variable', 'value'), show='headings', height=10)
+        # build a scrolled frame for the treeview
+        sftv_luaVars = ttk.Frame(area)
+        tv_luaVars = ttk.Treeview(sftv_luaVars, columns=('variable', 'value'), show='headings', height=10)
         tv_luaVars.heading('variable', anchor=tk.W, text=UI_FORM_VARNAME)
         tv_luaVars.heading('value', anchor=tk.W, text=UI_FORM_VARVALUE)
-        # bind double click to variable recall
-        tv_luaVars.bind('<Double-Button-1>', lambda _: self.recall_var())
+        sb_luaVars = ttk.Scrollbar(sftv_luaVars, orient=tk.VERTICAL, command=tv_luaVars.yview)
+        tv_luaVars.configure(yscrollcommand=sb_luaVars.set)
+        tv_luaVars.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        sb_luaVars.pack(side=tk.RIGHT, fill=tk.Y)
         l_varName = ttk.Label(area, text=UI_FORM_VARNAME_SC)
         e_varName = ttk.Entry(area)
         l_varValue = ttk.Label(area, text=UI_FORM_NEWVALUE_SC)
@@ -65,6 +69,9 @@ class form_LuaScriptCondition(form_Condition):
         l_checkAfter = ttk.Label(area_checkafter, text=UI_FORM_EXTRADELAY_SC)
         e_checkAfter = ttk.Entry(area_checkafter)
         l_checkAfterSeconds = ttk.Label(area_checkafter, text=UI_TIME_SECONDS)
+
+        # bind double click to variable recall
+        tv_luaVars.bind('<Double-Button-1>', lambda _: self.recall_var())
 
         # arrange items in frame
         l_checkAfter.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
@@ -81,7 +88,7 @@ class form_LuaScriptCondition(form_Condition):
         area_checkafter.grid(row=3, column=0, columnspan=4, sticky=tk.EW)
         sep2.grid(row=4, column=0, columnspan=4, sticky=tk.EW, pady=PAD)
         l_luaVars.grid(row=10, column=0, columnspan=4, sticky=tk.W, padx=PAD, pady=PAD)
-        tv_luaVars.grid(row=11, column=0, columnspan=4, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        sftv_luaVars.grid(row=11, column=0, columnspan=4, sticky=tk.NSEW, padx=PAD, pady=PAD)
         l_varName.grid(row=12, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         l_varValue.grid(row=12, column=1, sticky=tk.W, padx=PAD, pady=PAD)
         e_varName.grid(row=13, column=0, sticky=tk.EW, padx=PAD, pady=PAD)
