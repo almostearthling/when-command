@@ -6,18 +6,114 @@ import os.path
 import argparse
 import shutil
 
+import tkinter as tk
+import ttkbootstrap as ttk
+from PIL import ImageTk
+
+
 BASEDIR = os.path.dirname(os.path.dirname(sys.argv[0]))
 if not BASEDIR:
     BASEDIR = '.'
 sys.path.append(BASEDIR)
 
 from lib.i18n.strings import *
-from lib.utility import get_default_configdir, get_configfile, is_whenever_running, setup_windows, cleanup_windows
+from lib.icons import APP_ICON32 as APP_ICON
+from lib.utility import get_default_configdir, get_configfile, is_whenever_running, get_image, get_UI_theme
 from lib.repocfg import AppConfig
+
+from lib.forms.about import show_about_box
+from lib.forms.cfgform import form_Config
+from lib.forms.history import form_History
+
+
+# main root window, to be withdrawn
+_root = None
 
 
 # this is used to enable exception handling too
 DEBUG = AppConfig.get('DEBUG')
+
+
+
+# the following class is used to create an invisible window that actually
+# implements the tkinter main loop, and that reads virtual events to display
+# the application forms: being the main window it also sets the ttk style
+# and reacts to an `ExitApp` event that closes and destroys the main window
+class App(object):
+
+    # an invisible root window is created, the other ones are all toplevels
+    def __init__(self):
+        self._window = tk.Tk()
+        self._window.withdraw()
+        self._icon = get_image(APP_ICON)
+        self._window.iconphoto(False, ImageTk.PhotoImage(self._icon))
+        style = ttk.Style()
+        style.theme_use(get_UI_theme())
+        self._window.bind('<<OpenHistory>>', self.open_history)
+        self._window.bind('<<OpenCfgApp>>', self.open_cfgapp)
+        self._window.bind('<<OpenAboutBox>>', self.open_aboutbox)
+        self._window.bind('<<ExitApplication>>', self.exit_app)
+        self._whenever_wrapper = None
+
+    # the main loop is mandatory to react to events
+    def run(self):
+        self._window.mainloop()
+
+    # the scheduler wrapper is needed as it provides access to task history
+    def set_wrapper(self, wrapper):
+        self._whenever_wrapper = wrapper
+
+    # send an event to the main loop asynchronously
+    def send_event(self, event: str):
+        if self._window:
+            self._window.update()
+            self._window.event_generate(event)
+
+    # shortcut to send an EXIT event
+    def send_exit(self):
+        if self._window:
+            self._window.update()
+            self._window.event_generate('<<ExitApplication>>')
+
+    # destroy the window and cleanup internals
+    def destroy(self):
+        if self._window:
+            self._window.destroy()
+            del self._window
+            self._window = None
+        self._whenever_wrapper = None
+
+    # event reactions: these are called by the systray app that runs in a
+    # separate, detached thread so that it does not slow down the main loop
+    def open_history(self, _):
+        if self._window and self._whenever_wrapper:
+            form = form_History(self._whenever_wrapper.get_history())
+            form.run()
+            del form
+
+    def open_cfgapp(self, _):
+        if self._window:
+            form = form_Config()
+            form.run()
+            del form
+
+    def open_aboutbox(self, _):
+        if self._window:
+            show_about_box()
+
+    def exit_app(self, _):
+        self.destroy()
+
+
+
+# set up the main window which is the event receiver: since the root window
+# is only created by instantiating App, this is needed in every command that
+# displays a window, because all other forms are just non-root toplevels;
+# NOTE: every windowed subprogram *must* receive a reference to the root
+# window and take care of sending a `send_exit()` event when finishing
+def setup_windows():
+    global _root
+    _root = App()
 
 
 # utility to bail out with a consistent error message
@@ -26,8 +122,10 @@ def exiterror(s, code=2):
     sys.exit(code)
 
 
+
 # main program: it actually perform CLI parsing
 def main():
+    global _root
 
     default_appdata = get_default_configdir()
     default_whenever = shutil.which('whenever')
@@ -93,11 +191,9 @@ def main():
                     with open(configfile, 'w') as f:
                         f.write("# Created by: %s v%s" % (UI_APP, UI_APP_VERSION))
                 except Exception as e:
-                    cleanup_windows()
                     exiterror(CLI_ERR_CONFIG_UNACCESSIBLE)
             from lib.cfgapp import main
-            main()
-            cleanup_windows()
+            main(_root)
         else:
             try:
                 configfile = get_configfile()
@@ -106,13 +202,10 @@ def main():
                         with open(configfile, 'w') as f:
                             f.write("# Created by: %s v%s" % (UI_APP, UI_APP_VERSION))
                     except Exception as e:
-                        cleanup_windows()
                         exiterror(CLI_ERR_CONFIG_UNACCESSIBLE)
                 from lib.cfgapp import main
-                main()
-                cleanup_windows()
+                main(_root)
             except Exception as e:
-                cleanup_windows()
                 exiterror("unexpected exception '%s'" % e)
 
     # start the resident application and display an icon on the tray area
@@ -123,22 +216,19 @@ def main():
         if DEBUG:
             whenever = AppConfig.get('WHENEVER')
             if whenever is None or not os.path.exists(whenever) or not os.access(whenever, os.X_OK):
-                cleanup_windows()
                 exiterror(CLI_ERR_WHENEVER_NOT_FOUND)
             from lib.trayapp import main
-            main()
-            cleanup_windows()
+            main(_root)
+            _root.run()
         else:
             try:
                 whenever = AppConfig.get('WHENEVER')
                 if whenever is None or not os.path.exists(whenever) or not os.access(whenever, os.X_OK):
-                    cleanup_windows()
                     exiterror(CLI_ERR_WHENEVER_NOT_FOUND)
                 from lib.trayapp import main
-                main()
-                cleanup_windows()
+                main(_root)
+                _root.run()
             except Exception as e:
-                cleanup_windows()
                 exiterror("unexpected exception '%s'" % e)
 
     else:

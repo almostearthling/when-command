@@ -17,13 +17,7 @@ import ttkbootstrap as ttk
 import darkdetect
 
 from .i18n.strings import *
-from .icons import APP_ICON32 as APP_ICON
-
 from .repocfg import AppConfig
-
-
-# main root window, to be withdrawn
-_root = None
 
 
 # check that all passed arguments are not None
@@ -163,22 +157,6 @@ def get_editor_theme():
         else:
             return AppConfig.get('EDITOR_THEME_LIGHT')
 
-
-
-# create an invisible toplevel, so that none of the following is main/root
-def setup_windows():
-    global _root
-    _root = tk.Tk()
-    _root.withdraw()
-    style = ttk.Style()
-    style.theme_use(get_UI_theme())
-
-
-# cleanup the root window: only to be called at exit
-def cleanup_windows():
-    global _root
-    _root.destroy()
-    del _root
 
 # write a warning to stderr
 def write_warning(s):

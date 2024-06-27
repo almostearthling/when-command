@@ -61,6 +61,10 @@ def get_icon(image: bytes):
     return ImageTk.PhotoImage(
         Image.open(BytesIO(b64decode(image))).resize((24, 24)))
 
+def get_appicon(image: bytes):
+    return ImageTk.PhotoImage(
+        Image.open(BytesIO(b64decode(image))).resize((32, 32)))
+
 
 
 # default UI values
@@ -269,7 +273,7 @@ class ApplicationForm(object):
             self._dialog = tk.Toplevel()
         self._icon = None
         if icon is not None:
-            self._icon = get_icon(icon)
+            self._icon = get_appicon(icon)
             self._dialog.iconphoto(True, self._icon)
 
         # position the form at the center of the screen
