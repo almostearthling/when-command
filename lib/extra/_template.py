@@ -1,33 +1,34 @@
 # template for extra modules
 
-# this header is common to all extra modules:
-from lib.i18n.strings import *
-from lib.utility import sg, check_not_none, append_not_none
-
-import os
-import sys
+# this header is common to all extra modules
 from tomlkit import items, table
 
+import tkinter as tk
+import ttkbootstrap as ttk
+from tkinter import messagebox
 
-# since a condition is defined, the base form is `form_Condition`; when
-# deriving a task `form_Task` should be imported and `form_Event` for a
-# derived event: the specialized forms for 
-from lib.forms.cond import form_Condition
+from ..i18n.strings import *
+from ..utility import check_not_none, append_not_none
 
-# here the actual item to derive from has to be imported
-from lib.items.cond_command import CommandCondition
+from ..forms.ui import *
+
+
+# since a condition is defined, the base form is the one for conditions
+from ..forms.cond import form_Condition
+
+# import item to derive from
+from ..items.cond_command import CommandCondition
 
 
 # imports specific to this module
-import re
 import shutil
 
 
-# resource strings (not internationalized)
+
+# resource strings (not internationalized for the moment)
 ITEM_COND_TEMPLATE = "Template Condition"
 
 _UI_TITLE_TEMPLATE = "%s: Template Condition Editor" % UI_APP
-_UI_FORM_TEMPLATE = "Template"
 _UI_FORM_TEMPLATE_PARAM_SC = "Parameter is:"
 
 
@@ -40,6 +41,7 @@ _DEFAULT_PARAM_VALUE = "somestring"
 def _available():
     if shutil.which('ls'):
         return True
+    return False
 
 
 
@@ -48,7 +50,7 @@ class TemplateCondition(CommandCondition):
 
     # availability at class level: these variables *MUST* be set for all items
     item_type = 'command'
-    item_subtype = 'sysload'
+    item_subtype = 'template'
     item_hrtype = ITEM_COND_TEMPLATE
     available = _available()
 
@@ -73,72 +75,61 @@ class TemplateCondition(CommandCondition):
         else:
             self.tags = table()
             self.tags.append('subtype', self.subtype)
-            self.tags.append('parameter', _DEFAULT_PARAM_VALUE)
+            self.tags.append('parameter1', _DEFAULT_PARAM_VALUE)
         
         self.updateitem()
 
     def updateitem(self):
         # set base item properties according to specific parameters in `tags`
         self.command = 'ls'
-        self.command_arguments = ['-l', self.tags.get('parameter', _DEFAULT_PARAM_VALUE)]
+        self.command_arguments = ['-l', self.tags.get('parameter1', _DEFAULT_PARAM_VALUE)]
         self.startup_path = "."
         self.success_status = 0
 
 
-# the specialized form is directly derived from the generic item form: the
-# following snippet is the layout that will be inserted in the variable part
-def _form_layout():
-    return [
-        [ sg.Frame(_UI_FORM_TEMPLATE, [[
-            sg.T(_UI_FORM_TEMPLATE_PARAM_SC),
-            sg.I(key='-PARAMETER-', expand_x=True),
-            sg.T("%"),
-        ]], expand_x=True, expand_y=True) ]
-    ]
-
+# dedicated form definition derived directly from one of the base forms
 class form_TemplateCondition(form_Condition):
 
-    # initialization always follows this pattern, the only thing that has to
-    # be fine tuned is the list of checks, if needed, that must be performed
-    # on form fields to test the validity of entered values
     def __init__(self, tasks_available, item=None):
+
+        # check that item is the expected one for safety, build one by default
         if item:
             assert(isinstance(item, TemplateCondition))
         else:
             item = TemplateCondition()
-        extra_layout = _form_layout()
-        form_Condition.__init__(self, _UI_TITLE_TEMPLATE, tasks_available, extra_layout, item)
-        self.add_checks(
-            ('-PARAMETER-', _UI_FORM_TEMPLATE_PARAM_SC, lambda x: re.match(r"[a-zA-Z0-9_]+")),
-        )
+        super().__init__(_UI_TITLE_TEMPLATE, tasks_available, item)
 
-    # data to be sent to the form, usually corresponding to specific params
+        # create a specific frame for the contents
+        area = ttk.Frame(super().contents)
+        area.grid(row=0, column=0, sticky=tk.NSEW)
+        PAD = WIDGET_PADDING_PIXELS
+
+        # build the UI elements as needed and configure the layout
+        l_parameter1 = ttk.Label(area, text=_UI_FORM_TEMPLATE_PARAM_SC)
+        e_parameter1 = ttk.Entry(area)
+        self.data_bind('parameter1', e_parameter1, TYPE_STRING)
+
+        l_parameter1.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        e_parameter1.grid(row=0, column=1, sticky=tk.NSEW, padx=PAD, pady=PAD)
+
+        area.columnconfigure(1, weight=1)
+
+        # always update the form at the end of initialization
+        self._updateform()
+
+    # update the form with the specific parameters (usually in the `tags`)
+    def _updateform(self):
+        self.data_set('parameter1', self._item.tags.get('parameter1'))
+        return super()._updateform()
+    
+    # update the item from the form elements (usually update `tags`)
     def _updatedata(self):
-        form_Condition._updatedata(self)
-        if self._item:
-            self._data['-PARAMETER-'] = self._item.tags.get('parameter')
-        else:
-            self._data['-PARAMETER-'] = str(_DEFAULT_PARAM_VALUE)
-
-    # here the data is retrieved from the form fields and sent to the
-    # specific `tags` table corresponding to the item
-    def _updateitem(self):
-        form_Condition._updateitem(self)
-        if self._data['-PARAMETER-']:
-            self._item.tags['parameter'] = int(self._data['-PARAMETER-'])
-        else:
-            self._item.tags['parameter'] = None
-
-    # this utility might have to be defined (and in this case the super()
-    # version must *always* be called), but in many cases it can just be
-    # omitted - which has the same effect as defining it as below
-    def process_event(self, event, values):
-        return super().process_event(event, values)
+        self._item.tags['parameter1'] = self.data_get('parameter1')
+        return super()._updatedata()
 
 
 
-# function common to all extra modules to declare class items as factories:
-# this is mandatory and must return the item and the form in this order
+# function common to all extra modules to declare class items as factories
 def factories():
     return (TemplateCondition, form_TemplateCondition)
 

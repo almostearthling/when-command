@@ -1,20 +1,21 @@
 # command condition form
 
-from os.path import normpath
-
-from lib.i18n.strings import *
+import os
+import re
+import shutil
 
 from shlex import split as arg_split, quote
+from os.path import normpath
 
-from lib.utility import sg
-from lib.icons import XMARK_ICON48 as XMARK_ICON
+import tkinter as tk
+import ttkbootstrap as ttk
+from tkinter import messagebox
 
-from lib.forms.cond import form_Condition
-from lib.items.cond_command import CommandCondition
+from ..i18n.strings import *
+from .ui import *
 
-import re
-import os
-import shutil
+from .cond import form_Condition
+from ..items.cond_command import CommandCondition
 
 
 # regular expression for item name checking
@@ -37,179 +38,190 @@ def _is_dir(s):
         return False
 
 
-# (extra) layout generator
-def _form_layout():
-    return [
-        [sg.Frame(UI_FORM_EXTRADELAY, [[
-            sg.T(UI_FORM_EXTRADELAYSPEC),
-            sg.I(key='-CHECK_AFTER-', expand_x=True),
-            sg.Combo([UI_TIME_SECONDS, UI_TIME_MINUTES, UI_TIME_HOURS], default_value=UI_TIME_SECONDS, key='-CHECK_AFTER_UNIT-'),
-        ]], expand_x=True, expand_y=False) ],
-
-        [sg.Frame(UI_FORM_COMMAND, [[
-            sg.Column([
-                [ sg.T(UI_FORM_COMMAND_SC) ],
-                [ sg.T(UI_FORM_ARGS_SC) ],
-                [ sg.T(UI_FORM_STARTUPPATH_SC) ],
-            ]),
-            sg.Column([
-                [ sg.I(key='-COMMAND-', expand_x=True), sg.FileBrowse(UI_BROWSE, key='-COMMAND_B-') ],
-                [ sg.I(key='-COMMAND_ARGS-', expand_x=True) ],
-                [ sg.I(key='-COMMAND_WORKFOLDER-', expand_x=True), sg.FolderBrowse(UI_BROWSE, key='-COMMAND_WORKFOLDER_B-') ],
-            ], expand_x=True),
-        ]], expand_x=True) ],
-
-        [sg.Frame(UI_FORM_ENVIRONMENT, [
-            [
-                sg.Checkbox(UI_FORM_PRESERVEENVIRONMENT, key='-COMMAND_KEEP_ENV-', default=True),
-                sg.Checkbox(UI_FORMSETWENVIRONMENT, key='-COMMAND_SET_WENV-', default=True),
-            ],
-            [ sg.T(UI_FORM_VARIABLES_SC, ) ],
-            [ sg.Table(
-                [['' for x in range(2)] for y in range(3)],
-                headings=[UI_FORM_NAME, UI_FORM_VALUE],
-                key='-COMMAND_ENVVARS-',
-                num_rows=3,
-                justification='left',
-                expand_x=True, expand_y=True,
-            ) ],
-            [
-                sg.Column([[ sg.T(UI_FORM_VARNAME_SC) ], [ sg.I(key='-ENVVAR_NAME-', expand_x=True) ]], expand_x=True),
-                sg.Column([[ sg.T(UI_FORM_NEWVALUE_SC) ], [ sg.I(key='-ENVVAR_VALUE-', expand_x=True) ]], expand_x=True),
-            ],
-            [ sg.Push(), sg.B_ADD(UI_UPDATE, key='-UPDATE_ENVVAR-'), sg.B_DEL(UI_DEL, key='-DELETE_ENVVAR-') ],
-        ], expand_x=True, expand_y=True) ],
-
-        [sg.Frame(UI_FORM_CHECKS, [[
-                sg.Column([
-                    [ sg.T(UI_FORM_CHECKFOR_SC) ],
-                    [ sg.Combo([UI_OUTCOME_SUCCESS, UI_OUTCOME_FAILURE], key='-CHECK_FOR-', default_value=UI_OUTCOME_SUCCESS, readonly=True) ]
-                ], vertical_alignment='top'),
-                sg.Column([
-                    [ sg.T(UI_FORM_TESTVAL) ],
-                    [
-                        sg.Combo([UI_EXIT_CODE, UI_STREAM_STDOUT, UI_STREAM_STDERR], key='-CHECK_WHAT-', default_value=UI_EXIT_CODE, readonly=True),
-                        sg.I(key='-CHECK_VALUE-', expand_x=True, default_text="0"),
-                    ],
-                    [
-                        sg.CB(UI_FORM_MATCHEXACT, key='-CHECK_EXACT-'),
-                        sg.CB(UI_FORM_CASESENSITIVE, key='-CHECK_CASE_SENSITIVE-'),
-                        sg.CB(UI_FORM_MATCHREGEXP, key='-CHECK_REGEXP-'),
-                    ],
-                ], expand_x=True),
-                sg.Column([
-                    [ sg.T(UI_FORM_TIMEOUTSECS_SC) ],
-                    [ sg.I(key='-TIMEOUT-', size=10) ],
-                ], vertical_alignment='top'),
-        ]], expand_x=True) ],
-    ]
-
-
 # specialized subform
 class form_CommandCondition(form_Condition):
+
     def __init__(self, tasks_available, item=None):
         if item:
             assert(isinstance(item, CommandCondition))
         else:
             item = CommandCondition()
-        extra_layout = _form_layout()
-        form_Condition.__init__(self, UI_TITLE_COMMANDCOND, tasks_available, extra_layout, item)
+        super().__init__(UI_TITLE_COMMANDCOND, tasks_available, item)
+
+        # form data
         self._envvars = []
-        self._form['-COMMAND_ENVVARS-'].bind('<Double-Button-1>' , '+-dblclick-')
-        self.dont_update('-COMMAND_B-', '-COMMAND_WORKFOLDER_B-')   # must force it, I don't know why
-        self.add_checks(
-            ('-COMMAND-', UI_FORM_COMMAND_SC, _is_command),
-            ('-COMMAND_WORKFOLDER-', UI_FORM_STARTUPPATH_SC, _is_dir),
-            ('-CHECK_AFTER-', UI_FORM_EXTRADELAYSPEC, lambda x: x == '' or int(x) > 0),
-            ('-TIMEOUT-', UI_FORM_TIMEOUTSECS_SC, lambda x: x == '' or int(x) > 0),
-        )
 
+        # build the UI: build widgets, arrange them in the box, bind data
+
+        # client area
+        area = ttk.Frame(super().contents)
+        area.grid(row=0, column=0, sticky=tk.NSEW)
+        PAD = WIDGET_PADDING_PIXELS
+
+        # command section: use a separate area to customize layout
+        area_command = ttk.Frame(area)
+        l_command = ttk.Label(area_command, text=UI_FORM_COMMAND_SC)
+        e_command = ttk.Entry(area_command)
+        b_commandBrowse = ttk.Button(area_command, text=UI_BROWSE, command=self.browse_command)
+        l_args = ttk.Label(area_command, text=UI_FORM_ARGS_SC)
+        e_args = ttk.Entry(area_command)
+        l_startupPath = ttk.Label(area_command, text=UI_FORM_STARTUPPATH_SC)
+        e_startupPath = ttk.Entry(area_command)
+        b_startupPathBrowse = ttk.Button(area_command, text=UI_BROWSE, command=self.browse_startup_path)
+        l_checkAfter = ttk.Label(area_command, text=UI_FORM_EXTRADELAY_SC)
+        e_checkAfter = ttk.Entry(area_command)
+        l_checkAfterSeconds = ttk.Label(area_command, text=UI_TIME_SECONDS)
+        sep1 = ttk.Separator(area)
+
+        # arrange widgets in frame
+        l_command.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        e_command.grid(row=0, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        b_commandBrowse.grid(row=0, column=2, sticky=tk.EW, padx=PAD, pady=PAD)
+        l_args.grid(row=1, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        e_args.grid(row=1, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        l_startupPath.grid(row=2, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        e_startupPath.grid(row=2, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        b_startupPathBrowse.grid(row=2, column=2, sticky=tk.EW, padx=PAD, pady=PAD)
+        l_checkAfter.grid(row=3, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        e_checkAfter.grid(row=3, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        l_checkAfterSeconds.grid(row=3, column=2, sticky=tk.W, padx=PAD, pady=PAD)
+
+        # environment section: deserves an area to customize layout
+        area_vars = ttk.Frame(area)
+        l_vars = ttk.Label(area_vars, text=UI_FORM_VARIABLES_SC)
+        # build a scrolled frame for the treeview
+        sftv_vars = ttk.Frame(area_vars)
+        tv_vars = ttk.Treeview(sftv_vars, columns=('name', 'value'), show='headings', height=7)
+        tv_vars.heading('name', anchor=tk.W, text=UI_FORM_NAME)
+        tv_vars.heading('value', anchor=tk.W, text=UI_FORM_VALUE)
+        sb_vars = ttk.Scrollbar(sftv_vars, orient=tk.VERTICAL, command=tv_vars.yview)
+        tv_vars.configure(yscrollcommand=sb_vars.set)
+        tv_vars.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        sb_vars.pack(side=tk.RIGHT, fill=tk.Y)
+        l_varName = ttk.Label(area_vars, text=UI_FORM_VARNAME_SC)
+        e_varName = ttk.Entry(area_vars)
+        l_varValue = ttk.Label(area_vars, text=UI_FORM_NEWVALUE_SC)
+        e_varValue = ttk.Entry(area_vars)
+        b_addVar = ttk.Button(area_vars, text=UI_UPDATE, width=BUTTON_STANDARD_WIDTH, command=self.add_var)
+        b_delVar = ttk.Button(area_vars, text=UI_DEL, width=BUTTON_STANDARD_WIDTH, command=self.del_var)
+        sep2 = ttk.Separator(area)
+
+        # environment section: subarea for checkboxes
+        area_vars_flags = ttk.Frame(area)
+        ck_preserveEnv = ttk.Checkbutton(area_vars_flags, text=UI_FORM_PRESERVEENVIRONMENT)
+        ck_setEnvVars = ttk.Checkbutton(area_vars_flags, text=UI_FORM_SETWENVIRONMENT)
+
+        # environment section: arrange widgets in frame
+        l_vars.grid(row=0, column=0, columnspan=4, sticky=tk.W, padx=PAD, pady=PAD)
+        sftv_vars.grid(row=1, column=0, columnspan=4, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        l_varName.grid(row=2, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        l_varValue.grid(row=2, column=1, sticky=tk.W, padx=PAD, pady=PAD)
+        e_varName.grid(row=3, column=0, sticky=tk.EW, padx=PAD, pady=PAD)
+        e_varValue.grid(row=3, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        b_addVar.grid(row=3, column=2, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        b_delVar.grid(row=3, column=3, sticky=tk.NSEW, padx=PAD, pady=PAD)
+
+        # bind double click to variable recall
+        tv_vars.bind('<Double-Button-1>', lambda _: self.recall_var())
+
+        # environment section: arrange widgets in frame
+        ck_preserveEnv.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        ck_setEnvVars.grid(row=0, column=1, sticky=tk.W, padx=PAD, pady=PAD)
+
+        # checks section: deserves an area to customize layout
+        area_checks = ttk.Frame(area)
+        l_checkFor = ttk.Label(area_checks, text=UI_FORM_CHECKFOR_SC)
+        cb_checkFor = ttk.Combobox(
+            area_checks,
+            values=(UI_OUTCOME_NONE, UI_OUTCOME_SUCCESS, UI_OUTCOME_FAILURE),
+            state='readonly',
+            )
+        l_checkWhat = ttk.Label(area_checks, text=UI_FORM_CHECKAGAINST_SC)
+        cb_checkWhat = ttk.Combobox(
+            area_checks,
+            values=(UI_EXIT_CODE, UI_STREAM_STDOUT, UI_STREAM_STDERR),
+            state='readonly',
+            )
+        l_checkValue = ttk.Label(area_checks, text=UI_FORM_TESTVAL_SC)
+        e_checkValue = ttk.Entry(area_checks)
+        l_timeoutSecs = ttk.Label(area_checks, text=UI_FORM_TIMEOUTSECS_SC)
+        e_timeoutSecs = ttk.Entry(area_checks)
+
+        # checks section: arrange widgets in frame
+        l_checkFor.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        cb_checkFor.grid(row=1, column=0, sticky=tk.EW, padx=PAD, pady=PAD)
+        l_checkWhat.grid(row=0, column=1, sticky=tk.W, padx=PAD, pady=PAD)
+        cb_checkWhat.grid(row=1, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        l_checkValue.grid(row=0, column=2, sticky=tk.W, padx=PAD, pady=PAD)
+        e_checkValue.grid(row=1, column=2, sticky=tk.EW, padx=PAD, pady=PAD)
+        l_timeoutSecs.grid(row=0, column=3, sticky=tk.W, padx=PAD, pady=PAD)
+        e_timeoutSecs.grid(row=1, column=3, sticky=tk.EW, padx=PAD, pady=PAD)
+
+        # checks section: subarea for checkboxes
+        area_checks_flags = ttk.Frame(area)
+        ck_matchExact = ttk.Checkbutton(area_checks_flags, text=UI_FORM_MATCHEXACT)
+        ck_caseSensitive = ttk.Checkbutton(area_checks_flags, text=UI_FORM_CASESENSITIVE)
+        ck_matchRegExp = ttk.Checkbutton(area_checks_flags, text=UI_FORM_MATCHREGEXP)
+
+        # checks section: arrange widgets in frame
+        ck_matchExact.grid(row=0, column=0, sticky=tk.EW, padx=PAD, pady=PAD)
+        ck_caseSensitive.grid(row=0, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        ck_matchRegExp.grid(row=0, column=2, sticky=tk.EW, padx=PAD, pady=PAD)
+
+        # arrange top items in the grid
+        area_command.grid(row=0, column=0, sticky=tk.NSEW)
+        sep1.grid(row=1, column=0, sticky=tk.EW, pady=PAD)
+        area_vars.grid(row=2, column=0, sticky=tk.NSEW)
+        area_vars_flags.grid(row=3, column=0, sticky=tk.NSEW)
+        sep2.grid(row=4, column=0, sticky=tk.EW, pady=PAD)
+        area_checks.grid(row=5, column=0, sticky=tk.NSEW)
+        area_checks_flags.grid(row=6, column=0, sticky=tk.NSEW)
+
+        # expand appropriate sections
+        area.rowconfigure(2, weight=1)
+        area.columnconfigure(0, weight=1)
+        area_command.columnconfigure(1, weight=1)
+        area_vars.columnconfigure(0, weight=1)
+        area_vars.rowconfigure(1, weight=1)
+        area_vars.columnconfigure(1, weight=1)
+        area_checks.columnconfigure(2, weight=1)
+
+        # bind data to widgets
+        self.data_bind('command', e_command, TYPE_STRING)
+        # the following would be optimal, but it is too strict
+        # self.data_bind('command', e_command, TYPE_STRING, _is_command)
+        self.data_bind('command_arguments', e_args, TYPE_STRING)
+        self.data_bind('startup_path', e_startupPath, TYPE_STRING, _is_dir)
+        self.data_bind('check_after', e_checkAfter, TYPE_INT, lambda x: x >= 0)
+        self.data_bind('include_environment', ck_preserveEnv)
+        self.data_bind('set_environment_variables', ck_setEnvVars)
+        self.data_bind('envvar_selection', tv_vars)
+        self.data_bind('varname', e_varName, TYPE_STRING, lambda x: x == '' or _RE_VALIDNAME.match(x))
+        self.data_bind('newvalue', e_varValue, TYPE_STRING)
+        self.data_bind('check_for', cb_checkFor, TYPE_STRING)
+        self.data_bind('check_what', cb_checkWhat, TYPE_STRING)
+        self.data_bind('check_value', e_checkValue, TYPE_STRING)
+        self.data_bind('timeout_seconds', e_timeoutSecs, TYPE_INT, lambda x: x >= 0)
+        self.data_bind('match_exact', ck_matchExact)
+        self.data_bind('case_sensitive', ck_caseSensitive)
+        self.data_bind('match_regular_expression', ck_matchRegExp)
+
+        # propagate widgets that need to be accessed
+        self._tv_vars = tv_vars
+
+        # update the form
+        self._updateform()
+
+
+    # the data update utility loads data into the item
     def _updatedata(self):
-        form_Condition._updatedata(self)
-        self._data['-ENVVAR_NAME-'] = ''
-        self._data['-ENVVAR_VALUE-'] = ''
-
-        if self._item:
-            self._data['-COMMAND-'] = self._item.command
-            self._data['-COMMAND_ARGS-'] = ' '.join(quote(x) for x in self._item.command_arguments) if self._item.command_arguments else None
-            self._data['-COMMAND_WORKFOLDER-'] = self._item.startup_path
-            self._data['-COMMAND_KEEP_ENV-'] = self._item.include_environment or self._item.include_environment is None
-            self._data['-COMMAND_SET_WENV-'] = self._item.set_environment_variables or self._item.set_environment_variables is None
-            self._data['-CHECK_EXACT-'] = self._item.match_exact
-            self._data['-CHECK_CASE_SENSITIVE-'] = self._item.case_sensitive
-            self._data['-CHECK_REGEXP-'] = self._item.match_regular_expression
-            self._data['-TIMEOUT-'] = self._item.timeout_seconds
-            check_for = UI_OUTCOME_NONE
-            check_what = UI_EXIT_CODE
-            check_value = ''
-            if self._item.success_status is not None:
-                check_for = UI_OUTCOME_SUCCESS
-                check_what = UI_EXIT_CODE
-                check_value = self._item.success_status
-            elif self._item.success_stdout is not None:
-                check_for = UI_OUTCOME_SUCCESS
-                check_what = UI_STREAM_STDOUT
-                check_value = self._item.success_stdout
-            elif self._item.success_stderr is not None:
-                check_for = UI_OUTCOME_SUCCESS
-                check_what = UI_STREAM_STDERR
-                check_value = self._item.success_stderr
-            if self._item.failure_status is not None:
-                check_for = UI_OUTCOME_FAILURE
-                check_what = UI_EXIT_CODE
-                check_value = self._item.success_status
-            elif self._item.failure_stdout is not None:
-                check_for = UI_OUTCOME_FAILURE
-                check_what = UI_STREAM_STDOUT
-                check_value = self._item.success_stdout
-            elif self._item.failure_stderr is not None:
-                check_for = UI_OUTCOME_FAILURE
-                check_what = UI_STREAM_STDERR
-                check_value = self._item.success_stderr
-            self._data['-CHECK_FOR-'] = check_for
-            self._data['-CHECK_WHAT-'] = check_what
-            self._data['-CHECK_VALUE-'] = check_value
-            self._data['-COMMAND_ENVVARS-'] = []
-            self._envvars = []
-            if self._item.environment_variables:
-                for k in self._item.environment_variables:
-                    self._data['-COMMAND_ENVVARS-'].append([k, self._item.environment_variables[k]])
-                    self._envvars.append([k, self._item.environment_variables[k]])
-            if self._item.check_after is not None and self._item.check_after % 3600 == 0:
-                ca = int(self._item.check_after / 3600)
-                cau = UI_TIME_HOURS
-            elif self._item.check_after is not None and self._item.check_after % 60 == 0:
-                ca = int(self._item.check_after / 60)
-                cau = UI_TIME_MINUTES
-            else:
-                ca = self._item.check_after
-                cau = UI_TIME_SECONDS
-            self._data['-CHECK_AFTER-'] = ca
-            self._data['-CHECK_AFTER_UNIT-'] = cau
-        else:
-            self._data['-COMMAND-'] = ''
-            self._data['-COMMAND_ARGS-'] = ''
-            self._data['-COMMAND_WORKFOLDER-'] = ''
-            self._data['-COMMAND_KEEP_ENV-'] = True
-            self._data['-COMMAND_SET_WENV-'] = True
-            self._data['-CHECK_FOR-'] = UI_OUTCOME_SUCCESS
-            self._data['-CHECK_WHAT-'] = UI_EXIT_CODE
-            self._data['-CHECK_VALUE-'] = '0'
-            self._data['-CHECK_EXACT-'] = False
-            self._data['-CHECK_CASE_SENSITIVE-'] = False
-            self._data['-CHECK_REGEXP-'] = False
-            self._data['-TIMEOUT-'] = ''
-            self._data['-COMMAND_ENVVARS-'] = []
-            self._data['-CHECK_AFTER-'] = None
-            self._data['-CHECK_AFTER_UNIT-'] = UI_TIME_SECONDS
-
-    def _updateitem(self):
-        form_Condition._updateitem(self)
-        self._item.command = normpath(self._data['-COMMAND-'])
-        self._item.command_arguments = arg_split(self._data['-COMMAND_ARGS-'])
-        self._item.startup_path = normpath(self._data['-COMMAND_WORKFOLDER-'])
-        self._item.include_environment = self._data['-COMMAND_KEEP_ENV-'] if not self._data['-COMMAND_KEEP_ENV-'] else None
-        self._item.set_environment_variables = self._data['-COMMAND_SET_WENV-'] if not self._data['-COMMAND_SET_WENV-'] else None
+        self._item.command = self.data_get('command')
+        self._item.command_arguments = arg_split(self.data_get('command_arguments'))
+        self._item.startup_path = normpath(self.data_get('startup_path'))
+        v = self.data_get('include_environment')
+        self._item.include_environment = False if not v else None
+        v = self.data_get('set_environment_variables')
+        self._item.set_environment_variables = False if not v else None
         e = {}
         for l in self._envvars:
             e[l[0]] = str(l[1])
@@ -223,77 +235,139 @@ class form_CommandCondition(form_Condition):
         self._item.match_exact = None
         self._item.match_regular_expression = None
         self._item.case_sensitive = None
-        self._item.timeout_seconds = self._data['-TIMEOUT-'] or None
-        check_for = self._data['-CHECK_FOR-']
-        check_what = self._data['-CHECK_WHAT-']
+        self._item.timeout_seconds = self.data_get('timeout_seconds') or None
+        self._item.check_after = self.data_get('check_after') or None
+        check_for = self.data_get('check_for')
+        check_what = self.data_get('check_what')
+        check_value = self.data_get('check_value')
+        match_exact = self.data_get('match_exact')
+        case_sensitive = self.data_get('case_sensitive')
+        match_regular_expression = self.data_get('match_regular_expression')
         if check_for != UI_OUTCOME_NONE:
             if check_for == UI_OUTCOME_SUCCESS:
                 if check_what == UI_EXIT_CODE:
-                    self._item.success_status = int(self._data['-CHECK_VALUE-']) if self._data['-CHECK_VALUE-'] != '' else None
+                    self._item.success_status = int(check_value) if check_value != '' else None
                 elif check_what == UI_STREAM_STDOUT:
-                    self._item.success_stdout = str(self._data['-CHECK_VALUE-']) or None
-                    self._item.match_exact = bool(self._data['-CHECK_EXACT-']) or None
-                    self._item.match_regular_expression = bool(self._data['-CHECK_REGEXP-']) or None
-                    self._item.case_sensitive = bool(self._data['-CHECK_CASE_SENSITIVE-']) or None
+                    self._item.success_stdout = str(check_value) or None
+                    self._item.match_exact = bool(match_exact) or None
+                    self._item.match_regular_expression = bool(match_regular_expression) or None
+                    self._item.case_sensitive = bool(case_sensitive) or None
                 elif check_what == UI_STREAM_STDERR:
-                    self._item.success_stderr = str(self._data['-CHECK_VALUE-']) or None
-                    self._item.match_exact = bool(self._data['-CHECK_EXACT-']) or None
-                    self._item.match_regular_expression = bool(self._data['-CHECK_REGEXP-']) or None
-                    self._item.case_sensitive = bool(self._data['-CHECK_CASE_SENSITIVE-']) or None
+                    self._item.success_stderr = str(check_value) or None
+                    self._item.match_exact = bool(match_exact) or None
+                    self._item.match_regular_expression = bool(match_regular_expression) or None
+                    self._item.case_sensitive = bool(case_sensitive) or None
             elif check_for == UI_OUTCOME_FAILURE:
                 if check_what == UI_EXIT_CODE:
-                    self._item.failure_status = int(self._data['-CHECK_VALUE-']) if self._data['-CHECK_VALUE-'] != '' else None
+                    self._item.failure_status = int(check_value) if check_value != '' else None
                 elif check_what == UI_STREAM_STDOUT:
-                    self._item.failure_stdout = str(self._data['-CHECK_VALUE-']) or None
-                    self._item.match_exact = bool(self._data['-CHECK_EXACT-']) or None
-                    self._item.match_regular_expression = bool(self._data['-CHECK_REGEXP-']) or None
-                    self._item.case_sensitive = bool(self._data['-CHECK_CASE_SENSITIVE-']) or None
+                    self._item.failure_stdout = str(check_value) or None
+                    self._item.match_exact = bool(match_exact) or None
+                    self._item.match_regular_expression = bool(match_regular_expression) or None
+                    self._item.case_sensitive = bool(case_sensitive) or None
                 elif check_what == UI_STREAM_STDERR:
-                    self._item.failure_stderr = str(self._data['-CHECK_VALUE-']) or None
-                    self._item.match_exact = bool(self._data['-CHECK_EXACT-']) or None
-                    self._item.match_regular_expression = bool(self._data['-CHECK_REGEXP-']) or None
-                    self._item.case_sensitive = bool(self._data['-CHECK_CASE_SENSITIVE-']) or None
-        if self._data['-CHECK_AFTER-']:
-            if self._data['-CHECK_AFTER_UNIT-'] == UI_TIME_HOURS:
-                self._item.check_after = int(self._data['-CHECK_AFTER-']) * 3600
-            elif self._data['-CHECK_AFTER_UNIT-'] == UI_TIME_MINUTES:
-                self._item.check_after = int(self._data['-CHECK_AFTER-']) * 60
+                    self._item.failure_stderr = str(check_value) or None
+                    self._item.match_exact = bool(match_exact) or None
+                    self._item.match_regular_expression = bool(match_regular_expression) or None
+                    self._item.case_sensitive = bool(case_sensitive) or None
+        return super()._updatedata()
+
+    def _updateform(self):
+        self.data_set('varname', '')
+        self.data_set('newvalue', '')
+        self.data_set('command', self._item.command)
+        self.data_set('command_arguments', ' '.join(quote(x) for x in self._item.command_arguments) if self._item.command_arguments else None)
+        self.data_set('startup_path', self._item.startup_path)
+        self.data_set('include_environment', self._item.include_environment)
+        self.data_set('set_environment_variables', self._item.set_environment_variables)
+        self.data_set('match_exact', self._item.match_exact)
+        self.data_set('case_sensitive', self._item.case_sensitive)
+        self.data_set('match_regular_expression', self._item.match_regular_expression)
+        self.data_set('timeout_seconds', self._item.timeout_seconds or 0)
+        self.data_set('check_after', self._item.check_after or 0)
+        check_for = UI_OUTCOME_NONE
+        check_what = UI_EXIT_CODE
+        check_value = ''
+        if self._item.success_status is not None:
+            check_for = UI_OUTCOME_SUCCESS
+            check_what = UI_EXIT_CODE
+            check_value = self._item.success_status
+        elif self._item.success_stdout is not None:
+            check_for = UI_OUTCOME_SUCCESS
+            check_what = UI_STREAM_STDOUT
+            check_value = self._item.success_stdout
+        elif self._item.success_stderr is not None:
+            check_for = UI_OUTCOME_SUCCESS
+            check_what = UI_STREAM_STDERR
+            check_value = self._item.success_stderr
+        if self._item.failure_status is not None:
+            check_for = UI_OUTCOME_FAILURE
+            check_what = UI_EXIT_CODE
+            check_value = self._item.success_status
+        elif self._item.failure_stdout is not None:
+            check_for = UI_OUTCOME_FAILURE
+            check_what = UI_STREAM_STDOUT
+            check_value = self._item.success_stdout
+        elif self._item.failure_stderr is not None:
+            check_for = UI_OUTCOME_FAILURE
+            check_what = UI_STREAM_STDERR
+            check_value = self._item.success_stderr
+        self.data_set('check_for', check_for)
+        self.data_set('check_what', check_what)
+        self.data_set('check_value', check_value)
+        self._envvars = []
+        if self._item.environment_variables:
+            for k in self._item.environment_variables:
+                self._envvars.append([k, self._item.environment_variables[k]])
+        self._envvars.sort(key=lambda x: x[0])
+        self._tv_vars.delete(*self._tv_vars.get_children())
+        for entry in self._envvars:
+            self._tv_vars.insert('', iid="%s-%s" % (entry[0], entry[1]), values=entry, index=tk.END)
+        return super()._updateform()
+
+    def add_var(self):
+        name = self.data_get('varname')
+        value = self.data_get('newvalue')
+        if name:
+            if not value:
+                messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_EMPTYVARVALUE)
             else:
-                self._item.check_after = int(self._data['-CHECK_AFTER-'])
-        else:
-            self._item.check_after = None
+                self._envvars = list(entry for entry in self._envvars if entry[0] != name)
+                self._envvars.append([name, value])
+                e = {}
+                for l in self._envvars:
+                    e[l[0]] = str(l[1])
+                self._item.environment_variables = e or None
+                self._envvars.sort(key=lambda x: x[0])
+            self._updateform()
 
-    def process_event(self, event, values):
-        ret = super().process_event(event, values)
-        if ret is None:
-            if event == '-COMMAND_ENVVARS-+-dblclick-':
-                self._data['-ENVVAR_NAME-'] = self._envvars[self._data['-COMMAND_ENVVARS-'][0]][0]
-                self._data['-ENVVAR_VALUE-'] = self._envvars[self._data['-COMMAND_ENVVARS-'][0]][1]
+    def del_var(self):
+        entry = self.data_get('envvar_selection')
+        name = entry[0]
+        value = entry[1]
+        self._envvars = list(entry for entry in self._envvars if entry[0] != name)
+        e = {}
+        for l in self._envvars:
+            e[l[0]] = str(l[1])
+        self._item.environment_variables = e or None
+        # first update the form data, then recall the variable in the input
+        # fields, so that the user can re-add the variable again if needed
+        self._updateform()
+        self.data_set('varname', name)
+        self.data_set('newvalue', value)
 
-            elif event == '-UPDATE_ENVVAR-':
-                if self._data['-ENVVAR_NAME-'] and self._data['-ENVVAR_VALUE-']:
-                    if _RE_VALIDNAME.match(self._data['-ENVVAR_NAME-']):
-                        r = list(e for e in self._envvars if e[0] != self._data['-ENVVAR_NAME-'])
-                        r.append([self._data['-ENVVAR_NAME-'], self._data['-ENVVAR_VALUE-']])
-                        self._envvars = r
-                    else:
-                        sg.popup(UI_POPUP_INVALIDVARNAME, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
-                else:
-                    sg.popup(UI_POPUP_EMPTYVARVALUE, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
+    def recall_var(self):
+        entry = self.data_get('envvar_selection')
+        name = entry[0]
+        value = entry[1]
+        self.data_set('varname', name)
+        self.data_set('newvalue', value)
 
-            elif event == '-DELETE_ENVVAR-':
-                if self._data['-ENVVAR_NAME-']:
-                    r = list(e for e in self._envvars if e[0] != self._data['-ENVVAR_NAME-'])
-                    self._envvars = r
-                else:
-                    sg.popup(UI_POPUP_EMPTYVARVALUE, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
+    def browse_command(self):
+        pass
 
-            # ...
-            self._data['-COMMAND_ENVVARS-'] = []
-            for l in self._envvars:
-                self._data['-COMMAND_ENVVARS-'].append(l.copy())
-        else:
-            return ret
+    def browse_startup_path(self):
+        pass
 
 
 # end.

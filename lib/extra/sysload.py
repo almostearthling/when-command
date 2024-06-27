@@ -9,18 +9,25 @@
 # This module serves as a template for possible other extra modules.
 
 # this header is common to all extra modules
-from lib.i18n.strings import *
-from lib.utility import sg, check_not_none, append_not_none
-
-import os
-import sys
 from tomlkit import items, table
 
+import tkinter as tk
+import ttkbootstrap as ttk
+from tkinter import messagebox
+
+from ..i18n.strings import *
+from ..utility import check_not_none, append_not_none
+
+from ..forms.ui import *
+
+# specific imports follow below here
+import sys
+
 # since a condition is defined, the base form is the one for conditions
-from lib.forms.cond import form_Condition
+from ..forms.cond import form_Condition
 
 # import item to derive from
-from lib.items.cond_command import CommandCondition
+from ..items.cond_command import CommandCondition
 
 
 # imports specific to this module
@@ -31,7 +38,6 @@ import shutil
 ITEM_COND_SYSLOAD = "System Load Below Treshold Condition"
 
 _UI_TITLE_SYSLOAD = "%s: System Load Condition Editor" % UI_APP
-_UI_FORM_SYSLOAD = "System Load"
 _UI_FORM_SYSLOADTRESHOLD_SC = "Load is Below:"
 
 
@@ -71,6 +77,9 @@ class SystemLoadCondition(CommandCondition):
         self.subtype = self.item_subtype
         self.hrtype = self.item_hrtype
         if t:
+            # TODO: change the following so that instead of raising an
+            # exception, a messagebox is shown suggesting that maybe this
+            # is not the tool used to generate the configuration file before
             assert(t.get('type') == self.type)
             self.tags = t.get('tags')
             assert(isinstance(self.tags, items.Table))
@@ -102,41 +111,48 @@ class SystemLoadCondition(CommandCondition):
             self.check_after = 60       # for now keep it fixed to one minute
 
 
-# the specialized form is directly derived from the generic condition form
-def _form_layout():
-    return [
-        [ sg.Frame(_UI_FORM_SYSLOAD, [[
-            sg.T(_UI_FORM_SYSLOADTRESHOLD_SC),
-            sg.I(key='-TRESHOLD-', expand_x=True),
-            sg.T("%"),
-        ]], expand_x=True, expand_y=True) ]
-    ]
-
+# dedicated form definition derived directly from one of the base forms
 class form_SystemLoadCondition(form_Condition):
+
     def __init__(self, tasks_available, item=None):
+
+        # check that item is the expected one for safety, build one by default
         if item:
             assert(isinstance(item, SystemLoadCondition))
         else:
             item = SystemLoadCondition()
-        extra_layout = _form_layout()
-        form_Condition.__init__(self, _UI_TITLE_SYSLOAD, tasks_available, extra_layout, item)
-        self.add_checks(
-            ('-TRESHOLD-', _UI_FORM_SYSLOADTRESHOLD_SC, lambda x: 0 < int(x) < 100),
-        )
+        super().__init__(_UI_TITLE_SYSLOAD, tasks_available, item)
 
+        # create a specific frame for the contents
+        area = ttk.Frame(super().contents)
+        area.grid(row=0, column=0, sticky=tk.NSEW)
+        PAD = WIDGET_PADDING_PIXELS
+
+        # build the UI elements as needed and configure the layout
+        l_treshold = ttk.Label(area, text=_UI_FORM_SYSLOADTRESHOLD_SC)
+        e_treshold = ttk.Entry(area)
+        l_percent = ttk.Label(area, text="%")
+        self.data_bind('treshold', e_treshold, TYPE_INT, lambda x: 0 < x < 100)
+
+        l_treshold.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        e_treshold.grid(row=0, column=1, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        l_percent.grid(row=0, column=2, sticky=tk.E, padx=PAD, pady=PAD)
+
+        area.columnconfigure(1, weight=1)
+
+        # always update the form at the end of initialization
+        self._updateform()
+
+
+    # update the form with the specific parameters (usually in the `tags`)
+    def _updateform(self):
+        self.data_set('treshold', self._item.tags.get('treshold'))
+        return super()._updateform()
+    
+    # update the item from the form elements (usually update `tags`)
     def _updatedata(self):
-        form_Condition._updatedata(self)
-        if self._item:
-            self._data['-TRESHOLD-'] = self._item.tags.get('treshold')
-        else:
-            self._data['-TRESHOLD-'] = str(_DEFAULT_LOW_LOAD_PERC)
-
-    def _updateitem(self):
-        form_Condition._updateitem(self)
-        if self._data['-TRESHOLD-']:
-            self._item.tags['treshold'] = int(self._data['-TRESHOLD-'])
-        else:
-            self._item.tags['treshold'] = None
+        self._item.tags['treshold'] = self.data_get('treshold')
+        return super()._updatedata()
 
 
 

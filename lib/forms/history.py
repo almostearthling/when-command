@@ -1,71 +1,87 @@
 # history box
 
-from lib.i18n.strings import *
+from ..i18n.strings import *
+from ..repocfg import AppConfig
 
-from lib.utility import sg
-from lib.icons import APP_ICON32 as APP_ICON
+import tkinter as tk
+import ttkbootstrap as ttk
+from tkinter import messagebox
 
-from datetime import datetime, timedelta
+from ..utility import get_UI_theme
 
-from lib.runner.history import History
+from .ui import *
 
-
-# layout generator (fixed)
-def layout_main():
-    return [
-        [ sg.T(UI_FORM_HISTORYITEMS_SC) ],
-        [ sg.Table(
-            [['' for x in range(6)] for y in range(5)],
-            auto_size_columns=False,
-            headings=[
-                UI_FORM_HS_TIME,
-                UI_FORM_HS_TASK,
-                UI_FORM_HS_TRIGGER,
-                UI_FORM_HS_DURATION,
-                UI_FORM_HS_SUCCESS,
-                UI_FORM_HS_MESSAGE,
-            ],
-            key='-HISTORY-',
-            num_rows=10,
-            # NOTE: the following is not supported
-            # cols_justification=('center', 'left', 'left', 'center', 'center', 'left'),
-            justification='center',
-            # NOTE: widths are empirically determined, should be tested on
-            # other platform to verify that they are suitable anyway
-            col_widths=(15, 16, 16, 7, 4, 38),
-            expand_x=True, expand_y=True,
-        ) ],
-        [ sg.Push(), sg.B_OK(UI_OK, key='-OK-') ]
-    ]
+from ..icons import APP_ICON32 as APP_ICON
 
 
 # form class: this form is fixed and will not be derived
-class form_History(object):
+class form_History(ApplicationForm):
 
-    def __init__(self, history=None):
-        self._form = sg.Window(UI_TITLE_HISTORY, layout=layout_main(), icon=APP_ICON, size=(960, 640), finalize=True)
-        self.__dont_update = []
+    def __init__(self, history=None, main=False):
+        size = AppConfig.get('SIZE_HISTORY_FORM')
+        bbox = (BBOX_CLOSE,)
+        super().__init__(UI_APP, size, APP_ICON, bbox, main)
+
+        # form data
         self._history = []
         if history:
             self.set_history(history)
-        self._data = {}     # for compatibility
-        self._item = None   # for compatibility
 
-    def _updateform(self):
-        self._form['-HISTORY-'].update(self._history)
-        for k in self._data:
-            if k not in self.__dont_update:
-                v = self._data[k]
-                if v is None:
-                    v = ''
-                self._form[k].update(v)
-        self._form.refresh()
+        # build the UI: build widgets, arrange them in the box, bind data
 
-    def _updateitem(self):
-        pass
+        # client area
+        area = ttk.Frame(self.contents)
+        area.grid(row=0, column=0, sticky=tk.NSEW)
+        PAD = WIDGET_PADDING_PIXELS
 
-    def dont_update(self, *keys):
-        self.__dont_update += keys
+        # history list section
+        l_history = ttk.Label(area, text=UI_FORM_HISTORYITEMS_SC)
+        # build a scrolled frame for the treeview
+        sftv_history = ttk.Frame(area)
+        tv_history = ttk.Treeview(
+            sftv_history,
+            columns=('time', 'task', 'trigger', 'duration', 'success', 'message'),
+            show='headings',
+            height=5,
+        )
+        sb_history = ttk.Scrollbar(sftv_history, orient=tk.VERTICAL, command=tv_history.yview)
+        tv_history.configure(yscrollcommand=sb_history.set)
+        tv_history.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        sb_history.pack(side=tk.RIGHT, fill=tk.Y)
+
+        # NOTE: widths are empirically determined, should be tested on
+        # other platform to verify that they are suitable anyway
+        tv_history.column(0, anchor=tk.CENTER, width=15)
+        tv_history.column(1, anchor=tk.W, width=16)
+        tv_history.column(2, anchor=tk.W, width=16)
+        tv_history.column(3, anchor=tk.W, width=7)
+        tv_history.column(4, anchor=tk.CENTER, width=4)
+        tv_history.column(5, anchor=tk.W, width=38)
+
+        tv_history.heading(0, anchor=tk.CENTER, text=UI_FORM_HS_TIME)
+        tv_history.heading(1, anchor=tk.W, text=UI_FORM_HS_TASK)
+        tv_history.heading(2, anchor=tk.W, text=UI_FORM_HS_TRIGGER)
+        tv_history.heading(3, anchor=tk.W, text=UI_FORM_HS_DURATION)
+        tv_history.heading(4, anchor=tk.CENTER, text=UI_FORM_HS_SUCCESS)
+        tv_history.heading(5, anchor=tk.W, text=UI_FORM_HS_MESSAGE)
+
+        # arrange items in the grid
+        l_history.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        # tv_history.grid(row=1, column=0, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        sftv_history.grid(row=1, column=0, sticky=tk.NSEW, padx=PAD, pady=PAD)
+
+        # expand appropriate sections
+        area.rowconfigure(1, weight=1)
+        area.columnconfigure(0, weight=1)
+
+        # bind data to widgets
+        # NOTE: no data to bind
+
+        # propagate widgets that need to be accessed
+        self._tv_history = tv_history
+
+        self._updateform()
+
 
     def set_history(self, history):
         h = list(
@@ -82,31 +98,10 @@ class form_History(object):
         h.reverse()
         self._history = h
 
-    def process_event(self, event, values):
-        if values:
-            self._data = values.copy()
-        if event in [sg.WIN_CLOSED, '-CANCEL-']:
-            self._form.close()
-            return False
-        elif event == '-OK-':
-            self._form.close()
-            return True
-        return None
-
-    def run(self):
-        self._updateform()
-        while True:             # Event Loop
-            event, values = self._form.read()
-            ret = self.process_event(event, values)
-            if ret is not None:
-                if ret:
-                    break
-                else:
-                    return None
-            self._updateform()
-        self._updateitem()
-        self._form.close()
-        return self._item
+    def _updateform(self):
+        self._tv_history.delete(*self._tv_history.get_children())
+        for entry in self._history:
+            self._tv_history.insert('', values=entry, index=ttk.END)
 
 
 # end.

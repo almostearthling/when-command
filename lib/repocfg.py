@@ -5,6 +5,8 @@
 
 _singleton_lock = False
 
+from pygments.styles import get_style_by_name
+
 class _AppConfiguration(object):
 
     def __init__(self, initial_table=None):
@@ -35,6 +37,15 @@ class _AppConfiguration(object):
         else:
             return default
 
+    def __getitem__(self, key: str):
+        return self.get(key)
+
+    def __setitem__(self, key:str, value):
+        self.set(key, value)
+    
+    def __delitem__(self, key:str):
+        self.delete(key)
+    
     def __str__(self) -> str:
         keys = list(self._table.keys())
         keys.sort()
@@ -60,8 +71,36 @@ AppConfig = _AppConfiguration({
     # history queue length
     'HISTORY_LENGTH': 100,
 
+    # configuration window size
+    'SIZE_MAIN_FORM': (960, 640),
+
+    # editor form size
+    'SIZE_EDITOR_FORM': (960, 640),
+
+    # new item chooser size
+    'SIZE_NEWITEM_FORM': (640, 400),
+
+    # history box size
+    'SIZE_HISTORY_FORM': (960, 640),
+
+    # about box size
+    'SIZE_ABOUT_BOX': (480, 300),
+
+    # themes
+    'DEFAULT_THEME_DARK': 'darkly',
+    'DEFAULT_THEME_LIGHT': 'sandstone',
+    'DEFAULT_THEME_DEBUG': 'morph',
+
+    # editor themes
+    'EDITOR_THEME_DARK': 'ayu-dark',
+    'EDITOR_THEME_LIGHT': 'ayu-light',
+    'EDITOR_THEME_DEBUG': 'ayu-light',
+
     # ...
 })
+
+
+__all__ = [ AppConfig ]
 
 
 # end.

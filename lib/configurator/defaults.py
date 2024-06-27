@@ -1,0 +1,8 @@
+# some default values
+
+
+DEFAULT_SCHEDULER_TICK_SECONDS = 5
+DEFAULT_RANDOMIZE_CHECKS_WITHIN_TICKS = False
+
+
+# end.

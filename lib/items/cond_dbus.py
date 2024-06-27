@@ -67,6 +67,7 @@ class DBusCondition(Condition):
         t = append_not_none(t, 'parameter_call', self.parameter_call)
         t = append_not_none(t, 'parameter_check_all', self.parameter_check_all)
         t = append_not_none(t, 'parameter_check', self.parameter_check)
+        return t
 
 
 # end.

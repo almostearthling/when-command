@@ -37,15 +37,13 @@ wrapper = Wrapper(config_file, whenever_path, log_file, log_level)
 
 
 # menu reactions
-def on_configure(icon, item):
-    form = form_Config()
-    form.run()
-    del form
+def on_configure(root):
+    root.send_event('<<OpenCfgApp>>')
 
-def on_about(icon, item):
-    show_about_box()
+def on_about(root):
+    root.send_event('<<OpenAboutBox>>')
 
-def on_pause_scheduler(icon, item):
+def on_pause_scheduler(icon):
     # if successful, also gray out the icon
     if wrapper.whenever_pause():
         icon.icon = tray_icon_gray
@@ -53,7 +51,7 @@ def on_pause_scheduler(icon, item):
         # icon.menu.items[0].enabled = False
         # icon.menu.items[1].enabled = True
 
-def on_resume_scheduler(icon, item):
+def on_resume_scheduler(icon):
     # if successful, also color up the icon
     if wrapper.whenever_resume():
         icon.icon = tray_icon
@@ -61,54 +59,55 @@ def on_resume_scheduler(icon, item):
         # icon.menu.items[0].enabled = True
         # icon.menu.items[1].enabled = False
 
-def on_reset_conditions(icon, item):
+def on_reset_conditions():
     wrapper.whenever_reset_conditions()
 
-def on_history(icon, item):
-    form = form_History(wrapper.get_history())
-    form.run()
-    del form
+def on_history(root):
+    root.send_event('<<OpenHistory>>')
 
-def on_exit(icon, item):
+# this also sends an EXIT event to the main loop, so that the invisible
+# main window is destroyed
+def on_exit(icon, root):
     wrapper.whenever_exit()
+    root.send_exit()
     icon.stop()
 
 
 # entry point for the tray resident application
-def main():
+def main(root):
     # create the menu
     menu = pystray.Menu(
         pystray.MenuItem(
             UI_TRAY_MENU_PAUSESCHEDULER,
-            on_pause_scheduler,
+            lambda icon, _: on_pause_scheduler(icon),
         ),
         pystray.MenuItem(
             UI_TRAY_MENU_RESUMESCHEDULER,
-            on_resume_scheduler,
+            lambda icon, _: on_resume_scheduler(icon),
             # unfortunately it cannot be enabled dynamically
             # enabled=False,
         ),
         pystray.MenuItem(
             UI_TRAY_MENU_RESETCONDITIONS,
-            on_reset_conditions,
+            lambda _1, _2: on_reset_conditions(),
         ),
         pystray.MenuItem(
             UI_TRAY_MENU_HISTORY,
-            on_history,
+            lambda _1, _2: on_history(root),
         ),
         pystray.Menu.SEPARATOR,
         pystray.MenuItem(
             UI_TRAY_MENU_CONFIGURE,
-            on_configure,
+            lambda _1, _2: on_configure(root),
         ),
         pystray.MenuItem(
             UI_TRAY_MENU_ABOUT,
-            on_about,
+            lambda _1, _2: on_about(root),
         ),
         pystray.Menu.SEPARATOR,
         pystray.MenuItem(
             UI_TRAY_MENU_EXIT,
-            on_exit,
+            lambda icon, _: on_exit(icon, root),
         ),
     )
 
@@ -124,8 +123,13 @@ def main():
     if not wrapper.start():
         raise Exception("could not launch the scheduler")
 
+    # root is the main app and uses the wrapper to retrieve history
+    # therefore it must be known to the main window that in turn
+    # shows the history box
+    root.set_wrapper(wrapper)
+
     # show the tray icon
-    tray.run()
+    tray.run_detached()
 
 
 # end.

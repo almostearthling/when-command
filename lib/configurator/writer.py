@@ -8,7 +8,8 @@ from tomlkit import *
 def write_whenever_config(filename, tasks, conditions, events, globals):
     doc = document()
     for k in globals:
-        doc.add(k, item(globals[k]))
+        if globals[k] is not None:
+            doc.add(k, item(globals[k]))
     t = aot()
     for elem in tasks:
         t.append(elem.as_table())

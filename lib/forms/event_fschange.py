@@ -2,88 +2,128 @@
 
 from os.path import normpath, exists
 
-from lib.i18n.strings import *
+from ..i18n.strings import *
 
-from lib.utility import sg
-from lib.icons import XMARK_ICON48 as XMARK_ICON
+import tkinter as tk
+import ttkbootstrap as ttk
+from tkinter import messagebox, filedialog
 
-from lib.forms.event import form_Event
-from lib.items.event_fschange import FilesystemChangeEvent
+from .ui import *
 
-
-# (extra) layout generator
-def _form_layout():
-    return [
-        [sg.Frame(UI_FORM_SPECIFIC_PARAMS, [
-            [ sg.T(UI_FORM_MONITOREDFSITEMS_SC), ],
-            [ sg.Listbox([], key='-WATCH-', expand_x=True, expand_y=True), ],
-            [
-                sg.T(UI_FORM_ITEM_SC),
-                sg.I(key='-ITEM-', expand_x=True),
-                sg.FileBrowse(UI_BROWSE, key='-BROWSE_FILE-'),
-            ],
-            [ sg.CB(UI_FORM_RECURSIVE, key='-RECURSIVE-'), sg.Push(), sg.B_ADD(UI_ADD, key='-ADD-'), sg.B_DEL(UI_DEL, key='-DEL-'), ],
-        ], expand_x=True, expand_y=True)]
-    ]
+from .event import form_Event
+from ..items.event_fschange import FilesystemChangeEvent
 
 
 # specialized subform
 class form_FilesystemChangeEvent(form_Event):
+
     def __init__(self, conditions_available, item=None):
         if item:
             assert(isinstance(item, FilesystemChangeEvent))
         else:
             item = FilesystemChangeEvent()
-        extra_layout = _form_layout()
-        form_Event.__init__(self, UI_TITLE_FSCHANGEEVENT, conditions_available, extra_layout, item)
-        self.dont_update('-BROWSE_FILE-')
-        self._form['-WATCH-'].bind('<Double-Button-1>' , '+-dblclick-')
-        if item:
-            if item.watch:
-                self._watch = item.watch.copy()
-            else:
-                self._watch = []
-            self.set_item(item)
-        else:
-            self._watch = []
-            self.reset_item()
+        super().__init__(UI_TITLE_FSCHANGEEVENT, conditions_available, item)
+
+        # form data
+        self._watch = self._item.watch.copy() if self._item.watch else []
+
+        # build the UI: build widgets, arrange them in the box, bind data
+
+        # client area
+        area = ttk.Frame(super().contents)
+        area.grid(row=0, column=0, sticky=tk.NSEW)
+        PAD = WIDGET_PADDING_PIXELS
+
+        # parameters section
+        ck_recursive = ttk.Checkbutton(area, text=UI_FORM_RECURSIVE)
+        l_monitored = ttk.Label(area, text=UI_FORM_MONITOREDFSITEMS_SC)
+        # build a scrolled frame for the treeview
+        sftv_monitored = ttk.Frame(area)
+        tv_monitored = ttk.Treeview(sftv_monitored, columns=('seq', 'items'), show='', displaycolumns=(1,), height=5)
+        sb_monitored = ttk.Scrollbar(sftv_monitored, orient=tk.VERTICAL, command=tv_monitored.yview)
+        tv_monitored.configure(yscrollcommand=sb_monitored.set)
+        tv_monitored.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        sb_monitored.pack(side=tk.RIGHT, fill=tk.Y)
+        l_monEntry = ttk.Label(area, text=UI_FORM_ITEM_SC)
+        e_monEntry = ttk.Entry(area)
+        b_browse = ttk.Button(area, text=UI_BROWSE, command=self.browse_fsitem)
+        b_addEntry = ttk.Button(area, text=UI_ADD, width=BUTTON_STANDARD_WIDTH, command=self.add_fsitem)
+        b_delEntry = ttk.Button(area, text=UI_DEL, width=BUTTON_STANDARD_WIDTH, command=self.del_fsitem)
+
+        # arrange top items in the grid
+        ck_recursive.grid(row=0, column=0, columnspan=5, sticky=tk.W, padx=PAD, pady=PAD)
+        l_monitored.grid(row=1, column=0, columnspan=5, sticky=tk.W, padx=PAD, pady=PAD)
+        sftv_monitored.grid(row=2, column=0, columnspan=5, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        l_monEntry.grid(row=3, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        e_monEntry.grid(row=3, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        b_browse.grid(row=3, column=2, sticky=tk.EW, padx=PAD, pady=PAD)
+        b_addEntry.grid(row=3, column=3, sticky=tk.EW, padx=PAD, pady=PAD)
+        b_delEntry.grid(row=3, column=4, sticky=tk.EW, padx=PAD, pady=PAD)
+
+        tv_monitored.bind('<ButtonRelease-1>', lambda _: self.recall_fsitem())
+
+        # expand appropriate sections
+        area.columnconfigure(1, weight=1)
+        area.rowconfigure(2, weight=1)
+
+        # bind data to widgets
+        # the following might be actually too strict
+        # self.data_bind('item_monitor', e_monEntry, TYPE_STRING, exists)
+        self.data_bind('recursive', ck_recursive)
+        self.data_bind('item_monitor', e_monEntry, TYPE_STRING)
+        self.data_bind('item_selection', tv_monitored)
+
+        # propagate widgets that need to be accessed
+        self._tv_monitored = tv_monitored
+
+        # update the form
+        self._updateform()
+
+
+    def _updateform(self):
+        self.data_set('recursive', self._item.recursive)
+        self._tv_monitored.delete(*self._tv_monitored.get_children())
+        idx = 0
+        for entry in self._watch:
+            self._tv_monitored.insert('', iid=idx, values=(idx, entry), index=tk.END)
+            idx += 1
+        return super()._updateform()
 
     def _updatedata(self):
-        form_Event._updatedata(self)
-        self._data['-ITEM-'] = ''
-        self._data['-WATCH-'] = self._item.watch.copy()
-        if self._item.watch:
-            self._watch = self._item.watch.copy()
-        else:
-            self._watch = []
-        self._data['-RECURSIVE-'] = self._item.recursive
+        self._item.recursive = self.data_get('recursive')
+        e = []
+        for entry in self._watch:
+            e.append(entry)
+        self._item.watch = e or None
+        return super()._updatedata()
 
-    def _updateitem(self):
-        form_Event._updateitem(self)
-        self._item.watch = self._watch.copy() or None
-        self._item.recursive = self._data['-RECURSIVE-']
+    def recall_fsitem(self):
+        e = self.data_get('item_selection')
+        if e:
+            entry = e[1]
+            try:
+                self.data_set('item_monitor', entry)
+            except ValueError:
+                # in this case a non-existing item is selected
+                self.data_set('item_monitor')
 
-    def process_event(self, event, values):
-        ret = super().process_event(event, values)
-        if ret is None:
-            if event == '-WATCH-+-dblclick-':
-                self._data['-ITEM-'] = self._data['-WATCH-'][0]
-            elif event == '-ADD-':
-                item = normpath(self._data['-ITEM-'])
-                try:
-                    if exists(item) and item not in self._watch:
-                        self._watch.append(item)
-                    else:
-                        sg.popup(UI_POPUP_INVALIDFILEORDIR, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
-                except Exception:
-                    sg.popup(UI_POPUP_INVALIDFILEORDIR, title=UI_POPUP_T_ERR, icon=XMARK_ICON)
-            elif event == '-DEL-':
-                item = self._data['-ITEM-']
-                if item in self._watch:
-                    self._watch = list(x for x in self._watch if x != item)
-            self._data['-WATCH-'] = self._watch.copy()
-        else:
-            return ret
+    def browse_fsitem(self):
+        entry = filedialog.askopenfilename(parent=self.dialog)
+        if entry:
+            self.data_set('item_monitor', entry)
+
+    def add_fsitem(self):
+        item = self.data_get('item_monitor')
+        if item and item not in self._watch:
+            self._watch.append(item)
+            self._updateform()
+
+    def del_fsitem(self):
+        e = self.data_get('item_monitor')
+        if e:
+            idx = e[0]
+            del self._watch[idx]
+            self._updateform()
 
 
 # end.
