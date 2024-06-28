@@ -5,7 +5,6 @@ import ttkbootstrap as ttk
 from tkinter import messagebox
 
 from ..i18n.strings import *
-from ..icons import APP_ICON32 as APP_ICON
 from .ui import *
 
 from ..repocfg import AppConfig
@@ -18,7 +17,7 @@ class form_NewItem(ApplicationForm):
     def __init__(self):
         size = AppConfig.get('SIZE_NEWITEM_FORM')
         bbox = (BBOX_OK, BBOX_CANCEL)
-        super().__init__(UI_TITLE_NEWITEM, size, APP_ICON, bbox)
+        super().__init__(UI_TITLE_NEWITEM, size, None, bbox)
 
         # form data
         self._subtypes_display = []

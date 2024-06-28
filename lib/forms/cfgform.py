@@ -28,7 +28,7 @@ class form_Config(ApplicationForm):
     def __init__(self, main=False):
         size = AppConfig.get('SIZE_MAIN_FORM')
         bbox = (BBOX_NEW, BBOX_EDIT, BBOX_DELETE, BBOX_SEPARATOR, BBOX_SAVE, BBOX_QUIT)
-        super().__init__(UI_APP, size, APP_ICON, bbox, main)
+        super().__init__(UI_APP, size, None, bbox, main)
 
         # form data
         self._tasks = {}
@@ -98,6 +98,9 @@ class form_Config(ApplicationForm):
         # bind double click in list to item editor
         tv_items.bind('<Double-Button-1>', lambda _: self.edit())
 
+        # bind changes to global params so that the _changed flag becomes true
+        ck_randChecks.configure(command=self._set_changed)
+
         # propagate widgets that need to be accessed
         self._tv_items = tv_items
 
@@ -105,7 +108,6 @@ class form_Config(ApplicationForm):
         config_file = get_configfile()
         self.data_set('config_file', config_file)
         self._load_config(config_file)
-        self._updatedata()
         self._updateform()
 
 
@@ -137,7 +139,13 @@ class form_Config(ApplicationForm):
                 signature = "event:%s" % item.type
             self._itemlistentries.append([item.name, item.hrtype, signature])
         self._itemlistentries.sort(key=lambda x: x[0])
-        self._globals['scheduler_tick_seconds'] = self.data_get('scheduler_tick_seconds', DEFAULT_SCHEDULER_TICK_SECONDS)
+        # set the changed flag when tick seconds have changed: this is not
+        # necessary for the check box based parameter, because the flag is
+        # updated every time it gets clicked
+        tick_secs = self.data_get('scheduler_tick_seconds', DEFAULT_SCHEDULER_TICK_SECONDS)
+        if tick_secs != self._globals['scheduler_tick_seconds']:
+            self._globals['scheduler_tick_seconds'] = tick_secs
+            self._changed = True
         self._globals['randomize_checks_within_ticks'] = self.data_get('randomize_checks_within_ticks', DEFAULT_RANDOMIZE_CHECKS_WITHIN_TICKS)
 
     # update the form fields according to the associated actual data
@@ -170,6 +178,29 @@ class form_Config(ApplicationForm):
             self._conditions[item.name] = item
         for item in events:
             self._events[item.name] = item
+        # do the same stuff as self._updatedata, without updating globals
+        for key in self._tasks:
+            item = self._tasks[key]
+            if item.tags:
+                signature = "task:%s:%s" % (item.type, item.tags.get('subtype'))
+            else:
+                signature = "task:%s" % item.type
+            self._itemlistentries.append([item.name, item.hrtype, signature])
+        for key in self._conditions:
+            item = self._conditions[key]
+            if item.tags:
+                signature = "cond:%s:%s" % (item.type, item.tags.get('subtype'))
+            else:
+                signature = "cond:%s" % item.type
+            self._itemlistentries.append([item.name, item.hrtype, signature])
+        for key in self._events:
+            item = self._events[key]
+            if item.tags:
+                signature = "event:%s:%s" % (item.type, item.tags.get('subtype'))
+            else:
+                signature = "event:%s" % item.type
+            self._itemlistentries.append([item.name, item.hrtype, signature])
+        self._itemlistentries.sort(key=lambda x: x[0])
         self._changed = False
 
     # save the configuration to a TOML file
@@ -181,6 +212,11 @@ class form_Config(ApplicationForm):
             [self._events[k] for k in self._events],
             self._globals,
         )
+
+
+    # to be called when one of the global parameters has been changed
+    def _set_changed(self, changed=True):
+        self._changed = changed
 
 
     # command button reactions
@@ -199,6 +235,7 @@ class form_Config(ApplicationForm):
             self._changed = True
 
     def save(self):
+        self._updatedata()
         fn = self.data_get('config_file')
         if fn and self._changed:
             if os.path.exists(fn):

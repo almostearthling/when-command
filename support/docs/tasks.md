@@ -12,7 +12,7 @@ In all editors, the task _Name_ is mandatory and must be an alphanumeric string 
 
 ## Command
 
-Command tasks execute a command at the OS level which can be any kind of executable, that is, both scripts and binaries are accepted command. The command, along with its arguments and startup folder, must be provided by the user.
+Command tasks execute a command at the OS level which can be any kind of executable, that is, both scripts and binaries are accepted commands. The command, along with its arguments and startup folder, must be provided by the user.
 
 ![WhenTaskCommand](graphics/when-task-command.png)
 

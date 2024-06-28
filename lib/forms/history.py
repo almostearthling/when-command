@@ -6,11 +6,7 @@ from ..repocfg import AppConfig
 import tkinter as tk
 import ttkbootstrap as ttk
 
-from ..utility import get_UI_theme
-
 from .ui import *
-
-from ..icons import APP_ICON32 as APP_ICON
 
 
 # form class: this form is fixed and will not be derived
@@ -19,7 +15,7 @@ class form_History(ApplicationForm):
     def __init__(self, history=None, main=False):
         size = AppConfig.get('SIZE_HISTORY_FORM')
         bbox = (BBOX_CLOSE,)
-        super().__init__(UI_TITLE_HISTORY, size, APP_ICON, bbox, main)
+        super().__init__(UI_TITLE_HISTORY, size, None, bbox, main)
 
         # form data
         self._history = []
@@ -66,7 +62,6 @@ class form_History(ApplicationForm):
 
         # arrange items in the grid
         l_history.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
-        # tv_history.grid(row=1, column=0, sticky=tk.NSEW, padx=PAD, pady=PAD)
         sftv_history.grid(row=1, column=0, sticky=tk.NSEW, padx=PAD, pady=PAD)
 
         # expand appropriate sections

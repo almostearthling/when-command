@@ -47,8 +47,8 @@ class App(object):
     def __init__(self):
         self._window = tk.Tk()
         self._window.withdraw()
-        self._icon = get_image(APP_ICON)
-        self._window.iconphoto(True, ImageTk.PhotoImage(self._icon))
+        self._icon = ImageTk.PhotoImage(get_image(APP_ICON))
+        self._window.iconphoto(True, self._icon)
         style = ttk.Style()
         style.theme_use(get_UI_theme())
         self._window.bind('<<OpenHistory>>', self.open_history)

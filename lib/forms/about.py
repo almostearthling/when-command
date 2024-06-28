@@ -5,7 +5,6 @@ import ttkbootstrap as ttk
 from PIL import ImageTk
 
 from ..i18n.strings import *
-from ..icons import APP_ICON32 as APP_ICON
 from ..icons import APP_ICON64 as APP_BITMAP
 from .ui import *
 
@@ -21,9 +20,9 @@ class AboutBox(ApplicationForm):
             text = "%s\n\n%s %s" % (UI_ABOUT_TEXT, UI_ABOUT_WHENEVER_VERSION, version)
         else:
             text = UI_ABOUT_TEXT
-        super().__init__(UI_ABOUT_TITLE, AppConfig.get('SIZE_ABOUT_BOX'), APP_ICON, (BBOX_CLOSE,), main)
-        self._image = ImageTk.PhotoImage((get_image(APP_BITMAP)))
-        
+        super().__init__(UI_ABOUT_TITLE, AppConfig.get('SIZE_ABOUT_BOX'), None, (BBOX_CLOSE,), main)
+        self._image = ImageTk.PhotoImage(get_image(APP_BITMAP))
+
         # build the UI: build widgets, arrange them in the box, bind data
 
         # client area

@@ -274,7 +274,7 @@ class ApplicationForm(object):
         self._icon = None
         if icon is not None:
             self._icon = get_appicon(icon)
-            self._dialog.iconphoto(True, self._icon)
+            self._dialog.iconphoto(main, self._icon)
 
         # position the form at the center of the screen
         sw = self._dialog.winfo_screenwidth()
