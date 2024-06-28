@@ -10,10 +10,6 @@ from lib.utility import get_image, get_configfile, get_logfile
 from lib.icons import CLOCK_ICON48 as CLOCK_ICON
 from lib.icons import CLOCK_ICON_GRAY48 as CLOCK_ICON_GRAY
 
-from lib.forms.about import show_about_box
-from lib.forms.cfgform import form_Config
-from lib.forms.history import form_History
-
 from lib.runner.process import Wrapper
 
 from lib.repocfg import AppConfig

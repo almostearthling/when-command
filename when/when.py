@@ -41,12 +41,14 @@ DEBUG = AppConfig.get('DEBUG')
 # and reacts to an `ExitApp` event that closes and destroys the main window
 class App(object):
 
-    # an invisible root window is created, the other ones are all toplevels
+    # an invisible root window is created, the other ones are all toplevels:
+    # the icon is created **after** creating the root window, because a root
+    # is needed to be active for this purpose
     def __init__(self):
         self._window = tk.Tk()
         self._window.withdraw()
         self._icon = get_image(APP_ICON)
-        self._window.iconphoto(False, ImageTk.PhotoImage(self._icon))
+        self._window.iconphoto(True, ImageTk.PhotoImage(self._icon))
         style = ttk.Style()
         style.theme_use(get_UI_theme())
         self._window.bind('<<OpenHistory>>', self.open_history)
@@ -123,7 +125,7 @@ def exiterror(s, code=2):
 
 
 
-# main program: it actually perform CLI parsing
+# main program: perform CLI parsing and run the appropriate subcommand
 def main():
     global _root
 
@@ -183,7 +185,6 @@ def main():
 
     # open the configuration utility and exit after its use
     elif command == 'config':
-        setup_windows()
         if DEBUG:
             configfile = get_configfile()
             if not os.path.exists(configfile):
@@ -192,6 +193,7 @@ def main():
                         f.write("# Created by: %s v%s" % (UI_APP, UI_APP_VERSION))
                 except Exception as e:
                     exiterror(CLI_ERR_CONFIG_UNACCESSIBLE)
+            setup_windows()
             from lib.cfgapp import main
             main(_root)
         else:
@@ -203,6 +205,7 @@ def main():
                             f.write("# Created by: %s v%s" % (UI_APP, UI_APP_VERSION))
                     except Exception as e:
                         exiterror(CLI_ERR_CONFIG_UNACCESSIBLE)
+                setup_windows()
                 from lib.cfgapp import main
                 main(_root)
             except Exception as e:
@@ -210,13 +213,13 @@ def main():
 
     # start the resident application and display an icon on the tray area
     elif command == 'start':
-        setup_windows()
         if is_whenever_running():
             exiterror(CLI_ERR_ALREADY_RUNNING)
         if DEBUG:
             whenever = AppConfig.get('WHENEVER')
             if whenever is None or not os.path.exists(whenever) or not os.access(whenever, os.X_OK):
                 exiterror(CLI_ERR_WHENEVER_NOT_FOUND)
+            setup_windows()
             from lib.trayapp import main
             main(_root)
             _root.run()
@@ -225,6 +228,7 @@ def main():
                 whenever = AppConfig.get('WHENEVER')
                 if whenever is None or not os.path.exists(whenever) or not os.access(whenever, os.X_OK):
                     exiterror(CLI_ERR_WHENEVER_NOT_FOUND)
+                setup_windows()
                 from lib.trayapp import main
                 main(_root)
                 _root.run()

@@ -18,7 +18,7 @@ class form_NewItem(ApplicationForm):
     def __init__(self):
         size = AppConfig.get('SIZE_NEWITEM_FORM')
         bbox = (BBOX_OK, BBOX_CANCEL)
-        super().__init__(UI_APP, size, APP_ICON, bbox)
+        super().__init__(UI_TITLE_NEWITEM, size, APP_ICON, bbox)
 
         # form data
         self._subtypes_display = []

@@ -5,7 +5,6 @@ from ..repocfg import AppConfig
 
 import tkinter as tk
 import ttkbootstrap as ttk
-from tkinter import messagebox
 
 from ..utility import get_UI_theme
 
@@ -20,7 +19,7 @@ class form_History(ApplicationForm):
     def __init__(self, history=None, main=False):
         size = AppConfig.get('SIZE_HISTORY_FORM')
         bbox = (BBOX_CLOSE,)
-        super().__init__(UI_APP, size, APP_ICON, bbox, main)
+        super().__init__(UI_TITLE_HISTORY, size, APP_ICON, bbox, main)
 
         # form data
         self._history = []

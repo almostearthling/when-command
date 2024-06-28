@@ -2,15 +2,15 @@
 
 This document describes the new version of **When**, a Python-based automation tool for the desktop. This version, instead of incorporating the scheduler, relies on the [**whenever**](https://github.com/almostearthling/whenever) automation tool, which focuses on reliability and lightweightness, while trying to achieve a good performance even when running at low priority. In this sense, **When** acts as a _wrapper_ for **whenever**, both providing a simple interface for configuration and an easy way to control the scheduler via an icon sitting in the tray area of your desktop. This version of **When** aims at being cross-platform, dynamically providing access to the features of **whenever** that are supported on the host environment.
 
-This is still in its early development stage and still contains a lot of bugs and errors, yet it is capable of running **whenever** in the background and to control it via an icon in the system tray, create and edit a simple configuration file, capture the log and display a history window. All of this trying to mimic the behaviour of the old, _Ubuntu 16-to-18_ based **When** tool, which is entirely Python based and is now not actively developed anymore because of the difficulty of adapting all needed DBus signals and checks to the ever-changing interface of the various Linux distributions.
+This is still in its early development stage and still contains a lot of bugs and errors, yet it is capable of running **whenever** in the background and to control it via an icon in the system tray, create and edit the configuration file, capture the log and display a history window. All of this trying to mimic the behaviour of the old **When** tool, only available on Ubuntu distributions and restricted to the 16.XX and 18.XX editions, which is entirely Python based and is now abandoned because of the difficulty of adapting all needed DBus signals and checks to the ever-changing interface of the various Linux distributions.
 
 ![MainWindow](support/docs/graphics/when-application.png)
 
-Most of the interface of this release of **When** tries to be similar to the old version, although the need for cross-platform components pushes towards the adoption of the most widespread GUI library for Python, that is [_tkinter_](https://docs.python.org/3/library/tkinter.html).
+Most of the interface of this release of **When** tries to be similar to the old version, although the need for cross-platform components pushes towards the adoption of the most widespread GUI library for Python, that is [_tkinter_](https://docs.python.org/3/library/tkinter.html). Also, some of the extra features that are built into **whenever** call for a somewhat less-streamlined interface especially in terms of form layout.
 
 The [documentation](support/docs/main.md) is still underway, and the features are reduced compared to recent releases of the old version of **When**. However the structure of this new version is modular, and the design of **whenever** allows for the maximum flexibility in term of definitions of tasks, conditions, and events, so that new types of _usable_ events can be defined along with the forms to edit them easily and write a well-formed configuration file.
 
-For the moment this version of **When** is not much more than a proof-of-concept. Still, the application may show problems due to lack of targeted exception handling, and genericity of checks on correctness of values provided via the UI. The UI itself is far from being effective: the semantic of common gestures such as double clicks is not always respected, and some usual graphic elements (pop-up boxes, buttons, and so on) are still incomplete and not consistent with the rest of the application. Graphic widgets, which are sometimes helpful within the forms, are for now either rudimental or absent.
+For the moment this version of **When** is mostly intended as a proof-of-concept, even though it has reached a status in which all the basic features are implemented. The application may show problems due to lack of targeted exception handling, and genericity of checks on correctness of values provided via the UI. The UI itself still might have some quirks: the semantic of common gestures such as double clicks is not always respected, and some usual interface elements (pop-up boxes, buttons, and so on) might still result incomplete and not entirely consistent.
 
 
 ## Usage
@@ -34,7 +34,7 @@ More commands might be supported in the future. `OPTIONS` are the possible optio
 - `-L`/`--log-level` _LEVEL_: specify the log level, all **whenever** levels are supported (default: _info_, specific to `start`)
 - `-h`/`--help`: print help for the specific command
 
-**NOTE**: For now **When** runs in _debug mode_, this means that it will not catch exceptions, and will use a _DEBUG_ suffix for the application data directory: it also displays a color scheme that is neither dark nor light to underline its particular state. This behaviour can be modified by setting `'DEBUG': False` in the instantiation of `AppConfig` in _lib/repocfg.py_, instead of the current `True` value. This is useful when testing the application when an existing instance of **whenever** is running in production mode, possibly using the **whenever_tray** utility that normally shares the application dataa directory with **When** (starting with release 0.1.6). Note that a debug version of **whenever** should be used when a release version is running, because a debug version will not refuse to start sensing that the scheduler is already running. The full path to the desired **whenever** executable can be provided on the command line using the `-W` option.
+**NOTE**: For now **When** runs in _debug mode_, this means that it will not catch exceptions, and will use a _DEBUG_ suffix for the application data directory: it also displays a color scheme that is neither dark nor light to underline its particular state. This behaviour can be modified by setting `'DEBUG': False` in the instantiation of `AppConfig` in _lib/repocfg.py_, instead of the current `True` value. This is useful when testing the application when an existing instance of **whenever** is running in production mode, possibly using the **whenever_tray** utility that normally shares the application data directory with **When** (starting with release 0.1.6). Note that a debug version of **whenever** should be used when a release version is running, because a debug version will not complain and refuse to start in case a non-debug version of the scheduler is already running. The full path to the desired **whenever** executable can be provided on the command line using the `-W` option.
 
 **When** will be able to act as a wrapper only if a working and recent (not below [0.1.23](https://github.com/almostearthling/whenever/releases/tag/v0.1.23%2Btray0.1.6)) version of **whenever** is available, either in the system _PATH_ or specified via the command line interface by using the `-W` switch.
 
@@ -58,10 +58,10 @@ Editor forms for the items supported by **whenever**: should behave in a way sim
 - [x] Condition: Command
 - [x] Condition: _Lua_ Script
 - [x] Condition: Event (aka Bucket)
-- [ ] ~~Condition: DBus Method call~~ (was not available in the original edition)
+- [ ] ~~Condition: DBus Method call~~ (was not available in the original edition: form implemented but not made available)
 - [x] Event: Filesystem Monitoring
-- [ ] ~~Event: Command Line~~ (implemented but not available)
-- [ ] ~~Event: DBus Signal~~ (was barely usable and restricted in the original edition)
+- [ ] ~~Event: Command Line~~ (not useful from a user POV: form implemented but not made available)
+- [ ] ~~Event: DBus Signal~~ (was barely usable and restricted in the original edition: form implemented but not made available)
 
 Specific command/_Lua_ based tasks, command/_Lua_/DBus based conditions, DBus based events should be supported to mimic the old **When** behaviour:
 
@@ -85,7 +85,7 @@ The following forms, not related to the configuration application, are or should
 
 ### UI wrapper for the **whenever** scheduler
 
-The following action should be supported by a resident part of the application that only shows an icon in the tray area, and allows to select entries from a popup menu.
+The following actions should be supported by a resident part of the application that only shows an icon in the tray area, and allows to choose entries from a popup menu.
 
 - [x] Show an About Box (to be improved)
 - [x] Show the task history, including execution time and outcome
@@ -106,7 +106,7 @@ The resident part of the application should **not** load the configuration utili
 
 ## Compatibility
 
-**When** has been successfully tested on Windows (10 and 11) and Linux (Debian 12). On Debian 12, however, it does not run OOTB: some additional packages are needed, as it does not ship with _tkinter_ support by default, nor supports the _AppIndicator_ protocol in a Gnome session. Thus both `python3-tk` and `gir1.2-ayatanaappindicator3` need to be installed using the _apt_ package manager. Moreover, on _Wayland_ sessions the UI appears mangled and the graphic elements are actually unusable: it looks like _tkinter_ only works well in _Xorg_ sessions. Since Gnome does not support indicator icons direcltly, a Gnome shell extension capable of implementing this protocol has to be installed, such as [AppIndicator and KStatusNotifierItem Support](https://extensions.gnome.org/extension/615/appindicator-support/).
+**When** has been successfully tested on Windows (10 and 11) and Linux (Debian 12). On Debian 12, however, it does not run OOTB: some additional packages are needed, as it does not ship with _tkinter_ support by default, nor it supports the _AppIndicator_ protocol in a Gnome session. Thus both `python3-tk` and `gir1.2-ayatanaappindicator3` need to be installed using the _apt_ package manager. Moreover, on _Wayland_ sessions the UI appears mangled and the graphic elements are actually unusable: it looks like _tkinter_ only works well in _Xorg_ sessions. Since Gnome does not support indicator icons direcltly, a Gnome shell extension capable of implementing this protocol has to be installed, such as [AppIndicator and KStatusNotifierItem Support](https://extensions.gnome.org/extension/615/appindicator-support/).
 
 Before starting **When** on Debian 12, and before the `poetry install` step described [above](#usage), the following option needs to be set in order to let the Python virtual environment access all the needed system modules:
 
@@ -115,6 +115,8 @@ poetry config virtualenvs.options.system-site-packages false
 ```
 
 otherwise Python would not reach the modules needed to display the system tray icon and menu.
+
+Research is underway on the possibility to provide **When** in "binary-ish" form too: there are some available tools that use the dependency management features in **poetry** to build packages suitable for various operating systems and their distributions.
 
 
 ## Credits
