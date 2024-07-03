@@ -81,7 +81,7 @@ class form_FilesystemChangeEvent(form_Event):
 
 
     def _updateform(self):
-        self.data_set('recursive', self._item.recursive)
+        self.data_set('recursive', self._item.recursive or False)
         self._tv_monitored.delete(*self._tv_monitored.get_children())
         idx = 0
         for entry in self._watch:
@@ -90,7 +90,7 @@ class form_FilesystemChangeEvent(form_Event):
         return super()._updateform()
 
     def _updatedata(self):
-        self._item.recursive = self.data_get('recursive')
+        self._item.recursive = self.data_get('recursive') or None
         e = []
         for entry in self._watch:
             e.append(entry)
