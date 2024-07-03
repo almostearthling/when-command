@@ -27,7 +27,7 @@ class form_Config(ApplicationForm):
 
     def __init__(self, main=False):
         size = AppConfig.get('SIZE_MAIN_FORM')
-        bbox = (BBOX_NEW, BBOX_EDIT, BBOX_DELETE, BBOX_SEPARATOR, BBOX_SAVE, BBOX_QUIT)
+        bbox = (BBOX_NEW, BBOX_EDIT, BBOX_DELETE, BBOX_SEPARATOR, BBOX_SAVE, BBOX_CLOSE)
         super().__init__(UI_APP, size, None, bbox, main)
 
         # form data
@@ -241,8 +241,10 @@ class form_Config(ApplicationForm):
             if os.path.exists(fn):
                 if messagebox.askyesno(UI_POPUP_T_CONFIRM, UI_POPUP_OVERWRITEFILE_Q):
                     self._save_config(fn)
+                    self._changed = False
             else:
                 self._save_config(fn)
+                self._changed = False
 
     # edit a specific item: to be complete, this is also bound
     # to the double click event for an element of the list
@@ -290,6 +292,11 @@ class form_Config(ApplicationForm):
                         self._events[new_item.name] = new_item
                         self._changed = True
 
+        # in the end, update the form on changes
+        if self._changed:
+            self._updatedata()
+            self._updateform()
+
     # create a new item: open the item type selection dialog and, if an
     # item type is chosen, open the appropriate form with default values
     def new(self):
@@ -327,6 +334,22 @@ class form_Config(ApplicationForm):
                     elif t == 'event':
                         self._events[new_item.name] = new_item
                     self._changed = True
+
+        # in the end, update the form on changes
+        if self._changed:
+            self._updatedata()
+            self._updateform()
+
+
+    # modify the reaction to the quit button so that if the configuration
+    # has changed the user is asked whether or not he wants to discard it
+    def exit_close(self):
+        if self._changed:
+            if messagebox.askokcancel(UI_POPUP_T_CONFIRM, UI_POPUP_DISCARDCONFIG_Q):
+                return super().exit_close()
+        else:
+            return super().exit_close()
+
 
 
 # end.
