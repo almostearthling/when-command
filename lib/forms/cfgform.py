@@ -322,6 +322,8 @@ class form_Config(ApplicationForm):
                 try:
                     if form is not None:
                         new_item = form.run()
+                    else:
+                        new_item = None
                 except ValueError:
                     new_item = None
                 if form is not None:
