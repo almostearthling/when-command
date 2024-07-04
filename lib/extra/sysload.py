@@ -152,6 +152,7 @@ class form_SystemLoadCondition(form_Condition):
     # update the item from the form elements (usually update `tags`)
     def _updatedata(self):
         self._item.tags['treshold'] = self.data_get('treshold')
+        self._item.updateitem()
         return super()._updatedata()
 
 
