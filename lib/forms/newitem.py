@@ -38,13 +38,14 @@ class form_NewItem(ApplicationForm):
         PAD = WIDGET_PADDING_PIXELS
 
         # type section
-        l_itemType = ttk.Label(area, text=UI_FORM_ITEMTYPE)
+        l_itemType = ttk.Label(area, text=UI_FORM_ITEMTYPE_SC)
         rb_itemTask = ttk.Radiobutton(area, text=ITEM_TASK, value='task', command=lambda : self.set_itemtype())
         rb_itemCond = ttk.Radiobutton(area, text=ITEM_COND, value='cond', command=lambda : self.set_itemtype())
         rb_itemEvent = ttk.Radiobutton(area, text=ITEM_EVENT, value='event', command=lambda : self.set_itemtype())
+        f_spacer1 = ttk.Frame(area)
 
         # subtype section
-        l_itemSubTypes = ttk.Label(area, text=UI_FORM_ITEMSUBTYPES)
+        l_itemSubTypes = ttk.Label(area, text=UI_FORM_ITEMSUBTYPES_SC)
         # build a scrolled frame for the treeview
         sftv_itemSubTypes = ttk.Frame(area)
         tv_itemSubTypes = ttk.Treeview(sftv_itemSubTypes, columns=('type', 'code'), displaycolumns=('type',), show='', height=5)
@@ -59,6 +60,7 @@ class form_NewItem(ApplicationForm):
         rb_itemTask.grid(row=1, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         rb_itemCond.grid(row=2, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         rb_itemEvent.grid(row=3, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        f_spacer1.grid(row=4, column=0, sticky=tk.EW, padx=PAD, pady=PAD)
         l_itemSubTypes.grid(row=10, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         sftv_itemSubTypes.grid(row=11, column=0, sticky=tk.NSEW, padx=PAD, pady=PAD)
 
