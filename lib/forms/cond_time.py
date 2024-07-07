@@ -173,7 +173,7 @@ class form_TimeCondition(form_Condition):
         area_tslist = ttk.Frame(area)
         l_timeSpecs = ttk.Label(area_tslist, text=UI_FORM_CURRENTTIMESPECS_SC)
         # build a scrolled frame for the treeview
-        sftv_timeSpecs = ttk.Frame(area)
+        sftv_timeSpecs = ttk.Frame(area_tslist)
         tv_timeSpecs = ttk.Treeview(sftv_timeSpecs, columns=('seq', 'specs'), show='', displaycolumns=(1,), height=5)
         sb_timeSpecs = ttk.Scrollbar(sftv_timeSpecs, orient=tk.VERTICAL, command=tv_timeSpecs.yview)
         tv_timeSpecs.configure(yscrollcommand=sb_timeSpecs.set)
@@ -266,11 +266,14 @@ class form_TimeCondition(form_Condition):
             spec = None
         if spec:
             self._timespecs.append(spec)
+            self._updatedata()
+            self._updateform()
 
     def del_timespec(self):
         idx = self.data_get('timespec_selection')[0]
         del self._timespecs[idx]
-        self._updateform
+        self._updatedata()
+        self._updateform()
 
     def recall_timespec(self):
         sel = self.data_get('timespec_selection')
@@ -287,6 +290,7 @@ class form_TimeCondition(form_Condition):
     def clear_alltimespecs(self):
         # TODO: ask for confirmation
         self._timespecs = []
+        self._updatedata()
         self._updateform()
 
     def _updatedata(self):

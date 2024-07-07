@@ -131,6 +131,7 @@ class form_LuaScriptCondition(form_Condition):
                     e[l[0]] = str(l[1])
                 self._item.expected_results = e or None
                 self._results.sort(key=lambda x: x[0])
+                self._updatedata()
                 self._updateform()
         else:
             messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDVARNAME)
@@ -146,6 +147,7 @@ class form_LuaScriptCondition(form_Condition):
         self._item.expected_results = e or None
         # first update the form data, then recall the variable in the input
         # fields, so that the user can re-add the variable again if needed
+        self._updatedata()
         self._updateform()
         self.data_set('varname', name)
         self.data_set('newvalue', value)
@@ -159,7 +161,7 @@ class form_LuaScriptCondition(form_Condition):
 
 
     def _updatedata(self):
-        self._item.script = self.data_get('script') or ""
+        self._item.script = self.data_get('script').strip() or ""
         self._item.expect_all = self.data_get('expect_all') or None
         self._item.check_after = self.data_get('check_after') or None
         e = {}
@@ -170,8 +172,8 @@ class form_LuaScriptCondition(form_Condition):
 
     def _updateform(self):
         self.data_set('script', self._item.script)
-        self.data_set('expect_all', self._item.expect_all)
-        self.data_set('check_after', self._item.check_after)
+        self.data_set('expect_all', self._item.expect_all or False)
+        self.data_set('check_after', self._item.check_after or '')
         self.data_set('varname')
         self.data_set('newvalue')
         self._results = []

@@ -273,11 +273,11 @@ class form_CommandTask(form_Task):
         self.data_set('command', self._item.command)
         self.data_set('command_arguments', ' '.join(quote(x) for x in self._item.command_arguments) if self._item.command_arguments else None)
         self.data_set('startup_path', self._item.startup_path)
-        self.data_set('include_environment', self._item.include_environment)
-        self.data_set('set_environment_variables', self._item.set_environment_variables)
-        self.data_set('match_exact', self._item.match_exact)
-        self.data_set('case_sensitive', self._item.case_sensitive)
-        self.data_set('match_regular_expression', self._item.match_regular_expression)
+        self.data_set('include_environment', self._item.include_environment if self._item.include_environment is False else True)
+        self.data_set('set_environment_variables', self._item.set_environment_variables if self._item.set_environment_variables is False else True)
+        self.data_set('match_exact', self._item.match_exact or False)
+        self.data_set('case_sensitive', self._item.case_sensitive or False)
+        self.data_set('match_regular_expression', self._item.match_regular_expression or False)
         self.data_set('timeout_seconds', self._item.timeout_seconds or 0)
         check_for = UI_OUTCOME_NONE
         check_what = UI_EXIT_CODE
@@ -333,6 +333,7 @@ class form_CommandTask(form_Task):
                     e[l[0]] = str(l[1])
                 self._item.environment_variables = e or None
                 self._envvars.sort(key=lambda x: x[0])
+                self._updatedata()
                 self._updateform()
 
     def del_var(self):
@@ -346,6 +347,7 @@ class form_CommandTask(form_Task):
         self._item.environment_variables = e or None
         # first update the form data, then recall the variable in the input
         # fields, so that the user can re-add the variable again if needed
+        self._updatedata()
         self._updateform()
         self.data_set('varname', name)
         self.data_set('newvalue', value)
@@ -358,9 +360,11 @@ class form_CommandTask(form_Task):
         self.data_set('newvalue', value)
 
     def browse_command(self):
+        # TODO: to be implemented
         pass
 
     def browse_startup_path(self):
+        # TODO: to be implemented
         pass
 
 

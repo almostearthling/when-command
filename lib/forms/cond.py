@@ -139,6 +139,7 @@ class form_Condition(ApplicationForm):
         task = self.data_get('@choose_task')
         if task:
             self._tasks.append(task)
+        self._updatedata()
         self._updateform()
 
     def del_task(self):
@@ -146,6 +147,7 @@ class form_Condition(ApplicationForm):
         if elem:
             idx = int(elem[0])
             del self._tasks[idx]
+            self._updatedata()
             self._updateform()
 
     # def recall_task(self):
@@ -161,9 +163,9 @@ class form_Condition(ApplicationForm):
         self._tv_tasks.delete(*self._tv_tasks.get_children())
         if self._item:
             self.data_set('@name', self._item.name)
-            self.data_set('@recurring', bool(self._item.recurring))
-            self.data_set('@suspended', bool(self._item.suspended))
-            self.data_set('@execute_sequence', bool(self._item.execute_sequence))
+            self.data_set('@recurring', self._item.recurring or False)
+            self.data_set('@suspended', self._item.suspended or False)
+            self.data_set('@execute_sequence', self._item.execute_sequence if self._item.execute_sequence is False else True)
             idx = 0
             for task in self._tasks:
                 self._tv_tasks.insert('', iid="%s-%s" % (idx, task), values=(idx, task), index=tk.END)
@@ -188,9 +190,9 @@ class form_Condition(ApplicationForm):
         name = self.data_get('@name')
         if name is not None:
             self._item.name = name
-        self._item.recurring = self.data_get('@recurring')
-        self._item.suspended = self.data_get('@suspended')
-        self._item.execute_sequence = self.data_get('@execute_sequence')
+        self._item.recurring = self.data_get('@recurring') or None
+        self._item.suspended = self.data_get('@suspended') or None
+        self._item.execute_sequence = self.data_get('@execute_sequence') and None
         control_flow = self.data_get('@control_flow')
         if control_flow == 'break_failure':
             self._item.break_on_failure = True

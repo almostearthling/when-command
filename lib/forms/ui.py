@@ -505,10 +505,13 @@ class ApplicationForm(object):
             if isinstance(widget, tk.Text):
                 s = widget.get(1.0, tk.END)
                 self._data[dataname].set(s)
-            rv = self._data[dataname].get()
-            if self._checks[dataname](rv):
-                return rv
-            else:
+            try:
+                rv = self._data[dataname].get()
+                if self._checks[dataname](rv):
+                    return rv
+                else:
+                    return None
+            except Exception as _:
                 return None
         else:
             return default
