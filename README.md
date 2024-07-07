@@ -24,7 +24,7 @@ poetry run when COMMAND [OPTIONS]
 where `COMMAND` is one of the following:
 
 - `config` to launch the configuration utility, without staying resident (i.e. no system tray icon)
-- `start` to launch the resident **whenever** wrapper displaying the control icon on the system tray area
+- `start` to launch the resident **whenever** wrapper displaying the control icon on the system tray area (non working on Linux: see [#113](https://github.com/almostearthling/when-command/issues/113))
 - `version` to display version information.
 
 More commands might be supported in the future. `OPTIONS` are the possible options, some of which are command specific.
@@ -33,6 +33,8 @@ More commands might be supported in the future. `OPTIONS` are the possible optio
 - `-W`/`--whenever` _PATH_: specify the path to the whenever executable (defaults to the one found in the PATH if any, otherwise exit with error)
 - `-L`/`--log-level` _LEVEL_: specify the log level, all **whenever** levels are supported (default: _info_, specific to `start`)
 - `-h`/`--help`: print help for the specific command
+
+For the moment, due to the lack of access to some of the Python modules necessary for [pystray](https://github.com/moses-palmer/pystray) to work correctly, running the resident **whenever** wrapper is not possible on Linux. However `poetry run when config` can be used to create and edit a **whenever** configuration file, and **whenever_tray** is available as a consistent wrapper.
 
 **NOTE**: **When** can be run in _debug mode_, that is, it will not catch exceptions, and will use a _DEBUG_ suffix for the application data directory: it also displays a color scheme that is neither dark nor light to underline its particular state. This behaviour can be enabled by setting `'DEBUG': True` in the instantiation of `AppConfig` in _lib/repocfg.py_, instead of the current `True` value. This is useful when testing the application when an existing instance of **whenever** is running in production mode, possibly using the **whenever_tray** utility that normally shares the application data directory with **When** (starting with release 0.1.6). Note that a debug version of **whenever** should be used when a release version is running, because a debug version will not complain and refuse to start in case a non-debug version of the scheduler is already running. The full path to the desired **whenever** executable can be provided on the command line using the `-W` option.
 
