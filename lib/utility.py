@@ -167,6 +167,14 @@ def write_error(s):
     sys.stderr.write("%s error: %s" % (UI_APP, s))
 
 
+# get extensions of executable files on Windows
+def get_executable_extensions():
+    if sys.platform.startswith('win'):
+        return os.environ['PATHEXT'].split(';')
+    else:
+        return None
+
+
 # ...
 
 

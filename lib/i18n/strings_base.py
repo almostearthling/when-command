@@ -302,6 +302,10 @@ UI_TRAY_MENU_HISTORY = "Show history..."
 UI_TRAY_MENU_CONFIGURE = "Configurator..."
 
 
+# file type labels for Open File dialogs
+UI_FILETYPE_EXECUTABLES = "Executable files"
+
+
 # symbols
 SYM_OK = "✓"
 SYM_FAIL = "✕"

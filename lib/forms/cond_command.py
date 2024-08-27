@@ -9,10 +9,12 @@ from os.path import normpath
 
 import tkinter as tk
 import ttkbootstrap as ttk
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 
 from ..i18n.strings import *
 from .ui import *
+
+from ..utility import get_executable_extensions
 
 from .cond import form_Condition
 from ..items.cond_command import CommandCondition
@@ -366,12 +368,20 @@ class form_CommandCondition(form_Condition):
         self.data_set('newvalue', value)
 
     def browse_command(self):
-        # TODO: to be implemented
-        pass
+        exts = get_executable_extensions()
+        if exts:
+            execs_list = ' '.join(exts)
+            print(execs_list)
+        else:
+            execs_list = None
+        entry = filedialog.askopenfilename(parent=self.dialog, filetypes=[(UI_FILETYPE_EXECUTABLES, execs_list)])
+        if entry:
+            self.data_set('command', entry)
 
     def browse_startup_path(self):
-        # TODO: to be implemented
-        pass
+        entry = filedialog.askdirectory(parent=self.dialog)
+        if entry:
+            self.data_set('startup_path', entry)
 
 
 # end.
