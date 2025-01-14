@@ -2,7 +2,6 @@
 
 import tkinter as tk
 import ttkbootstrap as ttk
-from tkinter import messagebox
 
 from ..i18n.strings import *
 from .ui import *

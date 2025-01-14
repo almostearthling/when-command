@@ -46,5 +46,6 @@ class AboutBox(ApplicationForm):
 def show_about_box(main=False):
     box = AboutBox(main)
     box.run()
+    del box
 
 # end.

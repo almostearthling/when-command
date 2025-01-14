@@ -166,9 +166,11 @@ class Wrapper(object):
         sleep_seconds = _MSECS_BETWEEN_READS / 1000.0
         time.sleep(sleep_seconds)
         if self._pipe.poll() is not None:
-            self._thread.join()
+            if self._thread.is_alive():
+                self._thread.join()
             for line in iter(self._pipe.stdout.readline, ""):
                 self.process_output(line.strip())
+            self._running = False
             return False
         return True
 

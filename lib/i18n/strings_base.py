@@ -3,7 +3,7 @@
 # app name
 UI_APP = "When"
 UI_APP_LABEL = "When Automation Tool"
-UI_APP_COPYRIGHT = "© 2023-2024 Francesco Garosi"
+UI_APP_COPYRIGHT = "© 2023-2025 Francesco Garosi"
 UI_APP_VERSION = "1.9.0-alpha"
 
 
@@ -248,6 +248,7 @@ UI_TITLE_FSCHANGEEVENT = "%s: Filesystem Monitoring Event Editor" % UI_APP
 UI_TITLE_CLIEVENT = "%s: Direct Command Event Editor" % UI_APP
 
 UI_TITLE_HISTORY = "%s: Task History" % UI_APP
+UI_TITLE_MENU = "%s: Menu" % UI_APP
 
 UI_CAPTION_NOSPECIFICPARAMS = "This type of item does not require any specific parameter"
 UI_CAPTION_NOTSUPPORTED = "This type of item is not supported"
@@ -345,6 +346,13 @@ BTN_MODIFY = "Modify"
 
 BTN_FILE_D = "File..."
 BTN_FOLDER_D = "Folder..."
+
+BTN_CONFIG_D = "Configure..."
+BTN_ABOUT_D = "About..."
+BTN_PAUSE = "Pause scheduler"
+BTN_RESUME = "Resume scheduler"
+BTN_RESETCONDS = "Reset conditions"
+BTN_HISTORY_D = "Show history..."
 
 
 # new UI strings

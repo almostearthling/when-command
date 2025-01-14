@@ -7,15 +7,30 @@ import tkinter as tk
 import ttkbootstrap as ttk
 
 from .ui import *
+from ..utility import get_ui_image
+
+from ..icons import OUTCOME_OK_ICON16x16 as OK_ICON
+from ..icons import OUTCOME_FAIL_ICON16x16 as FAIL_ICON
+from ..icons import OUTCOME_UNKNOWN_ICON16x16 as UNK_ICON
 
 
 # form class: this form is fixed and will not be derived
 class form_History(ApplicationForm):
 
     def __init__(self, history=None, main=False):
+
+        # the main tree view has an increased row size
+        style = ttk.Style()
+        style.configure('History.Treeview', rowheight=24)
+
         size = AppConfig.get('SIZE_HISTORY_FORM')
         bbox = (BBOX_CLOSE,)
         super().__init__(UI_TITLE_HISTORY, size, None, bbox, main)
+
+        # list box icons
+        self._icon_ok = get_ui_image(OK_ICON)
+        self._icon_fail = get_ui_image(FAIL_ICON)
+        self._icon_unknown = get_ui_image(UNK_ICON)
 
         # form data
         self._history = []
@@ -36,7 +51,8 @@ class form_History(ApplicationForm):
         tv_history = ttk.Treeview(
             sftv_history,
             columns=('time', 'task', 'trigger', 'duration', 'success', 'message'),
-            show='headings',
+            show='headings tree',
+            style='History.Treeview',
             height=5,
         )
         sb_history = ttk.Scrollbar(sftv_history, orient=tk.VERTICAL, command=tv_history.yview)
@@ -44,21 +60,24 @@ class form_History(ApplicationForm):
         tv_history.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         sb_history.pack(side=tk.RIGHT, fill=tk.Y)
 
+        tv_history.column('#0', anchor=tk.CENTER, width=30, stretch=tk.NO)
+        tv_history.heading('#0', anchor=tk.CENTER, text="")
+
         # NOTE: widths are empirically determined, should be tested on
         # other platform to verify that they are suitable anyway
-        tv_history.column(0, anchor=tk.CENTER, width=15)
-        tv_history.column(1, anchor=tk.W, width=16)
-        tv_history.column(2, anchor=tk.W, width=16)
-        tv_history.column(3, anchor=tk.W, width=7)
-        tv_history.column(4, anchor=tk.CENTER, width=4)
-        tv_history.column(5, anchor=tk.W, width=38)
+        tv_history.column('time', anchor=tk.CENTER, width=15)
+        tv_history.column('task', anchor=tk.W, width=16)
+        tv_history.column('trigger', anchor=tk.W, width=16)
+        tv_history.column('duration', anchor=tk.W, width=7)
+        tv_history.column('success', anchor=tk.CENTER, width=4)
+        tv_history.column('message', anchor=tk.W, width=38)
 
-        tv_history.heading(0, anchor=tk.CENTER, text=UI_FORM_HS_TIME)
-        tv_history.heading(1, anchor=tk.W, text=UI_FORM_HS_TASK)
-        tv_history.heading(2, anchor=tk.W, text=UI_FORM_HS_TRIGGER)
-        tv_history.heading(3, anchor=tk.W, text=UI_FORM_HS_DURATION)
-        tv_history.heading(4, anchor=tk.CENTER, text=UI_FORM_HS_SUCCESS)
-        tv_history.heading(5, anchor=tk.W, text=UI_FORM_HS_MESSAGE)
+        tv_history.heading('time', anchor=tk.CENTER, text=UI_FORM_HS_TIME)
+        tv_history.heading('task', anchor=tk.W, text=UI_FORM_HS_TASK)
+        tv_history.heading('trigger', anchor=tk.W, text=UI_FORM_HS_TRIGGER)
+        tv_history.heading('duration', anchor=tk.W, text=UI_FORM_HS_DURATION)
+        tv_history.heading('success', anchor=tk.CENTER, text=UI_FORM_HS_SUCCESS)
+        tv_history.heading('message', anchor=tk.W, text=UI_FORM_HS_MESSAGE)
 
         # arrange items in the grid
         l_history.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
@@ -79,14 +98,14 @@ class form_History(ApplicationForm):
 
     def set_history(self, history):
         h = list(
-            [
+            ([
                 x['time'][:-7].replace("T", " "),
                 x['task'],
                 x['trigger'],
                 ("%.2fs" % x['duration'].total_seconds()).ljust(7),
                 SYM_OK if x['success'] == 'OK' else SYM_UNKNOWN if x['success'] == 'IND' else SYM_FAIL,
                 x['message'],
-            ]
+            ], x['success'])
             for x in history
         )
         h.reverse()
@@ -94,8 +113,9 @@ class form_History(ApplicationForm):
 
     def _updateform(self):
         self._tv_history.delete(*self._tv_history.get_children())
-        for entry in self._history:
-            self._tv_history.insert('', values=entry, index=ttk.END)
+        for entry, outcome in self._history:
+            icon = self._icon_ok if outcome == 'OK' else self._icon_unknown if outcome == 'IND' else self._icon_fail
+            self._tv_history.insert('', values=entry, index=ttk.END, image=icon)
 
 
 # end.

@@ -42,10 +42,10 @@ class _AppConfiguration(object):
 
     def __setitem__(self, key:str, value):
         self.set(key, value)
-    
+
     def __delitem__(self, key:str):
         self.delete(key)
-    
+
     def __str__(self) -> str:
         keys = list(self._table.keys())
         keys.sort()
@@ -85,6 +85,9 @@ AppConfig = _AppConfiguration({
 
     # about box size
     'SIZE_ABOUT_BOX': (480, 300),
+
+    # menu box size
+    'SIZE_MENU_BOX': (272, 440),
 
     # themes
     'DEFAULT_THEME_DARK': 'darkly',

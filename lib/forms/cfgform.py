@@ -9,10 +9,14 @@ from tkinter import messagebox
 
 from ..i18n.strings import *
 from ..icons import APP_ICON32 as APP_ICON
+from ..icons import TASK_ICON20x20 as TASK_ICON
+from ..icons import CONDITION_ICON20x20 as COND_ICON
+from ..icons import EVENT_ICON20x20 as EVENT_ICON
+from ..icons import UNKNOWN_ICON20x20 as UNKNOWN_ICON
 from .ui import *
 
 from ..repocfg import AppConfig
-from ..utility import get_configfile
+from ..utility import get_configfile, get_ui_image
 from ..items.item import ALL_AVAILABLE_ITEMS_D
 
 from ..configurator.reader import read_whenever_config
@@ -26,9 +30,20 @@ from .newitem import form_NewItem
 class form_Config(ApplicationForm):
 
     def __init__(self, main=False):
+        
+        # the main tree view has an increased row size
+        style = ttk.Style()
+        style.configure('Items.Treeview', rowheight=30)
+
         size = AppConfig.get('SIZE_MAIN_FORM')
         bbox = (BBOX_NEW, BBOX_EDIT, BBOX_DELETE, BBOX_SEPARATOR, BBOX_SAVE, BBOX_CLOSE)
         super().__init__(UI_APP, size, None, bbox, main)
+
+        # list box icons
+        self._icon_task = get_ui_image(TASK_ICON)
+        self._icon_condition = get_ui_image(COND_ICON)
+        self._icon_event = get_ui_image(EVENT_ICON)
+        self._icon_unknown = get_ui_image(UNKNOWN_ICON)
 
         # form data
         self._tasks = {}
@@ -65,7 +80,16 @@ class form_Config(ApplicationForm):
         l_items = ttk.Label(area, text=CONFIGFORM_LBL_ITEMS_SC)
         # build a scrolled frame for the treeview
         sftv_items = ttk.Frame(area)
-        tv_items = ttk.Treeview(sftv_items, columns=('name', 'type', 'signature'), displaycolumns=('name', 'type'), show='headings', height=5)
+        tv_items = ttk.Treeview(
+            sftv_items,
+            columns=('name', 'type', 'signature'),
+            displaycolumns=('name', 'type'),
+            show='tree headings',
+            style='Items.Treeview',
+            height=5,
+        )
+        tv_items.column('#0', anchor=tk.CENTER, width=40, stretch=tk.NO)
+        tv_items.heading('#0', anchor=tk.CENTER, text="")
         tv_items.heading('name', anchor=tk.W, text=CONFIGFORM_LHD_NAME)
         tv_items.heading('type', anchor=tk.W, text=CONFIGFORM_LHD_TYPE)
         sb_items = ttk.Scrollbar(sftv_items, orient=tk.VERTICAL, command=tv_items.yview)
@@ -152,7 +176,17 @@ class form_Config(ApplicationForm):
     def _updateform(self):
         self._tv_items.delete(*self._tv_items.get_children())
         for entry in self._itemlistentries:
-            self._tv_items.insert("", iid="%s-%s" % (entry[0], entry[2]), values=entry, index=tk.END)
+            t = entry[2].split(":", 1)[0]
+            if t == "task":
+                icon = self._icon_task
+            elif t == "cond":
+                icon = self._icon_condition
+            elif t == "event":
+                icon = self._icon_event
+            # the following actually never happens
+            else:
+                icon = self._icon_unknown
+            self._tv_items.insert("", iid="%s-%s" % (entry[0], entry[2]), image=icon, values=entry, index=tk.END)
         self.data_set('scheduler_tick_seconds', self._globals['scheduler_tick_seconds'] or DEFAULT_SCHEDULER_TICK_SECONDS)
         self.data_set('randomize_checks_within_ticks', self._globals['randomize_checks_within_ticks'])
 

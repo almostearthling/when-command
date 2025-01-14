@@ -18,10 +18,21 @@ sys.path.append(BASEDIR)
 
 from lib.i18n.strings import *
 from lib.icons import APP_ICON32 as APP_ICON
-from lib.utility import get_default_configdir, get_configfile, is_whenever_running, get_image, get_UI_theme
+from lib.utility import (
+    get_default_configdir,
+    get_logfile,
+    get_configfile,
+    is_whenever_running,
+    get_image,
+    get_UI_theme,
+    )
 from lib.repocfg import AppConfig
 
+from lib.runner.process import Wrapper
+from lib.trayapp import set_tray_icon_gray, set_tray_icon_normal
+
 from lib.forms.about import show_about_box
+from lib.forms.menubox import form_MenuBox
 from lib.forms.cfgform import form_Config
 from lib.forms.history import form_History
 
@@ -38,7 +49,7 @@ DEBUG = AppConfig.get('DEBUG')
 # the following class is used to create an invisible window that actually
 # implements the tkinter main loop, and that reads virtual events to display
 # the application forms: being the main window it also sets the ttk style
-# and reacts to an `ExitApp` event that closes and destroys the main window
+# and reacts to events that cause actions to be performed
 class App(object):
 
     # an invisible root window is created, the other ones are all toplevels:
@@ -54,8 +65,14 @@ class App(object):
         self._window.bind('<<OpenHistory>>', self.open_history)
         self._window.bind('<<OpenCfgApp>>', self.open_cfgapp)
         self._window.bind('<<OpenAboutBox>>', self.open_aboutbox)
+        self._window.bind('<<OpenMenuBox>>', self.open_menubox)
+        self._window.bind('<<SchedPause>>', self.sched_pause)
+        self._window.bind('<<SchedResume>>', self.sched_resume)
+        self._window.bind('<<SchedResetConditions>>', self.sched_reset_conditions)
         self._window.bind('<<ExitApplication>>', self.exit_app)
-        self._whenever_wrapper = None
+        self._wrapper = None
+        self._trayicon = None
+
 
     # the main loop is mandatory to react to events
     def run(self):
@@ -63,7 +80,11 @@ class App(object):
 
     # the scheduler wrapper is needed as it provides access to task history
     def set_wrapper(self, wrapper):
-        self._whenever_wrapper = wrapper
+        self._wrapper = wrapper
+
+    # the tray icon if any
+    def set_trayicon(self, icon):
+        self._trayicon = icon
 
     # send an event to the main loop asynchronously
     def send_event(self, event: str):
@@ -77,25 +98,53 @@ class App(object):
             self._window.update()
             self._window.event_generate('<<ExitApplication>>')
 
-    # destroy the window and cleanup internals
+    # destroy the window, stop whenever, and cleanup internals
     def destroy(self):
         if self._window:
             self._window.destroy()
             del self._window
             self._window = None
-        self._whenever_wrapper = None
+        if self._trayicon:
+            self._trayicon.stop()
+            self._trayicon = None
+        if self._wrapper:
+            self._wrapper.whenever_exit()
+            self._wrapper = None
 
     # event reactions: these are called by the systray app that runs in a
     # separate, detached thread so that it does not slow down the main loop
     def open_history(self, _):
-        if self._window and self._whenever_wrapper:
-            form = form_History(self._whenever_wrapper.get_history())
+        if self._window and self._wrapper:
+            form = form_History(self._wrapper.get_history())
             form.run()
             del form
+
+    def sched_pause(self, _):
+        if self._window and self._wrapper:
+            if self._wrapper.whenever_pause():
+                if self._icon:
+                    set_tray_icon_gray(self._trayicon)
+
+    def sched_resume(self, _):
+        if self._window and self._wrapper:
+            if self._wrapper.whenever_resume():
+                if self._icon:
+                    set_tray_icon_normal(self._trayicon)
+
+    def sched_reset_conditions(self, _):
+        if self._window and self._wrapper:
+            self._wrapper.whenever_reset_conditions()
 
     def open_cfgapp(self, _):
         if self._window:
             form = form_Config()
+            form.run()
+            del form
+
+    def open_menubox(self, _):
+        if self._window and self._wrapper:
+            form = form_MenuBox()
+            form.set_root(self)
             form.run()
             del form
 
@@ -213,22 +262,45 @@ def main():
 
     # start the resident application and display an icon on the tray area
     elif command == 'start':
+        # exit if the scheduler is already running
         if is_whenever_running():
             exiterror(CLI_ERR_ALREADY_RUNNING)
+        # get configuration options
+        log_level = AppConfig.get('LOGLEVEL')
+        log_file = get_logfile()
+        config_file = get_configfile()
         if DEBUG:
+            # setup the scheduler and associate it to the application
             whenever = AppConfig.get('WHENEVER')
             if whenever is None or not os.path.exists(whenever) or not os.access(whenever, os.X_OK):
                 exiterror(CLI_ERR_WHENEVER_NOT_FOUND)
+            wrapper = Wrapper(config_file, whenever, log_file, log_level)
             setup_windows()
+
+            # start the scheduler in a separate thread
+            if not wrapper.start():
+                raise Exception("an error occurred starting the scheduler")
+            _root.set_wrapper(wrapper)
+
+            # run the tray icon application main loop
             from lib.trayapp import main
             main(_root)
             _root.run()
         else:
             try:
+                # setup the scheduler and associate it to the application
                 whenever = AppConfig.get('WHENEVER')
                 if whenever is None or not os.path.exists(whenever) or not os.access(whenever, os.X_OK):
                     exiterror(CLI_ERR_WHENEVER_NOT_FOUND)
+                wrapper = Wrapper(config_file, whenever, log_file, log_level)
                 setup_windows()
+
+                # start the scheduler in a separate thread
+                if not wrapper.start():
+                    raise Exception("an error occurred starting the scheduler")
+                _root.set_wrapper(wrapper)
+
+                # run the tray icon application main loop
                 from lib.trayapp import main
                 main(_root)
                 _root.run()

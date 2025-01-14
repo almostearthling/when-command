@@ -6,12 +6,10 @@ import ttkbootstrap as ttk
 
 from typing import Callable, Any
 
-from base64 import b64decode
-from io import BytesIO
-from PIL import Image, ImageTk
+from ..utility import get_icon, get_appicon
 
 
-# default strings for UI
+# default strings for UI (overwritten by `i18n.strings`)
 BTN_OK = "OK"
 BTN_CANCEL = "Cancel"
 BTN_CLOSE = "Close"
@@ -55,25 +53,13 @@ SAVE_B_ICON32 = b'iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAIGNIUk0AAHomAA
 SETTINGS_B_ICON32 = b'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'
 
 
-# convert an image in the above format to a tkinter-compatible PhotoImage:
-# this must be used **after** a Tk root has been created
-def get_icon(image: bytes):
-    return ImageTk.PhotoImage(
-        Image.open(BytesIO(b64decode(image))).resize((24, 24)))
-
-def get_appicon(image: bytes):
-    return ImageTk.PhotoImage(
-        Image.open(BytesIO(b64decode(image))).resize((32, 32)))
-
-
-
 # default UI values
 DIALOG_PADDING_MAIN = (8, 10)
 DIALOG_PADDING_INNER = (4, 6)
 WIDGET_PADDING_PIXELS = 5
 BUTTON_STANDARD_WIDTH = 12
 BUTTON_STANDARD_WIDTH_SMALL = 8
-
+BUTTON_STANDARD_WIDTH_LARGE = 31
 
 
 # common settings for all standard buttons
@@ -82,6 +68,31 @@ class _btn_Base(ttk.Button):
         self._image = get_icon(icon_bytes)
         self._style = ttk.Style()
         self._style.configure(style="stdbutton.TButton", anchor=tk.EW, width=BUTTON_STANDARD_WIDTH)
+        if command is None:
+            command = ""
+        super().__init__(
+            master,
+            text=text,
+            image=self._image,
+            compound=tk.LEFT,
+            command=command,
+            style="stdbutton.TButton",
+        )
+        self.enable(enabled)
+
+    def enable(self, enabled=True):
+        if enabled:
+            active=['!disabled']
+        else:
+            active=['disabled']
+        self.state(active)
+
+
+class _btn_MenuEntry(ttk.Button):
+    def __init__(self, master, text, icon_bytes, command, enabled):
+        self._image = get_icon(icon_bytes)
+        self._style = ttk.Style()
+        self._style.configure(style="stdbutton.TButton", anchor=tk.W, width=BUTTON_STANDARD_WIDTH_LARGE)
         if command is None:
             command = ""
         super().__init__(
@@ -352,7 +363,7 @@ class ApplicationForm(object):
     # support the context manager protocol
     def __enter__(self):
         return self
-    
+
     def __exit__(self, _exc_type, _exc_value, _traceback):
         del self._dialog
 
@@ -378,7 +389,7 @@ class ApplicationForm(object):
                 return self._v
         data = _Elem(value)
         self._data[name] = data
-    
+
     # bind a ttk.Treeview to a variable: it involves defining a new
     # function and reacting to a (virtual) event
     def _bind_ttk_treeview(self, name: str, treeview: ttk.Treeview):
@@ -547,7 +558,7 @@ class ApplicationForm(object):
             return self._checks[dataname](rv)
         else:
             return False
-    
+
     # return a list of the widget-bound variables
     @property
     def data_vars(self):

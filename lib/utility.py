@@ -3,6 +3,7 @@
 import sys
 import os
 import subprocess
+from base64 import b64decode
 
 from tomlkit import table
 from hashlib import blake2s
@@ -68,6 +69,22 @@ def get_image(data: bytes):
     bio = BytesIO(b64_decodeb(data))
     bio.seek(0)
     return Image.open(bio)
+
+
+# get an UI suitable image
+def get_ui_image(data: bytes):
+    return ImageTk.PhotoImage(get_image(data))
+
+
+# convert an image in string format to a resized tkinter-compatible PhotoImage:
+# this must be used **after** a Tk root has been created
+def get_icon(image: bytes):
+    return ImageTk.PhotoImage(
+        Image.open(BytesIO(b64decode(image))).resize((24, 24)))
+
+def get_appicon(image: bytes):
+    return ImageTk.PhotoImage(
+        Image.open(BytesIO(b64decode(image))).resize((32, 32)))
 
 
 # determine where configuration is stored by default
