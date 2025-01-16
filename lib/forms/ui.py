@@ -501,7 +501,7 @@ class ApplicationForm(object):
             self._data[name] = var
         else:
             # TODO: remove the following debug statement
-            print(widget.widgetName, opts)
+            # print(widget.widgetName, opts)
             pass
         # if validation is allowed use the provided validator (if any)
         if check is not None and 'validatecommand' in opts:

@@ -2,6 +2,7 @@
 # application launcher and command line interpreter
 
 import sys
+import os
 import os.path
 import argparse
 import shutil
@@ -100,16 +101,20 @@ class App(object):
 
     # destroy the window, stop whenever, and cleanup internals
     def destroy(self):
+        if self._wrapper:
+            self._wrapper.whenever_exit()
+            self._wrapper = None
         if self._window:
             self._window.destroy()
             del self._window
             self._window = None
         if self._trayicon:
-            self._trayicon.stop()
-            self._trayicon = None
-        if self._wrapper:
-            self._wrapper.whenever_exit()
-            self._wrapper = None
+            if sys.platform == "linux":
+                # something's wrong wit pystray in this case
+                os._exit(os.EX_OK)
+            else:
+                self._trayicon.stop()
+                self._trayicon = None
 
     # event reactions: these are called by the systray app that runs in a
     # separate, detached thread so that it does not slow down the main loop

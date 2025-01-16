@@ -371,7 +371,6 @@ class form_CommandCondition(form_Condition):
         exts = get_executable_extensions()
         if exts:
             execs_list = ' '.join(exts)
-            print(execs_list)
         else:
             execs_list = None
         entry = filedialog.askopenfilename(parent=self.dialog, filetypes=[(UI_FILETYPE_EXECUTABLES, execs_list)])

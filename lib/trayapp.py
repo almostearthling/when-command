@@ -107,7 +107,7 @@ def main(root):
             # in this case `AppIndicator` is not running, so it would be
             # worth only to enable the action for icon left click: for
             # example by removing all contents from the `entries` list
-            # entries = []
+            entries = []
             entries.append(
                 pystray.MenuItem(
                     "---",
