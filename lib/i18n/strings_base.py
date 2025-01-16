@@ -269,6 +269,7 @@ UI_POPUP_DELETETSPECS_Q = "Do you want to delete all the time specifications?"
 UI_POPUP_FILENOTFOUND_ERR = "The specified file could not be found"
 UI_POPUP_NOEVENTCONDITIONS_ERR = "There are no event based conditions that can be associated"
 
+UI_POPUP_UNKNOWNERROR = "An unknown error occurred"
 UI_POPUP_INVALIDITEMNAME = "Item name is not valid"
 UI_POPUP_INVALIDPARAMETERS_T = "Some of the form fields contain invalid data:\n\n%s\n\nPlease review them before updating"
 UI_POPUP_INVALIDVARNAME = "Invalid name for variable"
@@ -277,6 +278,7 @@ UI_POPUP_INVALIDFILEORDIR = "Invalid file or directory name"
 UI_POPUP_INVALIDTIMESPEC = "Invalid or missing time specification"
 UI_POPUP_REFERENCEDTASK = "The Task is still referenced in at least\none Condition: remove any references\nbefore attempting to delete it"
 UI_POPUP_REFERENCEDCOND = "The Condition is still referenced in at least\none Event: remove any references before\nattempting to delete it"
+UI_POPUP_MISSINGEVENTCOND = "No condition specified for event"
 
 
 # about box

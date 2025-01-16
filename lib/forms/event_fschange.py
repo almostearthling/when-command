@@ -121,7 +121,7 @@ class form_FilesystemChangeEvent(form_Event):
     def del_fsitem(self):
         e = self.data_get('item_monitor')
         if e:
-            idx = e[0]
+            idx = self._watch.index(e)
             del self._watch[idx]
             self._updateform()
 

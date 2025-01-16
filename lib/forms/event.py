@@ -117,11 +117,14 @@ class form_Event(ApplicationForm):
 
     def exit_ok(self):
         name = self.data_get('@name')
-        if name is not None:
+        condition = self.data_get('@condition')
+        if name and condition:
             self._updatedata()
             return super().exit_ok()
-        else:
+        elif not name:
             messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDITEMNAME)
+        else:
+            messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_MISSINGEVENTCOND)
 
 
     # main loop: returns the current item if any
