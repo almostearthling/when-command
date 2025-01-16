@@ -376,7 +376,6 @@ class form_Config(ApplicationForm):
             self._updatedata()
             self._updateform()
 
-
     # modify the reaction to the quit button so that if the configuration
     # has changed the user is asked whether or not he wants to discard it
     def exit_close(self):
@@ -385,7 +384,6 @@ class form_Config(ApplicationForm):
                 return super().exit_close()
         else:
             return super().exit_close()
-
 
 
 # end.

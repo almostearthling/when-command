@@ -95,4 +95,5 @@ class CommandTask(Task):
         t = append_not_none(t, 'environment_variables', self.environment_variables)
         return t
 
+
 # end.

@@ -311,5 +311,4 @@ class form_TimeCondition(form_Condition):
         return super()._updateform()
 
 
-
 # end.
