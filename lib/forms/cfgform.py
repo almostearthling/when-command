@@ -29,14 +29,22 @@ from .newitem import form_NewItem
 # configuration box class
 class form_Config(ApplicationForm):
 
-    def __init__(self, main=False):
+    def __init__(self, root=None, main=False):
         
+        # the root window: if not set this runs as the main app
+        # and is aware that no scheduler is under control of this
+        # application
+        self._root = root
+
         # the main tree view has an increased row size
         style = ttk.Style()
         style.configure('Items.Treeview', rowheight=30)
 
         size = AppConfig.get('SIZE_MAIN_FORM')
-        bbox = (BBOX_NEW, BBOX_EDIT, BBOX_DELETE, BBOX_SEPARATOR, BBOX_SAVE, BBOX_CLOSE)
+        if self._root:
+            bbox = (BBOX_NEW, BBOX_EDIT, BBOX_DELETE, BBOX_RELOAD, BBOX_SEPARATOR, BBOX_SAVE, BBOX_CLOSE)
+        else:
+            bbox = (BBOX_NEW, BBOX_EDIT, BBOX_DELETE, BBOX_SEPARATOR, BBOX_SAVE, BBOX_CLOSE)
         super().__init__(UI_APP, size, None, bbox, main)
 
         # list box icons
@@ -375,6 +383,14 @@ class form_Config(ApplicationForm):
         if self._changed:
             self._updatedata()
             self._updateform()
+
+    # reload the configuration by sending the appropriate message to the
+    # main (hidden) application form
+    def reload(self):
+        if messagebox.askyesno(UI_POPUP_T_CONFIRM, UI_POPUP_RELOADCONFIG_Q):
+            if self._root:
+                self._root.send_event('<<SchedReloadConfig>>')
+        return super().reload()
 
     # modify the reaction to the quit button so that if the configuration
     # has changed the user is asked whether or not he wants to discard it
