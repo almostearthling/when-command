@@ -265,6 +265,7 @@ UI_POPUP_DISCARDCONFIG_Q = "Discard current configuration?"
 UI_POPUP_OVERWRITEFILE_Q = "Do you want to overwrite the specified file?"
 UI_POPUP_DELETEITEM_Q = "Do you want delete the selected item?"
 UI_POPUP_DELETETSPECS_Q = "Do you want to delete all the time specifications?"
+UI_POPUP_RELOADCONFIG_Q = "Do you want to reload the configuration?"
 
 UI_POPUP_FILENOTFOUND_ERR = "The specified file could not be found"
 UI_POPUP_NOEVENTCONDITIONS_ERR = "There are no event based conditions that can be associated"
@@ -287,9 +288,9 @@ UI_ABOUT_WHENEVER_VERSION = "Scheduler version:"
 UI_ABOUT_TEXT = """\
 %s
 
-Configuration utility and wrapper for the Whenever scheduler
-designed to help running and controlling the automation tool
-in a desktop environment.
+Configuration utility and wrapper for the Whenever
+scheduler designed to help running and controlling
+the automation tool in a desktop environment.
 
 %s
 """ % (UI_APP, UI_APP_COPYRIGHT)
@@ -345,6 +346,8 @@ BTN_LOAD = "Load"
 BTN_NEW = "New"
 BTN_EDIT = "Edit"
 BTN_MODIFY = "Modify"
+BTN_RELOAD = "Reload"
+BTN_RESET = "Reset"
 
 BTN_FILE_D = "File..."
 BTN_FOLDER_D = "Folder..."

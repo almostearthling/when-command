@@ -70,6 +70,7 @@ class App(object):
         self._window.bind('<<SchedPause>>', self.sched_pause)
         self._window.bind('<<SchedResume>>', self.sched_resume)
         self._window.bind('<<SchedResetConditions>>', self.sched_reset_conditions)
+        self._window.bind('<<SchedReloadConfig>>', self.sched_reload_configuration)
         self._window.bind('<<ExitApplication>>', self.exit_app)
         self._wrapper = None
         self._trayicon = None
@@ -139,10 +140,14 @@ class App(object):
     def sched_reset_conditions(self, _):
         if self._window and self._wrapper:
             self._wrapper.whenever_reset_conditions()
+    
+    def sched_reload_configuration(self, _):
+        if self._window and self._wrapper:
+            self._wrapper.whenever_reload_configuration()
 
     def open_cfgapp(self, _):
         if self._window:
-            form = form_Config()
+            form = form_Config(self)
             form.run()
             del form
 

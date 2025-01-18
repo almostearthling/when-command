@@ -142,6 +142,14 @@ class Wrapper(object):
         else:
             return False
 
+    def whenever_reload_configuration(self):
+        if self._pipe.poll() is None and self._thread:
+            self._pipe.stdin.write("configure %s\n" % self._config)
+            self._pipe.stdin.flush()
+            return True
+        else:
+            return False
+
     def whenever_trigger(self, name):
         if self._pipe.poll() is None and self._thread:
             self._pipe.stdin.write("trigger %s\n" % name)
