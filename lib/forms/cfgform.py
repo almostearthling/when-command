@@ -387,8 +387,9 @@ class form_Config(ApplicationForm):
     # reload the configuration by sending the appropriate message to the
     # main (hidden) application form
     def reload(self):
-        if self._root:
-            self._root.send_event('<<SchedReloadConfig>>')
+        if messagebox.askyesno(UI_POPUP_T_CONFIRM, UI_POPUP_RELOADCONFIG_Q):
+            if self._root:
+                self._root.send_event('<<SchedReloadConfig>>')
         return super().reload()
 
     # modify the reaction to the quit button so that if the configuration

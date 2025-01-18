@@ -50,7 +50,7 @@ def on_exit(root):
 
 
 # set icon color to gray/color: these functions are called by the main
-# application to chenge the icon status when pausing/resuming the scheduler
+# application to change the icon status when pausing/resuming the scheduler
 def set_tray_icon_gray(icon):
     icon.icon = _tray_icon_gray
 

@@ -19,7 +19,7 @@ More commands might be supported in the future. `OPTIONS` are the possible optio
 - `-L`/`--log-level` _LEVEL_: specify the log level, all **whenever** levels are supported (default: _info_, specific to `start`)
 - `-h`/`--help`: print a brief help message about commands and options.
 
-> **Note**: In order to simplify the usage of **When**, many values that could have been implemented as parameters are instead left as defaults that cannot be chenged, at least for now, if not via direct intervention on the code.
+> **Note**: In order to simplify the usage of **When**, many values that could have been implemented as parameters are instead left as defaults that cannot be changed, at least for now, if not via direct intervention on the code.
 
 
 [`◀ Main`](main.md)
