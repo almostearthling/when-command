@@ -30,15 +30,15 @@ On Windows, the command `when-bg` can be used instead of `when` in order to laun
 
 The following steps can be followed on an updated version of Debian Linux 12:
 
-1. start a Gnome session using Xorg as a backend
+1. start a Gnome session using **Xorg** as a backend
 
    ![GnomeLogin](graphics/install-gnome-login.png)
 
 2. as root, install the development toolchain: `su - root -c "apt install build-essential"` (enter the root password when prompted)
-3. as root, install the _Gnome shell extension manager_: `su - root -c "apt install gnome-shell-extension-manager python3-pip pipx"` (same as above)
-4. in a different terminal window, not as root, launch `pipx ensurepath` from the terminal
-5. download the latest release of **whenever** from the [releases page](https://github.com/almostearthling/whenever/releases), extract its contents and copy the two executables, _whenever_ and _whenever_tray_ to `$HOME/.local/bin` (which has been created by **pipx**)
-6. as root, install the **pip** and **pipx** Python modules: `su - root -c "apt install python3-pip pipx"` (same as above)
+3. as root, install the _Gnome shell extension manager_: `su - root -c "apt install gnome-shell-extension-manager"` (same as above)
+4. as root, install the **pip** and **pipx** Python modules: `su - root -c "apt install python3-pip pipx"` (same as above)
+5. in a different terminal window, _not_ as root, launch `pipx ensurepath` from the terminal
+6. download the latest release of **whenever** from the [releases page](https://github.com/almostearthling/whenever/releases), extract its contents and copy the two executables, _whenever_ and _whenever_tray_ to `$HOME/.local/bin` (which has been created by **pipx**)
 7. start the _Gnome shell extension manager_, named simply _Extension Manager_ in the activities dashboard
 8. choose the _Browse_ tab and scroll down to find _AppIndicator and KStatusNotifierItem Support_ and install it
 
