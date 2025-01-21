@@ -2,7 +2,7 @@
 
 This document describes the new version of **When**, a Python-based automation tool for the desktop. This version, instead of incorporating the scheduler, relies on the [**whenever**](https://github.com/almostearthling/whenever) automation tool, which focuses on reliability and lightweightness, while trying to achieve a good performance even when running at low priority. In this sense, **When** acts as a _wrapper_ for **whenever**, both providing a simple interface for configuration and an easy way to control the scheduler via an icon sitting in the tray area of your desktop. This version of **When** aims at being cross-platform, dynamically providing access to the features of **whenever** that are supported on the host environment.
 
-This is still in its early development stage and still contains a lot of bugs and errors, yet it is capable of running **whenever** in the background and to control it via an icon in the system tray, create and edit the configuration file, capture the log and display a history window. All of this trying to mimic the behaviour of the old **When** tool, only available on Ubuntu distributions and restricted to the 16.XX and 18.XX editions, which is entirely Python based and is now abandoned because of the difficulty of adapting all needed DBus signals and checks to the ever-changing interface of the various Linux distributions.
+The application is under active development: although not all of the desired features have been implemented yet, it is capable of running **whenever** in the background and to control it via an icon in the system tray, create and edit the configuration file, capture the log and display a history window. All of this trying to mimic the behaviour of the old **When** tool, which was only available on Ubuntu distributions and restricted to the 16.XX and 18.XX editions, entirely written in Python, and now abandoned because of the difficulty of adapting all needed DBus signals and checks to the ever-changing interface of the various Linux distributions.
 
 ![MainWindow](support/docs/graphics/when-application.png)
 
@@ -22,12 +22,12 @@ poetry run when COMMAND [OPTIONS]
 where `COMMAND` is one of the following:
 
 - `config` to launch the configuration utility, without staying resident (i.e. no system tray icon)
-- `start` to launch the resident **whenever** wrapper displaying the control icon on the system tray area (non working on Linux: see [#113](https://github.com/almostearthling/when-command/issues/113))
+- `start` to launch the resident **whenever** wrapper displaying the control icon on the system tray area (the tray menu is not available on Linux: see [#113](https://github.com/almostearthling/when-command/issues/113))
 - `version` to display version information.
 
 More commands might be supported in the future. `OPTIONS` are the possible options, some of which are command specific.
 
-- `-D`/`--dir-appdata` _PATH_: specify the application data and configuration directory (default: _%APPDATA%\Whenever_ on Windows, _~/.whenever_ on Linux)
+- `-D`/`--dir-appdata` _PATH_: specify the [application data and configuration directory](support/docs/appdata.md) (default: _%APPDATA%\Whenever_ on Windows, _~/.whenever_ on Linux)
 - `-W`/`--whenever` _PATH_: specify the path to the whenever executable (defaults to the one found in the PATH if any, otherwise exit with error)
 - `-L`/`--log-level` _LEVEL_: specify the log level, all **whenever** levels are supported (default: _info_, specific to `start`)
 - `-h`/`--help`: print help for the specific command
@@ -36,7 +36,7 @@ Due to the lack of access to some of the Python modules necessary for [pystray](
 
 **NOTE**: **When** can be run in _debug mode_, that is, it will not catch exceptions, and will use a _DEBUG_ suffix for the application data directory: it also displays a color scheme that is neither dark nor light to underline its particular state. This behaviour can be enabled by setting `'DEBUG': True` in the instantiation of `AppConfig` in _lib/repocfg.py_. The debug mode also grants access to the menu dialog box described above in environments where the context menu is available. This is useful when testing the application when an existing instance of **whenever** is running in production mode, possibly using the **whenever_tray** utility that normally shares the application data directory with **When** (starting with release 0.1.6). Note that a debug version of **whenever** should be used when a release version is running, because a debug version will not complain and refuse to start in case a non-debug version of the scheduler is already running. The full path to the desired **whenever** executable can be provided on the command line using the `-W` option.
 
-**When** will be able to act as a wrapper only if a working and recent (not below [0.1.23](https://github.com/almostearthling/whenever/releases/tag/v0.1.23%2Btray0.1.6)) version of **whenever** is available, either in the system _PATH_ or specified via the command line interface by using the `-W` switch.
+**When** will be able to act as a wrapper only if a working and recent (not below [0.2.3](https://github.com/almostearthling/whenever/releases/tag/v0.2.3%2Btray0.1.6)) version of **whenever** is available, either in the system _PATH_ or specified via the command line interface by using the `-W` switch.
 
 
 ## Roadmap
@@ -67,10 +67,10 @@ Specific command/_Lua_ based tasks, command/_Lua_/DBus based conditions, DBus ba
 
 - [ ] Task: Shut down the system
 - [ ] Task: Lock the system
-- [ ] Condition: Startup and Shutdown
+- [ ] ~~Condition: Startup and Shutdown~~ (would correspond to starting and closing the application: not really doing what the name says)
 - [ ] Condition: Suspend and Resume
 - [ ] Condition: Session Lock and Unlock
-- [ ] Condition: Screensaver
+- [ ] ~~Condition: Screensaver~~ (screensavers are not really used nowadays)
 - [ ] Condition: Storage Device Connect and Disconnect
 - [ ] Condition: Join or Leave a Network
 - [ ] Condition: Battery is Charging, Discharging or Low
@@ -92,7 +92,8 @@ The following actions should be supported by a resident part of the application 
 - [ ] Suspend and resume conditions
 - [x] Reset conditions
 - [x] Pause and resume the scheduler
-- [ ] Restart the scheduler
+- [x] Reload the configuration file
+- [ ] ~~Restart the scheduler~~ (not really interesting, since reloading the configuration is implemented)
 - [x] Load the configuration utility (to be improved)
 
 Other features that might be useful:
@@ -117,6 +118,8 @@ poetry config virtualenvs.options.system-site-packages false
 otherwise Python would not reach the modules needed to display the system tray icon and menu.
 
 Research is underway on the possibility to provide **When** in "binary-ish" form too: there are some available tools that use the dependency management features in **poetry** to build packages suitable for various operating systems and their distributions.
+
+A slightly simplified procedure for installiation using [pipx](https://pipx.pypa.io/) can be found [here](support/docs/install.md).
 
 
 ## Credits

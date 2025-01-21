@@ -9,4 +9,9 @@ Therefore, the _Specific Parameters_ panel only displays a notice stating that n
 Since this type of conditions is not time related, the related check might be performed at a random time between two scheduler ticks if the corresponding global scheduler [option](cfgform.md#scheduler-parameters) is set.
 
 
+## See Also
+
+* [Events](events.md)
+
+
 [`◀ Conditions`](conditions.md)

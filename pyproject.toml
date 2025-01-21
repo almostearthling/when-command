@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "when"
-version = "1.9.0-alpha"
+version = "1.9.1b0"
 description = "Interface for the **whenever** automation tool"
 authors = ["Francesco Garosi <francesco.garosi@gmail.com>"]
 license = 'BSD 3-Clause "New" or "Revised" License'
@@ -24,6 +24,7 @@ ttkbootstrap = "^1.10.1"
 
 [tool.poetry.scripts]
 when = "when.when:main"
+when-bg = "when.when_bg:run_bg"
 
 [build-system]
 requires = ["poetry-core"]

@@ -12,4 +12,10 @@ This test verifies whether or not the system load is below a certain percentage 
 The item can be used on Windows and Linux systems, and depends on the availability of the _PowerShell_ in the first case, and the presence of the `vmstat` and `bc` OS commands in the latter, which may need to be installed on some distributions. The checks for this condition are performed about every minute.
 
 
+## See also
+
+* [Command Based Conditions](cond_actionrelated.md#command)
+* [Lua Script Based Conditions](cond_actionrelated.md#lua-script)
+
+
 [`◀ Conditions`](conditions.md)

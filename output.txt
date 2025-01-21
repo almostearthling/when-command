@@ -1,0 +1,2 @@
+C:\Users\franz\AppData\Local\pypoetry\Cache\virtualenvs\when-iTG7w-Bv-py3.11\Scripts\python.exe
+['C:\\Users\\franz\\AppData\\Local\\pypoetry\\Cache\\virtualenvs\\when-iTG7w-Bv-py3.11\\Scripts\\when-bg.cmd', 'start', '-L', 'trace', '-W', 'C:\\Users\\franz\\Projects\\Managed\\whenever\\_local\\target\\debug\\whenever.exe']

@@ -31,6 +31,7 @@ The first is the main core that **When** uses to accomplish its mission: unlike 
 
 The documentation handles the following topics:
 
+* [Installation](install.md)
 * [CLI](cli.md)
 * [System Tray Resident Application](tray.md)
 * [Main Configuration Form](cfgform.md)
@@ -49,7 +50,7 @@ For the sake of readability, a glossary follows for some of the terms used throu
 
 | **Term**           | **Meaning**                                                                                                                                                |
 |--------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| _APPDATA_          | the _application data_ directory is where **When** keeps configuration files, data files, and logs: see [here](cfgform.md#application-data) for details    |
+| _APPDATA_          | the _application data_ directory is where **When** keeps configuration files, data files, and logs: see [here](appdata.md) for details                     |
 | _condition_        | circumstance or set of circumstances that may or may not occur in a certain moment and whose occurrence determines the execution of tasks                  |
 | _event_            | signal, message, or external coincidence anyway that **When** (or **whenever**) can be instructed to listen to                                             |
 | _item_             | used throughout the document to specify one of a _task_, a _condition_ or an _event_                                                                       |

@@ -22,4 +22,10 @@ More commands might be supported in the future. `OPTIONS` are the possible optio
 > **Note**: In order to simplify the usage of **When**, many values that could have been implemented as parameters are instead left as defaults that cannot be changed, at least for now, if not via direct intervention on the code.
 
 
+## See Also
+
+* [Configuration Utility](cfgform.md)
+* [Resident Wrapper](tray.md)
+
+
 [`◀ Main`](main.md)

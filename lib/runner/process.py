@@ -167,6 +167,7 @@ class Wrapper(object):
             stderr=subprocess.PIPE,
             universal_newlines=True,
             text=True,
+            creationflags=subprocess.CREATE_NO_WINDOW,
         )
         self._thread = threading.Thread(target=_logreader, args=[self])
         self._running = True

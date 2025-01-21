@@ -16,4 +16,11 @@ The items (files and directories) to be monitored can be provided by entering th
 > **Note**: for the moment it is impossible to browse for directories using the browse button, it is however possible to select a file within the directory and remove the file basename from the resulting string in the _Item_ field before clicking the _Add_ button.
 
 
+## See Also
+
+* [Event Based Conditions](cond_eventrelated.md)
+* [Tasks](tasks.md)
+* [Conditions](conditions.md)
+
+
 [`◀ Main`](main.md)
