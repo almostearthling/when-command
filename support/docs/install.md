@@ -2,9 +2,6 @@
 
 The easiest way to install _When_ is using [pipx](https://pipx.pypa.io/): this works both on [Windows](#windows) and [Linux](#linux), at least in the tested distributions. Installation on Linux is somewhat more complicated due to the need of fulfilling the requirements before successfully running the application. On Windows the requirements are easier to deal with, in the sense that only [Python](https://www.python.org/), [git](https://git-scm.com/)[^1], and [pipx](https://pipx.pypa.io/) need to be installed.
 
-
-## Windows
-
 Requirements:
 
 * [Python](https://www.python.org/) in a recent release (at least version 3.11)
@@ -12,7 +9,10 @@ Requirements:
 * [git](https://git-scm.com/)
 * [whenever](https://github.com/almostearthling/whenever), possibly the latest binary [release](https://github.com/almostearthling/whenever/releases)
 
-Steps:
+
+## Windows
+
+The following steps can be followed on both Windows 10 and Windows 11:
 
 1. install **Python** and **git**[^1] using the provided installers
 2. install pipx by issuing the command `py -m pip install --user pipx` in a console window: after installation launch `pipx ensurepath` from the command prompt
@@ -28,7 +28,7 @@ On Windows, the command `when-bg` can be used instead of `when` in order to laun
 
 ## Linux
 
-The following steps were followed on an updated version of Debian Linux 12:
+The following steps can be followed on an updated version of Debian Linux 12:
 
 1. start a Gnome session using Xorg as a backend
 
