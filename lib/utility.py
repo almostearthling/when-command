@@ -117,6 +117,7 @@ def get_whenever_version():
         stderr = subprocess.PIPE,
         universal_newlines = True,
         text=True,
+        creationflags=subprocess.CREATE_NO_WINDOW,
     )
     if result:
         return result.stdout.strip()
@@ -133,6 +134,7 @@ def is_whenever_running():
         stderr = subprocess.PIPE,
         universal_newlines = True,
         text=True,
+        creationflags=subprocess.CREATE_NO_WINDOW,
     )
     if result:
         if result.returncode == 0:

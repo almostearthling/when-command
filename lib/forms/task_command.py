@@ -300,15 +300,15 @@ class form_CommandTask(form_Task):
         if self._item.failure_status is not None:
             check_for = UI_OUTCOME_FAILURE
             check_what = UI_EXIT_CODE
-            check_value = self._item.success_status
+            check_value = self._item.failure_status
         elif self._item.failure_stdout is not None:
             check_for = UI_OUTCOME_FAILURE
             check_what = UI_STREAM_STDOUT
-            check_value = self._item.success_stdout
+            check_value = self._item.failure_stdout
         elif self._item.failure_stderr is not None:
             check_for = UI_OUTCOME_FAILURE
             check_what = UI_STREAM_STDERR
-            check_value = self._item.success_stderr
+            check_value = self._item.failure_stderr
         self.data_set('check_for', check_for)
         self.data_set('check_what', check_what)
         self.data_set('check_value', check_value)
