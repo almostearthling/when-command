@@ -51,6 +51,12 @@ The following steps can be followed on an updated version of Debian Linux 12:
 Once a configuration is available, the resident application can be started from the command line using the `when start` command. A shortcut can be created, using just `when start` a the command to execute, using the tools provided by Gnome in order to add it to the _Startup Applications_. Development of an automated way to achieve this is underway. The `when-bg` command also exists on Linux, but its behaviour is absolutely identical to `when`.
 
 
+## See Also
+
+* [Configuration Utility](cfgform.md)
+* [Resident Wrapper](tray.md)
+
+
 [`◀ Main`](main.md)
 
 
