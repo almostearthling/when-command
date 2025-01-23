@@ -303,7 +303,21 @@ class form_Config(ApplicationForm):
                     new_item = e.run()
                     if new_item:
                         if new_item.name != item_name:
+                            # adjust dependencies
+                            for name in self._conditions:
+                                cond = self._conditions[name]
+                                if item_name in cond.tasks:
+                                    tasks = []
+                                    for t in cond.tasks:
+                                        if t == item_name:
+                                            tasks.append(new_item.name)
+                                        else:
+                                            tasks.append(t)
+                                    cond.tasks = tasks
+                                    self._conditions[name] = cond
+                            # remove the task with old name
                             del self._tasks[item_name]
+                        # add the new item or replace the existing one
                         self._tasks[new_item.name] = new_item
                         self._changed = True
 
@@ -316,7 +330,16 @@ class form_Config(ApplicationForm):
                     new_item = e.run()
                     if new_item:
                         if new_item.name != item_name:
+                            # adjust dependencies
+                            if new_item.type in ('event', 'bucket'):
+                                for name in self._events:
+                                    event = self._events[name]
+                                    if event.condition == item_name:
+                                        event.condition = new_item.name
+                                        self._events[name] = event
+                            # remove the condition with old name
                             del self._conditions[item_name]
+                        # add the new item or replace the existing one
                         self._conditions[new_item.name] = new_item
                         self._changed = True
 
