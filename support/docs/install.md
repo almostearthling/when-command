@@ -21,7 +21,7 @@ The following steps can be followed on both Windows 10 and Windows 11:
 5. close the current console window, and open a new one: this is to ensure that the updated `PATH` environemnt variable is active
 6. launch the configuration utility, by typing `when config` on the command line: create a task and a condition of your choice, and save the configuration file by clicking the _Save_ button.
 
-Once a configuration is available, the resident application can be started from the command line using the `when start` command. A shortcut can be created, using just `when start` a the command to execute, using the tools provided by Windows in order to add it to the _Startup Applications_. Development of an automated way to achieve this is underway.
+Once a configuration is available, the resident application can be started from the command line using the `when start` command. A shortcut can be created, using just `when start` as the command to execute, using the tools provided by Windows in order to add it to the _Startup Applications_. Development of an automated way to achieve this is underway.
 
 On Windows, the command `when-bg` can be used instead of `when` in order to launch the application _detached_ from a console window: when creating shortcuts, either to launch the [configuration utility](cfgform.md) or to start the [resident tray frontend](tray.md), it is better to use `when-bg` in order to avoid having a foreground console window in the way.
 
@@ -48,7 +48,7 @@ The following steps can be followed on an updated version of Debian Linux 12:
 10. close the current console window, and open a new one: this is to ensure that the updated `PATH` environemnt variable is active
 11. launch the configuration utility, by typing `when config` on the command line: create a task and a condition of your choice, and save the configuration file by clicking the _Save_ button.
 
-Once a configuration is available, the resident application can be started from the command line using the `when start` command. A shortcut can be created, using just `when start` a the command to execute, using the tools provided by Gnome in order to add it to the _Startup Applications_. Development of an automated way to achieve this is underway. The `when-bg` command also exists on Linux, but its behaviour is absolutely identical to `when`.
+Once a configuration is available, the resident application can be started from the command line using the `when start` command. A shortcut can be created, using just `when start` as the command to execute, using the tools provided by Gnome in order to add it to the _Startup Applications_. Development of an automated way to achieve this is underway. The `when-bg` command also exists on Linux, but its behaviour is absolutely identical to `when`.
 
 
 ## See Also
