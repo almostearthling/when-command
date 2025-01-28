@@ -28,6 +28,7 @@ class CommandCondition(Condition):
         if t:
             assert(t.get('type') == self.type)
             self.check_after = t.get('check_after')
+            self.recur_after_failed_check  = t.get('recur_after_failed_check')
             self.startup_path = t.get('startup_path')
             self.command = t.get('command')
             self.match_exact = t.get('match_exact', False)
@@ -54,6 +55,7 @@ class CommandCondition(Condition):
                 self.environment_variables = None
         else:
             self.check_after = None
+            self.recur_after_failed_check  = None
             self.startup_path = DEFAULT_STARTUP_PATH
             self.command = DEFAULT_COMMAND
             self.command_arguments = []
@@ -80,6 +82,7 @@ class CommandCondition(Condition):
             raise ValueError("Invalid Command Condition: mandatory field(s) missing")
         t = Condition.as_table(self)
         t = append_not_none(t, 'check_after', self.check_after)
+        t = append_not_none(t, 'recur_after_failed_check', self.recur_after_failed_check )
         t.append('startup_path', self.startup_path)
         t.append('command', self.command)
         t.append('command_arguments', self.command_arguments)

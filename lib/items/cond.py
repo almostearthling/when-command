@@ -38,6 +38,7 @@ class Condition(object):
             self.break_on_success = t.get('break_on_success', False)
             self.suspended = t.get('suspended', False)
             self.recurring = t.get('recurring', False)
+            self.max_tasks_retries = t.get('max_tasks_retries', 0)
             self.tasks = t.get('tasks')
             tags = t.get('tags')
             if tags:
@@ -47,6 +48,7 @@ class Condition(object):
         else:
             self.name = generate_item_name(self)
             self.recurring = None
+            self.max_tasks_retries = None
             self.execute_sequence = None
             self.break_on_failure = None
             self.break_on_success = None

@@ -73,6 +73,7 @@ class form_CommandCondition(form_Condition):
         l_checkAfter = ttk.Label(area_command, text=UI_FORM_EXTRADELAY_SC)
         e_checkAfter = ttk.Entry(area_command)
         l_checkAfterSeconds = ttk.Label(area_command, text=UI_TIME_SECONDS)
+        ck_ignorePersistentSuccess = ttk.Checkbutton(area_command, text=UI_FORM_IGNOREPERSISTSUCCESS)
         sep1 = ttk.Separator(area)
 
         # arrange widgets in frame
@@ -87,6 +88,7 @@ class form_CommandCondition(form_Condition):
         l_checkAfter.grid(row=3, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         e_checkAfter.grid(row=3, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
         l_checkAfterSeconds.grid(row=3, column=2, sticky=tk.W, padx=PAD, pady=PAD)
+        ck_ignorePersistentSuccess.grid(row=4, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
 
         # environment section: deserves an area to customize layout
         area_vars = ttk.Frame(area)
@@ -195,6 +197,7 @@ class form_CommandCondition(form_Condition):
         self.data_bind('command_arguments', e_args, TYPE_STRING)
         self.data_bind('startup_path', e_startupPath, TYPE_STRING, _is_dir)
         self.data_bind('check_after', e_checkAfter, TYPE_INT, lambda x: x >= 0)
+        self.data_bind('ignore_persistent_success', ck_ignorePersistentSuccess)
         self.data_bind('include_environment', ck_preserveEnv)
         self.data_bind('set_environment_variables', ck_setEnvVars)
         self.data_bind('envvar_selection', tv_vars)
@@ -220,6 +223,7 @@ class form_CommandCondition(form_Condition):
         self._item.command = self.data_get('command')
         self._item.command_arguments = arg_split(self.data_get('command_arguments'))
         self._item.startup_path = normpath(self.data_get('startup_path'))
+        self._item.recur_after_failed_check = self.data_get('ignore_persistent_success') or None
         v = self.data_get('include_environment')
         self._item.include_environment = False if not v else None
         v = self.data_get('set_environment_variables')
@@ -278,6 +282,7 @@ class form_CommandCondition(form_Condition):
         self.data_set('varname', '')
         self.data_set('newvalue', '')
         self.data_set('command', self._item.command)
+        self.data_set('ignore_persistent_success', self._item.recur_after_failed_check or False)
         self.data_set('command_arguments', ' '.join(quote(x) for x in self._item.command_arguments) if self._item.command_arguments else None)
         self.data_set('startup_path', self._item.startup_path)
         self.data_set('include_environment', self._item.include_environment if self._item.include_environment is False else True)

@@ -35,7 +35,7 @@ class form_FilesystemChangeEvent(form_Event):
         PAD = WIDGET_PADDING_PIXELS
 
         # parameters section
-        ck_recursive = ttk.Checkbutton(area, text=UI_FORM_RECURSIVE)
+        ck_recursive = ttk.Checkbutton(area, text=UI_FORM_RECURSIVE_DIRSCAN)
         l_monitored = ttk.Label(area, text=UI_FORM_MONITOREDFSITEMS_SC)
         # build a scrolled frame for the treeview
         sftv_monitored = ttk.Frame(area)

@@ -49,16 +49,18 @@ class form_DBusCondition(form_Condition):
         sep1 = ttk.Separator(area)
 
         # extra delay section
-        area_checkafter = ttk.Frame(area)
-        l_checkAfter = ttk.Label(area_checkafter, text=UI_FORM_EXTRADELAY_SC)
-        e_checkAfter = ttk.Entry(area_checkafter)
-        l_checkAfterSeconds = ttk.Label(area_checkafter, text=UI_TIME_SECONDS)
+        area_commonparams = ttk.Frame(area)
+        l_checkAfter = ttk.Label(area_commonparams, text=UI_FORM_EXTRADELAY_SC)
+        e_checkAfter = ttk.Entry(area_commonparams)
+        l_checkAfterSeconds = ttk.Label(area_commonparams, text=UI_TIME_SECONDS)
+        ck_ignorePersistentSuccess = ttk.Checkbutton(area_commonparams, text=UI_FORM_IGNOREPERSISTSUCCESS)
 
         # arrange items in frame
         l_checkAfter.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         e_checkAfter.grid(row=0, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
         l_checkAfterSeconds.grid(row=0, column=2, sticky=tk.W, padx=PAD, pady=PAD)
-        area_checkafter.columnconfigure(1, weight=1)
+        ck_ignorePersistentSuccess.grid(row=2, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        area_commonparams.columnconfigure(1, weight=1)
 
         sep2 = ttk.Separator(area)
 
@@ -85,7 +87,7 @@ class form_DBusCondition(form_Condition):
         e_dbusInterface.grid(row=2, column=1, columnspan=3, sticky=tk.EW, padx=PAD, pady=PAD)
 
         sep1.grid(row=10, column=0, sticky=tk.EW, columnspan=4, pady=PAD)
-        area_checkafter.grid(row=11, column=0, sticky=tk.NSEW, columnspan=4)
+        area_commonparams.grid(row=11, column=0, sticky=tk.NSEW, columnspan=4)
 
         sep2.grid(row=20, column=0, columnspan=4, sticky=tk.EW, pady=PAD)
         l_dbusMethod.grid(row=21, column=0, sticky=tk.W, padx=PAD, pady=PAD)
@@ -113,6 +115,7 @@ class form_DBusCondition(form_Condition):
         self.data_bind('parameter_check', cv_dbusParamsCheck, TYPE_STRING)
         self.data_bind('parameter_check_all', ck_dbusCheckAll)
         self.data_bind('check_after', e_checkAfter, TYPE_INT, lambda x: x >= 0)
+        self.data_bind('ignore_persistent_success', ck_ignorePersistentSuccess)
 
         # propagate widgets that need to be accessed
         # NOTE: no data to propagate
@@ -131,6 +134,7 @@ class form_DBusCondition(form_Condition):
         self.data_set('parameter_check', self._item.parameter_check or None)
         self.data_set('parameter_check_all', self._item.parameter_check_all or False)
         self.data_set('check_after', self._item.check_after or 0)
+        self.data_set('ignore_persistent_success', self._item.recur_after_failed_check or False)
         return super()._updateform()
     
     def _updatedata(self):
@@ -143,6 +147,7 @@ class form_DBusCondition(form_Condition):
         self._item.parameter_check = self.data_get('parameter_check') or None
         self._item.parameter_check_all = self.data_get('parameter_check_all') or False
         self._item.check_after = self.data_get('check_after') or None
+        self._item.recur_after_failed_check = self.data_get('ignore_persistent_success') or None
         return super()._updatedata()
 
 

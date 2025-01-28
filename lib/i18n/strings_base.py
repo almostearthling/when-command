@@ -202,6 +202,7 @@ UI_FORM_DBUS_PARAMS_CALL_SC = "Call with the following parameters (use JSON form
 UI_FORM_DBUS_PARAMS_CHECK_SC = "Perform the following checks on return values (use JSON format):"
 UI_FORM_ITEMTYPE_SC = "Choose item type:"
 UI_FORM_ITEMSUBTYPES_SC = "Available items:"
+UI_FORM_MAXTASKRETRIES_SC = "Max tasks retries:"
 
 UI_FORM_RANDCHECKSINTICKS = "Randomize checks within ticks"
 UI_FORM_CHECKCONDRECURRENT = "Check condition recurrently"
@@ -225,7 +226,8 @@ UI_FORM_EXTRADELAYSPEC = "Check/recheck after"
 UI_FORM_TIMESPECS = "Time specifications"
 UI_FORM_EXPECTRESULTS = "Expected results"
 UI_FORM_MATCHALLRESULTS = "Match ALL results"
-UI_FORM_RECURSIVE = "Recursively scan directories"
+UI_FORM_RECURSIVE_DIRSCAN = "Recursively scan directories"
+UI_FORM_IGNOREPERSISTSUCCESS = "Ignore persistently successful checks"
 UI_FORM_OR = "or"
 
 
