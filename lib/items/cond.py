@@ -70,6 +70,7 @@ class Condition(object):
         t.append('type', self.type)
         t.append('tasks', self.tasks)
         t = append_not_none(t, 'recurring', self.recurring)
+        t = append_not_none(t, 'max_tasks_retries', self.max_tasks_retries)
         t = append_not_none(t, 'execute_sequence', self.execute_sequence)
         t = append_not_none(t, 'break_on_failure', self.break_on_failure)
         t = append_not_none(t, 'break_on_success', self.break_on_success)
