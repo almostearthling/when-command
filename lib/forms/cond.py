@@ -112,8 +112,8 @@ class form_Condition(ApplicationForm):
         ck_execSequence.grid(row=13, column=0, columnspan=2, sticky=tk.EW, padx=PAD, pady=PAD)
         area_ctlflow.grid(row=14, column=0, columnspan=2, sticky=tk.EW)
 
-        ck_itemRecurring.bind('<Button-1>', lambda _: self.check_recurring())
-        ck_itemRecurring.bind('<space>', lambda _: self.check_recurring())
+        ck_itemRecurring.bind('<ButtonPress-1>', lambda _: self._check_recurring())
+        ck_itemRecurring.bind('<KeyPress-space>', lambda _: self._check_recurring())
 
         # expand appropriate sections
         area_common.rowconfigure(index=11, weight=1)
@@ -141,7 +141,8 @@ class form_Condition(ApplicationForm):
             self.set_item(item)
         else:
             self.reset_item()
-        self.check_recurring()
+        self._check_recurring()
+        # self._max_retries.config(state=tk.NORMAL)
         self.changed = False
 
 
@@ -163,10 +164,12 @@ class form_Condition(ApplicationForm):
     # def recall_task(self):
     #     pass
 
-    def check_recurring(self):
-        rec = self.data_get('@recurring') or False
-        if not rec:
-            self.data_set('@max_tasks_retries', 0)
+    def _check_recurring(self):
+        # we use the opposite of the value because of <ButtonPress-1>: anyway
+        # the <ButtonRelease-1> counterpart does not work so well (same thing
+        # for <KeyPress-space>, while <KeyRelease-space> does better)
+        not_rec = not self.data_get('@recurring') or False
+        if not_rec:
             self._max_retries.config(state=tk.DISABLED)
         else:
             self._max_retries.config(state=tk.NORMAL)
@@ -180,6 +183,10 @@ class form_Condition(ApplicationForm):
     def _updateform(self):
         self._tv_tasks.delete(*self._tv_tasks.get_children())
         if self._item:
+            if not self._item.recurring:
+                self._max_retries.config(state=tk.NORMAL)
+            else:
+                self._max_retries.config(state=tk.DISABLED)
             self.data_set('@name', self._item.name)
             self.data_set('@recurring', self._item.recurring or False)
             self.data_set('@max_tasks_retries', self._item.max_tasks_retries or 0)
@@ -196,6 +203,7 @@ class form_Condition(ApplicationForm):
             else:
                 self.data_set('@control_flow', 'break_none')
         else:
+            self._max_retries.config(state=tk.DISABLED)
             self.data_set('@name', '')
             self.data_set('@control_flow', 'break_none')
             self.data_set('@recurring', True)
@@ -210,7 +218,10 @@ class form_Condition(ApplicationForm):
         if name is not None:
             self._item.name = name
         self._item.recurring = self.data_get('@recurring') or None
-        self._item.max_tasks_retries = self.data_get('@max_tasks_retries') or None
+        if self._item.recurring:
+            self._item.max_tasks_retries = 0
+        else:
+            self._item.max_tasks_retries = self.data_get('@max_tasks_retries') or None
         self._item.suspended = self.data_get('@suspended') or None
         self._item.execute_sequence = self.data_get('@execute_sequence') or None
         control_flow = self.data_get('@control_flow')

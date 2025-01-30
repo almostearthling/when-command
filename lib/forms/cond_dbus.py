@@ -59,7 +59,7 @@ class form_DBusCondition(form_Condition):
         l_checkAfter.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         e_checkAfter.grid(row=0, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
         l_checkAfterSeconds.grid(row=0, column=2, sticky=tk.W, padx=PAD, pady=PAD)
-        ck_ignorePersistentSuccess.grid(row=2, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        ck_ignorePersistentSuccess.grid(row=2, column=1, sticky=tk.W, padx=PAD, pady=PAD)
         area_commonparams.columnconfigure(1, weight=1)
 
         sep2 = ttk.Separator(area)

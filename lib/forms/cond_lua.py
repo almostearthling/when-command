@@ -78,7 +78,7 @@ class form_LuaScriptCondition(form_Condition):
         l_checkAfter.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         e_checkAfter.grid(row=0, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
         l_checkAfterSeconds.grid(row=0, column=2, sticky=tk.W, padx=PAD, pady=PAD)
-        ck_ignorePersistentSuccess.grid(row=2, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        ck_ignorePersistentSuccess.grid(row=2, column=1, sticky=tk.W, padx=PAD, pady=PAD)
         area_commonparams.columnconfigure(1, weight=1)
 
         sep2 = ttk.Separator(area)
@@ -177,7 +177,7 @@ class form_LuaScriptCondition(form_Condition):
     def _updateform(self):
         self.data_set('script', self._item.script)
         self.data_set('expect_all', self._item.expect_all or False)
-        self.data_set('check_after', self._item.check_after or '')
+        self.data_set('check_after', self._item.check_after or 0)
         self.data_set('ignore_persistent_success', self._item.recur_after_failed_check or False)
         self.data_set('varname')
         self.data_set('newvalue')
