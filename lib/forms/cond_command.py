@@ -60,7 +60,7 @@ class form_CommandCondition(form_Condition):
         area.grid(row=0, column=0, sticky=tk.NSEW)
         PAD = WIDGET_PADDING_PIXELS
 
-        # command section: use a separate area to customize layout
+        # command and generic params: use separate areas to customize layout
         area_command = ttk.Frame(area)
         l_command = ttk.Label(area_command, text=UI_FORM_COMMAND_SC)
         e_command = ttk.Entry(area_command)
@@ -70,12 +70,16 @@ class form_CommandCondition(form_Condition):
         l_startupPath = ttk.Label(area_command, text=UI_FORM_STARTUPPATH_SC)
         e_startupPath = ttk.Entry(area_command)
         b_startupPathBrowse = ttk.Button(area_command, text=UI_BROWSE, command=self.browse_startup_path)
-        l_checkAfter = ttk.Label(area_command, text=UI_FORM_EXTRADELAY_SC)
-        e_checkAfter = ttk.Entry(area_command)
-        l_checkAfterSeconds = ttk.Label(area_command, text=UI_TIME_SECONDS)
         sep1 = ttk.Separator(area)
 
-        # arrange widgets in frame
+        area_generic = ttk.Frame(area)
+        l_checkAfter = ttk.Label(area_generic, text=UI_FORM_EXTRADELAY_SC)
+        e_checkAfter = ttk.Entry(area_generic)
+        l_checkAfterSeconds = ttk.Label(area_generic, text=UI_TIME_SECONDS)
+        ck_ignorePersistentSuccess = ttk.Checkbutton(area_generic, text=UI_FORM_IGNOREPERSISTSUCCESS)
+        sep2 = ttk.Separator(area)
+
+        # arrange widgets in frames
         l_command.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         e_command.grid(row=0, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
         b_commandBrowse.grid(row=0, column=2, sticky=tk.EW, padx=PAD, pady=PAD)
@@ -84,16 +88,18 @@ class form_CommandCondition(form_Condition):
         l_startupPath.grid(row=2, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         e_startupPath.grid(row=2, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
         b_startupPathBrowse.grid(row=2, column=2, sticky=tk.EW, padx=PAD, pady=PAD)
-        l_checkAfter.grid(row=3, column=0, sticky=tk.W, padx=PAD, pady=PAD)
-        e_checkAfter.grid(row=3, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
-        l_checkAfterSeconds.grid(row=3, column=2, sticky=tk.W, padx=PAD, pady=PAD)
+
+        l_checkAfter.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        e_checkAfter.grid(row=0, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        l_checkAfterSeconds.grid(row=0, column=2, sticky=tk.W, padx=PAD, pady=PAD)
+        ck_ignorePersistentSuccess.grid(row=1, column=1, sticky=tk.W, padx=PAD, pady=PAD)
 
         # environment section: deserves an area to customize layout
         area_vars = ttk.Frame(area)
         l_vars = ttk.Label(area_vars, text=UI_FORM_VARIABLES_SC)
         # build a scrolled frame for the treeview
         sftv_vars = ttk.Frame(area_vars)
-        tv_vars = ttk.Treeview(sftv_vars, columns=('name', 'value'), show='headings', height=7)
+        tv_vars = ttk.Treeview(sftv_vars, columns=('name', 'value'), show='headings', height=3)
         tv_vars.heading('name', anchor=tk.W, text=UI_FORM_NAME)
         tv_vars.heading('value', anchor=tk.W, text=UI_FORM_VALUE)
         sb_vars = ttk.Scrollbar(sftv_vars, orient=tk.VERTICAL, command=tv_vars.yview)
@@ -106,7 +112,7 @@ class form_CommandCondition(form_Condition):
         e_varValue = ttk.Entry(area_vars)
         b_addVar = ttk.Button(area_vars, text=UI_UPDATE, width=BUTTON_STANDARD_WIDTH, command=self.add_var)
         b_delVar = ttk.Button(area_vars, text=UI_DEL, width=BUTTON_STANDARD_WIDTH, command=self.del_var)
-        sep2 = ttk.Separator(area)
+        sep3 = ttk.Separator(area)
 
         # environment section: subarea for checkboxes
         area_vars_flags = ttk.Frame(area)
@@ -173,16 +179,19 @@ class form_CommandCondition(form_Condition):
         # arrange top items in the grid
         area_command.grid(row=0, column=0, sticky=tk.NSEW)
         sep1.grid(row=1, column=0, sticky=tk.EW, pady=PAD)
-        area_vars.grid(row=2, column=0, sticky=tk.NSEW)
-        area_vars_flags.grid(row=3, column=0, sticky=tk.NSEW)
-        sep2.grid(row=4, column=0, sticky=tk.EW, pady=PAD)
-        area_checks.grid(row=5, column=0, sticky=tk.NSEW)
-        area_checks_flags.grid(row=6, column=0, sticky=tk.NSEW)
+        area_generic.grid(row=2, column=0, sticky=tk.NSEW)
+        sep2.grid(row=3, column=0, sticky=tk.EW, pady=PAD)
+        area_vars.grid(row=4, column=0, sticky=tk.NSEW)
+        area_vars_flags.grid(row=5, column=0, sticky=tk.NSEW)
+        sep3.grid(row=6, column=0, sticky=tk.EW, pady=PAD)
+        area_checks.grid(row=7, column=0, sticky=tk.NSEW)
+        area_checks_flags.grid(row=8, column=0, sticky=tk.NSEW)
 
         # expand appropriate sections
         area.rowconfigure(2, weight=1)
         area.columnconfigure(0, weight=1)
         area_command.columnconfigure(1, weight=1)
+        area_generic.columnconfigure(1, weight=1)
         area_vars.columnconfigure(0, weight=1)
         area_vars.rowconfigure(1, weight=1)
         area_vars.columnconfigure(1, weight=1)
@@ -195,6 +204,7 @@ class form_CommandCondition(form_Condition):
         self.data_bind('command_arguments', e_args, TYPE_STRING)
         self.data_bind('startup_path', e_startupPath, TYPE_STRING, _is_dir)
         self.data_bind('check_after', e_checkAfter, TYPE_INT, lambda x: x >= 0)
+        self.data_bind('ignore_persistent_success', ck_ignorePersistentSuccess)
         self.data_bind('include_environment', ck_preserveEnv)
         self.data_bind('set_environment_variables', ck_setEnvVars)
         self.data_bind('envvar_selection', tv_vars)
@@ -220,6 +230,7 @@ class form_CommandCondition(form_Condition):
         self._item.command = self.data_get('command')
         self._item.command_arguments = arg_split(self.data_get('command_arguments'))
         self._item.startup_path = normpath(self.data_get('startup_path'))
+        self._item.recur_after_failed_check = self.data_get('ignore_persistent_success') or None
         v = self.data_get('include_environment')
         self._item.include_environment = False if not v else None
         v = self.data_get('set_environment_variables')
@@ -278,6 +289,7 @@ class form_CommandCondition(form_Condition):
         self.data_set('varname', '')
         self.data_set('newvalue', '')
         self.data_set('command', self._item.command)
+        self.data_set('ignore_persistent_success', self._item.recur_after_failed_check or False)
         self.data_set('command_arguments', ' '.join(quote(x) for x in self._item.command_arguments) if self._item.command_arguments else None)
         self.data_set('startup_path', self._item.startup_path)
         self.data_set('include_environment', self._item.include_environment if self._item.include_environment is False else True)

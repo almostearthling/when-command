@@ -2,6 +2,8 @@
 
 The condition items described in this section detrmine the outcome of the related tests as the result of a particular action, which can be either a command executed at the OS level, or the execution of a Lua script using the embedded interpreter. Since these tests might possibily be resource intensive, it is possible (and recommended) to specify an additional delay between consecutive checks by specifying an appropriate amount of time (in seconds, minutes, or hours) in the _Additional Delay_ field.
 
+Also, common to this type of conditions there is another flag available, that is _Ignore Persistent Successful Checks_: if set, the condition will be verified only as soon as the check is successful for the first time, and subsequent positive checks will be ignored until at least one check fails. This effectively "debounces" successful tests resulting in checks that focus on status changes.
+
 For the same reason, the tests related to these types of condition might be performed at a random instant between two scheduler ticks if the corresponding global scheduler [option](cfgform.md#scheduler-parameters) is set.
 
 
