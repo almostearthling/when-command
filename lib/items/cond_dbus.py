@@ -29,6 +29,7 @@ class DBusCondition(Condition):
         if t:
             assert(t.get('type') == self.type)
             self.check_after = t.get('check_after')
+            self.recur_after_failed_check  = t.get('recur_after_failed_check')
             self.bus = t.get('bus')
             self.service = t.get('service')
             self.object_path = t.get('object_path')
@@ -39,6 +40,7 @@ class DBusCondition(Condition):
             self.parameter_check = t.get('parameter_check')
         else:
             self.check_after = None
+            self.recur_after_failed_check  = None
             self.bus = DEFAULT_BUS
             self.service = DEFAULT_SERVICE
             self.object_path = DEFAULT_OBJECT_PATH
@@ -59,6 +61,7 @@ class DBusCondition(Condition):
             raise ValueError("Invalid DBus Condition: mandatory field(s) missing")
         t = Condition.as_table(self)
         t = append_not_none(t, 'check_after', self.check_after)
+        t = append_not_none(t, 'recur_after_failed_check', self.recur_after_failed_check )
         t.append('bus', self.bus)
         t.append('service', self.service)
         t.append('object_path', self.object_path)

@@ -65,10 +65,11 @@ class form_LuaScriptCondition(form_Condition):
         ck_expectAll = ttk.Checkbutton(area, text=UI_FORM_MATCHALLRESULTS)
 
         # extra delay section
-        area_checkafter = ttk.Frame(area)
-        l_checkAfter = ttk.Label(area_checkafter, text=UI_FORM_EXTRADELAY_SC)
-        e_checkAfter = ttk.Entry(area_checkafter)
-        l_checkAfterSeconds = ttk.Label(area_checkafter, text=UI_TIME_SECONDS)
+        area_commonparams = ttk.Frame(area)
+        l_checkAfter = ttk.Label(area_commonparams, text=UI_FORM_EXTRADELAY_SC)
+        e_checkAfter = ttk.Entry(area_commonparams)
+        l_checkAfterSeconds = ttk.Label(area_commonparams, text=UI_TIME_SECONDS)
+        ck_ignorePersistentSuccess = ttk.Checkbutton(area_commonparams, text=UI_FORM_IGNOREPERSISTSUCCESS)
 
         # bind double click to variable recall
         tv_luaVars.bind('<Double-Button-1>', lambda _: self.recall_var())
@@ -77,7 +78,8 @@ class form_LuaScriptCondition(form_Condition):
         l_checkAfter.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         e_checkAfter.grid(row=0, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
         l_checkAfterSeconds.grid(row=0, column=2, sticky=tk.W, padx=PAD, pady=PAD)
-        area_checkafter.columnconfigure(1, weight=1)
+        ck_ignorePersistentSuccess.grid(row=2, column=1, sticky=tk.W, padx=PAD, pady=PAD)
+        area_commonparams.columnconfigure(1, weight=1)
 
         sep2 = ttk.Separator(area)
 
@@ -85,7 +87,7 @@ class form_LuaScriptCondition(form_Condition):
         l_luaScript.grid(row=0, column=0, columnspan=4, sticky=tk.W, padx=PAD, pady=PAD)
         cv_luaScript.grid(row=1, column=0, columnspan=4, sticky=tk.NSEW, padx=PAD, pady=PAD)
         sep1.grid(row=2, column=0, columnspan=4, sticky=tk.EW, pady=PAD)
-        area_checkafter.grid(row=3, column=0, columnspan=4, sticky=tk.EW)
+        area_commonparams.grid(row=3, column=0, columnspan=4, sticky=tk.EW)
         sep2.grid(row=4, column=0, columnspan=4, sticky=tk.EW, pady=PAD)
         l_luaVars.grid(row=10, column=0, columnspan=4, sticky=tk.W, padx=PAD, pady=PAD)
         sftv_luaVars.grid(row=11, column=0, columnspan=4, sticky=tk.NSEW, padx=PAD, pady=PAD)
@@ -110,6 +112,7 @@ class form_LuaScriptCondition(form_Condition):
         self.data_bind('newvalue', e_varValue, TYPE_STRING)
         self.data_bind('expect_all', ck_expectAll)
         self.data_bind('check_after', e_checkAfter, TYPE_INT, lambda x: x >= 0)
+        self.data_bind('ignore_persistent_success', ck_ignorePersistentSuccess)
 
         # propagate widgets that need to be accessed
         self._tv_vars = tv_luaVars
@@ -164,6 +167,7 @@ class form_LuaScriptCondition(form_Condition):
         self._item.script = self.data_get('script').strip() or ""
         self._item.expect_all = self.data_get('expect_all') or None
         self._item.check_after = self.data_get('check_after') or None
+        self._item.recur_after_failed_check = self.data_get('ignore_persistent_success') or None
         e = {}
         for l in self._results:
             e[l[0]] = guess_typed_value(str(l[1]))
@@ -173,7 +177,8 @@ class form_LuaScriptCondition(form_Condition):
     def _updateform(self):
         self.data_set('script', self._item.script)
         self.data_set('expect_all', self._item.expect_all or False)
-        self.data_set('check_after', self._item.check_after or '')
+        self.data_set('check_after', self._item.check_after or 0)
+        self.data_set('ignore_persistent_success', self._item.recur_after_failed_check or False)
         self.data_set('varname')
         self.data_set('newvalue')
         self._results = []
