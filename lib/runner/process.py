@@ -1,6 +1,7 @@
 # scheduler runner: implementation of the scheduler runner along with a
 # secondary thread dedicated to reading its output
 
+import sys
 import time
 import subprocess
 import threading
@@ -167,7 +168,7 @@ class Wrapper(object):
             stderr=subprocess.PIPE,
             universal_newlines=True,
             text=True,
-            creationflags=subprocess.CREATE_NO_WINDOW,
+            creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0,
         )
         self._thread = threading.Thread(target=_logreader, args=[self])
         self._running = True
