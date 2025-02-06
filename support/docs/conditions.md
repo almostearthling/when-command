@@ -28,6 +28,7 @@ The conditions available in **When** that are natively supported by **whenever**
 Other conditions are supported, that are implemented as reactions to particular commands, DBus messages or method invocations, _Lua_ scripts. These conditions appear along with the native ones, and the related documentation can be found at the following locations:
 
 * [_System Load_ below Treshold](cond_extra01.md#system-load) conditions
+* [_Battery Charge_ below Treshold](cond_extra01.md#low-battery) conditions
 
 The above list will grow with time, along with the discovery of new configuration possibilities on the supported platforms and the development of the related forms.
 

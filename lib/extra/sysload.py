@@ -43,6 +43,7 @@ _UI_FORM_SYSLOADTRESHOLD_SC = "Load is Below:"
 
 # default values
 _DEFAULT_LOW_LOAD_PERC = 3
+_CHECK_EXTRA_DELAY = 60
 
 
 # check for availability: in this case check all needed commands
@@ -99,7 +100,7 @@ class SystemLoadCondition(CommandCondition):
             ]
             self.startup_path = "."
             self.success_stdout = "OK"
-            self.check_after = 60       # for now keep it fixed to one minute
+            self.check_after = _CHECK_EXTRA_DELAY   # for now keep it fixed to one minute
         elif sys.platform == 'linux':
             self.command = "bash"
             self.command_arguments = [
@@ -108,7 +109,7 @@ class SystemLoadCondition(CommandCondition):
             ]
             self.startup_path = "."
             self.success_stdout = "1"
-            self.check_after = 60       # for now keep it fixed to one minute
+            self.check_after = _CHECK_EXTRA_DELAY   # for now keep it fixed to one minute
 
 
 # dedicated form definition derived directly from one of the base forms
@@ -148,7 +149,7 @@ class form_SystemLoadCondition(form_Condition):
     def _updateform(self):
         self.data_set('treshold', self._item.tags.get('treshold'))
         return super()._updateform()
-    
+
     # update the item from the form elements (usually update `tags`)
     def _updatedata(self):
         self._item.tags['treshold'] = self.data_get('treshold')

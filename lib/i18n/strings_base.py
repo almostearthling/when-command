@@ -4,7 +4,7 @@
 UI_APP = "When"
 UI_APP_LABEL = "When Automation Tool"
 UI_APP_COPYRIGHT = "© 2023-2025 Francesco Garosi"
-UI_APP_VERSION = "1.9.2b1"
+UI_APP_VERSION = "1.9.3b1"
 
 
 # item types
@@ -286,6 +286,7 @@ UI_POPUP_MISSINGEVENTCOND = "No condition specified for event"
 
 # about box
 UI_ABOUT_TITLE = "About"
+UI_ABOUT_APP_VERSION = "Application version:"
 UI_ABOUT_WHENEVER_VERSION = "Scheduler version:"
 UI_ABOUT_TEXT = """\
 %s
@@ -330,6 +331,7 @@ CLI_ARG_HELP_WHENEVER = "Path to a specific `whenever` executable"
 
 CLI_ERR_WHENEVER_NOT_FOUND = "Executable for `whenever` not found or invalid"
 CLI_ERR_DATADIR_UNACCESSIBLE = "The data directory could neither be found nor created"
+CLI_ERR_SCRIPTSDIR_UNACCESSIBLE = "The scripts directory could neither be found nor created"
 CLI_ERR_CONFIG_UNACCESSIBLE = "The `whenever` configuration file could neither be found nor created"
 CLI_ERR_ALREADY_RUNNING = "Another instance of the scheduler is running: cannot start"
 

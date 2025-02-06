@@ -108,6 +108,33 @@ def get_default_configdir():
             raise OSError("Unsupported platform: %s" % sys.platform)
 
 
+# determine scripts directory and ensure that it exists
+def get_scriptsdir():
+    configdir = AppConfig.get('APPDATA')
+    if sys.platform == 'win32':
+        subdir = "Scripts"
+    else:
+        subdir = "scripts"
+    scriptdir = os.path.join(configdir, subdir)
+    if not os.path.isdir(scriptdir):
+        try:
+            os.makedirs(scriptdir)
+        except Exception as e:
+            return None
+    return scriptdir
+
+
+# save a script to the scripts directory and make it executable: possible
+# existing files are overwritten without confirmation as the scripts folder
+# should be completely managed by When
+def save_script(fname, text):
+    dest = os.path.join(get_scriptsdir(), fname)
+    with open(dest, 'w') as f:
+        f.write(text)
+    if sys.platform != 'win32':
+        os.chmod(dest, 0o700)
+
+
 # return the output of `whenever --version`
 def get_whenever_version():
     whenever_path = AppConfig.get('WHENEVER')

@@ -21,6 +21,7 @@ from lib.i18n.strings import *
 from lib.icons import APP_ICON32 as APP_ICON
 from lib.utility import (
     get_default_configdir,
+    get_scriptsdir,
     get_logfile,
     get_configfile,
     is_whenever_running,
@@ -229,11 +230,16 @@ def main():
 
     # create the application data directory if it does not exist
     datadir = AppConfig.get('APPDATA')
-    if not os.path.exists(datadir):
+    if not os.path.isdir(datadir):
         try:
             os.makedirs(datadir)
         except Exception as e:
             exiterror(CLI_ERR_DATADIR_UNACCESSIBLE)
+    
+    # create the defaullt scritps directory now that the data directory exists
+    scriptsdir = get_scriptsdir()
+    if not os.path.isdir(scriptsdir):
+        exiterror(CLI_ERR_SCRIPTSDIR_UNACCESSIBLE)
 
     # run the selected action
     command = args.command
