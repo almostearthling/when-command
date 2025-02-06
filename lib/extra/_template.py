@@ -64,7 +64,7 @@ class TemplateCondition(CommandCondition):
         self.subtype = self.item_subtype
         self.hrtype = self.item_hrtype
 
-        # initializin from a table should always have this form:
+        # initializing from a table should always have this form:
         if t:
             assert(t.get('type') == self.type)
             self.tags = t.get('tags')
@@ -125,6 +125,7 @@ class form_TemplateCondition(form_Condition):
     # update the item from the form elements (usually update `tags`)
     def _updatedata(self):
         self._item.tags['parameter1'] = self.data_get('parameter1')
+        self._item.updateitem()
         return super()._updatedata()
 
 

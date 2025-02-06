@@ -12,6 +12,15 @@ This test verifies whether or not the system load is below a certain percentage 
 The item can be used on Windows and Linux systems, and depends on the availability of the _PowerShell_ in the first case, and the presence of the `vmstat` and `bc` OS commands in the latter, which may need to be installed on some distributions. The checks for this condition are performed about every minute.
 
 
+## Low Battery
+
+This test checks whether the battery is draining and its charge is below a certain percentage and, if so, runs the related tasks. The only available specific parameter is the percentage treshold below which the test is considered successful.
+
+![WhenCondExtraSysload](graphics/when-cond-extra-batterylow.png)
+
+The item can be used on Windows and Linux systems, and depends on the availability of the _PowerShell_ in the first case, and the presence of the `upower`, `grep`, `awk`, and `sed` OS commands in the latter, which are usually installed by default. The checks for this condition are performed about every five minutes.
+
+
 ## See also
 
 * [Command Based Conditions](cond_actionrelated.md#command)

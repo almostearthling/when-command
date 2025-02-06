@@ -73,7 +73,7 @@ Specific command/_Lua_ based tasks, command/_Lua_/DBus based conditions, DBus ba
 - [ ] ~~Condition: Screensaver~~ (screensavers are not really used nowadays)
 - [ ] Condition: Storage Device Connect and Disconnect
 - [ ] Condition: Join or Leave a Network
-- [ ] Condition: Battery is Charging, Discharging or Low
+- [x] Condition: Battery Discharging and Low
 - [x] Condition: System Load is Below a Certain Treshold
 
 ### Other forms

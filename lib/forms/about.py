@@ -16,8 +16,15 @@ class AboutBox(ApplicationForm):
 
     def __init__(self, main=False):
         version = get_whenever_version()
+        appversion = UI_APP_VERSION
         if version:
-            text = "%s\n\n%s %s" % (UI_ABOUT_TEXT, UI_ABOUT_WHENEVER_VERSION, version)
+            text = "%s\n\n%s %s\n%s %s" % (
+                UI_ABOUT_TEXT,
+                UI_ABOUT_APP_VERSION,
+                appversion,
+                UI_ABOUT_WHENEVER_VERSION,
+                version,
+                )
         else:
             text = UI_ABOUT_TEXT
         super().__init__(UI_ABOUT_TITLE, AppConfig.get('SIZE_ABOUT_BOX'), None, (BBOX_CLOSE,), main)
