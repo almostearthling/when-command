@@ -21,6 +21,15 @@ This test checks whether the battery is draining and its charge is below a certa
 The item can be used on Windows and Linux systems, and depends on the availability of the _PowerShell_ in the first case, and the presence of the `upower`, `grep`, `awk`, and `sed` OS commands in the latter, which are usually installed by default. The checks for this condition are performed about every five minutes.
 
 
+## Charging Battery
+
+This test checks whether the battery is charging and its charge is above a certain percentage and, if so, runs the related tasks. The only available specific parameter is the percentage treshold above which the test is considered successful.
+
+![WhenCondExtraSysload](graphics/when-cond-extra-batterycharging.png)
+
+The item can be used on Windows and Linux systems, and depends on the availability of the _PowerShell_ in the first case, and the presence of the `upower`, `grep`, `awk`, and `sed` OS commands in the latter, which are usually installed by default. The checks for this condition are performed about every five minutes.
+
+
 ## See also
 
 * [Command Based Conditions](cond_actionrelated.md#command)
