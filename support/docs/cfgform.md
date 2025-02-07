@@ -36,6 +36,8 @@ The second option, if checked, allows the scheduler to try to run tests for diff
 
 When the application has been launched as a resident frontend for a live instance of **whenever**, this form also shows a _Reload_ button which can be used to reload the configuration to the scheduler: only modified items are affected and will be updated and reset.
 
+> **Note**: only _items_ are reloaded, the global scheduler parameters do not change while the scheduler is running and will be applied at the next start.
+
 
 ## Exiting
 

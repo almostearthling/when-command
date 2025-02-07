@@ -1,6 +1,6 @@
 # Time Related Conditions
 
-The condition items described in this section depend on time checking, therefore the related tests will always be performed exactly at the scheduler tick: this means that such tests ar never performed [at a random instant](cfgform.md#scheduler-parameters) between two ticks.
+The condition items described in this section depend on time checking, therefore the related tests will always be performed exactly at the scheduler tick: this means that such tests ar never performed [at a random instant](cfgform.md#modify-scheduler-parameters) between two ticks.
 
 
 ## Interval

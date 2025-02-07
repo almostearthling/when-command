@@ -6,7 +6,7 @@ All condition editors share a common part, which encompasses all parameters that
 
 It allows to set the mandatory item _Name_ (an alphanumeric string beginning either with a letter or an underscore), the tasks associated with it, and to decide other behaviours specific to conditions:
 
-* _Check Condition Recurrently_: when set, the condition is continuously re-checked even after its verification, becoming _recurrent_. By default a verified conditiion stops being checked after the first occurrence, unless a [_reset conditions_](tray.md) command is sent via the system tray menu.
+* _Check Condition Recurrently_: when set, the condition is continuously re-checked even after its verification, becoming _recurrent_. By default a verified condition stops being checked after the first occurrence, unless a [_reset conditions_](tray.md) command is sent via the system tray menu.
 * _Max Task Retries_: when greater or equal to `0`, the number of times that the underlying scheduler will _retry_ to run the associated task or list of tasks in case one of them fails (of course `0` means _only one check and no retries_); a value of `-1` means that the scheduler will try to run the associated task(s) forever until they all succeed. Only available if the _Check Condition Recurrently_ flag is set.
 * _Suspend Condition at Startup_: to start the condition in suspended mode, which means that it will not be checked during the session.
 
