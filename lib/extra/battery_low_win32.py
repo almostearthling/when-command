@@ -31,7 +31,6 @@ from ..items.cond_command import CommandCondition
 
 # imports specific to this module
 import sys
-import subprocess
 import shutil
 
 

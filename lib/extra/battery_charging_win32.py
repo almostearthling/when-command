@@ -1,15 +1,14 @@
-# Module for creating conditions that determine that a battery is draining
-# and below a certain threshold, specific for Linux platforms:
+# Module for creating conditions that determine that a battery is charging
+# or attached to AC and above a certain threshold, specific for Windows
+# platforms:
 #
-# - uses the upower command, which in turn relies on DBus: an optimization
-#   will be to directly ask DBus saving many subprocesses; this version should
-#   be considered temporary
+# - uses the new powershell and the Get-CimInstance utility/command
 # - exploits the new feature of only triggering the condition once when
 #   the actual parameters are met
 # - normally the condition is only tested every fifth minute (change the
 #   _CHECK_EXTRA_DELAY constant to specify a different number of seconds)
 #
-#  A module achieving the same goal on Windows is available.
+#  A module achieving the same goal on Linux is available.
 
 # this header is common to all extra modules
 from tomlkit import items, table
@@ -33,35 +32,28 @@ from ..items.cond_command import CommandCondition
 
 # imports specific to this module
 import sys
-import subprocess
 import shutil
 
 
 
 # resource strings (not internationalized for the moment)
-ITEM_COND_LOWBATT = "Low Battery Condition"
+ITEM_COND_CHARGINGBATT = "Charging Battery Condition"
 
-_UI_TITLE_LOWBATT = "%s: Low Battery Condition Editor" % UI_APP
-_UI_FORM_LOWBATT_THRESHOLD_SC = "Battery charge is below:"
+_UI_TITLE_CHARGINGBATT = "%s: Charging Battery Condition Editor" % UI_APP
+_UI_FORM_CHARGINGBATT_THRESHOLD_SC = "Battery charge is above:"
 
 
 # default values
-_DEFAULT_THRESHOLD_VALUE = 40
+_DEFAULT_THRESHOLD_VALUE = 80
 _CHECK_EXTRA_DELAY = 300
 
 
-# check for availability: this version of the check is only for Linux, the
-# one for Windows is in a separate file, and availability is in fact mutually
-# exclusive: with this check we assume that this module is only run on Linux
+# check for availability: this version of the check is only for Windows, the
+# one for Linux is in a separate file, and availability is in fact mutually
+# exclusive: with this check we assume that this module is only run on Windows
 def _available():
-    if sys.platform == 'linux':
-        if (
-            shutil.which("upower") and
-            shutil.which("bash") and
-            shutil.which("grep") and
-            shutil.which("awk") and
-            shutil.which("sed")
-        ):
+    if sys.platform == 'win32':
+        if shutil.which("pwsh.exe"):
             return True
         return False
     else:
@@ -69,12 +61,12 @@ def _available():
 
 
 # the specific item is derived from the actual parent item
-class LowBatteryCondition(CommandCondition):
+class ChargingBatteryCondition(CommandCondition):
 
     # availability at class level: these variables *MUST* be set for all items
     item_type = 'command'
-    item_subtype = 'battery_low_linux'
-    item_hrtype = ITEM_COND_LOWBATT
+    item_subtype = 'battery_charging_win'
+    item_hrtype = ITEM_COND_CHARGINGBATT
     available = _available()
 
     def __init__(self, t: items.Table=None) -> None:
@@ -87,7 +79,7 @@ class LowBatteryCondition(CommandCondition):
         self.subtype = self.item_subtype
         self.hrtype = self.item_hrtype
 
-        # initializin from a table should always have this form:
+        # initializing from a table should always have this form:
         if t:
             assert(t.get('type') == self.type)
             self.tags = t.get('tags')
@@ -99,24 +91,22 @@ class LowBatteryCondition(CommandCondition):
             self.tags = table()
             self.tags.append('subtype', self.subtype)
             self.tags.append('threshold', _DEFAULT_THRESHOLD_VALUE)
-        self._batterypath = subprocess.run(
-            ['bash', '-c', "upower -e | grep -F 'battery'"],
-            capture_output=True,
-        ).stdout.decode("utf-8").strip()
         self.updateitem()
 
     def updateitem(self):
         # set base item properties according to specific parameters in `tags`
         threshold = self.tags.get('threshold', _DEFAULT_THRESHOLD_VALUE)
-        battery = self._batterypath
+
+        # see interpretation of BatteryStatus -in 2,6,7,8,9 here:
+        # https://learn.microsoft.com/it-it/windows/win32/cimwin32prov/win32-battery
         cmdline = (
-            f"( upower -i {battery} | grep -F 'state:' | grep -F 'discharging' > /dev/null 2>&1 ) && " +
-            f"[ `upower -i {battery} | grep -F 'percentage:' | awk '{{print $2}}' | sed 's/%//g'` -lt {threshold} ] && " +
-            f"echo OK"
+            "$batt = (Get-CimInstance -Class Win32_Battery); " +
+            "If ( $$batt.BatteryStatus -in 2,6,7,8,9 -and $batt.EstimatedChargeRemaining -gt %s ) " % threshold +
+            "{ echo OK }"
         )
-        self.command = "bash"
+        self.command = "pwsh.exe"
         self.command_arguments = [
-            "-c",
+            "-Command",
             cmdline,
         ]
         self.success_stdout = "OK"
@@ -126,16 +116,16 @@ class LowBatteryCondition(CommandCondition):
 
 
 # dedicated form definition derived directly from one of the base forms
-class form_LowBatteryCondition(form_Condition):
+class form_ChargingBatteryCondition(form_Condition):
 
     def __init__(self, tasks_available, item=None):
 
         # check that item is the expected one for safety, build one by default
         if item:
-            assert(isinstance(item, LowBatteryCondition))
+            assert(isinstance(item, ChargingBatteryCondition))
         else:
-            item = LowBatteryCondition()
-        super().__init__(_UI_TITLE_LOWBATT, tasks_available, item)
+            item = ChargingBatteryCondition()
+        super().__init__(_UI_TITLE_CHARGINGBATT, tasks_available, item)
 
         # create a specific frame for the contents
         area = ttk.Frame(super().contents)
@@ -143,7 +133,7 @@ class form_LowBatteryCondition(form_Condition):
         PAD = WIDGET_PADDING_PIXELS
 
         # build the UI elements as needed and configure the layout
-        l_threshold = ttk.Label(area, text=_UI_FORM_LOWBATT_THRESHOLD_SC)
+        l_threshold = ttk.Label(area, text=_UI_FORM_CHARGINGBATT_THRESHOLD_SC)
         e_threshold = ttk.Entry(area)
         l_percent = ttk.Label(area, text="%")
         self.data_bind('threshold', e_threshold, TYPE_INT, lambda t: t > 0 and t < 100)
@@ -172,7 +162,7 @@ class form_LowBatteryCondition(form_Condition):
 
 # function common to all extra modules to declare class items as factories
 def factories():
-    return (LowBatteryCondition, form_LowBatteryCondition)
+    return (ChargingBatteryCondition, form_ChargingBatteryCondition)
 
 
 # end.
