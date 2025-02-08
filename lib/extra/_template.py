@@ -70,13 +70,13 @@ class TemplateCondition(CommandCondition):
             self.tags = t.get('tags')
             assert(isinstance(self.tags, items.Table))
             assert(self.tags.get('subtype') == self.subtype)
-        
+
         # while creating a new item must always initialize specific parameters
         else:
             self.tags = table()
             self.tags.append('subtype', self.subtype)
             self.tags.append('parameter1', _DEFAULT_PARAM_VALUE)
-        
+
         self.updateitem()
 
     def updateitem(self):
@@ -121,7 +121,7 @@ class form_TemplateCondition(form_Condition):
     def _updateform(self):
         self.data_set('parameter1', self._item.tags.get('parameter1'))
         return super()._updateform()
-    
+
     # update the item from the form elements (usually update `tags`)
     def _updatedata(self):
         self._item.tags['parameter1'] = self.data_get('parameter1')
