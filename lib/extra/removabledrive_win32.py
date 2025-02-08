@@ -93,10 +93,13 @@ class RemovableDrivePresent(CommandCondition):
 
         # the check is performed using WMI objects: [System.IO.DriveType] is
         # a system enum, and ::Removable is the fixed value 2; 
+        label = self.tags.get('drive_label', _DEFAULT_DRIVE_LABEL)
+        letter = self.tags.get('drive_letter', _DEFAULT_DRIVE_LETTER)
         cmdline = (
             "Get-WmiObject Win32_Volume -Filter (\"" +
             "DriveType={0}" +
-            " and DriveLabel='%s'"  % self.tags.get('drive_label', _DEFAULT_DRIVE_LABEL) +
+            " and Label='%s'" % label +
+            ((" and DriveLetter='%s'" % letter) if letter else "") +
             "\" -f [int][System.IO.DriveType]::Removable)"
         )
         self.command = 'pwsh.exe'
@@ -105,7 +108,8 @@ class RemovableDrivePresent(CommandCondition):
             cmdline,
         ]
         self.startup_path = "."
-        self.success_status = 0
+        self.success_stdout = label
+        self.case_sensitive = False
         self.check_after = 60
         self.recur_after_failed_check = True
 
