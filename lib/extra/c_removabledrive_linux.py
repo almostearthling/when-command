@@ -26,7 +26,6 @@ import sys
 import shutil
 
 
-
 # resource strings (not internationalized for the moment)
 ITEM_HR_NAME = "Removable Drive Available Condition"
 
@@ -59,15 +58,14 @@ _DBUS_QUERY = """
 
 
 
-# check for availability: include all needed checks in this function, may
-# or may not include actually checking the hosting platform
+# check for availability
 def _available():
     if sys.platform == 'linux':
         try:
             import dbus
         except:
             return False
-        return False
+        return True
     else:
         return False
 
@@ -134,7 +132,7 @@ class form_RemovableDrivePresent(form_Condition):
             item = RemovableDrivePresent()
         super().__init__(_UI_FORM_TITLE, tasks_available, item)
 
-        # this works because the module is available
+        # this will work here since the module is available
         import dbus
 
         # now find drive names
