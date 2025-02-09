@@ -35,9 +35,10 @@ import shutil
 
 
 # resource strings (not internationalized)
-ITEM_COND_SYSLOAD = "System Load Below Treshold Condition"
+ITEM_HR_NAME = "System Load Below Treshold Condition"
 
-_UI_TITLE_SYSLOAD = "%s: System Load Condition Editor" % UI_APP
+_UI_FORM_TITLE = "%s: System Load Condition Editor" % UI_APP
+
 _UI_FORM_SYSLOADTRESHOLD_SC = "Load is Below:"
 
 
@@ -67,7 +68,7 @@ class SystemLoadCondition(CommandCondition):
     # availability at class level: these variables *MUST* be set for all items
     item_type = 'command'
     item_subtype = 'sysload'
-    item_hrtype = ITEM_COND_SYSLOAD
+    item_hrtype = ITEM_HR_NAME
     available = _available()
 
     def __init__(self, t: items.Table=None) -> None:
@@ -98,18 +99,17 @@ class SystemLoadCondition(CommandCondition):
                 "-Command",
                 "If ((Get-CimInstance -Class Win32_Processor).LoadPercentage -lt %s) { echo OK }" % self.tags.get('treshold', _DEFAULT_LOW_LOAD_PERC),
             ]
-            self.startup_path = "."
             self.success_stdout = "OK"
-            self.check_after = _CHECK_EXTRA_DELAY   # for now keep it fixed to one minute
         elif sys.platform == 'linux':
             self.command = "bash"
             self.command_arguments = [
                 "-c",
                 "echo '%s <' `vmstat | tail -1 | awk '{print \$14}'` | bc" % self.tags.get('treshold', _DEFAULT_LOW_LOAD_PERC),
             ]
-            self.startup_path = "."
             self.success_stdout = "1"
-            self.check_after = _CHECK_EXTRA_DELAY   # for now keep it fixed to one minute
+        self.startup_path = "."
+        self.check_after = _CHECK_EXTRA_DELAY   # for now keep it fixed to one minute
+        self.recur_after_failed_check = True
 
 
 # dedicated form definition derived directly from one of the base forms
@@ -122,7 +122,7 @@ class form_SystemLoadCondition(form_Condition):
             assert(isinstance(item, SystemLoadCondition))
         else:
             item = SystemLoadCondition()
-        super().__init__(_UI_TITLE_SYSLOAD, tasks_available, item)
+        super().__init__(_UI_FORM_TITLE, tasks_available, item)
 
         # create a specific frame for the contents
         area = ttk.Frame(super().contents)

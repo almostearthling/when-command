@@ -1,4 +1,4 @@
-# template for extra modules
+# shutdown
 
 # this header is common to all extra modules
 from tomlkit import items, table
@@ -13,50 +13,59 @@ from ..utility import check_not_none, append_not_none
 from ..forms.ui import *
 
 
-# since a condition is defined, the base form is the one for conditions
-from ..forms.cond import form_Condition
+# since a task is defined, the base form is the one for tasks
+from ..forms.task import form_Task
 
 # import item to derive from
-from ..items.cond_command import CommandCondition
+from ..items.task_command import CommandTask
 
 
 # imports specific to this module
 import shutil
+import sys
 
 
 
 # resource strings (not internationalized for the moment)
-ITEM_HR_NAME = "Template Condition"
+ITEM_HR_NAME = "Shutdown Task"
 
-_UI_FORM_TITLE = "%s: Template Condition Editor" % UI_APP
-_UI_FORM_PARAM1_SC = "Parameter is:"
+_UI_FORM_TITLE = "%s: Shutdown Task Editor" % UI_APP
+
+_UI_FORM_NOPARAMS = "This type of item does not need any specific parameters"
 
 
 # default values
-_DEFAULT_PARAM1_VALUE = "somestring"
 
 
-# check for availability: include all needed checks in this function, may
-# or may not include actually checking the hosting platform
+# check for availability
 def _available():
-    if shutil.which('ls'):
-        return True
+    if sys.platform == 'win32':
+        if shutil.which("shutdown.exe"):
+            return True
+        return False
+    elif sys.platform == 'linux':
+        global ITEM_HR_NAME, _UI_FORM_TITLE
+        ITEM_HR_NAME += " (Gnome)"
+        _UI_FORM_TITLE += " (Gnome)"
+        if shutil.which("gnome-session-quit"):
+            return True
+        return False
     return False
 
 
 
 # the specific item is derived from the actual parent item
-class TemplateCondition(CommandCondition):
+class ShutdownTask(CommandTask):
 
     # availability at class level: these variables *MUST* be set for all items
     item_type = 'command'
-    item_subtype = 'template'
+    item_subtype = 'shutdown'
     item_hrtype = ITEM_HR_NAME
     available = _available()
 
     def __init__(self, t: items.Table=None) -> None:
         # first initialize the base class (mandatory)
-        CommandCondition.__init__(self, t)
+        CommandTask.__init__(self, t)
 
         # then set type (same as base), subtype and human readable name: this
         # is mandatory in order to correctly display the item in all forms
@@ -75,28 +84,33 @@ class TemplateCondition(CommandCondition):
         else:
             self.tags = table()
             self.tags.append('subtype', self.subtype)
-            self.tags.append('parameter1', _DEFAULT_PARAM1_VALUE)
 
         self.updateitem()
 
     def updateitem(self):
         # set base item properties according to specific parameters in `tags`
-        self.command = 'ls'
-        self.command_arguments = ['-l', self.tags.get('parameter1', _DEFAULT_PARAM1_VALUE)]
+        if sys.platform == 'win32':
+            self.command = "shutdown.exe"
+            self.command_arguments = ["/s"]
+        elif sys.platform == 'linux':
+            self.command = "gnome-session-quit"
+            self.command_arguments = [
+                # "--no-prompt",
+                "--power-off",
+            ]
         self.startup_path = "."
-        self.success_status = 0
 
 
 # dedicated form definition derived directly from one of the base forms
-class form_TemplateCondition(form_Condition):
+class form_ShutdownTask(form_Task):
 
     def __init__(self, tasks_available, item=None):
 
         # check that item is the expected one for safety, build one by default
         if item:
-            assert(isinstance(item, TemplateCondition))
+            assert(isinstance(item, ShutdownTask))
         else:
-            item = TemplateCondition()
+            item = ShutdownTask()
         super().__init__(_UI_FORM_TITLE, tasks_available, item)
 
         # create a specific frame for the contents
@@ -105,34 +119,26 @@ class form_TemplateCondition(form_Condition):
         PAD = WIDGET_PADDING_PIXELS
 
         # build the UI elements as needed and configure the layout
-        l_parameter1 = ttk.Label(area, text=_UI_FORM_PARAM1_SC)
-        e_parameter1 = ttk.Entry(area)
-        self.data_bind('parameter1', e_parameter1, TYPE_STRING)
-
-        l_parameter1.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
-        e_parameter1.grid(row=0, column=1, sticky=tk.NSEW, padx=PAD, pady=PAD)
-
+        l_noparams = ttk.Label(area, text=_UI_FORM_NOPARAMS)
+        l_noparams.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         area.columnconfigure(1, weight=1)
 
         # always update the form at the end of initialization
         self._updateform()
 
-    # update the form with the specific parameters (usually in the `tags`)
-    def _updateform(self):
-        self.data_set('parameter1', self._item.tags.get('parameter1'))
-        return super()._updateform()
+    # no need actually for this  definition
+    # def _updateform(self):
+    #     return super()._updateform()
 
-    # update the item from the form elements (usually update `tags`)
-    def _updatedata(self):
-        self._item.tags['parameter1'] = self.data_get('parameter1')
-        self._item.updateitem()
-        return super()._updatedata()
+    # no need actually for this  definition
+    # def _updatedata(self):
+    #     return super()._updatedata()
 
 
 
 # function common to all extra modules to declare class items as factories
 def factories():
-    return (TemplateCondition, form_TemplateCondition)
+    return (ShutdownTask, form_ShutdownTask)
 
 
 # end.

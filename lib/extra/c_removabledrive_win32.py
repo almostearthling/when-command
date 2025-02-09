@@ -1,4 +1,4 @@
-# template for extra modules
+# check for presence of a removable drive
 
 # this header is common to all extra modules
 from tomlkit import items, table
@@ -27,11 +27,11 @@ import shutil
 
 
 # resource strings (not internationalized for the moment)
-ITEM_COND_REMOVABLEDRIVE = "Removable Drive Available Condition"
+ITEM_HR_NAME = "Removable Drive Available Condition"
 
-_UI_TITLE_REMOVABLEDRIVE = "%s: Removable Drive Condition Editor" % UI_APP
+_UI_FORM_TITLE = "%s: Removable Drive Condition Editor" % UI_APP
+
 _UI_FORM_REMOVABLEDRIVE_LABEL_SC = "Expected label:"
-
 _UI_FORM_SPECIFY_DRIVE_LETTER = "Specify drive letter"
 _UI_FORM_EXPECTED_LETTER_SC = "Expected drive letter:"
 
@@ -59,7 +59,7 @@ class RemovableDrivePresent(CommandCondition):
     # availability at class level: these variables *MUST* be set for all items
     item_type = 'command'
     item_subtype = 'removabledrive_win'
-    item_hrtype = ITEM_COND_REMOVABLEDRIVE
+    item_hrtype = ITEM_HR_NAME
     available = _available()
 
     def __init__(self, t: items.Table=None) -> None:
@@ -124,7 +124,7 @@ class form_RemovableDrivePresent(form_Condition):
             assert(isinstance(item, RemovableDrivePresent))
         else:
             item = RemovableDrivePresent()
-        super().__init__(_UI_TITLE_REMOVABLEDRIVE, tasks_available, item)
+        super().__init__(_UI_FORM_TITLE, tasks_available, item)
 
         # list the drive letters to create a combo box
         drive_letters = list("%s:" % x for x in "DEFGHIJKLMNOPQRSTUVWXYZ")

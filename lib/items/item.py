@@ -39,10 +39,6 @@ from lib.items.cond import Condition
 from lib.items.event import Event
 
 
-# extra modules
-from lib.extra.sysload import SystemLoadCondition, form_SystemLoadCondition, ITEM_COND_SYSLOAD
-
-
 # other items will share the same file for both the item and the form, and
 # all related string resources should be defined within the same file
 
