@@ -45,15 +45,11 @@ _DEFAULT_DRIVE_DEVICE = "DRIVE"
 # dictionaries (see how the index is nested) and luckily JSON allows for a
 # more readable construction of the query
 _DBUS_QUERY = """
-{
-    "index": [
-        "/org/freedesktop/UDisks2/drives/%s",
-        "org.freedesktop.UDisks2.Drive",
-        "MediaAvailable"
-    ],
+[{
+    "index": 0,
     "operator": "eq",
     "value": true
-}
+}]
 """.strip()
 
 
@@ -109,13 +105,12 @@ class RemovableDrivePresent(DBusCondition):
         # set base item properties according to specific parameters in `tags`
 
         # the check is performed a DBus query
-        query = _DBUS_QUERY % self.tags.get('drive_name', _DEFAULT_DRIVE_DEVICE)
         self.bus = ":system"
         self.service = "org.freedesktop.UDisks2"
-        self.object_path = "/org/freedesktop/UDisks2"
-        self.interface = "org.freedesktop.DBus.ObjectManager"
-        self.method = "GetManagedObjects"
-        self.parameter_check = query
+        self.object_path = "/org/freedesktop/UDisks2/drives/%s" % self.tags.get('drive_name', _DEFAULT_DRIVE_DEVICE)
+        self.interface = "org.freedesktop.DBus.Properties"
+        self.parameter_call = '["org.freedesktop.UDisks2.Drive", "MediaAvailable"]'
+        self.parameter_check = _DBUS_QUERY
         self.check_after = 60
         self.recur_after_failed_check = True
 
@@ -145,9 +140,9 @@ class form_RemovableDrivePresent(form_Condition):
         o_iface = dbus.Interface(o, "org.freedesktop.DBus.ObjectManager")
         mgobjs = o_iface.GetManagedObjects()
         drive_names = []
-        for k in mgobjs.keys().filter(lambda s: s.startswith(prefix)):
+        for k in list(s for s in mgobjs.keys() if s.startswith(prefix)):
             if mgobjs[k]['org.freedesktop.UDisks2.Drive']['Removable']:
-                drive_names.append(str(mgobjs[k])[len(prefix):])
+                drive_names.append(k[len(prefix):])
 
         # create a specific frame for the contents
         area = ttk.Frame(super().contents)
@@ -170,6 +165,7 @@ class form_RemovableDrivePresent(form_Condition):
     # update the form with the specific parameters (usually in the `tags`)
     def _updateform(self):
         self.data_set('drive_name', self._item.tags.get('drive_name'))
+        return super()._updateform()
 
     # update the item from the form elements (usually update `tags`)
     def _updatedata(self):
