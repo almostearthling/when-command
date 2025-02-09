@@ -75,7 +75,7 @@ def _available():
 class RemovableDrivePresent(DBusCondition):
 
     # availability at class level: these variables *MUST* be set for all items
-    item_type = 'command'
+    item_type = 'dbus'
     item_subtype = 'removabledrive_linux'
     item_hrtype = ITEM_HR_NAME
     available = _available()
