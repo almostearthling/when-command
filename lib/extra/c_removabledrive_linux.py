@@ -48,7 +48,7 @@ _DBUS_QUERY = """
 [{
     "index": 0,
     "operator": "eq",
-    "value": true
+    "value": 
 }]
 """.strip()
 
@@ -105,12 +105,13 @@ class RemovableDrivePresent(DBusCondition):
         # set base item properties according to specific parameters in `tags`
 
         # the check is performed a DBus query
+        check_drive = "/org/freedesktop/UDisks2/drives/%s" % self.tags.get('drive_name', _DEFAULT_DRIVE_DEVICE)
         self.bus = ":system"
         self.service = "org.freedesktop.UDisks2"
-        self.object_path = "/org/freedesktop/UDisks2/drives/%s" % self.tags.get('drive_name', _DEFAULT_DRIVE_DEVICE)
-        self.interface = "org.freedesktop.DBus.Properties"
-        self.parameter_call = '["org.freedesktop.UDisks2.Drive", "MediaAvailable"]'
-        self.parameter_check = _DBUS_QUERY
+        self.object_path = "/org/freedesktop/UDisks2"
+        self.interface = "org.freedesktop.DBus.ObjectManager"
+        self.method = "GetManagedObjects"
+        self.parameter_check = '[{ "index": 0, "operator": "contains", "value": "%s" }]' % check_drive
         self.check_after = 60
         self.recur_after_failed_check = True
 
