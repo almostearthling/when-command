@@ -50,7 +50,7 @@ Success and failure of _Lua_ based tasks are determined by the correspondence of
 
 ## Session Related Tasks
 
-There are a bunch of simple session related tasks, useful for such things as turning off the computer or just locking the session under certain circumstances, that can be used with the application: more details can be found [here](cond_extra_session.md).
+There are a bunch of simple session related tasks, useful for such things as turning off the computer or just locking the session under certain circumstances, that can be used with the application: more details can be found [here](task_extra_session.md).
 
 
 ## See also
