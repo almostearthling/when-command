@@ -48,6 +48,11 @@ As a lightweight alternative to OS level commands, it is possible to run _Lua_ s
 Success and failure of _Lua_ based tasks are determined by the correspondence of the values held by some variables after the script execution. The variables to be checked are provided by the user by entering the variable name and the expected value respectively in the _Variable Name_ and _New Value_ fields, and clicking the _Update_ button: the behaviour of the list, the aforementioned fields and the _Update_ and _Remove_ buttons are similar to the ones seen for the _environment variables_ in [command based tasks](#command). Checking the _Match ALL Results_ box will cause the task to be successful only when **all** listed variables hold the expected values, while by default just one match among the listed ones is sufficient for success.
 
 
+## Session Related Tasks
+
+There are a bunch of simple session related tasks, useful for such things as turning off the computer or just locking the session under certain circumstances, that can be used with the application: more details can be found [here](cond_extra_session.md).
+
+
 ## See also
 
 * [Command Based Conditions](cond_actionrelated.md#command)

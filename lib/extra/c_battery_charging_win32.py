@@ -32,15 +32,15 @@ from ..items.cond_command import CommandCondition
 
 # imports specific to this module
 import sys
-import subprocess
 import shutil
 
 
 
 # resource strings (not internationalized for the moment)
-ITEM_COND_CHARGINGBATT = "Charging Battery Condition"
+ITEM_HR_NAME = "Charging Battery Condition"
 
-_UI_TITLE_CHARGINGBATT = "%s: Charging Battery Condition Editor" % UI_APP
+_UI_FORM_TITLE = "%s: Charging Battery Condition Editor" % UI_APP
+
 _UI_FORM_CHARGINGBATT_THRESHOLD_SC = "Battery charge is above:"
 
 
@@ -49,18 +49,12 @@ _DEFAULT_THRESHOLD_VALUE = 80
 _CHECK_EXTRA_DELAY = 300
 
 
-# check for availability: this version of the check is only for Linux, the
-# one for Windows is in a separate file, and availability is in fact mutually
-# exclusive: with this check we assume that this module is only run on Linux
+# check for availability: this version of the check is only for Windows, the
+# one for Linux is in a separate file, and availability is in fact mutually
+# exclusive: with this check we assume that this module is only run on Windows
 def _available():
-    if sys.platform == 'linux':
-        if (
-            shutil.which("upower") and
-            shutil.which("bash") and
-            shutil.which("grep") and
-            shutil.which("awk") and
-            shutil.which("sed")
-        ):
+    if sys.platform == 'win32':
+        if shutil.which("pwsh.exe"):
             return True
         return False
     else:
@@ -72,8 +66,8 @@ class ChargingBatteryCondition(CommandCondition):
 
     # availability at class level: these variables *MUST* be set for all items
     item_type = 'command'
-    item_subtype = 'battery_charging_linux'
-    item_hrtype = ITEM_COND_CHARGINGBATT
+    item_subtype = 'battery_charging_win'
+    item_hrtype = ITEM_HR_NAME
     available = _available()
 
     def __init__(self, t: items.Table=None) -> None:
@@ -98,26 +92,22 @@ class ChargingBatteryCondition(CommandCondition):
             self.tags = table()
             self.tags.append('subtype', self.subtype)
             self.tags.append('threshold', _DEFAULT_THRESHOLD_VALUE)
-        self._batterypath = subprocess.run(
-            ['bash', '-c', "upower -e | grep -F 'battery'"],
-            capture_output=True,
-        ).stdout.decode("utf-8").strip()
         self.updateitem()
 
     def updateitem(self):
         # set base item properties according to specific parameters in `tags`
         threshold = self.tags.get('threshold', _DEFAULT_THRESHOLD_VALUE)
 
-        battery = self._batterypath
+        # see interpretation of BatteryStatus -in 2,6,7,8,9 here:
+        # https://learn.microsoft.com/it-it/windows/win32/cimwin32prov/win32-battery
         cmdline = (
-            # f"( upower -i {battery} | grep -F 'state:' | grep -F -v 'discharging' | grep -F -v 'fully-charged' > /dev/null 2>&1 ) && " +
-            f"( upower -i {battery} | grep -F 'state:' | grep -F -v 'discharging' > /dev/null 2>&1 ) && " +
-            f"[ `upower -i {battery} | grep -F 'percentage:' | awk '{{print $2}}' | sed 's/%//g'` -gt {threshold} ] && " +
-            f"echo OK"
+            "$batt = (Get-CimInstance -Class Win32_Battery); " +
+            "If ( $$batt.BatteryStatus -in 2,6,7,8,9 -and $batt.EstimatedChargeRemaining -gt %s ) " % threshold +
+            "{ echo OK }"
         )
-        self.command = "bash"
+        self.command = "pwsh.exe"
         self.command_arguments = [
-            "-c",
+            "-Command",
             cmdline,
         ]
         self.success_stdout = "OK"
@@ -136,7 +126,7 @@ class form_ChargingBatteryCondition(form_Condition):
             assert(isinstance(item, ChargingBatteryCondition))
         else:
             item = ChargingBatteryCondition()
-        super().__init__(_UI_TITLE_CHARGINGBATT, tasks_available, item)
+        super().__init__(_UI_FORM_TITLE, tasks_available, item)
 
         # create a specific frame for the contents
         area = ttk.Frame(super().contents)
