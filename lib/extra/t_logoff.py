@@ -31,7 +31,7 @@ ITEM_HR_NAME = "Logoff Task"
 
 _UI_FORM_TITLE = "%s: Logoff Task Editor" % UI_APP
 
-_UI_FORM_NOPARAMS = "This type of item does not need any specific parameters"
+_UI_FORM_NOPARAMS = "(This type of item does not need any specific parameters)"
 
 
 # default values
@@ -114,9 +114,11 @@ class form_LogoffTask(form_Task):
         super().__init__(_UI_FORM_TITLE, item)
 
         # create a specific frame for the contents
-        area = ttk.Frame(super().contents)
-        area.grid(row=0, column=0, sticky=tk.NSEW)
-        PAD = WIDGET_PADDING_PIXELS
+        l_noparams = ttk.Label(area, text=_UI_FORM_NOPARAMS)
+        l_noparams.configure(anchor=tk.CENTER)
+        l_noparams.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        area.columnconfigure(0, weight=1)
+        area.rowconfigure(0, weight=1)
 
         # build the UI elements as needed and configure the layout
         l_noparams = ttk.Label(area, text=_UI_FORM_NOPARAMS)

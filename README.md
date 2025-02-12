@@ -65,15 +65,18 @@ Editor forms for the items supported by **whenever**: should behave in a way sim
 
 Specific command/_Lua_ based tasks, command/_Lua_/DBus based conditions, DBus based events should be supported to mimic the old **When** behaviour:
 
-- [ ] Task: Shut down the system
-- [ ] Task: Lock the system
+- [x] Task: Shut down the system
+- [x] Task: Lock the session
+- [x] Task: Reboot the system
+- [x] Task: Hybernate
+- [x] Task: Logout
 - [ ] ~~Condition: Startup and Shutdown~~ (would correspond to starting and closing the application: not really doing what the name says)
 - [ ] Condition: Suspend and Resume
 - [ ] Condition: Session Lock and Unlock
 - [ ] ~~Condition: Screensaver~~ (screensavers are not really used nowadays)
-- [ ] Condition: Storage Device Connect and Disconnect
+- [x] Condition: Storage Device Connect and Disconnect
 - [ ] Condition: Join or Leave a Network
-- [x] Condition: Battery Discharging and Low
+- [x] Condition: Battery Charging and Above Percentage or Discharging and Low
 - [x] Condition: System Load is Below a Certain Treshold
 
 ### Other forms

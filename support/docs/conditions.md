@@ -30,6 +30,7 @@ Other conditions are supported, that are implemented as reactions to particular 
 * [_System Load_ below Treshold](cond_extra01.md#system-load) conditions
 * [_Battery Charge_ below Treshold](cond_extra01.md#low-battery) conditions
 * [_Battery Charge_ above Treshold](cond_extra01.md#charging-battery) conditions
+* [_Removable Drive_ available](cond_extra01.md#removable-drives) conditions
 
 The above list will grow with time, along with the discovery of new configuration possibilities on the supported platforms and the development of the related forms.
 

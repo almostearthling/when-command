@@ -10,6 +10,10 @@ The following are simple session related tasks, useful for closing or locking a 
 * **Shutdown**: closes all open applications and _powers off_ the workstation.
 * **Reboot**: closes all open applications and _restarts_ the workstation.
 
+In all cases the task definition form is similar to the one below.
+
+![WhenSessionTasks](graphics/when-task-extra-session.png)
+
 These tasks do not require any extra parameter.
 
 

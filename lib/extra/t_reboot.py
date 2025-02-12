@@ -31,7 +31,7 @@ ITEM_HR_NAME = "Reboot Task"
 
 _UI_FORM_TITLE = "%s: Reboot Task Editor" % UI_APP
 
-_UI_FORM_NOPARAMS = "This type of item does not need any specific parameters"
+_UI_FORM_NOPARAMS = "(This type of item does not need any specific parameters)"
 
 
 # default values
@@ -120,8 +120,10 @@ class form_RebootTask(form_Task):
 
         # build the UI elements as needed and configure the layout
         l_noparams = ttk.Label(area, text=_UI_FORM_NOPARAMS)
+        l_noparams.configure(anchor=tk.CENTER)
         l_noparams.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
-        area.columnconfigure(1, weight=1)
+        area.columnconfigure(0, weight=1)
+        area.rowconfigure(0, weight=1)
 
         # always update the form at the end of initialization
         self._updateform()
