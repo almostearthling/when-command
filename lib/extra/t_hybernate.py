@@ -104,14 +104,14 @@ class HybernateTask(CommandTask):
 # dedicated form definition derived directly from one of the base forms
 class form_HybernateTask(form_Task):
 
-    def __init__(self, tasks_available, item=None):
+    def __init__(self, item=None):
 
         # check that item is the expected one for safety, build one by default
         if item:
             assert(isinstance(item, HybernateTask))
         else:
             item = HybernateTask()
-        super().__init__(_UI_FORM_TITLE, tasks_available, item)
+        super().__init__(_UI_FORM_TITLE, item)
 
         # create a specific frame for the contents
         area = ttk.Frame(super().contents)
