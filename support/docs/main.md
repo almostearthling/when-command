@@ -4,6 +4,8 @@
 
 **When** is an automation tool for desktop environments: it is implemented as a GUI application that offers the possibility to define certain conditions which, when satisfied, cause certain tasks to be performed. Conditions can be of various kinds: time intervals or specific instants in time, session status, probing the current status of the system, messages or signals sent by the system or by other applications.
 
+![MainWindow](graphics/when-application.png)
+
 The **When** application is written in Python, with the goal of possibly providing a single UI for different hosting platforms. It actually does not implement the automation tool by itself but relies instead on an "external" tool, [**whenever**](https://github.com/almostearthling/whenever), as its actual scheduler, by launching it as a child process. This separate process is designed, however, to be very lightweight and performance-oriented: thus the computational resources needed for it are probably less than the ones that implementing the scheduler within **When** would have needed.[^1]
 
 Actually, **When** consists of several different applications which are launched by issuing the specific commands on the [command line](cli.md):
@@ -15,7 +17,7 @@ Actually, **When** consists of several different applications which are launched
 See the specific parts of the documentation for details on each application.
 
 
-## About this documentation
+## About this Documentation
 
 This is the main **When** documentation: it covers the new version of the application, that is, the wrapper for the **whenever** scheduler and automation tool. It aims at providing an easy to use frontend for the scheduler, both as a cross platform launcher in desktop environments, and as a configuration tool. **When** as a configuration tool also tries to provide a way to easily specify tasks and conditions that are not natively supported by **whenever** and that would be difficult to implement by hand, encoding them directly in **whenever** using its TOML configuration file. **When** tries to support all platforms supported by **whenever** itself, and to provide tasks, conditions, and events (both native and specialized) that are available on each single platform.
 
