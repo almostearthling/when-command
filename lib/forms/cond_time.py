@@ -150,22 +150,8 @@ class form_TimeCondition(form_Condition):
         e_tsSec.grid(row=0, column=15, sticky=tk.W, padx=PAD, pady=PAD)
         f_sep5.grid(row=0, column=16, sticky=tk.W, padx=PAD, pady=PAD)
         b_tsClear.grid(row=0, column=17, sticky=tk.W, padx=PAD, pady=PAD)
-        # alternate layout: looks more polished than the other one
         b_tsAdd.grid(row=0, column=18, sticky=tk.EW, padx=PAD, pady=PAD)
         b_tsDel.grid(row=0, column=19, sticky=tk.EW, padx=PAD, pady=PAD)
-
-        # add/remove section
-        # area_addrm = ttk.Frame(area)
-        # f_sep6 = ttk.Frame(area_addrm)
-        # b_tsAdd = ttk.Button(area_addrm, width=BUTTON_STANDARD_WIDTH, text=UI_ADD, command=self.add_timespec)
-        # b_tsDel = ttk.Button(area_addrm, width=BUTTON_STANDARD_WIDTH, text=UI_DEL, command=self.del_timespec)
-        # f_sep7 = ttk.Frame(area_addrm)
-
-        # add/remove section: arrange items in frame
-        # f_sep6.grid(row=0, column=0, sticky=tk.EW, padx=PAD, pady=PAD)
-        # b_tsAdd.grid(row=0, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
-        # b_tsDel.grid(row=0, column=2, sticky=tk.EW, padx=PAD, pady=PAD)
-        # f_sep7.grid(row=0, column=3, sticky=tk.EW, padx=PAD, pady=PAD)
 
         s_sep10 = ttk.Separator(area)
 
@@ -179,18 +165,15 @@ class form_TimeCondition(form_Condition):
         tv_timeSpecs.configure(yscrollcommand=sb_timeSpecs.set)
         tv_timeSpecs.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         sb_timeSpecs.pack(side=tk.RIGHT, fill=tk.Y)
-        # b_clearSpecs = ttk.Button(area_tslist, width=BUTTON_STANDARD_WIDTH, text=UI_CLEARALL, command=self.clear_alltimespecs)
 
         # timespec list section: arrange items in frame
         l_timeSpecs.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         sftv_timeSpecs.grid(row=1, column=0, sticky=tk.NSEW, padx=PAD, pady=PAD)
-        # b_clearSpecs.grid(row=0, column=0, sticky=tk.E, padx=PAD, pady=PAD)
 
         tv_timeSpecs.bind('<ButtonRelease-1>', lambda _: self.recall_timespec())
 
         # arrange top items in the grid
         area_tspec.grid(row=0, column=0, sticky=tk.EW)
-        # area_addrm.grid(row=1, column=0, sticky=tk.EW)
         s_sep10.grid(row=10, column=0, sticky=tk.EW, pady=PAD)
         area_tslist.grid(row=11, column=0, sticky=tk.NSEW)
 
@@ -201,8 +184,6 @@ class form_TimeCondition(form_Condition):
         area_tspec.columnconfigure(16, weight=1)
         area_tslist.columnconfigure(0, weight=1)
         area_tslist.rowconfigure(1, weight=1)
-        # area_addrm.columnconfigure(0, weight=1)
-        # area_addrm.columnconfigure(3, weight=1)
 
         # bind data to widgets
         self.data_bind('ts_year', cb_tsYear, TYPE_INT)

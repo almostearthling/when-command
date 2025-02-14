@@ -6,7 +6,7 @@ import ttkbootstrap as ttk
 
 from typing import Callable, Any
 
-from ..utility import get_icon, get_appicon
+from ..utility import get_icon, get_appicon, get_tkroot
 
 
 # default strings for UI (overwritten by `i18n.strings`)
@@ -317,6 +317,7 @@ class ApplicationForm(object):
         sh = self._dialog.winfo_screenheight()
         geometry = "%sx%s+%s+%s" % (
             size[0], size[1], int(sw/2-size[0]/2), int(sh/2-size[1]/2))
+        self._root = get_tkroot()
         self._dialog.title(title)
         self._dialog.geometry(geometry)
         self._dialog.resizable(False, False)
@@ -389,6 +390,10 @@ class ApplicationForm(object):
         self._data = {}
         self._checks = {}
 
+        # bind common shortcut keys
+        self._dialog.bind("<FocusIn>", lambda _: self.focus_in())
+
+
     # support the context manager protocol
     def __enter__(self):
         return self
@@ -428,6 +433,24 @@ class ApplicationForm(object):
             self._force_set_data(name, data)
         self._force_set_data(name, None)
         treeview.bind('<<TreeviewSelect>>', _store_data)
+
+
+    # bind an event to this form
+    def event_bind(self, event, reaction):
+        self._dialog.bind(event, reaction)
+
+    # bind <Return> and <Escape> when gaining focus and unbind when n is lost
+    def _key_exit_close(self, event):
+        if event.widget == self._dialog:
+            self.exit_close()
+
+    def _key_exit_ok(self, event):
+        if event.widget == self._dialog:
+            self.exit_ok()
+
+    def focus_in(self):
+        self.event_bind("<Escape>", self._key_exit_close)
+        self.event_bind("<Return>", self._key_exit_ok)
 
 
     # bind widgets to data: the parameters are the following

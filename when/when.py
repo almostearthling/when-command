@@ -27,6 +27,7 @@ from lib.utility import (
     is_whenever_running,
     get_image,
     get_UI_theme,
+    get_tkroot,
     )
 from lib.repocfg import AppConfig
 
@@ -58,7 +59,7 @@ class App(object):
     # the icon is created **after** creating the root window, because a root
     # is needed to be active for this purpose
     def __init__(self):
-        self._window = tk.Tk()
+        self._window = get_tkroot()
         self._window.withdraw()
         self._icon = ImageTk.PhotoImage(get_image(APP_ICON))
         self._window.iconphoto(True, self._icon)
@@ -141,7 +142,7 @@ class App(object):
     def sched_reset_conditions(self, _):
         if self._window and self._wrapper:
             self._wrapper.whenever_reset_conditions()
-    
+
     def sched_reload_configuration(self, _):
         if self._window and self._wrapper:
             self._wrapper.whenever_reload_configuration()
@@ -235,7 +236,7 @@ def main():
             os.makedirs(datadir)
         except Exception as e:
             exiterror(CLI_ERR_DATADIR_UNACCESSIBLE)
-    
+
     # create the defaullt scritps directory now that the data directory exists
     scriptsdir = get_scriptsdir()
     if not os.path.isdir(scriptsdir):

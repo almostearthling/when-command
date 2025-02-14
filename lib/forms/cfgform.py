@@ -30,7 +30,7 @@ from .newitem import form_NewItem
 class form_Config(ApplicationForm):
 
     def __init__(self, root=None, main=False):
-        
+
         # the root window: if not set this runs as the main app
         # and is aware that no scheduler is under control of this
         # application

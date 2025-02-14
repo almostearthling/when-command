@@ -114,6 +114,11 @@ class form_LogoffTask(form_Task):
         super().__init__(_UI_FORM_TITLE, item)
 
         # create a specific frame for the contents
+        area = ttk.Frame(super().contents)
+        area.grid(row=0, column=0, sticky=tk.NSEW)
+        PAD = WIDGET_PADDING_PIXELS
+
+        # create a specific frame for the contents
         l_noparams = ttk.Label(area, text=_UI_FORM_NOPARAMS)
         l_noparams.configure(anchor=tk.CENTER)
         l_noparams.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)

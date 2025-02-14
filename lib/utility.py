@@ -21,6 +21,18 @@ from .i18n.strings import *
 from .repocfg import AppConfig
 
 
+# the common Tk root
+_tkroot = None
+
+
+# return the current Tk root: create one if not already present
+def get_tkroot():
+    global _tkroot
+    if _tkroot is None:
+        _tkroot = tk.Tk()
+    return _tkroot
+
+
 # check that all passed arguments are not None
 def check_not_none(*l) -> bool:
     for x in l:
