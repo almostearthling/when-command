@@ -12,6 +12,7 @@ import ttkbootstrap as ttk
 from PIL import ImageTk
 
 
+
 BASEDIR = os.path.dirname(os.path.dirname(sys.argv[0]))
 if not BASEDIR:
     BASEDIR = '.'
@@ -21,13 +22,19 @@ from lib.i18n.strings import *
 from lib.icons import APP_ICON32 as APP_ICON
 from lib.utility import (
     get_default_configdir,
+    get_default_whenever,
     get_scriptsdir,
+    get_appdata,
     get_logfile,
     get_configfile,
     is_whenever_running,
     get_image,
     get_UI_theme,
     get_tkroot,
+    get_rich_console,
+    exit_error,
+    write_error,
+    write_warning,
     )
 from lib.repocfg import AppConfig
 
@@ -179,10 +186,153 @@ def setup_windows():
     _root = App()
 
 
-# utility to bail out with a consistent error message
-def exiterror(s, code=2):
-    sys.stderr.write("%s error: %s\n" % (UI_APP, s))
-    sys.exit(code)
+
+# prepare expected environment, such as configuration directory
+def prepare_environment():
+    # create the application data directory if it does not exist
+    try:
+        _ = get_appdata()
+    except Exception as e:
+        exit_error(e)
+    try:
+        _ = get_scriptsdir()
+    except Exception as e:
+        exit_error(e)
+
+
+
+# subcommand main functions
+
+# version: display the application version and exit
+def main_version(_):
+    # print plain text: could be programatically used to determine version
+    print("%s: v%s" % (UI_APP, UI_APP_VERSION))
+
+
+# config: enter the configuration utility and exit (no scheduler launched)
+def main_config(args):
+    # set some global configuration values according to CLI options
+    AppConfig.delete('APPDATA')
+    AppConfig.set('APPDATA', args.dir_appdata)
+    prepare_environment()
+    if DEBUG:
+        configfile = get_configfile()
+        if not os.path.exists(configfile):
+            try:
+                with open(configfile, 'w') as f:
+                    f.write("# Created by: %s v%s" % (UI_APP, UI_APP_VERSION))
+            except Exception as e:
+                exit_error(CLI_ERR_CONFIG_UNACCESSIBLE)
+        setup_windows()
+        from lib.cfgapp import main
+        main(_root)
+    else:
+        try:
+            configfile = get_configfile()
+            if not os.path.exists(configfile):
+                try:
+                    with open(configfile, 'w') as f:
+                        f.write("# Created by: %s v%s" % (UI_APP, UI_APP_VERSION))
+                except Exception as e:
+                    exit_error(CLI_ERR_CONFIG_UNACCESSIBLE)
+            setup_windows()
+            from lib.cfgapp import main
+            main(_root)
+        except Exception as e:
+            exit_error(CLI_ERR_UNEXPECTED_EXCEPTION % e)
+
+
+# start: start the scheduler in the background and display the tray icon
+def main_start(args):
+    # set some global configuration values according to CLI options
+    AppConfig.delete('APPDATA')
+    AppConfig.set('APPDATA', args.dir_appdata)
+    AppConfig.delete('LOGLEVEL')
+    AppConfig.set('LOGLEVEL', args.log_level)
+    AppConfig.delete('WHENEVER')
+    AppConfig.set('WHENEVER', args.whenever)
+    prepare_environment()
+    if is_whenever_running():
+        exit_error(CLI_ERR_ALREADY_RUNNING)
+    # get configuration options
+    log_level = AppConfig.get('LOGLEVEL')
+    log_file = get_logfile()
+    config_file = get_configfile()
+    if DEBUG:
+        # setup the scheduler and associate it to the application
+        whenever = AppConfig.get('WHENEVER')
+        if whenever is None or not os.path.exists(whenever) or not os.access(whenever, os.X_OK):
+            exit_error(CLI_ERR_WHENEVER_NOT_FOUND)
+        wrapper = Wrapper(config_file, whenever, log_file, log_level)
+        setup_windows()
+        # start the scheduler in a separate thread
+        if not wrapper.start():
+            raise Exception(CLI_ERR_STARTING_SCHEDULER)
+        _root.set_wrapper(wrapper)
+        # run the tray icon application main loop
+        from lib.trayapp import main
+        main(_root)
+        _root.run()
+    else:
+        try:
+            # setup the scheduler and associate it to the application
+            whenever = AppConfig.get('WHENEVER')
+            if whenever is None or not os.path.exists(whenever) or not os.access(whenever, os.X_OK):
+                exit_error(CLI_ERR_WHENEVER_NOT_FOUND)
+            wrapper = Wrapper(config_file, whenever, log_file, log_level)
+            setup_windows()
+            # start the scheduler in a separate thread
+            if not wrapper.start():
+                raise Exception(CLI_ERR_STARTING_SCHEDULER)
+            _root.set_wrapper(wrapper)
+            # run the tray icon application main loop
+            from lib.trayapp import main
+            main(_root)
+            _root.run()
+        except Exception as e:
+            exit_error(CLI_ERR_UNEXPECTED_EXCEPTION % e)
+
+
+# toolbox: various utilities that can help build a proper setup
+def main_toolbox(args):
+    AppConfig.delete('APPDATA')
+    AppConfig.set('APPDATA', args.dir_appdata)
+    prepare_environment()
+    console = get_rich_console()
+    verbose = not args.quiet
+    # download the latest stable release of whenever and install it
+    if args.install_whenever:
+        if args.desktop and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH, "--desktop")
+        if args.autostart and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH, "--autostart")
+        if args.create_icons and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH, "--create-icons")
+        # use a fancy status bar while downloading and installing
+        if verbose:
+            status = console.status(CLI_STATUS_INSTALLING_WHENEVER, spinner='bouncingBar')
+        else:
+            status = None
+        from lib.toolbox.install_whenever import install
+        install(verbose=verbose)
+        if status:
+            del status
+        if verbose:
+            console.print(CLI_MSG_INSTALLATION_FINISHED, highlight=False)
+
+    # create shortcuts/desktop files in the appropriate requested locations
+    elif args.create_icons:
+        # this will never happen because the switch is handled before this one
+        if args.install_whenever and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH, "--install-whenever")
+        # no status bar is used because the operation is quick
+        from lib.toolbox.create_shortcuts import create_shortcuts
+        my_path = os.path.normpath(os.path.realpath(__file__))
+        create_shortcuts(my_path, args.desktop, args.autostart, verbose)
+        if verbose:
+            console.print(CLI_MSG_OPERATION_FINISHED, highlight=False)
+
+    # ...
 
 
 
@@ -191,141 +341,95 @@ def main():
     global _root
 
     default_appdata = get_default_configdir()
-    default_whenever = shutil.which('whenever')
+    default_whenever = get_default_whenever()
 
+    # for now set the paths to their default values
+    AppConfig.set('APPDATA', default_appdata)
+    AppConfig.set('WHENEVER', default_whenever)
+
+    # main parser
     parser = argparse.ArgumentParser(
         description=CLI_APP_DESCRIPTION,
         epilog=CLI_APP_HELP_EPILOG,
-        )
-    parser.add_argument(
-        "command",
-        help=CLI_ARG_HELP_COMMAND,
-        choices=['start', 'config', 'version'],
-        )
-    parser.add_argument(
+    )
+    subparsers = parser.add_subparsers(help=CLI_ARG_HELP_COMMAND)
+
+    # parser for the `start` subcommand
+    parser_start = subparsers.add_parser('start', help=CLI_ARG_HELP_CMD_START)
+    parser_start.add_argument(
         "-D", "--dir-appdata",
         help=CLI_ARG_HELP_DIR_APPDATA,
         type=str,
         default=default_appdata,
     )
-    parser.add_argument(
+    parser_start.add_argument(
         "-W", "--whenever",
         help=CLI_ARG_HELP_WHENEVER,
         type=str,
         default=default_whenever,
     )
-    parser.add_argument(
+    parser_start.add_argument(
         "-L", "--log-level",
         help=CLI_ARG_HELP_LOGLEVEL,
         type=str,
         choices=['trace', 'debug', 'info', 'warn', 'error'],
         default='info',
     )
+    parser_start.set_defaults(func=main_start)
 
+    # parser for the `config` subcommand
+    parser_config = subparsers.add_parser('config', help=CLI_ARG_HELP_CMD_CONFIG)
+    parser_config.add_argument(
+        "-D", "--dir-appdata",
+        help=CLI_ARG_HELP_DIR_APPDATA,
+        type=str,
+        default=default_appdata,
+    )
+    parser_config.set_defaults(func=main_config)
+
+    # parser for the `tool` subcommand
+    parser_toolbox = subparsers.add_parser('tool', help=CLI_ARG_HELP_CMD_TOOLBOX)
+    parser_toolbox.add_argument(
+        "-D", "--dir-appdata",
+        help=CLI_ARG_HELP_DIR_APPDATA,
+        type=str,
+        default=default_appdata,
+    )
+    parser_toolbox.add_argument(
+        "--install-whenever",
+        help=CLI_ARG_HELP_INSTALL_WHENEVER,
+        action='store_true',
+    )
+    parser_toolbox.add_argument(
+        "--create-icons",
+        help=CLI_ARG_HELP_CREATE_SHORTCUTS,
+        action='store_true',
+    )
+    parser_toolbox.add_argument(
+        "--desktop",
+        help=CLI_ARG_HELP_DESKTOP,
+        action='store_true',
+    )
+    parser_toolbox.add_argument(
+        "--autostart",
+        help=CLI_ARG_HELP_AUTOSTART,
+        action='store_true',
+    )
+    parser_toolbox.add_argument(
+        "--quiet",
+        help=CLI_ARG_HELP_QUIET,
+        action='store_true',
+    )
+    parser_toolbox.set_defaults(func=main_toolbox)
+
+    # parser for the `version` subcommand
+    parser_version = subparsers.add_parser('version', help=CLI_ARG_HELP_CMD_VERSION)
+    parser_version.set_defaults(func=main_version)
+
+    # all program functionality is split in the `main_[...]` functions above
     args = parser.parse_args()
+    args.func(args)
 
-    # set some global configuration values according to CLI options
-    AppConfig.set('APPDATA', args.dir_appdata)
-    AppConfig.set('LOGLEVEL', args.log_level)
-    AppConfig.set('WHENEVER', args.whenever)
-
-    # create the application data directory if it does not exist
-    datadir = AppConfig.get('APPDATA')
-    if not os.path.isdir(datadir):
-        try:
-            os.makedirs(datadir)
-        except Exception as e:
-            exiterror(CLI_ERR_DATADIR_UNACCESSIBLE)
-
-    # create the defaullt scritps directory now that the data directory exists
-    scriptsdir = get_scriptsdir()
-    if not os.path.isdir(scriptsdir):
-        exiterror(CLI_ERR_SCRIPTSDIR_UNACCESSIBLE)
-
-    # run the selected action
-    command = args.command
-
-    # display the version and exit
-    if command == 'version':
-        print("%s: v%s" % (UI_APP, UI_APP_VERSION))
-
-    # open the configuration utility and exit after its use
-    elif command == 'config':
-        if DEBUG:
-            configfile = get_configfile()
-            if not os.path.exists(configfile):
-                try:
-                    with open(configfile, 'w') as f:
-                        f.write("# Created by: %s v%s" % (UI_APP, UI_APP_VERSION))
-                except Exception as e:
-                    exiterror(CLI_ERR_CONFIG_UNACCESSIBLE)
-            setup_windows()
-            from lib.cfgapp import main
-            main(_root)
-        else:
-            try:
-                configfile = get_configfile()
-                if not os.path.exists(configfile):
-                    try:
-                        with open(configfile, 'w') as f:
-                            f.write("# Created by: %s v%s" % (UI_APP, UI_APP_VERSION))
-                    except Exception as e:
-                        exiterror(CLI_ERR_CONFIG_UNACCESSIBLE)
-                setup_windows()
-                from lib.cfgapp import main
-                main(_root)
-            except Exception as e:
-                exiterror("unexpected exception '%s'" % e)
-
-    # start the resident application and display an icon on the tray area
-    elif command == 'start':
-        # exit if the scheduler is already running
-        if is_whenever_running():
-            exiterror(CLI_ERR_ALREADY_RUNNING)
-        # get configuration options
-        log_level = AppConfig.get('LOGLEVEL')
-        log_file = get_logfile()
-        config_file = get_configfile()
-        if DEBUG:
-            # setup the scheduler and associate it to the application
-            whenever = AppConfig.get('WHENEVER')
-            if whenever is None or not os.path.exists(whenever) or not os.access(whenever, os.X_OK):
-                exiterror(CLI_ERR_WHENEVER_NOT_FOUND)
-            wrapper = Wrapper(config_file, whenever, log_file, log_level)
-            setup_windows()
-
-            # start the scheduler in a separate thread
-            if not wrapper.start():
-                raise Exception("an error occurred starting the scheduler")
-            _root.set_wrapper(wrapper)
-
-            # run the tray icon application main loop
-            from lib.trayapp import main
-            main(_root)
-            _root.run()
-        else:
-            try:
-                # setup the scheduler and associate it to the application
-                whenever = AppConfig.get('WHENEVER')
-                if whenever is None or not os.path.exists(whenever) or not os.access(whenever, os.X_OK):
-                    exiterror(CLI_ERR_WHENEVER_NOT_FOUND)
-                wrapper = Wrapper(config_file, whenever, log_file, log_level)
-                setup_windows()
-
-                # start the scheduler in a separate thread
-                if not wrapper.start():
-                    raise Exception("an error occurred starting the scheduler")
-                _root.set_wrapper(wrapper)
-
-                # run the tray icon application main loop
-                from lib.trayapp import main
-                main(_root)
-                _root.run()
-            except Exception as e:
-                exiterror("unexpected exception '%s'" % e)
-
-    else:
-        exiterror("unknown command: %s" % command)
 
 
 # standard startup

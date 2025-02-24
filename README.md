@@ -84,7 +84,7 @@ Specific command/_Lua_ based tasks, command/_Lua_/DBus based conditions, DBus ba
 The following forms, not related to the configuration application, are or should be only available from menus on the system tray:
 
 - [x] History Box
-- [ ] Tool Box: configure/unconfigure startup link (also for **whenever_tray**), config file conversion tool (old **When** --> new **When**)
+- [x] Tool Box: configure/unconfigure startup link (maybe also for **whenever_tray**), config file conversion tool (old **When** --> new **When**)
 
 ### UI wrapper for the **whenever** scheduler
 

@@ -73,19 +73,19 @@ class form_Config(ApplicationForm):
         PAD = WIDGET_PADDING_PIXELS
 
         # configuration file section
-        l_cfgFile = ttk.Label(area, text=CONFIGFORM_LBL_FILELOCATION_SC)
+        l_cfgFile = ttk.Label(area, text=UI_FORM_FILELOCATION_SC)
         e_cfgFile = ttk.Entry(area, state=['disabled'])
         # sep1 = ttk.Separator(area)
 
         # global flags and parameters
-        l_tickSeconds = ttk.Label(area, text=CONFIGFORM_LBL_TICKDURATION_SC)
+        l_tickSeconds = ttk.Label(area, text=UI_FORM_TICKDURATION_SC)
         e_tickSeconds = ttk.Entry(area, width=5)
-        ck_randChecks = ttk.Checkbutton(area, text=CONFIGFORM_LBL_RANDOMCHECKS)
+        ck_randChecks = ttk.Checkbutton(area, text=UI_FORM_RANDOMCHECKS)
         fill1 = ttk.Frame(area)
         sep2 = ttk.Separator(area)
 
         # item list box
-        l_items = ttk.Label(area, text=CONFIGFORM_LBL_ITEMS_SC)
+        l_items = ttk.Label(area, text=UI_FORM_ITEMS_SC)
         # build a scrolled frame for the treeview
         sftv_items = ttk.Frame(area)
         tv_items = ttk.Treeview(
@@ -98,8 +98,8 @@ class form_Config(ApplicationForm):
         )
         tv_items.column('#0', anchor=tk.CENTER, width=40, stretch=tk.NO)
         tv_items.heading('#0', anchor=tk.CENTER, text="")
-        tv_items.heading('name', anchor=tk.W, text=CONFIGFORM_LHD_NAME)
-        tv_items.heading('type', anchor=tk.W, text=CONFIGFORM_LHD_TYPE)
+        tv_items.heading('name', anchor=tk.W, text=UI_FORM_LHD_NAME)
+        tv_items.heading('type', anchor=tk.W, text=UI_FORM_LHD_TYPE)
         sb_items = ttk.Scrollbar(sftv_items, orient=tk.VERTICAL, command=tv_items.yview)
         tv_items.configure(yscrollcommand=sb_items.set)
         tv_items.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)

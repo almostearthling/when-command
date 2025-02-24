@@ -2,6 +2,7 @@
 
 import sys
 import os
+import shutil
 import subprocess
 from base64 import b64decode
 
@@ -15,6 +16,8 @@ from time import time
 import tkinter as tk
 import ttkbootstrap as ttk
 
+from rich.console import Console
+
 import darkdetect
 
 from .i18n.strings import *
@@ -22,15 +25,20 @@ from .repocfg import AppConfig
 
 
 # the common Tk root
-_tkroot = None
+_tkroot = tk.Tk()
+_console = Console(force_terminal=True)
+_err_console = Console(force_terminal=True, stderr=True)
 
 
 # return the current Tk root: create one if not already present
 def get_tkroot():
-    global _tkroot
-    if _tkroot is None:
-        _tkroot = tk.Tk()
     return _tkroot
+
+
+# return the terminal console handled by the "rich" module
+def get_rich_console():
+    return _console
+
 
 
 # check that all passed arguments are not None
@@ -120,6 +128,37 @@ def get_default_configdir():
             raise OSError("Unsupported platform: %s" % sys.platform)
 
 
+# find the default whenever executable (might not be in PATH)
+def get_default_whenever():
+    default_whenever = shutil.which('whenever')
+    if default_whenever is None:
+        if sys.platform == "win32":
+            execname = "whenever.exe"
+        else:
+            execname = "whenever"
+        # try the `pipx` installation path
+        p = os.path.expanduser(os.path.join("~", ".local", "bin"))
+        execpath = os.path.join(p, execname)
+        if os.path.isfile(execpath) and os.access(execpath, os.X_OK):
+            return execpath
+        else:
+            return None
+    else:
+        return default_whenever
+
+
+
+# determine appdata directory and ensure it exists
+def get_appdata():
+    appdata = AppConfig.get('APPDATA')
+    if not os.path.isdir(appdata):
+        try:
+            os.makedirs(appdata)
+        except Exception as e:
+            raise OSError(CLI_ERR_DATADIR_UNACCESSIBLE)
+    return appdata
+
+
 # determine scripts directory and ensure that it exists
 def get_scriptsdir():
     configdir = AppConfig.get('APPDATA')
@@ -132,7 +171,7 @@ def get_scriptsdir():
         try:
             os.makedirs(scriptdir)
         except Exception as e:
-            return None
+            raise OSError(CLI_ERR_SCRIPTSDIR_UNACCESSIBLE)
     return scriptdir
 
 
@@ -218,16 +257,21 @@ def get_editor_theme():
 
 # write a warning to stderr
 def write_warning(s):
-    sys.stderr.write("%s warning: %s" % (UI_APP, s))
+    _err_console.print(f"[bold yellow]{UI_APP} - warning:[/] {s}", highlight=False)
 
 # write an error to stderr
 def write_error(s):
-    sys.stderr.write("%s error: %s" % (UI_APP, s))
+    _err_console.print(f"[bold red]{UI_APP} - ERROR:[/] {s}", highlight=False)
+
+# utility to bail out with a consistent error message
+def exit_error(s, code=2):
+    write_error(s)
+    sys.exit(code)
 
 
 # get extensions of executable files on Windows
 def get_executable_extensions():
-    if sys.platform.startswith('win'):
+    if sys.platform == "win32":
         return os.environ['PATHEXT'].split(';')
     else:
         return None

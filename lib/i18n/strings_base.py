@@ -229,6 +229,13 @@ UI_FORM_RECURSIVE_DIRSCAN = "Recursively scan directories"
 UI_FORM_IGNOREPERSISTSUCCESS = "Ignore persistently successful checks"
 UI_FORM_OR = "or"
 
+UI_FORM_FILELOCATION_SC = "File:"
+UI_FORM_ITEMS_SC = "Items:"
+UI_FORM_RANDOMCHECKS = "Randomize checks between ticks"
+UI_FORM_TICKDURATION_SC = "Seconds per tick:"
+UI_FORM_LHD_NAME = "Name"
+UI_FORM_LHD_TYPE = "Item Type"
+
 
 # form titles
 UI_TITLE_NEWITEM = "%s: Choose New Item" % UI_APP
@@ -318,21 +325,6 @@ SYM_FAIL = "✕"
 SYM_UNKNOWN = "∅"
 
 
-# CLI strings
-CLI_APP_DESCRIPTION = "Automation tool for desktop environments"
-CLI_APP_HELP_EPILOG = "Please refer to the application GitHub page for more details."
-
-CLI_ARG_HELP_COMMAND = "Desired action"
-CLI_ARG_HELP_DIR_APPDATA = "Use a custom application data and configuration directory"
-CLI_ARG_HELP_LOG = "Specify a custom path for the log file (applies to: start)"
-CLI_ARG_HELP_LOGLEVEL = "Specify the log level (applies to: start)"
-CLI_ARG_HELP_WHENEVER = "Path to a specific `whenever` executable"
-
-CLI_ERR_WHENEVER_NOT_FOUND = "Executable for `whenever` not found or invalid"
-CLI_ERR_DATADIR_UNACCESSIBLE = "The data directory could neither be found nor created"
-CLI_ERR_SCRIPTSDIR_UNACCESSIBLE = "The scripts directory could neither be found nor created"
-CLI_ERR_CONFIG_UNACCESSIBLE = "The `whenever` configuration file could neither be found nor created"
-CLI_ERR_ALREADY_RUNNING = "Another instance of the scheduler is running: cannot start"
 
 
 # default strings for standard buttons
@@ -363,13 +355,78 @@ BTN_RESETCONDS = "Reset conditions"
 BTN_HISTORY_D = "Show history..."
 
 
-# new UI strings
-CONFIGFORM_LBL_FILELOCATION_SC = "File:"
-CONFIGFORM_LBL_ITEMS_SC = "Items:"
-CONFIGFORM_LBL_RANDOMCHECKS = "Randomize checks between ticks"
-CONFIGFORM_LBL_TICKDURATION_SC = "Seconds per tick:"
-CONFIGFORM_LHD_NAME = "Name"
-CONFIGFORM_LHD_TYPE = "Item Type"
+
+# CLI strings
+CLI_WHENEVER = "whenever"
+CLI_APP_DESCRIPTION = "Automation tool for desktop environments"
+CLI_APP_HELP_EPILOG = "Please refer to the application GitHub page for more details."
+
+CLI_ARG_HELP_COMMAND = "Desired action"
+CLI_ARG_HELP_DIR_APPDATA = "Use a custom application data and configuration directory"
+CLI_ARG_HELP_LOG = "Specify a custom path for the log file"
+CLI_ARG_HELP_LOGLEVEL = "Specify the log level"
+CLI_ARG_HELP_WHENEVER = f"Path to a specific `{CLI_WHENEVER}` executable"
+CLI_ARG_HELP_QUIET = "Don't print messages to the console"
+CLI_ARG_HELP_DESKTOP = "Install program icons on the desktop too"
+CLI_ARG_HELP_AUTOSTART = f"Setup `{UI_APP}` to start when the user logs in"
+
+CLI_ARG_HELP_CMD_START = f"Start the `{CLI_WHENEVER}` scheduler and display the tray icon"
+CLI_ARG_HELP_CMD_CONFIG = f"Start the `{UI_APP}` configuration utility"
+CLI_ARG_HELP_CMD_TOOLBOX = f"Run one of the various available utilities for `{UI_APP}`"
+CLI_ARG_HELP_CMD_VERSION = f"Display `{UI_APP}` version and exit"
+
+CLI_ARG_HELP_INSTALL_WHENEVER = f"Install the latest release of `{CLI_WHENEVER}`"
+CLI_ARG_HELP_CREATE_SHORTCUTS = f"Create icons for the `{UI_APP}` configuration utility and resident application"
+
+CLI_ERR_WHENEVER_NOT_FOUND = f"Executable for [bold]`{CLI_WHENEVER}`[/] not found or invalid"
+CLI_ERR_DATADIR_UNACCESSIBLE = "The data directory could neither be found nor created"
+CLI_ERR_SCRIPTSDIR_UNACCESSIBLE = "The scripts directory could neither be found nor created"
+CLI_ERR_CONFIG_UNACCESSIBLE = f"The [bold]`{CLI_WHENEVER}`[/] configuration file could neither be found nor created"
+CLI_ERR_ALREADY_RUNNING = f"Another instance of [bold]`{CLI_WHENEVER}`[/] is running: cannot start"
+CLI_ERR_UNKNOWN_COMMAND = "Unknown command: [bold]%s[/]"
+CLI_ERR_UNSUPPORTED_SWITCH = "The `%s` option is unsupported in this context"
+CLI_ERR_UNEXPECTED_EXCEPTION = "Unexpected exception: '%s'"
+CLI_ERR_STARTING_SCHEDULER = f"An error occurred while starting [bold]`{CLI_WHENEVER}`[/]"
+
+CLI_ERR_DOWNLOADING_ASSET = "Could not retrieve [bold]`%s`[/]"
+CLI_ERR_DOWNLOADING_ASSET_MSG = "Could not retrieve [bold]`%s`[/]: %s"
+CLI_ERR_NO_SUITABLE_BINARY = "No suitable binary archive found"
+CLI_ERR_INVALID_CHECKSUM = "Checksum not matching: file [bold]`%s`[/] invalid or corrupt"
+CLI_ERR_BINPATH_NOT_FOUND = "Binaries destination folder not found"
+CLI_ERR_DIR_NOT_FOUND = "Could not find directory: [bold]`%s`[/]"
+CLI_ERR_CANNOT_CREATE_FILE = "Could not create file: [bold]`%s`[/]"
+CLI_ERR_UNSUPPORTED_ON_PLATFORM = "The operation is not supported on this platform"
+
+CLI_ERR_CANNOT_CREATE_ICON = "Could not create program icon"
+CLI_ERR_CANNOT_CREATE_SHORTCUT = "Could not create shortcut or desktop file"
+
+CLI_ERR_FILE_EXISTS = "File [bold]`%s`[/] already exists"
+CLI_ERR_FILE_EXISTS_SKIP = "File [bold]`%s`[/] already exists: creation skipped"
+
+CLI_ERR_CANNOT_COPY_SHORTCUT = "Could not copy a shortcut: [bold]`%s`[/]"
+CLI_ERR_CANNOT_SET_STARTUP = f"Could not set `{UI_APP}` to automatically run at startup"
+
+CLI_STATUS_INSTALLING_WHENEVER = f"Installing latest release of [bold]`{CLI_WHENEVER}`[/]..."
+CLI_STATUS_CREATING_ICONS = "Installing requested program icons..."
+
+CLI_MSG_DOWNLOADING_ASSET = "Downloading [bold]`%s`[/]..."
+CLI_MSG_EXTRACTING_BINARIES = "Extracting binaries to folder [bold]`%s`[/]..."
+CLI_MSG_VERIFYING_CHECKSUM = "Verifying checksum of downloaded archive..."
+
+CLI_MSG_CREATING_ICON = "Creating program icon..."
+CLI_MSG_CREATING_SHORTCUT = "Creating program shortcut or desktop file..."
+
+CLI_MSG_INSTALLATION_FINISHED = "Installation finished."
+CLI_MSG_OPERATION_FINISHED = "Operation finished."
+
+CLI_APPICON_NAME_CONFIG = f"Configure {UI_APP}"
+CLI_APPICON_DESC_CONFIG = f"Standalone configuration utility for {UI_APP}"
+CLI_APPICON_NAME_START = f"Start {UI_APP}"
+CLI_APPICON_DESC_START = f"Launch the {CLI_WHENEVER} scheduler and controlling application {UI_APP}"
+
+# CLI_SYM_CROSSMARK = ":cross_mark:"
+# CLI_SYM_CHECKMARK = ":heavy_check_mark:"
+
 
 
 # end.
