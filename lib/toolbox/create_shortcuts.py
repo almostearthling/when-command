@@ -10,7 +10,6 @@ import sys
 import os
 import os.path
 import base64
-import shutil
 
 
 from ..i18n.strings import *
