@@ -1,15 +1,16 @@
 # Command Line Interface (CLI)
 
-This version of **When** uses [poetry](https://python-poetry.org/) to manage dependencies and to provide a suitable environment for a source distribution: after running `poetry install` in the project directory to install all necessary Python dependencies, **When** can be launched as follows:
+The documentation assumes that **When** has been installed using the instructions provided in the installation [guide](install.md). In this case the `when` command should be available from the command line, and could be invoked as follows:
 
 ```shell
-poetry run when COMMAND [OPTIONS]
+when COMMAND [OPTIONS]
 ```
 
 where `COMMAND` is one of the following:
 
 - `config` to launch the [configuration utility](cfgform.md), without staying resident (i.e. no system tray icon)
 - `start` to launch the resident **whenever** [wrapper](tray.md) displaying a control icon on the system tray area
+- `tool` to launch one of the utilities that can help in the setup of a working environment
 - `version` to display version information.
 
 More commands might be supported in the future. `OPTIONS` are the possible options, some of which have effect specific on specific commands:
@@ -21,6 +22,22 @@ More commands might be supported in the future. `OPTIONS` are the possible optio
 
 > **Note**: In order to simplify the usage of **When**, many values that could have been implemented as parameters are instead left as defaults that cannot be changed, at least for now, if not via direct intervention on the code.
 
+This version of **When** uses [poetry](https://python-poetry.org/) to manage dependencies and to provide a suitable environment for a source distribution, therefore after running `poetry install` in the project directory to install all necessary Python dependencies, **When** can also be launched as `poetry run when COMMAND [OPTIONS]`.
+
+
+## Toolbox
+
+The `tool` command provides various utilities that can help in the setup of **When** for a desktop environment. Each utility is invoked by means of a subcommand, which might possibly have variants. The following list explains the available subcommands:
+
+* `--install-whenever`: downloads and installs the latest version of **whenever** for the current user
+* `--create-icons`: create the **When** desktop shortcuts (for both the configuration utility and for the resident application) for the current user in the _Start_ or _Applications_ menu -- depending on the host platform; accepts the following modifiers
+  * `--autostart`: creates a shortcut that launches the resident version of **When** when the user logs in
+  * `--desktop`: also creates icons on the desktop[^1]
+* ...
+* `--quiet`: applies to all the operations described above, and inhibits printing messages to the console.
+
+These subcommands cannot be combined. The **whenever** installation step should be performed first if there is no working copy of the core scheduler on the system.
+
 
 ## See Also
 
@@ -29,3 +46,5 @@ More commands might be supported in the future. `OPTIONS` are the possible optio
 
 
 [`◀ Main`](main.md)
+
+[^1]: on some Linux desktop (for example, the most recent versions of Gnome) the deployment of launcher files in the `~/Desktop` subfolder is not honored as a way to create desktop icons, thus the `--desktop` option is actually executed, but has no effect.
