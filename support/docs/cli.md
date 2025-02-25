@@ -30,7 +30,7 @@ This version of **When** uses [poetry](https://python-poetry.org/) to manage dep
 The `tool` command provides various utilities that can help in the setup of **When** for a desktop environment. Each utility is invoked by means of a subcommand, which might possibly have variants. The following list explains the available subcommands:
 
 * `--install-whenever`: downloads and installs the latest version of **whenever** for the current user
-* `--create-shortcuts`: create the **When** desktop shortcuts (for both the configuration utility and for the resident application) for the current user in the _Start_ or _Applications_ menu -- depending on the host platform; accepts the following modifiers
+* `--create-icons`: create the **When** desktop shortcuts (for both the configuration utility and for the resident application) for the current user in the _Start_ or _Applications_ menu -- depending on the host platform; accepts the following modifiers
   * `--autostart`: creates a shortcut that launches the resident version of **When** when the user logs in
   * `--desktop`: also creates icons on the desktop[^1]
 * ...
