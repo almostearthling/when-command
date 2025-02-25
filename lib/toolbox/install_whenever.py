@@ -47,7 +47,7 @@ def get_whenever_release_pattern(verbose=False):
             write_error(f"platform not supported: {sys.platform}")
         return None
     arch = platform.uname().machine
-    if arch == "AMD64":
+    if arch == "AMD64" or arch == "x86_64":
         archstr = "x86_64"
     # elif arch == "XXXXX":
     #     archstr = "yyyyyy"
@@ -144,6 +144,10 @@ def unzip_binaries_to_directory(archive, folder=None, verbose=False):
                 console.print(CLI_MSG_EXTRACTING_BINARIES % folder, highlight=False)
             try:
                 z.extractall(folder, bins)
+                if sys.platform == "linux":
+                    for binary in bins:
+                        e = os.path.join(folder, binary)
+                        os.chmod(e, 0o750)
             except Exception as e:
                 write_error(CLI_ERR_UNEXPECTED_EXCEPTION % e)
 

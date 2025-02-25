@@ -8,121 +8,19 @@ The application is under active development: although not all of the desired fea
 
 Most of the interface of this release of **When** tries to be similar to the old version, although the need for cross-platform components pushes towards the adoption of the most widespread GUI library for Python, that is [_tkinter_](https://docs.python.org/3/library/tkinter.html). Also, some of the extra features that are built into **whenever** call for a somewhat less-streamlined interface especially in terms of form layout.
 
-The [documentation](support/docs/main.md) is still underway, and the features are reduced compared to recent releases of the old version of **When**. However the structure of this new version is modular, and the design of **whenever** allows for the maximum flexibility in term of definitions of tasks, conditions, and events, so that new types of _usable_ events can be defined along with the forms to edit them easily and write a well-formed configuration file.
+The [documentation](support/docs/main.md) is still underway, however it covers almost everything that is available in **When** .
 
 
 ## Usage
 
-This version of **When** uses [poetry](https://python-poetry.org/): after running `poetry install` in the project directory to install all necessary Python dependencies, **When** can be launched as follows:
-
-```shell
-poetry run when COMMAND [OPTIONS]
-```
-
-where `COMMAND` is one of the following:
-
-- `config` to launch the configuration utility, without staying resident (i.e. no system tray icon)
-- `start` to launch the resident **whenever** wrapper displaying the control icon on the system tray area (the tray menu is not available on Linux: see [#113](https://github.com/almostearthling/when-command/issues/113))
-- `version` to display version information.
-
-More commands might be supported in the future. `OPTIONS` are the possible options, some of which are command specific.
-
-- `-D`/`--dir-appdata` _PATH_: specify the [application data and configuration directory](support/docs/appdata.md) (default: _%APPDATA%\Whenever_ on Windows, _~/.whenever_ on Linux)
-- `-W`/`--whenever` _PATH_: specify the path to the whenever executable (defaults to the one found in the PATH if any, otherwise exit with error)
-- `-L`/`--log-level` _LEVEL_: specify the log level, all **whenever** levels are supported (default: _info_, specific to `start`)
-- `-h`/`--help`: print help for the specific command
-
-Due to the lack of access to some of the Python modules necessary for [pystray](https://github.com/moses-palmer/pystray) to work correctly, the right-click context menu that allows interaction with the scheduler is not normally available in Linux environments: left-clicking the icon will show instead a dialog box that provides the same entries as the context menu. In all cases, `poetry run when config` can be used to create and edit a **whenever** configuration file, and **whenever_tray** is available as a consistent wrapper.
-
-**NOTE**: **When** can be run in _debug mode_, that is, it will not catch exceptions, and will use a _DEBUG_ suffix for the application data directory: it also displays a color scheme that is neither dark nor light to underline its particular state. This behaviour can be enabled by setting `'DEBUG': True` in the instantiation of `AppConfig` in _lib/repocfg.py_. The debug mode also grants access to the menu dialog box described above in environments where the context menu is available. This is useful when testing the application when an existing instance of **whenever** is running in production mode, possibly using the **whenever_tray** utility that normally shares the application data directory with **When** (starting with release 0.1.6). Note that a debug version of **whenever** should be used when a release version is running, because a debug version will not complain and refuse to start in case a non-debug version of the scheduler is already running. The full path to the desired **whenever** executable can be provided on the command line using the `-W` option.
-
-**When** will be able to act as a wrapper only if a working and recent (not below [0.2.3](https://github.com/almostearthling/whenever/releases/tag/v0.2.3%2Btray0.1.6)) version of **whenever** is available, either in the system _PATH_ or specified via the command line interface by using the `-W` switch.
-
-
-## Roadmap
-
-The first goal is to obtain a fully functional version of this **When** edition, although supporting a minimal set of configuration items -- the ones that were supported at the time of the first launch of the old application. In this first stage of development, the effort will be devoted to amend bugs, enforce checks, handle possible exceptions that might occur in secondary threads and which may cause the application to become unstable, and more in general to make the application consistent in terms of both the user interface and the handling of the **whenever** subprocess, _without_ adding new features. Once the minimal **When** application has reached an almost stable condition, new features (such as specific items and the _tool box_ mentioned below) will be added.
-
-Expectations and fulfillments for this version of **When** follow:
-
-### Editors
-
-Editor forms for the items supported by **whenever**: should behave in a way similar to how the original _When_ used to handle these items. Moreover, a main form is provided to access global configuration parameters and to create new items and edit or delete existing ones.
-
-- [x] Main Form
-- [x] Task: Command
-- [x] Task: _Lua_ Script
-- [x] Condition: Interval
-- [x] Condition: Idle Session
-- [x] Condition: Time
-- [x] Condition: Command
-- [x] Condition: _Lua_ Script
-- [x] Condition: Event (aka Bucket)
-- [ ] ~~Condition: DBus Method call~~ (was not available in the original edition: form implemented but not made available)
-- [x] Event: Filesystem Monitoring
-- [ ] ~~Event: Command Line~~ (not useful from a user POV: form implemented but not made available)
-- [ ] ~~Event: DBus Signal~~ (was barely usable and restricted in the original edition: form implemented but not made available)
-
-Specific command/_Lua_ based tasks, command/_Lua_/DBus based conditions, DBus based events should be supported to mimic the old **When** behaviour:
-
-- [x] Task: Shut down the system
-- [x] Task: Lock the session
-- [x] Task: Reboot the system
-- [x] Task: Hybernate
-- [x] Task: Logout
-- [ ] ~~Condition: Startup and Shutdown~~ (would correspond to starting and closing the application: not really doing what the name says)
-- [ ] Condition: Suspend and Resume
-- [ ] Condition: Session Lock and Unlock
-- [ ] ~~Condition: Screensaver~~ (screensavers are not really used nowadays)
-- [x] Condition: Storage Device Connect and Disconnect
-- [ ] Condition: Join or Leave a Network
-- [x] Condition: Battery Charging and Above Percentage or Discharging and Low
-- [x] Condition: System Load is Below a Certain Treshold
-
-### Other forms
-
-The following forms, not related to the configuration application, are or should be only available from menus on the system tray:
-
-- [x] History Box
-- [x] Tool Box: configure/unconfigure startup link (maybe also for **whenever_tray**), config file conversion tool (old **When** --> new **When**)
-
-### UI wrapper for the **whenever** scheduler
-
-The following actions should be supported by a resident part of the application that only shows an icon in the tray area, and allows to choose entries from a popup menu.
-
-- [x] Show an About Box (to be improved)
-- [x] Show the task history, including execution time and outcome
-- [ ] Suspend and resume conditions
-- [x] Reset conditions
-- [x] Pause and resume the scheduler
-- [x] Reload the configuration file
-- [ ] ~~Restart the scheduler~~ (not really interesting, since reloading the configuration is implemented)
-- [x] Load the configuration utility (to be improved)
-
-Other features that might be useful:
-
-- [ ] Preserve paused state
-- [ ] Log rotation and max number of old logs
-- [ ] Reset conditions on wakeups from suspension or hibernation
-
-The resident part of the application should **not** load the configuration utility at startup: it should only be loaded when the appropriate menu entry is selected, and all the modules should be removed from memory after the configuration utility has been left by the user.
+Please refer to the documentation for a simplified [installation procedure](support/docs/install.md) based on [pipx](https://pipx.pypa.io/), and for the [commands](support/docs/cli.md) available to configure and launch **When**. Also, [poetry](https://python-poetry.org/) can be used to run the application, which is particularly useful to start **When** from a source repository.
 
 
 ## Compatibility
 
 **When** has been successfully tested on Windows (10 and 11) and Linux (Debian 12). On Debian 12, however, it does not run OOTB: some additional packages are needed, as it does not ship with _tkinter_ support by default, nor it supports the _AppIndicator_ protocol in a Gnome session. Thus both `python3-tk` and `gir1.2-ayatanaappindicator3` need to be installed using the _apt_ package manager. Moreover, on _Wayland_ sessions the UI appears mangled and the graphic elements are actually unusable: it looks like _tkinter_ only works well in _Xorg_ sessions. Since Gnome does not support indicator icons direcltly, a Gnome shell extension capable of implementing this protocol has to be installed, such as [AppIndicator and KStatusNotifierItem Support](https://extensions.gnome.org/extension/615/appindicator-support/).
 
-Before starting **When** on Debian 12, and before the `poetry install` step described [above](#usage), the following option needs to be set in order to let the Python virtual environment access all the needed system modules:
-
-```shell
-poetry config virtualenvs.options.system-site-packages false
-```
-
-otherwise Python would not reach the modules needed to display the system tray icon and menu.
-
-Research is underway on the possibility to provide **When** in "binary-ish" form too: there are some available tools that use the dependency management features in **poetry** to build packages suitable for various operating systems and their distributions.
-
-A slightly simplified procedure for installiation using [pipx](https://pipx.pypa.io/) can be found [here](support/docs/install.md).
+> **Note**: If **poetry** is used to launch the application on Linux (e.g. Debian 12), then the following option needs to be set in order to let the Python virtual environment access all the needed system modules: `poetry config virtualenvs.options.system-site-packages false` (possibly before the `poetry install` step). Otherwise Python can not reach the modules needed to display the system tray icon and menu.
 
 
 ## Credits

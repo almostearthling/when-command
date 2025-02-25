@@ -32,7 +32,7 @@ The `tool` command provides various utilities that can help in the setup of **Wh
 * `--install-whenever`: downloads and installs the latest version of **whenever** for the current user
 * `--create-shortcuts`: create the **When** desktop shortcuts (for both the configuration utility and for the resident application) for the current user in the _Start_ or _Applications_ menu -- depending on the host platform; accepts the following modifiers
   * `--autostart`: creates a shortcut that launches the resident version of **When** when the user logs in
-  * `--desktop`: also creates icons on the desktop
+  * `--desktop`: also creates icons on the desktop[^1]
 * ...
 * `--quiet`: applies to all the operations described above, and inhibits printing messages to the console.
 
@@ -46,3 +46,5 @@ These subcommands cannot be combined. The **whenever** installation step should 
 
 
 [`◀ Main`](main.md)
+
+[^1]: on some Linux desktop (for example, the most recent versions of Gnome) the deployment of launcher files in the `~/Desktop` subfolder is not honored as a way to create desktop icons, thus the `--desktop` option is actually executed, but has no effect.
