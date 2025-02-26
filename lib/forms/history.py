@@ -17,14 +17,14 @@ from ..icons import OUTCOME_UNKNOWN_ICON16x16 as UNK_ICON
 # form class: this form is fixed and will not be derived
 class form_History(ApplicationForm):
 
-    def __init__(self, history=None, main=False):
+    def __init__(self, wrapper, main=False):
 
         # the main tree view has an increased row size
         style = ttk.Style()
         style.configure('History.Treeview', rowheight=24)
 
         size = AppConfig.get('SIZE_HISTORY_FORM')
-        bbox = (BBOX_CLOSE,)
+        bbox = (BBOX_RELOAD, BBOX_CLOSE,)
         super().__init__(UI_TITLE_HISTORY, size, None, bbox, main)
 
         # list box icons
@@ -33,9 +33,9 @@ class form_History(ApplicationForm):
         self._icon_unknown = get_ui_image(UNK_ICON)
 
         # form data
+        self._wrapper = wrapper
         self._history = []
-        if history:
-            self.set_history(history)
+        self.set_history(self._wrapper.get_history())
 
         # build the UI: build widgets, arrange them in the box, bind data
 
@@ -116,6 +116,13 @@ class form_History(ApplicationForm):
         for entry, outcome in self._history:
             icon = self._icon_ok if outcome == 'OK' else self._icon_unknown if outcome == 'IND' else self._icon_fail
             self._tv_history.insert('', values=entry, index=ttk.END, image=icon)
+
+
+    # reload history data when the `reload` button is clicked
+    def reload(self):
+        self.set_history(self._wrapper.get_history())
+        self._updateform()
+        return super().reload()
 
 
 # end.
