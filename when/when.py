@@ -130,7 +130,7 @@ class App(object):
     # separate, detached thread so that it does not slow down the main loop
     def open_history(self, _):
         if self._window and self._wrapper:
-            form = form_History(self._wrapper.get_history())
+            form = form_History(self._wrapper)
             form.run()
             del form
 
