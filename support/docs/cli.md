@@ -13,12 +13,14 @@ where `COMMAND` is one of the following:
 - `tool` to launch one of the utilities that can help in the setup of a working environment
 - `version` to display version information.
 
-More commands might be supported in the future. `OPTIONS` are the possible options, some of which have effect specific on specific commands:
+More commands might be supported in the future. `OPTIONS` are the possible options, which have effect on specific commands:
 
 - `-D`/`--dir-appdata` _PATH_: specify the application data and configuration directory (default: _%APPDATA%\Whenever_ on Windows, _~/.whenever_ on Linux)
 - `-W`/`--whenever` _PATH_: specify the path to the whenever executable (defaults to the one found in the PATH if any, otherwise exit with error, specific to `start`)
 - `-L`/`--log-level` _LEVEL_: specify the log level, all **whenever** levels are supported (default: _info_, specific to `start`)
 - `-h`/`--help`: print a brief help message about commands and options.
+
+In order to know which options can be used for each command, `when COMMAND --help` can be invoked from the command line, where `COMMAND` is one of the commands described above.
 
 > **Note**: In order to simplify the usage of **When**, many values that could have been implemented as parameters are instead left as defaults that cannot be changed, at least for now, if not via direct intervention on the code.
 
