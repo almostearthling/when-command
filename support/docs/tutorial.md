@@ -30,25 +30,25 @@ We will use the environment variable method to let _restic_ know where the repos
 As we do not want to pollute the environment, we will set tese variables directly in the task definitions. We will define two tasks:
 
 1. the first task will actually backup some directories,
-2. the second task will perform some maintenance in the backups.
+2. the second task will perform some backup repository maintenance.
 
 We want to backup our _Documents_ and our _Pictures_ directories: on Windows they are located respectively in `C:\Users\username\Documents` and `C:\Users\username\Pictures`.
 
 > **Note**: Depending on the amount of data, the first backup can take quite a long time in order to be carried out: consider the option of forcing a full backup by issuing the command `restic backup Documents Pictures` from the command line in your home directory, before automating it using **When**.
 
-First off, we launch the configuration utility: if the program icons for **When** had been created as described in the installation instructions, then clicking _Configure When_ on the desktop or selectiong it in the _Start_ menu should be sufficient. Another option is to launch `when config` from the command line or, if there is an instance of **When** running, to right-click the clock-shaped system tray icon, and to select _Configurator..._ from the context menu. The result is the same: the configuration GUI utility is launched, and we will click the _New_ button, which in turn allows us to select a _Command Based Task_:
+First off, we launch the configuration utility: if the program icons for **When** had been created as described in the installation instructions, then clicking _Configure When_ on the desktop or in the _Start_ menu should be sufficient. Other options are to launch `when config` from the command line or, if there is an instance of **When** running, to right-click the clock-shaped system tray icon, and to select _Configurator..._ from the context menu. The result is the same, apart from what we'll see below for the latter, that is the configuration GUI utility is launched, and we will click the _New_ button, which in turn allows us to select a _Command Based Task_:
 
 ![TutorialBackup01](graphics/tutorial_task_new_cmd01.png)
 
 Clicking _Ok_ takes us to the specific task editor. We choose to start _restic_ in the home directory, in order to only mention subdirectories on the command line: this can be done by specifying the home directory in the _Working Folder_ text entry, which can also be done by selecting it via the three-dotted button on its right side. Actually, for new _Command Based Tasks_, **When** proposes the home directory as the default value for this entry, so in our case it can be just left as it is.
 
-We have to define the two aforementioned variables in our task environment: to do so, for each of them, the name (which on Windows is not case sensitive, but it could be better to respect the casing specified in the _restic_ documentation just to be sure) has to be written in the entry labeled _Variable Name:_, the value in the one labeled _New Value:_, and then the _Update_ button has to be clicked. Clicking _Update_ either sets a new variable (if the name is not present) or updates an existing one.
+We have to define the two aforementioned variables in our task environment: to do so, for each of them, the name (which on Windows is not case sensitive, but it could be better to respect the casing specified in the _restic_ documentation just to be sure) has to be written in the entry labeled _Variable Name_, the value in the one labeled _New Value_, and then the _Update_ button has to be clicked. Clicking _Update_ either sets a new variable (if the name is not present) or updates an existing one.
 
 Before clicking _Ok_ the form should be configured as follows:
 
 ![TutorialBackup02](graphics/tutorial_task_backup01.png)
 
-The reason why we chose to check for a failure in _restic_ and that such failure only occurs with an exit code of _1_ is that this is the exit code that _restic_ uses to inform that no snapshot could be taken at all. Since some files could be open during backup (it will be unattended, after all), maybe _restic_ will not be able to backup really everything. So we consider our backup to be a failure only when it is a total failure.
+The reason why we chose to check for a failure in _restic_ and that such failure only occurs with an exit code of _1_ is that this is the exit code that _restic_ uses to inform that no snapshot could be taken at all. Since some files could be open during backup (it should be unattended, after all), maybe _restic_ will not be able to backup really everything. So we consider our backup to be a failure only when it is a _complete_ failure.
 
 We could have accepted the suggested name for the task, something similar to _CommandTask_086F5F6C49_, but it would have been hardly recognizable when defining under which conditions it should take place.
 
@@ -61,7 +61,7 @@ We also want to perform some maintenance after we backed up our stuff. Namely we
 
 Yes, _restic_ [allows us to do so](https://restic.readthedocs.io/en/stable/060_forget.html#removing-snapshots-according-to-a-policy): everybody loves _restic_ and this is not a surprise to me. Following the documentation we should build a command line like the following:
 
-```text
+```shell
 restic --quiet forget --keep-daily 7 --keep-weekly 4 --keep-monthly 12 --keep-yearly 3 --prune
 ```
 
@@ -100,7 +100,7 @@ Here we just write _3_ in the only available text entry: _minutes_ is the defaul
 
 This example was in the original **When** tutorial, I found it useful on Linux because many utilities leave temporary backups (those files that end with a _tilde_ `~` character) when you modify a file by default. On one hand I didn't want to modify the default settings of all of these utilities, and on the other I didn't like to find my _Documents_ folder full of these files that I had to find and remove from time to time.
 
-This example is on an up-to-date Linux machine, assuming a working Gnome on X.org desktop session, and a simple shell script will be used as the cleanup command. It also assumes that the CLI command to move files to the _Trash_ bin is installed, in order to avoid to completely remove these files, as they could be useful anyway in some cases. If the `trash` command is not available, the following command can be used on Debian based distributions:
+This example takes place on an up-to-date Linux machine, assuming a working Gnome on X.org desktop session, and a simple shell script will be used as the cleanup command. It also assumes that the CLI command to move files to the _Trash_ bin is installed, in order to avoid to completely remove these files, as they could be useful anyway in some cases. If the `trash` command is not available, the following command can be used on Debian based distributions:
 
 ```shell
 sudo apt install trash-cli
@@ -123,7 +123,7 @@ find . -path ./.local/share/Trash -prune \
     -exec trash -f '{}' \;
 ```
 
-and save the file hitting _Ctrl+S_, then _Ctrl+X_ to exit the editor. The reason for the `-path ./.local/share/Trash -prune` line is that, since this script could be started in any directory, including the home directory (where _./.local/share/Trash_ is found), we do not want the script to handle files already in the _Trash_ bin again. Of course, being this a single command, the same command have been placed directly in the _command_ section of a [Command Based Task](tasks.md#command), but a small script does not really introduce extra costs and make things somewhat more clear. At last we change permissions for the script, in order for it to be executable:
+and save the file hitting _Ctrl+S_, then _Ctrl+X_ to exit the editor. The reason for the `-path ./.local/share/Trash -prune` line is that, since this script could be started in any directory, including the home directory (where _./.local/share/Trash_ is found), we do not want the script to handle files already in the _Trash_ bin again. Of course, being this a single command, the same command could have been placed directly in the _command_ section of a [Command Based Task](tasks.md#command), but a small script does not really introduce extra costs and make things somewhat more clear. At last we change permissions for the script, in order for it to be executable:
 
 ```shell
 chmod a+x housekeep.sh
@@ -136,11 +136,13 @@ cd
 when config
 ```
 
-Of course, if **When** is already running, the tray icon can be clicked and _Configure..._ can be selected in the popup menu window. The task has to be created first, and clicking _New_ and selecting a command based task as in the previous example brings up the command task editor form. We just chenge the name of the task to be something more understandable, point to the script as our command and set the working directory:
+Of course, if **When** is already running, the tray icon can be clicked and _Configure..._ can be selected in the popup [menu form](tray.md#menu-form). The task has to be created first, and clicking _New_ and selecting a command based task as in the previous example brings up the command task editor form. We just change the name of the task to be something more understandable, point to the script as our command and set the working directory:
 
-[TutorialChores01](graphics/tutorial_task_chores01.png)
+![TutorialChores01](graphics/tutorial_task_chores01.png)
 
-We leave all other parameters alone, because the script takes no arguments and does not explicitly return anything meaningful. What we want is for it to run from time to time regardless of the outcome: if one or more files could not be sent to the bin, it probably will happen the next time the script runs. Now we set up a condition to tell **whenever** in which case the scrippt has to be run. The script is in fact very lightweight, and it will probably never really disturb us. However, running it on a strict (and possibly tight) time schedule might be overkill: some possible choices that do not depend on time might be
+Note that the _Command_ entry shows the full path of our command: this is because I used the three-dotted button at the side of the entry to open a dialog box that allows to look for the executable file. Actually, if _housekeep.sh_ is in the _PATH_ as expected, we could just type `housekeep.sh` in the entry itself.
+
+We leave all other parameters alone, because the script takes no arguments and does not explicitly return anything meaningful. What we want is for it to run from time to time regardless of the outcome: if one or more files could not be sent to the bin, it probably will happen the next time the script runs. Now we set up a condition to tell **whenever** in which case the script has to be run. The script is in fact very lightweight, and it will probably never really bother us. However, running it on a strict (and possibly tight) time schedule might be overkill: some other possible choices that do not depend on time are
 
 1. on idle time
 2. when the workstation isn't really working a lot
@@ -148,15 +150,17 @@ We leave all other parameters alone, because the script takes no arguments and d
 
 We used the first type of condition in the previous example. The third one might be interesting, but it can lead to a lot of work, especially if the contents of the folder change often (which is likely to happen). So we go for the second option: we click _New_ again, select _Condition_ as item type, and choose a [System Load Below Threshold Condition](cond_extra01.md#system-load):
 
-[TutorialChores02](graphics/tutorial_cond_new_chores01.png)
+![TutorialChores02](graphics/tutorial_cond_new_chores01.png)
 
-Clicking _Ok_ takes us to the condition editor. In the common section we just change the condition name and specify the task to be run, by selecting it from the drop down list. It will be the only task, so every other common option has little or no influence, and we leave them as per default:
+Clicking _Ok_ takes us to the condition editor. In the common section we change the condition name and specify the task to be run, by selecting it from the drop down list. It will be the only task, so every other common option has little or no influence, and we leave them as per default:
 
-[TutorialChores03](graphics/tutorial_cond_chores01.png)
+![TutorialChores03](graphics/tutorial_cond_chores01.png)
 
-The name is now _SystemLoad_HouseKeeping_, which is meaningful enough for us. Going to the common section, we can leave the value for the _Load is Below_ entry as _3%_ (that is, the default): it is quite low but not completely unlikely to happen on most modern workstations. Of course your case could be different, and a higher value might be more appropriate.
+The name is now _SystemLoad_HouseKeeping_, which is meaningful enough for us. We also checked the _Check condition recurrently_ option: we said that we want to run the script from time to time during the session, and leaving the option unchecked means that the script will be executed only once per session -- that is, after the first _successful_ condition check, no more checks will take place.[^1]
 
-[TutorialChores04](graphics/tutorial_cond_chores02.png)
+Going to the common section, we can leave the value for the _Load is Below_ entry as _3%_ (that is, the default): it is quite low but not completely unlikely to happen on most modern workstations. Of course your case could be different, and a higher value might be more appropriate.
+
+![TutorialChores04](graphics/tutorial_cond_chores02.png)
 
 After clicking _Ok_ we are done: we can now save our new configuration and it will be active at the next start of **When**. Or, as in the previous example, **When** can reload the configuration by clicking the _Reload_ button -- which is available if the configuration has been edited accessing the configuration utility from the popup menu in a running **When** instance.
 
@@ -175,3 +179,6 @@ There are many ways to use **When** as an automation tool, this tutorial only sh
 
 
 [`◀ Main`](main.md)
+
+
+[^1]: Unless task outcomes are taken into account, and **whenever** is instructed to insist checking the condition until associated tasks run successfully.
