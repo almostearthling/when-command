@@ -35,11 +35,11 @@ import shutil
 
 
 # resource strings (not internationalized)
-ITEM_HR_NAME = "System Load Below Treshold Condition"
+ITEM_HR_NAME = "System Load Below Threshold Condition"
 
 _UI_FORM_TITLE = "%s: System Load Condition Editor" % UI_APP
 
-_UI_FORM_SYSLOADTRESHOLD_SC = "Load is Below:"
+_UI_FORM_SYSLOADTHRESHOLD_SC = "Load is below:"
 
 
 # default values
@@ -89,7 +89,7 @@ class SystemLoadCondition(CommandCondition):
         else:
             self.tags = table()
             self.tags.append('subtype', self.subtype)
-            self.tags.append('treshold', _DEFAULT_LOW_LOAD_PERC)
+            self.tags.append('threshold', _DEFAULT_LOW_LOAD_PERC)
         self.updateitem()
 
     def updateitem(self):
@@ -97,14 +97,14 @@ class SystemLoadCondition(CommandCondition):
             self.command = "pwsh.exe"
             self.command_arguments = [
                 "-Command",
-                "If ((Get-CimInstance -Class Win32_Processor).LoadPercentage -lt %s) { echo OK }" % self.tags.get('treshold', _DEFAULT_LOW_LOAD_PERC),
+                "If ((Get-CimInstance -Class Win32_Processor).LoadPercentage -lt %s) { echo OK }" % self.tags.get('threshold', _DEFAULT_LOW_LOAD_PERC),
             ]
             self.success_stdout = "OK"
         elif sys.platform == 'linux':
             self.command = "bash"
             self.command_arguments = [
                 "-c",
-                "echo '%s <' `vmstat | tail -1 | awk '{print \$14}'` | bc" % self.tags.get('treshold', _DEFAULT_LOW_LOAD_PERC),
+                "echo '%s <' `vmstat | tail -1 | awk '{print \$14}'` | bc" % self.tags.get('threshold', _DEFAULT_LOW_LOAD_PERC),
             ]
             self.success_stdout = "1"
         self.startup_path = "."
@@ -130,13 +130,13 @@ class form_SystemLoadCondition(form_Condition):
         PAD = WIDGET_PADDING_PIXELS
 
         # build the UI elements as needed and configure the layout
-        l_treshold = ttk.Label(area, text=_UI_FORM_SYSLOADTRESHOLD_SC)
-        e_treshold = ttk.Entry(area)
+        l_threshold = ttk.Label(area, text=_UI_FORM_SYSLOADTHRESHOLD_SC)
+        e_threshold = ttk.Entry(area)
         l_percent = ttk.Label(area, text="%")
-        self.data_bind('treshold', e_treshold, TYPE_INT, lambda x: 0 < x < 100)
+        self.data_bind('threshold', e_threshold, TYPE_INT, lambda x: 0 < x < 100)
 
-        l_treshold.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
-        e_treshold.grid(row=0, column=1, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        l_threshold.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        e_threshold.grid(row=0, column=1, sticky=tk.NSEW, padx=PAD, pady=PAD)
         l_percent.grid(row=0, column=2, sticky=tk.E, padx=PAD, pady=PAD)
 
         area.columnconfigure(1, weight=1)
@@ -147,12 +147,12 @@ class form_SystemLoadCondition(form_Condition):
 
     # update the form with the specific parameters (usually in the `tags`)
     def _updateform(self):
-        self.data_set('treshold', self._item.tags.get('treshold'))
+        self.data_set('threshold', self._item.tags.get('threshold'))
         return super()._updateform()
 
     # update the item from the form elements (usually update `tags`)
     def _updatedata(self):
-        self._item.tags['treshold'] = self.data_get('treshold')
+        self._item.tags['threshold'] = self.data_get('threshold')
         self._item.updateitem()
         return super()._updatedata()
 

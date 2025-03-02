@@ -1,5 +1,6 @@
 # command task form
 
+import sys
 from os.path import normpath
 
 from ..i18n.strings import *
@@ -187,10 +188,11 @@ class form_CommandTask(form_Task):
 
         # bind data to widgets
         self.data_bind('command', e_command, TYPE_STRING)
-        # the following would be optimal, but it is too strict
-        # self.data_bind('command', e_command, TYPE_STRING, _is_command)
         self.data_bind('command_arguments', e_args, TYPE_STRING)
-        self.data_bind('startup_path', e_startupPath, TYPE_STRING, _is_dir)
+        self.data_bind('startup_path', e_startupPath, TYPE_STRING)
+        # the following checks would be optimal, but are actually too strict
+        # self.data_bind('command', e_command, TYPE_STRING, _is_command)
+        # self.data_bind('startup_path', e_startupPath, TYPE_STRING, _is_dir)
         self.data_bind('include_environment', ck_preserveEnv)
         self.data_bind('set_environment_variables', ck_setEnvVars)
         self.data_bind('envvar_selection', tv_vars)
@@ -363,12 +365,13 @@ class form_CommandTask(form_Task):
         self.data_set('newvalue', value)
 
     def browse_command(self):
-        exts = get_executable_extensions()
-        if exts:
-            execs_list = ' '.join(exts)
-        else:
-            execs_list = None
-        entry = filedialog.askopenfilename(parent=self.dialog, filetypes=[(UI_FILETYPE_EXECUTABLES, execs_list)])
+        filetypes=[(UI_FILETYPE_ALL, ".*")]
+        if sys.platform == "win32":
+            exts = get_executable_extensions()
+            if exts:
+                execs_list = ' '.join(exts)
+                filetypes.insert(0, (UI_FILETYPE_EXECUTABLES, execs_list))
+        entry = filedialog.askopenfilename(parent=self.dialog, filetypes=filetypes)
         if entry:
             self.data_set('command', entry)
 
