@@ -5,7 +5,7 @@ The condition items described here cover various different aspects of a session,
 
 ## System Load
 
-This test verifies whether or not the system load is below a certain percentage and, if so, runs the related tasks. The only available specific parameter is the percentage treshold below which the test is considered successful.
+This test verifies whether or not the system load is below a certain percentage and, if so, runs the related tasks. The only available specific parameter is the percentage threshold below which the test is considered successful.
 
 ![WhenCondExtraSysload](graphics/when-cond-extra-sysload.png)
 
@@ -14,7 +14,7 @@ The item can be used on Windows and Linux systems, and depends on the availabili
 
 ## Low Battery
 
-This test checks whether the battery is draining and its charge is below a certain percentage and, if so, runs the related tasks. The only available specific parameter is the percentage treshold below which the test is considered successful.
+This test checks whether the battery is draining and its charge is below a certain percentage and, if so, runs the related tasks. The only available specific parameter is the percentage threshold below which the test is considered successful.
 
 ![WhenCondExtraSysload](graphics/when-cond-extra-batterylow.png)
 
@@ -23,7 +23,7 @@ The item can be used on Windows and Linux systems, and depends on the availabili
 
 ## Charging Battery
 
-This test checks whether the battery is charging and its charge is above a certain percentage and, if so, runs the related tasks. The only available specific parameter is the percentage treshold above which the test is considered successful.
+This test checks whether the battery is charging and its charge is above a certain percentage and, if so, runs the related tasks. The only available specific parameter is the percentage threshold above which the test is considered successful.
 
 ![WhenCondExtraSysload](graphics/when-cond-extra-batterycharging.png)
 
