@@ -13,7 +13,7 @@ The list, representing the last completed tasks in descending time order (that i
 * _OK_: a sign indicating the outcome: a checkmark for a positive outcome, a cross for a negative one, the empty set sign for undetermined results
 * _Message_: additional information provided by **whenever**
 
-The history box does not capture results in real time, it just displays the results at the time of its display. Only the latest 100 results are displayed -- this might become a configurable parameter in further versions.
+The history box does not capture results in real time, but the _Reload_ button can be used to update its contents instantly. Only the latest 100 results are displayed -- this might become a configurable parameter in further versions.
 
 
 ## See Also
