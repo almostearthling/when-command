@@ -4,7 +4,7 @@
 UI_APP = "When"
 UI_APP_LABEL = "When Automation Tool"
 UI_APP_COPYRIGHT = "© 2023-2025 Francesco Garosi"
-UI_APP_VERSION = "1.9.8b1"
+UI_APP_VERSION = "1.9.9b1"
 
 # item types
 ITEM_TASK = "Task"
@@ -317,6 +317,7 @@ UI_TRAY_MENU_CONFIGURE = "Configurator..."
 
 # file type labels for Open File dialogs
 UI_FILETYPE_EXECUTABLES = "Executable files"
+UI_FILETYPE_ALL = "All files"
 
 
 # symbols
