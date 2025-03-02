@@ -41,6 +41,7 @@ The documentation handles the following topics:
 * [Condition](conditions.md) Editors
 * [Event](events.md) Editors
 * [Toolbox](cli.md#toolbox)
+* A simple [tutorial](tutorial.md)
 * Generated [Configuration Files](configfile.md)
 
 For more information about the companion tools, **whenever** and **whenever_tray**, please refer to their respective above-mentioned repositories.
