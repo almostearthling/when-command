@@ -6,7 +6,6 @@ _Requirements_:
 
 * [Python](https://www.python.org/) in a recent release (at least version 3.11)
 * [pipx](https://pipx.pypa.io/)
-* [git](https://git-scm.com/)
 * [whenever](https://github.com/almostearthling/whenever), possibly the latest binary [release](https://github.com/almostearthling/whenever/releases)
 
 Note that even though a [recent release](https://github.com/almostearthling/whenever/releases/latest) of **whenever** is required for **When** to work as intended, **When** itself can be used to properly install and configure the core scheduler as described below.
@@ -16,16 +15,14 @@ Note that even though a [recent release](https://github.com/almostearthling/when
 
 The following steps can be followed on both Windows 10 and Windows 11:
 
-1. install **Python** and **git**[^1] using the provided installers
+1. install **Python** using one of the official installation methods
 2. install pipx by issuing the command `py -m pip install --user pipx` in a console window: after installation launch `pipx ensurepath` from the command prompt
-3. install **When** from its stable branch, using **pipx**: `pipx install git+https://github.com/almostearthling/when-command.git`
+3. install the latest release of **When**, using **pipx**: `pipx install https://github.com/almostearthling/when-command/releases/latest/download/when-command-latest.zip`
 4. close the current console window, and open a new one: this is to ensure that the updated `PATH` environemnt variable is active
 5. install **whenever** using the **When** installation tool: `when --install-whenever`
 6. launch the configuration utility, by typing `when config` on the command line: create a task and a condition of your choice, and save the configuration file by clicking the _Save_ button.
 
-Once a configuration is available, the resident application can be started from the command line using the `when start` command. A shortcut can be created, using just `when start` as the command to execute, using the tools provided by Windows in order to add it to the _Startup Applications_. Development of an automated way to achieve this is underway.
-
-On Windows, the command `when-bg` can be used instead of `when` in order to launch the application _detached_ from a console window: when creating shortcuts, either to launch the [configuration utility](cfgform.md) or to start the [resident tray frontend](tray.md), it is better to use `when-bg` in order to avoid having a foreground console window in the way.
+Once a configuration is available, the resident application can be started from the command line using the `when start` command. A shortcut can be created as described [below](#create-application-icons). On Windows, the `when-bg` command can be used instead of `when` to launch the application _detached_ from a console window.
 
 
 ## Linux
@@ -45,12 +42,12 @@ The following steps can be followed on an updated version of Debian Linux 12:
 
    ![GnomeExtensionManager](graphics/install-linux-extmgr.png)
 
-8. install **When** from its stable branch, using **pipx**: `pipx install git+https://github.com/almostearthling/when-command.git`
+8. install the latest release of **When**, using **pipx**: `pipx install https://github.com/almostearthling/when-command/releases/latest/download/when-command-latest.zip`
 9. close the current console window, and open a new one: this is to ensure that the updated `PATH` environemnt variable is active
 10. install **whenever** using the **When** installation tool: `when --install-whenever`
 11. launch the configuration utility, by typing `when config` on the command line: create a task and a condition of your choice, and save the configuration file by clicking the _Save_ button.
 
-Once a configuration is available, the resident application can be started from the command line using the `when start` command. A shortcut can be created, using just `when start` as the command to execute, using the tools provided by Gnome in order to add it to the _Startup Applications_. Development of an automated way to achieve this is underway. The `when-bg` command also exists on Linux, but its behaviour is absolutely identical to `when`.
+Once a configuration is available, the resident application can be started from the command line using the `when start` command. A shortcut can be created as described [below](#create-application-icons). The `when-bg` command also exists on Linux, but its behaviour is absolutely identical to `when`.
 
 
 ## Create Application Icons
@@ -77,6 +74,3 @@ Both the installation of **When** using the **pipx** method and the installation
 
 
 [`◀ Main`](main.md)
-
-
-[^1]: only temporarily: **git** should not be needed anymore when a _ZIP_ release will be made available.
