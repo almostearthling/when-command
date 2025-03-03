@@ -66,6 +66,11 @@ class App(object):
     # the icon is created **after** creating the root window, because a root
     # is needed to be active for this purpose
     def __init__(self):
+        # the following lines solve the wrong icon problem on Windows
+        if sys.platform == "win32":
+            import ctypes
+            myappid = 'when.python.application'
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
         self._window = get_tkroot()
         self._window.withdraw()
         self._icon = ImageTk.PhotoImage(get_image(APP_ICON))
