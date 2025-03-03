@@ -9,7 +9,7 @@ _Requirements_:
 * [git](https://git-scm.com/)
 * [whenever](https://github.com/almostearthling/whenever), possibly the latest binary [release](https://github.com/almostearthling/whenever/releases)
 
-Note that even though a [recent release](https://github.com/almostearthling/whenever/releases/latest) of **whenever** is required for **When** to work as intended, **When** itself can be used to properly install and configure the core scheduler as described [below](#installation-completion).
+Note that even though a [recent release](https://github.com/almostearthling/whenever/releases/latest) of **whenever** is required for **When** to work as intended, **When** itself can be used to properly install and configure the core scheduler as described below.
 
 
 ## Windows
@@ -18,9 +18,9 @@ The following steps can be followed on both Windows 10 and Windows 11:
 
 1. install **Python** and **git**[^1] using the provided installers
 2. install pipx by issuing the command `py -m pip install --user pipx` in a console window: after installation launch `pipx ensurepath` from the command prompt
-3. download the latest release of **whenever** from the [releases page](https://github.com/almostearthling/whenever/releases), extract its contents and copy the two executables, _whenever.exe_ and _whenever_tray.exe_ to `%USERPROFILE%\.local\bin` (which has been created by **pipx**)
-4. install **When** from its stable branch, using **pipx**: `pipx install git+https://github.com/almostearthling/when-command.git`
-5. close the current console window, and open a new one: this is to ensure that the updated `PATH` environemnt variable is active
+3. install **When** from its stable branch, using **pipx**: `pipx install git+https://github.com/almostearthling/when-command.git`
+4. close the current console window, and open a new one: this is to ensure that the updated `PATH` environemnt variable is active
+5. install **whenever** using the **When** installation tool: `when --install-whenever`
 6. launch the configuration utility, by typing `when config` on the command line: create a task and a condition of your choice, and save the configuration file by clicking the _Save_ button.
 
 Once a configuration is available, the resident application can be started from the command line using the `when start` command. A shortcut can be created, using just `when start` as the command to execute, using the tools provided by Windows in order to add it to the _Startup Applications_. Development of an automated way to achieve this is underway.
@@ -40,34 +40,28 @@ The following steps can be followed on an updated version of Debian Linux 12:
 3. as root, install the _Gnome shell extension manager_: `su - root -c "apt install gnome-shell-extension-manager"` (same as above)
 4. as root, install the **pip** and **pipx** Python modules: `su - root -c "apt install python3-pip pipx"` (same as above)
 5. in a different terminal window, _not_ as root, launch `pipx ensurepath` from the terminal
-6. download the latest release of **whenever** from the [releases page](https://github.com/almostearthling/whenever/releases), extract its contents and copy the two executables, _whenever_ and _whenever_tray_ to `$HOME/.local/bin` (which has been created by **pipx**)
-7. start the _Gnome shell extension manager_, named simply _Extension Manager_ in the activities dashboard
-8. choose the _Browse_ tab and scroll down to find _AppIndicator and KStatusNotifierItem Support_ and install it
+6. start the _Gnome shell extension manager_, named simply _Extension Manager_ in the activities dashboard
+7. choose the _Browse_ tab and scroll down to find _AppIndicator and KStatusNotifierItem Support_ and install it
 
    ![GnomeExtensionManager](graphics/install-linux-extmgr.png)
 
-9. install **When** from its stable branch, using **pipx**: `pipx install git+https://github.com/almostearthling/when-command.git`
-10. close the current console window, and open a new one: this is to ensure that the updated `PATH` environemnt variable is active
+8. install **When** from its stable branch, using **pipx**: `pipx install git+https://github.com/almostearthling/when-command.git`
+9. close the current console window, and open a new one: this is to ensure that the updated `PATH` environemnt variable is active
+10. install **whenever** using the **When** installation tool: `when --install-whenever`
 11. launch the configuration utility, by typing `when config` on the command line: create a task and a condition of your choice, and save the configuration file by clicking the _Save_ button.
 
 Once a configuration is available, the resident application can be started from the command line using the `when start` command. A shortcut can be created, using just `when start` as the command to execute, using the tools provided by Gnome in order to add it to the _Startup Applications_. Development of an automated way to achieve this is underway. The `when-bg` command also exists on Linux, but its behaviour is absolutely identical to `when`.
 
 
-## Installation Completion
+## Create Application Icons
 
-Once **When** has been installed, the `tool` command can be used to complete the setup. This _subcommand_
-
-```shell
-when tool --install-whenever
-```
-
-will download the **most recent** stable release of **whenever** in a suitable location, and make it available for the launcher. The `--create-icons` subcommand, instead, can be used to create icons either in the _Start_ or _Applications_ menu, and on the user desktop. In particular, the following _subcommand_:
+The `--create-icons` subcommand can be used to create icons in the _Start_ or _Applications_ menu, and on the user desktop. In particular, the following _subcommand_:
 
 ```shell
 when tool --create-icons --autostart
 ```
 
-will create the appropriate icons in the manu _and_ create a shortcut that allows **When** to be launched each time an user session is started.
+will create the appropriate icons in the menu _and_ create a shortcut that launches **When** and activates the **whenever** scheduler each time the desktop session is started.
 
 
 ## Installation Scope
@@ -77,6 +71,7 @@ Both the installation of **When** using the **pipx** method and the installation
 
 ## See Also
 
+* [Toolbox](cli.md#toolbox)
 * [Configuration Utility](cfgform.md)
 * [Resident Wrapper](tray.md)
 

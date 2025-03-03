@@ -4,7 +4,7 @@ Dealing with **When** forms for the various kinds of items, with all the paramet
 
 In this chapter I will try to illustrate some real life use cases of **When**, step by step: in fact these use cases come from what I use (or have been using) it for.
 
-The examples assume that **When** has been installed using the [suggested method](install.md), and that **whenever** is also available: a simple installation procedure is described [here](install.md#installation-completion).
+The examples assume that **When** has been installed using the [suggested method](install.md), and that, therefore, **whenever** is also available.
 
 
 ## Automated Backups
