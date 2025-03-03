@@ -43,6 +43,7 @@ These subcommands cannot be combined. The **whenever** installation step should 
 
 ## See Also
 
+* [Installation](install.md)
 * [Configuration Utility](cfgform.md)
 * [Resident Wrapper](tray.md)
 
