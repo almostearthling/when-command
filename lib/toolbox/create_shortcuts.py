@@ -107,10 +107,9 @@ elif sys.platform == "linux":
         appsdir = os.path.join(homedir, ".local", "share", "applications")
         autostartdir = os.path.join(homedir, ".config", "autostart")
         desktopdir = os.path.join(homedir, "Desktop")
-        if not os.path.isdir(appsdir):
-            os.makedirs(appsdir)
-        if not os.path.isdir(icondir):
-            os.makedirs(icondir)
+        for d in [icondir, appsdir, autostartdir, desktopdir]:
+            if not os.path.isdir(d):
+                os.makedirs(d)
         # create a symlink to the icon in icondir
         icon_path = os.path.join(icondir, "when-scheduler.png")
         if not os.path.exists(icon_path):
