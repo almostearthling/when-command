@@ -34,18 +34,20 @@ The following steps can be followed on an updated version of Debian Linux 12:
    ![GnomeLogin](graphics/install-gnome-login.png)
 
 2. as root, install the development toolchain: `su - root -c "apt install build-essential"` (enter the root password when prompted)
-3. as root, install the _Gnome shell extension manager_: `su - root -c "apt install gnome-shell-extension-manager"` (same as above)
-4. as root, install the **pip** and **pipx** Python modules: `su - root -c "apt install python3-pip pipx"` (same as above)
-5. in a different terminal window, _not_ as root, launch `pipx ensurepath` from the terminal
-6. start the _Gnome shell extension manager_, named simply _Extension Manager_ in the activities dashboard
-7. choose the _Browse_ tab and scroll down to find _AppIndicator and KStatusNotifierItem Support_ and install it
+3. as root, install the necessary libraries for **whenever**: `su - root -c "apt install pkg-config libx11-dev libdbus-1-dev libxss-dev"` (see above)
+4. as root, install the dependencies for DBus in **When**: `su - root -c "apt install libglib2.0-dev libdbus-1-dev"` (see above)
+5. as root, install the _Gnome shell extension manager_: `su - root -c "apt install gnome-shell-extension-manager"` (see above)
+6. as root, install the **pip** and **pipx** Python modules: `su - root -c "apt install python3-tk python3-pip pipx"` (see above)
+7. in a different terminal window, _not_ as root, launch `pipx ensurepath` from the terminal
+8. start the _Gnome shell extension manager_, named simply _Extension Manager_ in the activities dashboard
+9. choose the _Browse_ tab and scroll down to find _AppIndicator and KStatusNotifierItem Support_ and install it
 
    ![GnomeExtensionManager](graphics/install-linux-extmgr.png)
 
-8. install the latest release of **When**, using **pipx**: `pipx install https://github.com/almostearthling/when-command/releases/latest/download/when-command-latest.zip`
-9. close the current console window, and open a new one: this is to ensure that the updated `PATH` environemnt variable is active
-10. install **whenever** using the **When** installation tool: `when --install-whenever`
-11. launch the configuration utility, by typing `when config` on the command line: create a task and a condition of your choice, and save the configuration file by clicking the _Save_ button.
+10. install the latest release of **When**, using **pipx**: `pipx install https://github.com/almostearthling/when-command/releases/latest/download/when-command-latest.zip`
+11. close the current console window, and open a new one: this is to ensure that the updated `PATH` environemnt variable is active
+12. install **whenever** using the **When** installation tool: `when --install-whenever`
+13. launch the configuration utility, by typing `when config` on the command line: create a task and a condition of your choice, and save the configuration file by clicking the _Save_ button.
 
 Once a configuration is available, the resident application can be started from the command line using the `when start` command. A shortcut can be created as described [below](#create-application-icons). The `when-bg` command also exists on Linux, but its behaviour is absolutely identical to `when`.
 
@@ -59,6 +61,23 @@ when tool --create-icons --autostart
 ```
 
 will create the appropriate icons in the menu _and_ create a shortcut that launches **When** and activates the **whenever** scheduler each time the desktop session is started.
+
+
+## Upgrade
+
+The upgrade process is quite easy with this type of setup, and it just consists in the following command, issued from a terminal or command window (depending on the host operating system):
+
+```shell
+pipx upgrade when
+```
+
+and there is no need to recreate the program icons, as the existing ones will continue to work. It might be necessary to stop **When** during the upgrade process. To upgrade **whenever** it is sufficient to repeat its installation step, that is:
+
+```shell
+when tool --install-whenever
+```
+
+which will always download and install the most recent binary release.
 
 
 ## Installation Scope
