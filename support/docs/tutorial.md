@@ -57,7 +57,7 @@ If the configuration utility had been launched through a [running instance](tray
 
 ## Automated Backups
 
-In this example I will use [restic](https://restic.net/) as a personal backup tool: it is a great piece of software, which offers features normally available in professional backup tools in a streamlined CLI interface, can be used with an unimaginable amount of backends directly or by means of another great tool, that is [rclone](https://rclone.org/). Both are opensource, and both are very actively developed. I'll assume that you already [installed](https://restic.readthedocs.io/en/stable/020_installation.html) _restic_ to [initialize](https://restic.readthedocs.io/en/stable/030_preparing_a_new_repo.html) a repository, for instance on a locally mounted SD card on a Windows PC. The process is as easy as the following interactive CLI session (via the _Terminal_ app or by manually starting `cmd`):
+In this example I will use [restic](https://restic.net/) as a personal backup tool: it is a great piece of software, which offers features normally available in professional backup systems in a streamlined CLI interface, can be used with an unimaginable amount of backends directly or by means of another great utility, that is [rclone](https://rclone.org/). Both are open source, and both are very actively developed. I'll assume that you already [installed](https://restic.readthedocs.io/en/stable/020_installation.html) _restic_ to [initialize](https://restic.readthedocs.io/en/stable/030_preparing_a_new_repo.html) a repository, for instance on a locally mounted SD card on a Windows PC. The process is as easy as the following interactive CLI session (via the _Terminal_ app or by manually starting `cmd`):
 
 ```text
 C:\Users\username> restic init --repo E:\Backups\bk_username
@@ -84,7 +84,7 @@ We want to backup our _Documents_ and our _Pictures_ directories: on Windows the
 
 > **Note**: Depending on the amount of data, the first backup can take quite a long time in order to be carried out: consider the option of forcing a full backup by issuing the command `restic backup Documents Pictures` from the command line in your home directory, before automating it using **When**.
 
-First off, we launch the configuration utility: if the program icons for **When** had been created as described in the installation instructions, then clicking _Configure When_ on the desktop or in the _Start_ menu should be sufficient. Other options are to launch `when config` from the command line or, if there is an instance of **When** running, to right-click the clock-shaped system tray icon, and to select _Configurator..._ from the context menu. The result is the same, apart from what we'll see below for the latter, that is the configuration GUI utility is launched, and we will click the _New_ button, which in turn allows us to select a _Command Based Task_:
+First off, we launch the configuration utility: if the program icons for **When** had been created as described in the installation instructions, then clicking _Configure When_ on the desktop or in the _Start_ menu should be sufficient. Other options are to launch `when config` from the command line or, if there is an instance of **When** running, to right-click the clock-shaped system tray icon, and to select _Configurator_ from the context menu. The result is the same, apart from what we'll see below for the latter, that is the configuration GUI utility is launched, and we will click the _New_ button, which in turn allows us to select a _Command Based Task_:
 
 ![TutorialBackup01](graphics/tutorial_task_new_cmd01.png)
 
@@ -171,7 +171,7 @@ find . -path ./.local/share/Trash -prune \
     -exec trash -f '{}' \;
 ```
 
-and save the file hitting _Ctrl+S_, then _Ctrl+X_ to exit the editor. The reason for the `-path ./.local/share/Trash -prune` line is that, since this script could be started in any directory, including the home directory (where _./.local/share/Trash_ is found), we do not want the script to handle files already in the _Trash_ bin again. Of course, being this a single command, the same command could have been placed directly in the _command_ section of a [Command Based Task](tasks.md#command), but a small script does not really introduce extra costs and make things somewhat more clear. At last we change permissions for the script, in order for it to be executable:
+and save the file hitting _Ctrl+S_, then _Ctrl+X_ to exit the editor. The reason for the `-path ./.local/share/Trash -prune` line is that, since this script could be started in any directory, including the home directory (where _./.local/share/Trash_ is found), we do not want the script to handle files already in the _Trash_ bin again. Of course, being this a single command, the same command could have been placed directly in the _command_ section of a [Command Based Task](tasks.md#command), but a small script does not really introduce extra costs and makes things somewhat more clear. At last we change permissions for the script, in order for it to be executable:
 
 ```shell
 chmod a+x housekeep.sh
@@ -184,7 +184,7 @@ cd
 when config
 ```
 
-Of course, if **When** is already running, the tray icon can be clicked and _Configure..._ can be selected in the popup [menu form](tray.md#menu-form). The task has to be created first, and clicking _New_ and selecting a command based task as in the previous example brings up the command task editor form. We just change the name of the task to be something more understandable, point to the script as our command and set the working directory:
+Of course, if **When** is already running, the tray icon can be clicked and _Configurator_ can be selected in the popup [menu form](tray.md#menu-form). The task has to be created first, and clicking _New_ and selecting a command based task as in the previous example brings up the command task editor form. We just change the name of the task to be something more understandable, point to the script as our command and set the working directory:
 
 ![TutorialChores01](graphics/tutorial_task_chores01.png)
 
