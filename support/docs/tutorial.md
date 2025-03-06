@@ -4,7 +4,55 @@ Dealing with **When** forms for the various kinds of items, with all the paramet
 
 In this chapter I will try to illustrate some real life use cases of **When**, step by step: in fact these use cases come from what I use (or have been using) it for.
 
+The proposed examples are the following:
+
+* implementation of a [simple trace](#simple-trace) task
+* how to easily [automate backups](#automated-backups)
+* [cleanup](#temporary-files-cleanup) some temporary files
+
+and every example start by invoking the main configuration window:
+
+![Config01](graphics/tutorial_config_main01.png)
+
+either from the [command line](cli.md) or by selecting _Configurator_ from the menu while **When** is [running in the background](tray.md).
+
 The examples assume that **When** has been installed using the [suggested method](install.md), and that, therefore, **whenever** is also available.
+
+
+## Simple Trace
+
+It's sometimes useful to have the ability to trace the configuration of one or more conditions for debug puropses: configuring a condition can sometimes be awful, especially when it is one of the most complex ones (such as a [command](cond_actionrelated.md#command) or a [Lua](cond_actionrelated.md#lua-script) based condition), and you might just want to test your condition with no side effects other than dropping a line to the log. For this I use a simple _trace_ task, consisting in a minimal Lua script:
+
+```lua
+log.warn("Trace: *** VERIFIED CONDITION *** `" .. whenever_condition .. "`");
+```
+
+that exploits the [abilities](https://github.com/almostearthling/whenever/tree/development?tab=readme-ov-file#lua-script-tasks) of the internal Lua interpreter to
+
+* access the name of the condition that triggered it
+* write log messages at different severity levels.
+
+To create such a task, we only need to click _New_ in the main configuration window (which can be accessed either from the popup menu of a running instance, or by typing `when config` in a terminal or console window), and select a _Lua Script Based Task_ from the list:
+
+![Trace01](graphics/tutorial_task_new_lua01.png)
+
+then change the name to _TRACE_ (or whatever else that is meaningful: just remember that item names must begin with a letter, followed by alphanumeric characters and underscores, and that these names are case sensitive) and paste the script found above in the task editor _Script_ section:
+
+![Trace02](graphics/tutorial_task_lua01.png)
+
+Since this is just a _trace_ task, we do not need to check any result results, thus we just click ok. Just for the sake of completing the process, we will also define a condition to trigger the _TRACE_ task every minute. In the main configuration window, click _New_, and in the item type dialog select first _Condition_ in the upper part, and then select _Interval Based Condition_ and click _OK_. The condition editor is opened: conditions are more complex than tasks, and the editor form has two tabs, of which the first is for common parameters, and the second for parameters that are specific for this type of condition. The name and the tasks to be run belong to the common part, so we change the name to something meaningful (in our example it is _Periodic_60sec_). Since we want to run the task periodically, we must also ensure that the _Check condition recurrently_ has a tick, otherwise the _TRACE_ task will run only once, a minute after _When_ has started. After this, we select _TRACE_ from the drop down list labeled _Task_ and click the _Add_ button at its right. The scenario is now the following:
+
+![Trace03](graphics/tutorial_cond_interval01.png)
+
+and we still have to specify the "one minute" part. Being this specific to _interval_ based conditions, we can find it in the other section, corresponding to the _Specific parameters_ tab:
+
+![Trace04](graphics/tutorial_cond_interval02.png)
+
+We only have to enter _1_ in the input box, and leave the unit of measure drop down list alone, as it defaults to _minutes_. Now we can click _OK_ and, when back to the main configuration box, click on _Save_ to save our changes: **When** may ask us to confirm that we want to overwrite the file if present, which is true most of the times. Since the configuration file cannot be saved elsewhere, so we have to answer positively unless we want to discard it.
+
+If the configuration utility had been launched through a [running instance](tray.md) of **When**, then a _Reload_ button is available: this can be used to force the new configuration to be reloaded and the new items to be active immediately without the need to restart **When**. If you do not click _Reload_ (or if you don't confirm), the new configuration will be available at the next start of **When** -- usually, after the subsequent login.
+
+> **Note**: This example corresponds to the basic initial configuration that is suggested in the **whenever** installation instructions, that can be found in its [releases](https://github.com/almostearthling/whenever/releases/latest/) pages and in the binary distribution.
 
 
 ## Automated Backups
@@ -40,11 +88,11 @@ First off, we launch the configuration utility: if the program icons for **When*
 
 ![TutorialBackup01](graphics/tutorial_task_new_cmd01.png)
 
-Clicking _Ok_ takes us to the specific task editor. We choose to start _restic_ in the home directory, in order to only mention subdirectories on the command line: this can be done by specifying the home directory in the _Working Folder_ text entry, which can also be done by selecting it via the three-dotted button on its right side. Actually, for new _Command Based Tasks_, **When** proposes the home directory as the default value for this entry, so in our case it can be just left as it is.
+Clicking _OK_ takes us to the specific task editor. We choose to start _restic_ in the home directory, in order to only mention subdirectories on the command line: this can be done by specifying the home directory in the _Working Folder_ text entry, which can also be done by selecting it via the three-dotted button on its right side. Actually, for new _Command Based Tasks_, **When** proposes the home directory as the default value for this entry, so in our case it can be just left as it is.
 
 We have to define the two aforementioned variables in our task environment: to do so, for each of them, the name (which on Windows is not case sensitive, but it could be better to respect the casing specified in the _restic_ documentation just to be sure) has to be written in the entry labeled _Variable Name_, the value in the one labeled _New Value_, and then the _Update_ button has to be clicked. Clicking _Update_ either sets a new variable (if the name is not present) or updates an existing one.
 
-Before clicking _Ok_ the form should be configured as follows:
+Before clicking _OK_ the form should be configured as follows:
 
 ![TutorialBackup02](graphics/tutorial_task_backup01.png)
 
@@ -75,11 +123,11 @@ Ideally, the backup task should be run before the maintenance one. Also ideally,
 
 Now it's time to decide _when_ our backups have to take place: backups can be a lengthy (and noisy, considering fans) operation, thus I usually prefer that they are performed when I'm not using my laptop. So we will configure a condition that roughly indicates that we are away for a coffee. An idle time of three minutes should be enough for that. Moreover, choose not to backup more than once per session.
 
-We click on _New_ again, and this time we select _Condition_ as item type, _Idle Session Based Condition_ in the list, and then click _Ok_.
+We click on _New_ again, and this time we select _Condition_ as item type, _Idle Session Based Condition_ in the list, and then click _OK_.
 
 ![TutorialBackup05](graphics/tutorial_cond_new_idle01.png)
 
-The condition editor is opened: conditions are more complex than tasks, and the editor form has two tabs, of which the first is for common parameters, and the second for parameters that are specific for this type of condition. In the _Common parameters_ section we specify the tasks that have to be executed: we choose them from the drop down list below the list of active tasks, _first_ we choose the backup task and add it, _then_ the maintenance task:
+In the _Common parameters_ section we specify the tasks that have to be executed: we choose them from the drop down list below the list of active tasks, _first_ we choose the backup task and add it, _then_ the maintenance task:
 
 ![TutorialBackup06](graphics/tutorial_cond_idle01.png)
 
@@ -93,7 +141,7 @@ The only thing that is left is to specify that the task sequence has to take pla
 
 ![TutorialBackup08](graphics/tutorial_cond_idle03.png)
 
-Here we just write _3_ in the only available text entry: _minutes_ is the default unit of measure for time and can be left alone. Now we can press _Ok_ and then, in the main configuration form, click the _Save_ button (we answer positively when possibly asked to overwrite the existing file): the next time **When** is started as resident frontend for **whenever**, our unattended backup routine will be scheduled for when we leave the workstation alone for three minutes. In case the configuration utility was accessed through the system tray menu, the configuration form will include a _Reload_ button which, when clicked, reloads the configuration file (after saving it) and dynamically adds the new condition and the two tasks, that will be immediately active in the running instance of the scheduler.
+Here we just write _3_ in the only available text entry: _minutes_ is the default unit of measure for time and can be left alone. Now we can press _OK_ and then, in the main configuration form, click the _Save_ button (we answer positively when possibly asked to overwrite the existing file): the next time **When** is started as resident frontend for **whenever**, our unattended backup routine will be scheduled for when we leave the workstation alone for three minutes. In case the configuration utility was accessed through the system tray menu, the configuration form will include a _Reload_ button which, when clicked, reloads the configuration file (after saving it) and dynamically adds the new condition and the two tasks, that will be immediately active in the running instance of the scheduler.
 
 
 ## Temporary Files Cleanup
@@ -152,7 +200,7 @@ We used the first type of condition in the previous example. The third one might
 
 ![TutorialChores02](graphics/tutorial_cond_new_chores01.png)
 
-Clicking _Ok_ takes us to the condition editor. In the common section we change the condition name and specify the task to be run, by selecting it from the drop down list. It will be the only task, so every other common option has little or no influence, and we leave them as per default:
+Clicking _OK_ takes us to the condition editor. In the common section we change the condition name and specify the task to be run, by selecting it from the drop down list. It will be the only task, so every other common option has little or no influence, and we leave them as per default:
 
 ![TutorialChores03](graphics/tutorial_cond_chores01.png)
 
@@ -162,7 +210,7 @@ Going to the common section, we can leave the value for the _Load is Below_ entr
 
 ![TutorialChores04](graphics/tutorial_cond_chores02.png)
 
-After clicking _Ok_ we are done: we can now save our new configuration and it will be active at the next start of **When**. Or, as in the previous example, **When** can reload the configuration by clicking the _Reload_ button -- which is available if the configuration has been edited accessing the configuration utility from the popup menu in a running **When** instance.
+After clicking _OK_ we are done: we can now save our new configuration and it will be active at the next start of **When**. Or, as in the previous example, **When** can reload the configuration by clicking the _Reload_ button -- which is available if the configuration has been edited accessing the configuration utility from the popup menu in a running **When** instance.
 
 
 ## Conclusion
