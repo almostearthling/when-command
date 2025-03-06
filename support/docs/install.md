@@ -35,7 +35,7 @@ The following steps can be followed on an updated version of Debian Linux 12:
 
 2. as root, install the development toolchain: `su - root -c "apt install build-essential"` (enter the root password when prompted)
 3. as root, install the necessary libraries for **whenever**: `su - root -c "apt install pkg-config libx11-dev libdbus-1-dev libxss-dev"` (see above)
-4. as root, install the dependencies for DBus in **When**: `su - root -c "apt install libglib2.0-dev libdbus-1-dev libdbus-glib2.0-cil-dev"` (see above)
+4. as root, install the dependencies for DBus in **When**: `su - root -c "apt install libglib2.0-dev libdbus-1-dev"` (see above)
 5. as root, install the _Gnome shell extension manager_: `su - root -c "apt install gnome-shell-extension-manager"` (see above)
 6. as root, install the **pip** and **pipx** Python modules: `su - root -c "apt install python3-tk python3-pip pipx"` (see above)
 7. in a different terminal window, _not_ as root, launch `pipx ensurepath` from the terminal
@@ -61,6 +61,23 @@ when tool --create-icons --autostart
 ```
 
 will create the appropriate icons in the menu _and_ create a shortcut that launches **When** and activates the **whenever** scheduler each time the desktop session is started.
+
+
+## Upgrade
+
+The upgrade process is quite easy with this type of setup, and it just consists in the following command, issued from a terminal or command window (depending on the host operating system):
+
+```shell
+pipx upgrade when
+```
+
+and there is no need to recreate the program icons, as the existing ones will continue to work. It might be necessary to stop **When** during the upgrade process. To upgrade **whenever** it is sufficient to repeat its installation step, that is:
+
+```shell
+when tool --install-whenever
+```
+
+which will always download and install the most recent binary release.
 
 
 ## Installation Scope
