@@ -17,7 +17,12 @@ The following steps can be followed on both Windows 10 and Windows 11:
 
 1. install **Python** using one of the official installation methods
 2. install pipx by issuing the command `py -m pip install --user pipx` in a console window: after installation launch `pipx ensurepath` from the command prompt
-3. install the latest release of **When**, using **pipx**: `pipx install https://github.com/almostearthling/when-command/releases/latest/download/when-command-latest.zip`
+3. install the latest release of **When**, using **pipx**:
+
+    ```batch
+    pipx install https://github.com/almostearthling/when-command/releases/latest/download/when-command-latest.zip
+    ```
+
 4. close the current console window, and open a new one: this is to ensure that the updated `PATH` environemnt variable is active
 5. install **whenever** using the **When** installation tool: `when --install-whenever`
 6. launch the configuration utility, by typing `when config` on the command line: create a task and a condition of your choice, and save the configuration file by clicking the _Save_ button.
@@ -44,7 +49,12 @@ The following steps can be followed on an updated version of Debian Linux 12:
 
    ![GnomeExtensionManager](graphics/install-linux-extmgr.png)
 
-10. install the latest release of **When**, using **pipx**: `pipx install https://github.com/almostearthling/when-command/releases/latest/download/when-command-latest.zip`
+10. install the latest release of **When**, using **pipx**:
+
+    ```shell
+    pipx install https://github.com/almostearthling/when-command/releases/latest/download/when-command-latest.zip
+    ```
+
 11. close the current console window, and open a new one: this is to ensure that the updated `PATH` environemnt variable is active
 12. install **whenever** using the **When** installation tool: `when --install-whenever`
 13. launch the configuration utility, by typing `when config` on the command line: create a task and a condition of your choice, and save the configuration file by clicking the _Save_ button.
