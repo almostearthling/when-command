@@ -4,7 +4,7 @@
 UI_APP = "When"
 UI_APP_LABEL = "When Automation Tool"
 UI_APP_COPYRIGHT = "© 2023-2025 Francesco Garosi"
-UI_APP_VERSION = "1.9.11b1"
+UI_APP_VERSION = "1.9.12b1"
 
 # item types
 ITEM_TASK = "Task"
@@ -292,17 +292,13 @@ UI_POPUP_MISSINGEVENTCOND = "No condition specified for event"
 
 # about box
 UI_ABOUT_TITLE = "About"
-UI_ABOUT_APP_VERSION = "Application version:"
-UI_ABOUT_WHENEVER_VERSION = "Scheduler version:"
+UI_ABOUT_APP_VERSION = "Application version"
+UI_ABOUT_WHENEVER_VERSION = "Scheduler version"
 UI_ABOUT_TEXT = """\
-%s
-
 Configuration utility and wrapper for the Whenever
 scheduler designed to help running and controlling
 the automation tool in a desktop environment.
-
-%s
-""" % (UI_APP, UI_APP_COPYRIGHT)
+"""
 
 
 # tray icon menu entries
