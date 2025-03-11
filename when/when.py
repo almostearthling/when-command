@@ -67,7 +67,7 @@ class App(object):
     # is needed to be active for this purpose
     def __init__(self):
         # the following lines solve the wrong icon problem on Windows
-        if sys.platform == "win32":
+        if sys.platform.startswith("win"):
             import ctypes
             myappid = 'when.python.application'
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
@@ -313,15 +313,8 @@ def main_toolbox(args):
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH, "--autostart")
         if args.create_icons and verbose:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH, "--create-icons")
-        # use a fancy status bar while downloading and installing
-        if verbose:
-            status = console.status(CLI_STATUS_INSTALLING_WHENEVER, spinner='bouncingBar')
-        else:
-            status = None
         from lib.toolbox.install_whenever import install
         install(verbose=verbose)
-        if status:
-            del status
         if verbose:
             console.print(CLI_MSG_INSTALLATION_FINISHED, highlight=False)
 
@@ -330,7 +323,6 @@ def main_toolbox(args):
         # this will never happen because the switch is handled before this one
         if args.install_whenever and verbose:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH, "--install-whenever")
-        # no status bar is used because the operation is quick
         from lib.toolbox.create_shortcuts import create_shortcuts
         my_path = os.path.normpath(os.path.realpath(__file__))
         create_shortcuts(my_path, args.desktop, args.autostart, verbose)

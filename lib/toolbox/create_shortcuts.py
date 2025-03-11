@@ -37,7 +37,7 @@ Categories=System
 
 # create the icon in the APPDATA directory
 def create_icon(verbose=False):
-    if sys.platform == "win32":
+    if sys.platform.startswith("win"):
         icon_filename = "When.ico"
         icon = ICON_ICO
     else:
@@ -62,7 +62,7 @@ def create_icon(verbose=False):
 
 
 # shortcut creation for Windows
-if sys.platform == "win32":
+if sys.platform.startswith("win"):
     import winshell
     def mk_shortcuts(target, arg_string, icon, name, description=None, desktop=True, appmenu=True, startup=True):
         locations = []
@@ -155,7 +155,7 @@ def create_shortcuts(main_script, desktop=True, autostart=True, verbose=False):
         return False
     # create menu shortcuts for configuration utility and scheduler start
     # first: check whether a `pipx`-style install is available
-    if sys.platform == "win32":
+    if sys.platform.startswith("win"):
         exename = "when-bg.exe"
         interpreter = os.path.join(sys.exec_prefix, "pythonw.exe")
     else:

@@ -38,7 +38,7 @@ def get_install_path():
 
 # specific release file names
 def get_whenever_release_pattern(verbose=False):
-    if sys.platform == "win32":
+    if sys.platform.startswith("win"):
         osname = "windows"
     elif sys.platform == "linux":
         osname = "linux"

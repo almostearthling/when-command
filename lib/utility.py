@@ -109,7 +109,7 @@ def get_appicon(image: bytes):
 
 # determine where configuration is stored by default
 def get_default_configdir():
-    if sys.platform == 'win32':
+    if sys.platform.startswith("win"):
         appdata = os.environ['APPDATA']
         cfgname = AppConfig.get('CFGNAME')
         if AppConfig.get('DEBUG'):
@@ -132,7 +132,7 @@ def get_default_configdir():
 def get_default_whenever():
     default_whenever = shutil.which('whenever')
     if default_whenever is None:
-        if sys.platform == "win32":
+        if sys.platform.startswith("win"):
             execname = "whenever.exe"
         else:
             execname = "whenever"
@@ -162,7 +162,7 @@ def get_appdata():
 # determine scripts directory and ensure that it exists
 def get_scriptsdir():
     configdir = AppConfig.get('APPDATA')
-    if sys.platform == 'win32':
+    if sys.platform.startswith("win"):
         subdir = "Scripts"
     else:
         subdir = "scripts"
@@ -182,7 +182,7 @@ def save_script(fname, text):
     dest = os.path.join(get_scriptsdir(), fname)
     with open(dest, 'w') as f:
         f.write(text)
-    if sys.platform != 'win32':
+    if not sys.platform.startswith("win"):
         os.chmod(dest, 0o700)
 
 
@@ -271,7 +271,7 @@ def exit_error(s, code=2):
 
 # get extensions of executable files on Windows
 def get_executable_extensions():
-    if sys.platform == "win32":
+    if sys.platform.startswith("win"):
         return os.environ['PATHEXT'].split(';')
     else:
         return None

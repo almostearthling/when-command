@@ -44,7 +44,7 @@ _DEFAULT_DRIVE_LETTER = ""
 # check for availability: include all needed checks in this function, may
 # or may not include actually checking the hosting platform
 def _available():
-    if sys.platform == 'win32':
+    if sys.platform.startswith("win"):
         if shutil.which("pwsh.exe"):
             return True
         return False

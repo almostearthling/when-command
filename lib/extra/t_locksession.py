@@ -39,7 +39,7 @@ _UI_FORM_NOPARAMS = "(This type of item does not need any specific parameters)"
 
 # check for availability
 def _available():
-    if sys.platform == 'win32':
+    if sys.platform.startswith("win"):
         if shutil.which("rundll32.exe") and shutil.which("user32.dll"):
             return True
         return False
@@ -86,7 +86,7 @@ class LockSessionTask(CommandTask):
 
     def updateitem(self):
         # set base item properties according to specific parameters in `tags`
-        if sys.platform == 'win32':
+        if sys.platform.startswith("win"):
             self.command = "rundll32.exe"
             self.command_arguments = ["user32.dll,LockWorkStation"]
         elif sys.platform == 'linux':

@@ -52,7 +52,7 @@ _CHECK_EXTRA_DELAY = 300
 # one for Linux is in a separate file, and availability is in fact mutually
 # exclusive: with this check we assume that this module is only run on Windows
 def _available():
-    if sys.platform == 'win32':
+    if sys.platform.startswith("win"):
         if shutil.which("pwsh.exe"):
             return True
         return False

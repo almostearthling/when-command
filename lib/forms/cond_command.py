@@ -383,7 +383,7 @@ class form_CommandCondition(form_Condition):
 
     def browse_command(self):
         filetypes=[(UI_FILETYPE_ALL, ".*")]
-        if sys.platform == "win32":
+        if sys.platform.startswith("win"):
             exts = get_executable_extensions()
             if exts:
                 execs_list = ' '.join(exts)

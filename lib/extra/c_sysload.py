@@ -49,7 +49,7 @@ _CHECK_EXTRA_DELAY = 60
 
 # check for availability: in this case check all needed commands
 def _available():
-    if sys.platform == 'win32':
+    if sys.platform.startswith("win"):
         if shutil.which("pwsh.exe"):
             return True
         return False
@@ -93,7 +93,7 @@ class SystemLoadCondition(CommandCondition):
         self.updateitem()
 
     def updateitem(self):
-        if sys.platform == 'win32':
+        if sys.platform.startswith("win"):
             self.command = "pwsh.exe"
             self.command_arguments = [
                 "-Command",

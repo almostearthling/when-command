@@ -39,7 +39,7 @@ _UI_FORM_NOPARAMS = "(This type of item does not need any specific parameters)"
 
 # check for availability
 def _available():
-    if sys.platform == 'win32':
+    if sys.platform.startswith("win"):
         if shutil.which("shutdown.exe"):
             return True
         return False
@@ -89,7 +89,7 @@ class LogoffTask(CommandTask):
 
     def updateitem(self):
         # set base item properties according to specific parameters in `tags`
-        if sys.platform == 'win32':
+        if sys.platform.startswith("win"):
             self.command = "shutdown.exe"
             self.command_arguments = ["/l"]
         elif sys.platform == 'linux':
