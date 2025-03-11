@@ -226,6 +226,7 @@ UI_FORM_TIMESPECS = "Time specifications"
 UI_FORM_EXPECTRESULTS = "Expected results"
 UI_FORM_MATCHALLRESULTS = "Match ALL results"
 UI_FORM_RECURSIVE_DIRSCAN = "Recursively scan directories"
+UI_FORM_SELECT_DIRECTORY = "Use button to select directories"
 UI_FORM_IGNOREPERSISTSUCCESS = "Ignore persistently successful checks"
 UI_FORM_OR = "or"
 
