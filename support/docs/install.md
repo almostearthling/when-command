@@ -19,9 +19,9 @@ The following steps can be followed on both Windows 10 and Windows 11:
 2. install pipx by issuing the command `py -m pip install --user pipx` in a console window: after installation launch `pipx ensurepath` from the command prompt
 3. install the latest release of **When**, using **pipx**:
 
-    ```batch
-    pipx install https://github.com/almostearthling/when-command/releases/latest/download/when-command-latest.zip
-    ```
+   ```batch
+   pipx install https://github.com/almostearthling/when-command/releases/latest/download/when-command-latest.zip
+   ```
 
 4. close the current console window, and open a new one: this is to ensure that the updated `PATH` environemnt variable is active
 5. install **whenever** using the **When** installation tool: `when --install-whenever`

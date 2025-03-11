@@ -14,17 +14,15 @@ from ..utility import get_whenever_version, get_UI_theme, get_image
 
 
 # the last paragraphs are to fiull the background in gray
-_htmlabout = """<div style="background-color:DarkGray;">
-<div style="font-size:14px;"><b>{title}</b></div>
-<div style="font-size:12px;">{text}</div>
+_htmlabout = """
+<div style="font-size:13px;"><b>{title}</b></div>
+<div style="font-size:10px;">{text}</div>
+<div style="font-size:9px;">{copyright}</div>
 <div style="font-size:10px;">
 {about_app_version}: <b>{appversion}</b><br>
 {about_sched_version}: <b>{schedversion}</b>
 </div>
-<p></p>
-<p></p>
-<p>.</p>
-</div>"""
+"""
 
 
 class AboutBox(ApplicationForm):
@@ -36,6 +34,7 @@ class AboutBox(ApplicationForm):
             text = _htmlabout.format(
                 title=UI_APP,
                 text=UI_ABOUT_TEXT,
+                copyright=UI_APP_COPYRIGHT,
                 about_app_version=UI_ABOUT_APP_VERSION,
                 appversion=appversion,
                 about_sched_version=UI_ABOUT_WHENEVER_VERSION,
@@ -54,8 +53,7 @@ class AboutBox(ApplicationForm):
         PAD = WIDGET_PADDING_PIXELS
 
         # widgets section
-        # l_aboutTxt = ttk.Label(area, text=text)
-        l_aboutTxt = HTMLLabel(area, html=text, )
+        l_aboutTxt = HTMLLabel(area, html=text)
         l_aboutImg = ttk.Label(area, image=self._image)
 
         # arrange items in the grid
