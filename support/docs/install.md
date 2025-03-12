@@ -24,7 +24,7 @@ These steps can be followed on both Windows 10 and Windows 11:
    ```
 
 4. close the current console window, and open a new one: this is to ensure that the updated `PATH` environemnt variable is active
-5. install **whenever** using the **When** installation tool: `when --install-whenever`
+5. install **whenever** using the **When** installation tool: `when tool --install-whenever`
 6. launch the configuration utility, by typing `when config` on the command line: create a task and a condition of your choice, and save the configuration file by clicking the _Save_ button.
 
 Once a configuration is available, the resident application can be started from the command line using the `when start` command. A shortcut can be created as described [below](#create-application-icons). On Windows, the `when-bg` command can be used instead of `when` to launch the application _detached_ from a console window.
@@ -56,7 +56,7 @@ These steps can be followed on an updated version of Debian Linux 12:
     ```
 
 11. close the current console window, and open a new one: this is to ensure that the updated `PATH` environemnt variable is active
-12. install **whenever** using the **When** installation tool: `when --install-whenever`
+12. install **whenever** using the **When** installation tool: `when tool --install-whenever`
 13. launch the configuration utility, by typing `when config` on the command line: create a task and a condition of your choice, and save the configuration file by clicking the _Save_ button.
 
 Once a configuration is available, the resident application can be started from the command line using the `when start` command. A shortcut can be created as described [below](#create-application-icons). The `when-bg` command also exists on Linux, but its behaviour is absolutely identical to `when`.
