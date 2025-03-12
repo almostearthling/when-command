@@ -13,7 +13,7 @@ Note that even though a [recent release](https://github.com/almostearthling/when
 
 ## Windows
 
-The following steps can be followed on both Windows 10 and Windows 11:
+These steps can be followed on both Windows 10 and Windows 11:
 
 1. install **Python** using one of the official installation methods
 2. install pipx by issuing the command `py -m pip install --user pipx` in a console window: after installation launch `pipx ensurepath` from the command prompt
@@ -32,7 +32,7 @@ Once a configuration is available, the resident application can be started from 
 
 ## Linux
 
-The following steps can be followed on an updated version of Debian Linux 12:
+These steps can be followed on an updated version of Debian Linux 12:
 
 1. start a Gnome session using **Xorg** as a backend
 
