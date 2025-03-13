@@ -1,13 +1,13 @@
-# Module for creating conditions that determine that a battery is draining
-# and below a certain threshold, specific for Windows platforms:
+# Module for creating conditions that determine that the session is locked,
+# specific for Windows platforms:
 #
 # - uses the new powershell and the Get-CimInstance utility/command
 # - exploits the new feature of only triggering the condition once when
 #   the actual parameters are met
-# - normally the condition is only tested every fifth minute (change the
-#   _CHECK_EXTRA_DELAY constant to specify a different number of seconds)
+# - gives the opportunity to perform the check often (every minute), at
+#   a normal pace (every second minute) and seldomly (every 5 minutes)
 #
-#  A module achieving the same goal on Linux is available.
+#  A module achieving the same goal on Linux is (being made) available.
 
 # this header is common to all extra modules
 from tomlkit import items, table
@@ -36,16 +36,23 @@ import shutil
 
 
 # resource strings (not internationalized for the moment)
-ITEM_COND_LOWBATT = "Low Battery Condition"
+ITEM_COND_SESSION_LOCKED = "Session Locked Condition"
 
-_UI_FORM_TITLE = "%s: Low Battery Condition Editor" % UI_APP
+_UI_FORM_TITLE = "%s: Session Locked Condition Editor" % UI_APP
 
 _UI_FORM_LOWBATT_THRESHOLD_SC = "Battery charge is below:"
+_UI_FORM_CHECKFREQ_SC = "Session lock check frequency:"
+_UI_FORM_RB_CHECKFREQ_PEDANTIC = "Pedantic"
+_UI_FORM_RB_CHECKFREQ_NORMAL = "Normal"
+_UI_FORM_RB_CHECKFREQ_RELAXED = "Relaxed"
 
 
-# default values
-_DEFAULT_THRESHOLD_VALUE = 40
-_CHECK_EXTRA_DELAY = 300
+# values for check styles
+_CHECK_EXTRA_DELAY = {
+    'pedantic': 60,
+    'normal': 120,
+    'relaxed': 300,
+}
 
 
 # check for availability: this version of the check is only for Windows, the
@@ -61,12 +68,12 @@ def _available():
 
 
 # the specific item is derived from the actual parent item
-class LowBatteryCondition(CommandCondition):
+class SessionLockedCondition(CommandCondition):
 
     # availability at class level: these variables *MUST* be set for all items
     item_type = 'command'
-    item_subtype = 'battery_low_win'
-    item_hrtype = ITEM_COND_LOWBATT
+    item_subtype = 'session_locked_win'
+    item_hrtype = ITEM_COND_SESSION_LOCKED
     available = _available()
 
     def __init__(self, t: items.Table=None) -> None:
@@ -90,19 +97,20 @@ class LowBatteryCondition(CommandCondition):
         else:
             self.tags = table()
             self.tags.append('subtype', self.subtype)
-            self.tags.append('threshold', _DEFAULT_THRESHOLD_VALUE)
+            self.tags.append('check_frequency', 'normal')
         self.updateitem()
 
     def updateitem(self):
         # set base item properties according to specific parameters in `tags`
-        threshold = self.tags.get('threshold', _DEFAULT_THRESHOLD_VALUE)
+        check_frequency = self.tags.get('check_frequency', 'normal')
 
-        # see interpretation of BatteryStatus == 1 here:
-        # https://learn.microsoft.com/it-it/windows/win32/cimwin32prov/win32-battery
+        # everything I found on the subject is about finding a process running
+        # whose executable is 'LogonUI.exe'; maybe a better solution is here:
+        # https://stackoverflow.com/a/48785428/5138770
         cmdline = (
-            "$batt = (Get-CimInstance -Class Win32_Battery); " +
-            "If ( $batt.BatteryStatus -eq 1 -and $batt.EstimatedChargeRemaining -lt %s ) " % threshold +
-            "{ echo OK }"
+            "$res = Get-WmiObject -Query "
+            "\"SELECT CreationClassName FROM Win32_Process WHERE Name='LogonUI.exe'\" ; "
+            "if ($res) { echo OK }"
         )
         self.command = "pwsh.exe"
         self.command_arguments = [
@@ -111,20 +119,20 @@ class LowBatteryCondition(CommandCondition):
         ]
         self.success_stdout = "OK"
         self.startup_path = "."
-        self.check_after = _CHECK_EXTRA_DELAY
+        self.check_after = _CHECK_EXTRA_DELAY[check_frequency]
         self.recur_after_failed_check = True
 
 
 # dedicated form definition derived directly from one of the base forms
-class form_LowBatteryCondition(form_Condition):
+class form_SessionLockedCondition(form_Condition):
 
     def __init__(self, tasks_available, item=None):
 
         # check that item is the expected one for safety, build one by default
         if item:
-            assert(isinstance(item, LowBatteryCondition))
+            assert(isinstance(item, SessionLockedCondition))
         else:
-            item = LowBatteryCondition()
+            item = SessionLockedCondition()
         super().__init__(_UI_FORM_TITLE, tasks_available, item)
 
         # create a specific frame for the contents
@@ -133,14 +141,16 @@ class form_LowBatteryCondition(form_Condition):
         PAD = WIDGET_PADDING_PIXELS
 
         # build the UI elements as needed and configure the layout
-        l_threshold = ttk.Label(area, text=_UI_FORM_LOWBATT_THRESHOLD_SC)
-        e_threshold = ttk.Entry(area)
-        l_percent = ttk.Label(area, text="%")
-        self.data_bind('threshold', e_threshold, TYPE_INT, lambda t: t > 0 and t < 100)
+        l_checkFreq = ttk.Label(area, text=_UI_FORM_CHECKFREQ_SC)
+        rb_checkFreqPedantic = ttk.Radiobutton(area, text=_UI_FORM_RB_CHECKFREQ_PEDANTIC, value='pedantic')
+        rb_checkFreqNormal = ttk.Radiobutton(area, text=_UI_FORM_RB_CHECKFREQ_NORMAL, value='normal')
+        rb_checkFreqRelaxed = ttk.Radiobutton(area, text=_UI_FORM_RB_CHECKFREQ_RELAXED, value='relaxed')
+        self.data_bind('check_frequency', (rb_checkFreqPedantic, rb_checkFreqNormal, rb_checkFreqRelaxed), TYPE_STRING)
 
-        l_threshold.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
-        e_threshold.grid(row=0, column=1, sticky=tk.NSEW, padx=PAD, pady=PAD)
-        l_percent.grid(row=0, column=2, sticky=tk.E, padx=PAD, pady=PAD)
+        l_checkFreq.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        rb_checkFreqPedantic.grid(row=0, column=1, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        rb_checkFreqPedantic.grid(row=1, column=1, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        rb_checkFreqPedantic.grid(row=2, column=1, sticky=tk.NSEW, padx=PAD, pady=PAD)
 
         area.columnconfigure(1, weight=1)
 
@@ -149,12 +159,12 @@ class form_LowBatteryCondition(form_Condition):
 
     # update the form with the specific parameters (usually in the `tags`)
     def _updateform(self):
-        self.data_set('threshold', self._item.tags.get('threshold'))
+        self.data_set('check_frequency', self._item.tags.get('check_frequency'))
         return super()._updateform()
 
     # update the item from the form elements (usually update `tags`)
     def _updatedata(self):
-        self._item.tags['threshold'] = self.data_get('threshold')
+        self._item.tags['check_frequency'] = self.data_get('check_frequency')
         self._item.updateitem()
         return super()._updatedata()
 
@@ -162,7 +172,7 @@ class form_LowBatteryCondition(form_Condition):
 
 # function common to all extra modules to declare class items as factories
 def factories():
-    return (LowBatteryCondition, form_LowBatteryCondition)
+    return (SessionLockedCondition, form_SessionLockedCondition)
 
 
 # end.
