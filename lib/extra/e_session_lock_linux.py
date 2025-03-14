@@ -78,7 +78,7 @@ class SessionLockEvent(DBusEvent):
 
     def __init__(self, t: items.Table=None) -> None:
         # first initialize the base class (mandatory)
-        super().__init__(self, t)
+        super().__init__(t)
 
         # then set type (same as base), subtype and human readable name: this
         # is mandatory in order to correctly display the item in all forms
