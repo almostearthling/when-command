@@ -40,7 +40,6 @@ ITEM_COND_SESSION_LOCKED = "Session Locked Condition"
 
 _UI_FORM_TITLE = "%s: Session Locked Condition Editor" % UI_APP
 
-_UI_FORM_LOWBATT_THRESHOLD_SC = "Battery charge is below:"
 _UI_FORM_CHECKFREQ_SC = "Session lock check frequency:"
 _UI_FORM_RB_CHECKFREQ_PEDANTIC = "Pedantic"
 _UI_FORM_RB_CHECKFREQ_NORMAL = "Normal"
@@ -149,8 +148,8 @@ class form_SessionLockedCondition(form_Condition):
 
         l_checkFreq.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         rb_checkFreqPedantic.grid(row=0, column=1, sticky=tk.NSEW, padx=PAD, pady=PAD)
-        rb_checkFreqPedantic.grid(row=1, column=1, sticky=tk.NSEW, padx=PAD, pady=PAD)
-        rb_checkFreqPedantic.grid(row=2, column=1, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        rb_checkFreqNormal.grid(row=1, column=1, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        rb_checkFreqRelaxed.grid(row=2, column=1, sticky=tk.NSEW, padx=PAD, pady=PAD)
 
         area.columnconfigure(1, weight=1)
 
