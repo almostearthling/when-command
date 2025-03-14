@@ -1,4 +1,12 @@
-# template for extra modules
+# Module to create a session locked event for linux systems
+#
+# On Linux this is implemented via DBus, so it actually does not check
+# continuously for the current state, it waits for a specific event with
+# specific message parameters instead, being lighter and more reactive
+# than its Windows counterpart (which is directly a condition).
+#
+# WARNING: this module has not been tested, it is in the development
+#          branch in order to be tested on linux machines.
 
 # this header is common to all extra modules
 from tomlkit import items, table
@@ -13,44 +21,58 @@ from ..utility import check_not_none, append_not_none
 from ..forms.ui import *
 
 
-# since a condition is defined, the base form is the one for conditions
-from ..forms.cond import form_Condition
+# import form to derive from
+from ..forms.event import form_Event
 
 # import item to derive from
-from ..items.cond_command import CommandCondition
+from ..items.event_dbus import DBusEvent
 
 
 # imports specific to this module
 import shutil
+import sys
 
 
 
 # resource strings (not internationalized for the moment)
-ITEM_HR_NAME = "Template Condition"
+ITEM_HR_NAME = "Session Locked Event"
 
-_UI_FORM_TITLE = "%s: Template Condition Editor" % UI_APP
-_UI_FORM_PARAM1_SC = "Parameter is:"
+_UI_FORM_TITLE = "%s: Session Locked Event Editor" % UI_APP
 
-
-# default values
-_DEFAULT_PARAM1_VALUE = "somestring"
 
 
 # check for availability: include all needed checks in this function, may
 # or may not include actually checking the hosting platform
+# check for availability
 def _available():
-    if shutil.which('ls'):
+    if sys.platform == 'linux':
+        try:
+            import dbus
+        except:
+            return False
         return True
-    return False
+    else:
+        return False
 
+
+# the DBus filter
+_DBUS_FILTER_EXPRESSION = "".join(("""
+    type='signal',
+    sender='org.freedesktop.login1',
+    interface='org.freedesktop.DBus.Properties',
+    member='PropertiesChanged',
+    """).strip().split())
+
+# the DBus message parameters check
+_DBUS_PARAMETER_CHECK = '[{ "index": [0, "LockedHint"], "operator": "eq", "value": true }]'
 
 
 # the specific item is derived from the actual parent item
-class TemplateCondition(CommandCondition):
+class SessionLockEvent(DBusEvent):
 
     # availability at class level: these variables *MUST* be set for all items
-    item_type = 'command'
-    item_subtype = 'template'
+    item_type = 'dbus'
+    item_subtype = 'session_lock_linux'
     item_hrtype = ITEM_HR_NAME
     available = _available()
 
@@ -75,29 +97,26 @@ class TemplateCondition(CommandCondition):
         else:
             self.tags = table()
             self.tags.append('subtype', self.subtype)
-            self.tags.append('parameter1', _DEFAULT_PARAM1_VALUE)
 
         self.updateitem()
 
     def updateitem(self):
         # set base item properties according to specific parameters in `tags`
-        self.command = 'ls'
-        self.command_arguments = ['-l', self.tags.get('parameter1', _DEFAULT_PARAM1_VALUE)]
-        self.startup_path = "."
-        self.success_status = 0
+        self.rule = _DBUS_FILTER_EXPRESSION
+        self.parameter_check = _DBUS_PARAMETER_CHECK
 
 
 # dedicated form definition derived directly from one of the base forms
-class form_TemplateCondition(form_Condition):
+class form_SessionLockEvent(form_Event):
 
-    def __init__(self, tasks_available, item=None):
+    def __init__(self, conditions_available, item=None):
 
         # check that item is the expected one for safety, build one by default
         if item:
-            assert(isinstance(item, TemplateCondition))
+            assert(isinstance(item, SessionLockEvent))
         else:
-            item = TemplateCondition()
-        super().__init__(_UI_FORM_TITLE, tasks_available, item)
+            item = SessionLockEvent()
+        super().__init__(_UI_FORM_TITLE, conditions_available, item)
 
         # create a specific frame for the contents
         area = ttk.Frame(super().contents)
@@ -105,26 +124,18 @@ class form_TemplateCondition(form_Condition):
         PAD = WIDGET_PADDING_PIXELS
 
         # build the UI elements as needed and configure the layout
-        l_parameter1 = ttk.Label(area, text=_UI_FORM_PARAM1_SC)
-        e_parameter1 = ttk.Entry(area)
-        self.data_bind('parameter1', e_parameter1, TYPE_STRING)
-
+        l_parameter1 = ttk.Label(area, text=UI_CAPTION_NOSPECIFICPARAMS)
         l_parameter1.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
-        e_parameter1.grid(row=0, column=1, sticky=tk.NSEW, padx=PAD, pady=PAD)
-
-        area.columnconfigure(1, weight=1)
 
         # always update the form at the end of initialization
         self._updateform()
 
     # update the form with the specific parameters (usually in the `tags`)
     def _updateform(self):
-        self.data_set('parameter1', self._item.tags.get('parameter1'))
         return super()._updateform()
 
     # update the item from the form elements (usually update `tags`)
     def _updatedata(self):
-        self._item.tags['parameter1'] = self.data_get('parameter1')
         self._item.updateitem()
         return super()._updatedata()
 
@@ -132,7 +143,7 @@ class form_TemplateCondition(form_Condition):
 
 # function common to all extra modules to declare class items as factories
 def factories():
-    return (TemplateCondition, form_TemplateCondition)
+    return (SessionLockEvent, form_SessionLockEvent)
 
 
 # end.
