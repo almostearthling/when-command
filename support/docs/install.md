@@ -41,11 +41,11 @@ These steps can be followed on an updated version of Debian Linux 12:
 2. as root, install the development toolchain: `su - root -c "apt install build-essential"` (enter the root password when prompted)
 3. as root, install the necessary libraries for **whenever**: `su - root -c "apt install pkg-config libx11-dev libdbus-1-dev libxss-dev"` (see above)
 4. as root, install the dependencies for DBus in **When**: `su - root -c "apt install libglib2.0-dev libdbus-1-dev"` (see above)
-5. as root, install the _Gnome shell extension manager_: `su - root -c "apt install gnome-shell-extension-manager"` (see above)
+5. as root, install the _Gnome shell extension manager_[^1]: `su - root -c "apt install gnome-shell-extension-manager"` (see above)
 6. as root, install the **pip** and **pipx** Python modules: `su - root -c "apt install python3-tk python3-pip pipx"` (see above)
 7. in a different terminal window, _not_ as root, launch `pipx ensurepath` from the terminal
-8. start the _Gnome shell extension manager_, named simply _Extension Manager_ in the activities dashboard
-9. choose the _Browse_ tab and scroll down to find _AppIndicator and KStatusNotifierItem Support_ and install it
+8. start the _Gnome shell extension manager_, named simply _Extension Manager_ in the activities dashboard[^1]
+9. choose the _Browse_ tab and scroll down to find _AppIndicator and KStatusNotifierItem Support_ and install it[^1]
 
    ![GnomeExtensionManager](graphics/install-linux-extmgr.png)
 
@@ -103,3 +103,6 @@ Both the installation of **When** using the **pipx** method and the installation
 
 
 [`◀ Main`](main.md)
+
+
+[^1]: these steps might not be required on distributions, like _Linux Mint_, that natively support system tray icons.

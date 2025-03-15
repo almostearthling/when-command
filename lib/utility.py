@@ -189,14 +189,17 @@ def save_script(fname, text):
 # return the output of `whenever --version`
 def get_whenever_version():
     whenever_path = AppConfig.get('WHENEVER')
-    result = subprocess.run(
-        [whenever_path, '--version'],
-        stdout = subprocess.PIPE,
-        stderr = subprocess.PIPE,
-        universal_newlines = True,
-        text=True,
-        creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0,
-    )
+    try:
+        result = subprocess.run(
+            [whenever_path, '--version'],
+            stdout = subprocess.PIPE,
+            stderr = subprocess.PIPE,
+            universal_newlines = True,
+            text=True,
+            creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0,
+        )
+    except Exception:
+        return None
     if result:
         return result.stdout.strip()
     else:
@@ -206,14 +209,17 @@ def get_whenever_version():
 # check whether the scheduler is running
 def is_whenever_running():
     whenever_path = AppConfig.get('WHENEVER')
-    result = subprocess.run(
-        [whenever_path, '--check-running', '--quiet'],
-        stdout = subprocess.PIPE,
-        stderr = subprocess.PIPE,
-        universal_newlines = True,
-        text=True,
-        creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0,
-    )
+    try:
+        result = subprocess.run(
+            [whenever_path, '--check-running', '--quiet'],
+            stdout = subprocess.PIPE,
+            stderr = subprocess.PIPE,
+            universal_newlines = True,
+            text=True,
+            creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0,
+        )
+    except Exception:
+        return False
     if result:
         if result.returncode == 0:
             return True
