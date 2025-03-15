@@ -16,11 +16,17 @@ The items (files and directories) to be monitored can be provided by entering th
 To remove an item, double click it on the list and then click the _Remove_ button.
 
 
+## Other Event Types
+
+Items that handle particular events, which may in many cases available for a specific host platform, are described in this [section](events_extra01.md).
+
+
 ## See Also
 
 * [Event Based Conditions](cond_eventrelated.md)
-* [Tasks](tasks.md)
+* [Events](events.md)
 * [Conditions](conditions.md)
+* [Tasks](tasks.md)
 
 
 [`◀ Main`](main.md)

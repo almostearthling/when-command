@@ -53,10 +53,22 @@ On Linux, it's only possible to choose among a system-determined list of availab
 It is not possible to specify the expected mount point: its determination, which depends on the specific Linux distribution and configuration, is up to the user.
 
 
+## Session Locked (Windows)
+
+This check detects whether the session is locked. It does not depend on the desktop being idle (there is the [idle session](cond_timerelated.md#idle-session) based condition for this purpose), so it is verified also when the user voluntarily locks the session via a key combination or a session menu entry.
+
+![WhenCondSessionLockedWin](graphics/when-cond-extra-locked-win.png)
+
+Since on Windows the state is detected by querying the system actively, the user can decide if the check is performed at a normal pace (the default, every second minute), very often (the _pedantic_ choice, every minute), or in a more relaxed way -- that is, every five minutes.
+
+
 ## See also
 
 * [Command Based Conditions](cond_actionrelated.md#command)
 * [Lua Script Based Conditions](cond_actionrelated.md#lua-script)
+* [Conditions](conditions.md)
+* [Tasks](tasks.md)
+* [Events](events.md)
 
 
 [`◀ Conditions`](conditions.md)

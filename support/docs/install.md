@@ -59,7 +59,7 @@ These steps can be followed on an updated version of Debian Linux 12:
 12. install **whenever** using the **When** installation tool: `when tool --install-whenever`
 13. launch the configuration utility, by typing `when config` on the command line: create a task and a condition of your choice, and save the configuration file by clicking the _Save_ button.
 
-Once a configuration is available, the resident application can be started from the command line using the `when start` command. A shortcut can be created as described [below](#create-application-icons). The `when-bg` command also exists on Linux, but its behaviour is absolutely identical to `when`.
+Once a configuration is available, the resident application can be started from the command line using the `when start` command. A shortcut can be created as described [below](#create-application-icons). The `when-bg` command also exists on Linux, but its behavior is absolutely identical to `when`.
 
 
 ## Create Application Icons

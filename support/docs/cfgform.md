@@ -41,7 +41,7 @@ When the application has been launched as a resident frontend for a live instanc
 
 ## Exiting
 
-The _Exit_ button has different behaviours depending on how the main configuration form was entered: if a configuration-only session was launched using the `config` command, then the button allows for completely leaving the application. If the form was launched through the _Configurator..._ entry in the system tray menu, the resident part of **When** remains active, and only the configuration utility is exited. Please note that writing a new configuration file will not cause the main scheduler to automatically reload it.
+The _Exit_ button has different behaviors depending on how the main configuration form was entered: if a configuration-only session was launched using the `config` command, then the button allows for completely leaving the application. If the form was launched through the _Configurator..._ entry in the system tray menu, the resident part of **When** remains active, and only the configuration utility is exited. Please note that writing a new configuration file will not cause the main scheduler to automatically reload it.
 
 Also note that, if anything had changed since the configuration file was last saved, the configuration form will ask anyway to save it again -- no matter whether it had been launched via the `config` command or via the system tray menu.
 
