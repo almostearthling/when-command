@@ -18,7 +18,7 @@ To remove an item, double click it on the list and then click the _Remove_ butto
 
 ## Other Event Types
 
-Items that handle particular events, which may in many cases available for a specific host platform, are described in this [section](events_extra01.md).
+Items that handle particular events, which may in many cases be available for a specific host platform, are described in this [section](events_extra01.md).
 
 
 ## See Also
