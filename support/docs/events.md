@@ -18,13 +18,17 @@ To remove an item, double click it on the list and then click the _Remove_ butto
 
 ## Other Event Types
 
-Items that handle particular events, which may in many cases be available for a specific host platform, are described in this [section](events_extra01.md).
+Items that handle particular events, which may in many cases be available for a specific host platform, are described in this [section](events_extra01.md). In particular, the following types of event are available:
+
+* [Session Lock Events](events_extra01.md#session-lockedunlocked-events-linux) (Linux only)
+* [Session Unlock Events](events_extra01.md#session-lockedunlocked-events-linux) (Linux only)
+
+and more may be added in the future.
 
 
 ## See Also
 
 * [Event Based Conditions](cond_eventrelated.md)
-* [Events](events.md)
 * [Conditions](conditions.md)
 * [Tasks](tasks.md)
 

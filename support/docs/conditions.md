@@ -31,6 +31,7 @@ Other conditions are supported, that are implemented as reactions to particular 
 * [_Battery Charge_ below Threshold](cond_extra01.md#low-battery) conditions
 * [_Battery Charge_ above Threshold](cond_extra01.md#charging-battery) conditions
 * [_Removable Drive_ available](cond_extra01.md#removable-drives) conditions
+* [_Session Locked_](cond_extra01.md#session-locked-windows) (Windows only) conditions
 
 The above list will grow with time, along with the discovery of new configuration possibilities on the supported platforms and the development of the related forms.
 
