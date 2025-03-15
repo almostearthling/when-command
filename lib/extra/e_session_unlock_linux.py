@@ -37,7 +37,7 @@ import sys
 # resource strings (not internationalized for the moment)
 ITEM_HR_NAME = "Session Unlocked Event"
 
-_UI_FORM_TITLE = "%s: Session Unocked Event Editor" % UI_APP
+_UI_FORM_TITLE = "%s: Session Unlocked Event Editor" % UI_APP
 
 
 
