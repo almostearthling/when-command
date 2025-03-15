@@ -1,4 +1,4 @@
-# Module to create a session locked event for linux systems
+# Module to create a session unlocked event for linux systems
 #
 # On Linux this is implemented via DBus, so it actually does not check
 # continuously for the current state, it waits for a specific event with
@@ -35,9 +35,9 @@ import sys
 
 
 # resource strings (not internationalized for the moment)
-ITEM_HR_NAME = "Session Locked Event"
+ITEM_HR_NAME = "Session Unlocked Event"
 
-_UI_FORM_TITLE = "%s: Session Locked Event Editor" % UI_APP
+_UI_FORM_TITLE = "%s: Session Unocked Event Editor" % UI_APP
 
 
 
@@ -64,15 +64,15 @@ _DBUS_FILTER_EXPRESSION = "".join(("""
     """).strip().split())
 
 # the DBus message parameters check
-_DBUS_PARAMETER_CHECK = '[{ "index": [1, "LockedHint"], "operator": "eq", "value": true }]'
+_DBUS_PARAMETER_CHECK = '[{ "index": [1, "LockedHint"], "operator": "eq", "value": false }]'
 
 
 # the specific item is derived from the actual parent item
-class SessionLockEvent(DBusEvent):
+class SessionUnlockEvent(DBusEvent):
 
     # availability at class level: these variables *MUST* be set for all items
     item_type = 'dbus'
-    item_subtype = 'session_lock_linux'
+    item_subtype = 'session_unlock_linux'
     item_hrtype = ITEM_HR_NAME
     available = _available()
 
@@ -108,15 +108,15 @@ class SessionLockEvent(DBusEvent):
 
 
 # dedicated form definition derived directly from one of the base forms
-class form_SessionLockEvent(form_Event):
+class form_SessionUnlockEvent(form_Event):
 
     def __init__(self, conditions_available, item=None):
 
         # check that item is the expected one for safety, build one by default
         if item:
-            assert(isinstance(item, SessionLockEvent))
+            assert(isinstance(item, SessionUnlockEvent))
         else:
-            item = SessionLockEvent()
+            item = SessionUnlockEvent()
         super().__init__(_UI_FORM_TITLE, conditions_available, item)
 
         # create a specific frame for the contents
@@ -144,7 +144,7 @@ class form_SessionLockEvent(form_Event):
 
 # function common to all extra modules to declare class items as factories
 def factories():
-    return (SessionLockEvent, form_SessionLockEvent)
+    return (SessionUnlockEvent, form_SessionUnlockEvent)
 
 
 # end.
