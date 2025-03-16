@@ -16,9 +16,9 @@ from ..utility import get_whenever_version, get_UI_theme, get_image
 # the last paragraphs are to fiull the background in gray
 _htmlabout = """
 <div style="font-size:13px;"><b>{title}</b></div>
-<div style="font-size:10px;">{text}</div>
-<div style="font-size:9px;">{copyright}</div>
-<div style="font-size:10px;">
+<div style="font-size:9px;">{text}</div>
+<div style="font-size:8px;">{copyright}</div>
+<div style="font-size:9px;">
 {about_app_version}: <b>{appversion}</b><br>
 {about_sched_version}: <b>{schedversion}</b>
 </div>

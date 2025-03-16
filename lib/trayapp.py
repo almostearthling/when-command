@@ -4,6 +4,7 @@ from lib.i18n.strings import *
 
 import pystray
 import sys
+import threading
 
 from lib.utility import get_image
 
@@ -143,7 +144,10 @@ def main(root):
     root.set_trayicon(tray)
 
     # show the tray icon
-    tray.run_detached()
+    if sys.platform == "linux":
+        threading.Thread(target=tray.run).start()
+    else:
+        tray.run_detached()
 
 
 # end.
