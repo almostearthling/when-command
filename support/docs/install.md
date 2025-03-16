@@ -32,7 +32,7 @@ Once a configuration is available, the resident application can be started from 
 
 ## Linux
 
-These steps can be followed on an updated version of Debian Linux 12:
+These steps can be followed on an updated version of Debian Linux 12, and should work on debian derivative with few changes:
 
 1. start a Gnome session using **Xorg** as a backend
 
@@ -41,23 +41,24 @@ These steps can be followed on an updated version of Debian Linux 12:
 2. as root, install the development toolchain: `su - root -c "apt install build-essential"` (enter the root password when prompted)
 3. as root, install the necessary libraries for **whenever**: `su - root -c "apt install pkg-config libx11-dev libdbus-1-dev libxss-dev"` (see above)
 4. as root, install the dependencies for DBus in **When**: `su - root -c "apt install libglib2.0-dev libdbus-1-dev"` (see above)
-5. as root, install the _Gnome shell extension manager_[^1]: `su - root -c "apt install gnome-shell-extension-manager"` (see above)
-6. as root, install the **pip** and **pipx** Python modules: `su - root -c "apt install python3-tk python3-pip pipx"` (see above)
-7. in a different terminal window, _not_ as root, launch `pipx ensurepath` from the terminal
-8. start the _Gnome shell extension manager_, named simply _Extension Manager_ in the activities dashboard[^1]
-9. choose the _Browse_ tab and scroll down to find _AppIndicator and KStatusNotifierItem Support_ and install it[^1]
+5. as root, install the python bindings for Gnome _GObject_ (optional[^2]): `su - root -c "apt install libcairo2-dev libgirepository-2.0-dev"` (see above)
+6. as root, install the _Gnome shell extension manager_[^1]: `su - root -c "apt install gnome-shell-extension-manager"` (see above)
+7. as root, install the **pip** and **pipx** Python modules: `su - root -c "apt install python3-tk python3-pip pipx"` (see above)
+8. in a different terminal window, _not_ as root, launch `pipx ensurepath` from the terminal
+9. start the _Gnome shell extension manager_, named simply _Extension Manager_ in the activities dashboard[^1]
+10. choose the _Browse_ tab and scroll down to find _AppIndicator and KStatusNotifierItem Support_ and install it[^1]
 
-   ![GnomeExtensionManager](graphics/install-linux-extmgr.png)
+    ![GnomeExtensionManager](graphics/install-linux-extmgr.png)
 
-10. install the latest release of **When**, using **pipx**:
+11. install the latest release of **When**, using **pipx**:
 
     ```shell
     pipx install https://github.com/almostearthling/when-command/releases/latest/download/when-command-latest.zip
     ```
 
-11. close the current console window, and open a new one: this is to ensure that the updated `PATH` environemnt variable is active
-12. install **whenever** using the **When** installation tool: `when tool --install-whenever`
-13. launch the configuration utility, by typing `when config` on the command line: create a task and a condition of your choice, and save the configuration file by clicking the _Save_ button.
+12. close the current console window, and open a new one: this is to ensure that the updated `PATH` environemnt variable is active
+13. install **whenever** using the **When** installation tool: `when tool --install-whenever`
+14. launch the configuration utility, by typing `when config` on the command line: create a task and a condition of your choice, and save the configuration file by clicking the _Save_ button.
 
 Once a configuration is available, the resident application can be started from the command line using the `when start` command. A shortcut can be created as described [below](#create-application-icons). The `when-bg` command also exists on Linux, but its behavior is absolutely identical to `when`.
 
@@ -106,3 +107,4 @@ Both the installation of **When** using the **pipx** method and the installation
 
 
 [^1]: these steps might not be required on distributions, like _Linux Mint_, that natively support system tray icons.
+[^2]: optional, but in fact allow the application to show the tray menu as in Windows and the tray icon to be rendered in a nice way.
