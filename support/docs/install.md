@@ -25,63 +25,66 @@ These steps can be followed on both Windows 10 and Windows 11:
 
 4. close the current console window, and open a new one: this is to ensure that the updated `PATH` environemnt variable is active
 5. install **whenever** using the **When** installation tool: `when tool --install-whenever`
-6. launch the configuration utility, by typing `when config` on the command line: create a task and a condition of your choice, and save the configuration file by clicking the _Save_ button.
+6. launch the configuration utility, by typing `when config` on the command line: create a task and a condition of your choice, and save the configuration file by clicking the _Save_ button. The [simple trace](tutorial.md#simple-trace) example in the tutorial can be a good choice to verify that everything works as expected.
 
 Once a configuration is available, the resident application can be started from the command line using the `when start` command. A shortcut can be created as described [below](#create-application-icons). On Windows, the `when-bg` command can be used instead of `when` to launch the application _detached_ from a console window.
 
 
 ## Linux
 
-These steps can be followed on an updated version of Debian Linux 12, and should work on debian derivative with few changes:
+These steps can be followed on recent Linux distributions that derive from Debian, using a terminal:
 
-1. start a Gnome session using **Xorg** as a backend
+1. install, as root or via _sudo_, the common requirements:
 
-   ![GnomeLogin](graphics/install-gnome-login.png)
+   ```shell
+   sudo apt install build-essential libdbus-1-dev pkg-config \
+                    libx11-dev libxss-dev libglib2.0-dev libdbus-1-dev \
+                    python3-tk python3-pip pipx
+   ```
 
-2. as root, install the development toolchain: `su - root -c "apt install build-essential"` (enter the root password when prompted: if _sudo_ is available, it can be used, of course, instead of becoming root)
-3. as root, install the necessary libraries for **whenever**: `su - root -c "apt install pkg-config libx11-dev libdbus-1-dev libxss-dev"` (see above)
-4. as root, install the dependencies for DBus in **When**: `su - root -c "apt install libglib2.0-dev libdbus-1-dev"` (see above)
-5. as root, install the python bindings for Gnome _GObject_ (optional[^2]): `su - root -c "apt install libcairo2-dev libgirepository-2.0-dev"` (see above)
-6. as root, install the _Gnome shell extension manager_[^1]: `su - root -c "apt install gnome-shell-extension-manager"` (see above)
-7. as root, install the **pip** and **pipx** Python modules: `su - root -c "apt install python3-tk python3-pip pipx"` (see above)
-8. in a different terminal window, _not_ as root, launch `pipx ensurepath` from the terminal
-9. start the _Gnome shell extension manager_, named simply _Extension Manager_ in the activities dashboard[^1]
-10. choose the _Browse_ tab and scroll down to find _AppIndicator and KStatusNotifierItem Support_ and install it[^1]
+2. on Debian, install the Gnome Shell Extension Manager (which will appear in the activities dashboard as _Extension Manager_):
 
-    ![GnomeExtensionManager](graphics/install-linux-extmgr.png)
+   ```shell
+   sudo apt install gnome-shell-extension-manager
+   ```
 
-11. install the latest release of **When**, using **pipx**:
+   while on Ubuntu and derivatives, the _AppIndicator_ support libraries are needed:
 
-    ```shell
-    pipx install https://github.com/almostearthling/when-command/releases/latest/download/when-command-latest.zip
-    ```
+   ```shell
+   sudo apt install libcairo2-dev libgirepository-2.0-dev gir1.2-ayatanaappindicator3-0.1
+   ```
 
-12. close the current console window, and open a new one: this is to ensure that the updated `PATH` environemnt variable is active
-13. install **whenever** using the **When** installation tool: `when tool --install-whenever`
-14. launch the configuration utility, by typing `when config` on the command line: create a task and a condition of your choice, and save the configuration file by clicking the _Save_ button.
+   (the _gir1.2-ayatanaappindicator3-0.1_ might be already present on the system)
 
-> **Note**: the steps from 1 to 7 can be condensed in a single command:
->
-> ```shell
-> su - root -c "apt install build-essential pkg-config libx11-dev \
->               libdbus-1-dev libxss-dev libglib2.0-dev libdbus-1-dev \
->               libcairo2-dev libgirepository-2.0-dev \
->               gnome-shell-extension-manager python3-tk \
->               python3-pip pipx"
-> ```
->
-> or, if _sudo_ is available for the user:
->
-> ```shell
-> sudo apt install build-essential pkg-config libx11-dev \
->                  libdbus-1-dev libxss-dev libglib2.0-dev libdbus-1-dev \
->                  libcairo2-dev libgirepository-2.0-dev \
->                  gnome-shell-extension-manager python3-tk \
->                  python3-pip pipx"
-> ```
->
+3. launch `pipx ensurepath` from the terminal: it should be done as the current user and **not** as root
+4. on Debian, start the _Gnome shell extension manager_, choose the _Browse_ tab, scroll down to _AppIndicator and KStatusNotifierItem Support_ (you can use the search bar to find the entry) and install it
+
+   ![GnomeExtensionManager](graphics/install-linux-extmgr.png)
+
+5. install the latest release of **When**, using **pipx**:
+
+   ```shell
+   pipx install https://github.com/almostearthling/when-command/releases/latest/download/when-command-latest.zip
+   ```
+
+6. close the current console window, and open a new one: this is to ensure that the updated `PATH` environemnt variable is active
+7. install **whenever** using the **When** installation tool:
+
+   ```shell
+   when tool --install-whenever
+   ```
+
+8. launch the configuration utility, by typing `when config` on the command line: create a task and a condition of your choice, and save the configuration file by clicking the _Save_ button. The [simple trace](tutorial.md#simple-trace) example in the tutorial can be a good choice to verify that everything works as expected.
 
 Once a configuration is available, the resident application can be started from the command line using the `when start` command. A shortcut can be created as described [below](#create-application-icons). The `when-bg` command also exists on Linux, but its behavior is absolutely identical to `when`.
+
+On non-Debian-based distributions, the package manager and the package names in steps 1 and 2 will be different, while everything else should work exactly as described above.
+
+> **Note**: in case the appearance of **When** is quirky, for example the text elements in the interface are unreadable, you might need to start the desktop environment in an _X.org_ session instead of _Wayland_ that is the default on many Linux distributions:
+>
+> ![GnomeLogin](graphics/install-gnome-login.png)
+>
+> Older editions of _Wayland_ have incomplete support for the GUI library used by **When**, which on the other side is the one that ships with Python by default.
 
 
 ## Create Application Icons
@@ -126,6 +129,3 @@ Both the installation of **When** using the **pipx** method and the installation
 
 [`◀ Main`](main.md)
 
-
-[^1]: these steps might not be required on some distributions, like _Linux Mint_, that natively support system tray icons.
-[^2]: optional, but in fact allow the application to show the tray menu and the tray icon to be rendered in a nice way.

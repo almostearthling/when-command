@@ -26,11 +26,11 @@ The suggested [installation procedure](install.md) and, in particular, adding ic
 
 ## Menu Form
 
-Modern linux distributions based on the Gnome desktop environment do not actually support system tray menus: in these cases **When** falls back to a menu window that is launched by _left-clicking_ the tray icon:
+Modern linux distributions based on the Gnome desktop environment do not always support system tray menus directly: in these cases **When** falls back to a menu window that is launched by _left-clicking_ the tray icon:
 
 ![MenuForm](graphics/when-menu-form.png)
 
-This menu window shows exactly the same entries as the missing tray menu (plus a _Cancel_ button to hide it): clicking the buttons invokes the same tools that the corresponding menu entries would bring up.
+This menu window shows exactly the same entries as the missing tray menu (plus a _Cancel_ button to hide it): clicking the buttons invokes the same tools that the corresponding menu entries would bring up. Following the suggested [installation instructions](install.md#linux) generally helps to set up a fully-functional instance of **When**, that includes the system tray menu.
 
 
 ## See Also
