@@ -38,7 +38,7 @@ These steps can be followed on an updated version of Debian Linux 12, and should
 
    ![GnomeLogin](graphics/install-gnome-login.png)
 
-2. as root, install the development toolchain: `su - root -c "apt install build-essential"` (enter the root password when prompted)
+2. as root, install the development toolchain: `su - root -c "apt install build-essential"` (enter the root password when prompted: if _sudo_ is available, it can be used, of course, instead of becoming root)
 3. as root, install the necessary libraries for **whenever**: `su - root -c "apt install pkg-config libx11-dev libdbus-1-dev libxss-dev"` (see above)
 4. as root, install the dependencies for DBus in **When**: `su - root -c "apt install libglib2.0-dev libdbus-1-dev"` (see above)
 5. as root, install the python bindings for Gnome _GObject_ (optional[^2]): `su - root -c "apt install libcairo2-dev libgirepository-2.0-dev"` (see above)
@@ -59,6 +59,27 @@ These steps can be followed on an updated version of Debian Linux 12, and should
 12. close the current console window, and open a new one: this is to ensure that the updated `PATH` environemnt variable is active
 13. install **whenever** using the **When** installation tool: `when tool --install-whenever`
 14. launch the configuration utility, by typing `when config` on the command line: create a task and a condition of your choice, and save the configuration file by clicking the _Save_ button.
+
+> **Note**: the steps from 1 to 7 can be condensed in a single command:
+>
+> ```shell
+> su - root -c "apt install build-essential pkg-config libx11-dev \
+>               libdbus-1-dev libxss-dev libglib2.0-dev libdbus-1-dev \
+>               libcairo2-dev libgirepository-2.0-dev \
+>               gnome-shell-extension-manager python3-tk \
+>               python3-pip pipx"
+> ```
+>
+> or, if _sudo_ is available for the user:
+>
+> ```shell
+> sudo apt install build-essential pkg-config libx11-dev \
+>                  libdbus-1-dev libxss-dev libglib2.0-dev libdbus-1-dev \
+>                  libcairo2-dev libgirepository-2.0-dev \
+>                  gnome-shell-extension-manager python3-tk \
+>                  python3-pip pipx"
+> ```
+>
 
 Once a configuration is available, the resident application can be started from the command line using the `when start` command. A shortcut can be created as described [below](#create-application-icons). The `when-bg` command also exists on Linux, but its behavior is absolutely identical to `when`.
 
