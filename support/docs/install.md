@@ -106,5 +106,5 @@ Both the installation of **When** using the **pipx** method and the installation
 [`◀ Main`](main.md)
 
 
-[^1]: these steps might not be required on distributions, like _Linux Mint_, that natively support system tray icons.
-[^2]: optional, but in fact allow the application to show the tray menu as in Windows and the tray icon to be rendered in a nice way.
+[^1]: these steps might not be required on some distributions, like _Linux Mint_, that natively support system tray icons.
+[^2]: optional, but in fact allow the application to show the tray menu and the tray icon to be rendered in a nice way.
