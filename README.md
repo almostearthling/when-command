@@ -20,7 +20,7 @@ A simple [tutorial](support/docs/tutorial.md) is available to see some quick exa
 
 ## Compatibility
 
-**When** has been successfully tested on Windows (10 and 11) and mostly Debian based distributions. It actually does not run on these distributions OOTB as it does on Windows, and some packages that are not installed by default, and in some cases (in _Wayland_ based environments that still do not support the _X.org_ protocol completely) the _X.org_ backend may have to be used in order to successfully run **When**. Generally, following the hereby provided [installation instructions](support/docs/install.md#linux), a fully working instance of **When** will be available.
+**When** has been successfully tested on Windows (10 and 11) and mostly Debian based distributions. It actually does not run on these distributions OOTB as it does on Windows, and some packages are needed that are not installed by default. In some cases (in _Wayland_ based environments that still do not support the _X.org_ protocol completely) the _X.org_ backend may have to be used in order to successfully run **When**. Generally, following the hereby provided [installation instructions](support/docs/install.md#linux), a fully working instance of **When** will be available.
 
 > **Note**: If **poetry** is used to launch the application on Linux (e.g. Debian 12), then the following option needs to be set in order to let the Python virtual environment access all the needed system modules: `poetry config virtualenvs.options.system-site-packages false` (possibly before the `poetry install` step). Otherwise Python can not reach the modules needed to display the system tray icon and menu.
 
