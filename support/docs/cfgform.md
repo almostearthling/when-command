@@ -46,4 +46,11 @@ The _Exit_ button has different behaviors depending on how the main configuratio
 Also note that, if anything had changed since the configuration file was last saved, the configuration form will ask anyway to save it again -- no matter whether it had been launched via the `config` command or via the system tray menu.
 
 
+## See Also
+
+* [Installation](install.md)
+* [Toolbox](cli.md#toolbox)
+* [Resident Wrapper](tray.md)
+
+
 [`◀ Main`](main.md)

@@ -50,4 +50,5 @@ These subcommands cannot be combined. The **whenever** installation step should 
 
 [`◀ Main`](main.md)
 
+
 [^1]: on some Linux desktop (for example, the most recent versions of Gnome) the deployment of launcher files in the `~/Desktop` subfolder is not honored as a way to create desktop icons, thus the `--desktop` option is actually executed, but has no effect.
