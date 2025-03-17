@@ -23,7 +23,7 @@ The conditions available in **When** that are natively supported by **whenever**
 * [_Idle Session_ conditions](cond_timerelated.md#idle-session)
 * [Time _Interval_ conditions](cond_timerelated.md#interval)
 * [_Lua Script_ conditions](cond_actionrelated.md#lua-script)
-* [_Time_ conditions](cond_timerelated.md#time-specification)
+* [_Time_ related conditions](cond_timerelated.md#time-specification)
 
 Other conditions are supported, that are implemented as reactions to particular commands, DBus messages or method invocations, _Lua_ scripts. These conditions appear along with the native ones, and the related documentation can be found at the following locations:
 

@@ -9,7 +9,7 @@ The _Session Locked Event_ and _Session Unlocked Event_ occur, as it might resul
 
 ![WhenEventSessionLockLinux](graphics/when-event-extra-lock-linux.png)
 
-Both types of event do not require specific parameters: only the name should be set too something meaningful and an [event based condition](cond_eventrelated.md#event-conditions) _must_ be associated to the event.
+Both types of event do not require specific parameters: only the name should be set to something meaningful and an [event based condition](cond_eventrelated.md#event-conditions) _must_ be associated to the event.
 
 
 ## See also
