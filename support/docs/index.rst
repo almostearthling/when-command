@@ -20,7 +20,7 @@ This document describes the new version of **When**, a Python-based automation t
    cfgform
    tray
    tasks
-   task_extra_session
+   tasks_extra_session
    conditions
    cond_timerelated
    cond_actionrelated
@@ -31,4 +31,3 @@ This document describes the new version of **When**, a Python-based automation t
    history
    appdata
    configfile
-   README

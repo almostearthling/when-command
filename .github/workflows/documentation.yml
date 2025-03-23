@@ -15,7 +15,7 @@ jobs:
           python-version: '3.11' 
       - name: Install dependencies
         run: |
-          pip install sphinx sphinx_rtd_theme myst_parser
+          pip install sphinx sphinx_rtd_theme sphinx-favicon myst_parser
       - name: Sphinx build
         run: |
           sphinx-build support/docs _build

@@ -8,6 +8,10 @@ import shutil
 import subprocess
 
 
+# set to True if the README.md file has to be added to the documentation
+COPY_README = False
+
+
 
 # utilities
 def _write_stderr(msg, ty):
@@ -78,9 +82,9 @@ def main():
     if not check_requirements():
         exit_error("requirements not met")
     if not os.path.isdir(DEST_PATH):
-        # exit_error(f"{DEST_PATH} does not exist")
         os.makedirs(DEST_PATH)
-    copy_readme()
+    if COPY_README:
+        copy_readme()
     command = "sphinx-build"
     args = [
         SOURCE_PATH,
