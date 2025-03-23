@@ -16,7 +16,6 @@ jobs:
       - name: Install dependencies
         run: |
           pip install sphinx sphinx_rtd_theme myst_parser
-          pip install git+https://github.com/bashtage/sphinx-material.git
       - name: Sphinx build
         run: |
           sphinx-build support/docs _build
