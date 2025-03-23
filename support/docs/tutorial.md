@@ -98,7 +98,7 @@ Before clicking _OK_ the form should be configured as follows:
 
 The reason why we chose to check for a failure in _restic_ and that such failure only occurs with an exit code of _1_ is that this is the exit code that _restic_ uses to inform that no snapshot could be taken at all. Since some files could be open during backup (it should be unattended, after all), maybe _restic_ will not be able to backup really everything. So we consider our backup to be a failure only when it is a _complete_ failure.
 
-We could have accepted the suggested name for the task, something similar to _CommandTask_086F5F6C49_, but it would have been hardly recognizable when defining under which conditions it should take place.
+We could have accepted the suggested name for the task, something similar to _CommandTask_086F5F6C49_, but it would have been hardly recognizable when defining under which conditions it should take place, thus we chose _Backup_DocumentsAndPictures_.
 
 We also want to perform some maintenance after we backed up our stuff. Namely we would save some space by keeping:
 
