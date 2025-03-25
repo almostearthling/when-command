@@ -1,6 +1,6 @@
 # System Tray Resident Application
 
-The system tray resident wrapper to **whenever** is launched via the `start` command or via the _When Start_ desktop or menu icon: it launches the **whenever** scheduler executable in the background, also avoiding to show the console window on _Windows_ desktops, and taking care to capture the scheduler output, interpret it to keep track of the tasks that have been executed along with their outcomes, and write the scheduler log to the [_application data_](appdata.md) directory. The resident wrapper also displays a clock icon in the tray area, meaning that the scheduler is active, which can be right-clicked (left-clicked on Linux machines, see below) to allow a certain degree of interaction with the underlying scheduler itself.
+The system tray resident wrapper to **whenever** is launched via the `start` command or via the _When Start_ desktop or menu icon: it launches the **whenever** scheduler executable in the background, also avoiding to show the console window on _Windows_ desktops, and taking care to capture the scheduler output, interpret it to keep track of the tasks that have been executed along with their outcomes, and write the scheduler log to the [_application data_](appdata.md) directory. The resident wrapper also displays a clock icon in the tray area, meaning that the scheduler is active, which can be right-clicked (left-clicked on some Linux machines, see below) to allow a certain degree of interaction with the underlying scheduler itself.
 
 ![TrayMenu](graphics/when-tray-menu.png)
 
@@ -26,7 +26,7 @@ The suggested [installation procedure](install.md) and, in particular, adding ic
 
 ## Menu Form
 
-Modern linux distributions based on the Gnome desktop environment do not always support system tray menus directly: in these cases **When** falls back to a menu window that is launched by _left-clicking_ the tray icon:
+Modern linux distributions based on the Gnome desktop environment do not always support system tray menus directly: in some cases **When** falls back to a menu window that is launched by _left-clicking_ the tray icon:
 
 ![MenuForm](graphics/when-menu-form.png)
 
@@ -36,9 +36,11 @@ This menu window shows exactly the same entries as the missing tray menu (plus a
 ## See Also
 
 * [Installation](install.md)
+* [Toolbox](cli.md#toolbox)
+* [Configuration Utility](cfgform.md)
 
 
 [`◀ Main`](main.md)
 
 
-[^1]: Unless a timeout is set, some tasks may actually never exit: in this case **When** itself will not be able to exit.
+[^1]: Unless a timeout is set, some tasks may actually never exit: in this case **When** itself will not be able to shut down.

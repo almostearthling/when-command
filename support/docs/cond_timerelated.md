@@ -31,7 +31,7 @@ This condition occurs after a certain time has passed since there was any type o
 
 The only available parameter is the _duration of the idle session_, that may be specified in seconds, minutes, or hours. In this case specifying the condition as _recurring_ will cause it to occur again if the session exits its idle state first, and then returns idle for the same amount of time.
 
-> **Note**: formally _Wayland_ based Linux desktops are supported by **whenever** and therefore by **When**. However, due to the lack of _X.org_ libraries, the **whenever** binary must be specifically built for these platforms: these binaries calculate the _idle time_ as the time spent when the session is _locked_ instead of considering the last time that an user interacted with the desktop. The provided binary distributions actually support _X.org_ based desktops.
+> **Note**: formally _Wayland_ based Linux desktops are supported by **whenever** and therefore by **When**. However, in case the _X.org_ libraries related to idle time (namely, _libx11-dev_ and _libxss-dev_), the **whenever** binary must be specifically built for these platforms: these binaries calculate the _idle time_ as the time spent when the session is _locked_ instead of considering the last time that an user interacted with the desktop. The provided binary distributions actually support desktops where _X.org_ is available.
 
 
 [`◀ Conditions`](conditions.md)

@@ -29,16 +29,16 @@ This version of **When** uses [poetry](https://python-poetry.org/) to manage dep
 
 ## Toolbox
 
-The `tool` command provides various utilities that can help in the setup of **When** for a desktop environment. Each utility is invoked by means of a subcommand, which might possibly have variants. The following list explains the available subcommands:
+The `tool` command provides various utilities that can help in the setup of **When** for a desktop environment. Each utility is invoked by means of a subcommand, which might possibly have variants. The following list explains the available subcommands and their options:
 
 * `--install-whenever`: downloads and installs the latest version of **whenever** for the current user
 * `--create-icons`: create the **When** desktop shortcuts (for both the configuration utility and for the resident application) for the current user in the _Start_ or _Applications_ menu -- depending on the host platform; accepts the following modifiers
-  * `--autostart`: creates a shortcut that launches the resident version of **When** when the user logs in
-  * `--desktop`: also creates icons on the desktop[^1]
+  * `--autostart`: (option) creates a shortcut that launches the resident version of **When** when the user logs in
+  * `--desktop`: (option) also creates icons on the desktop[^1]
 * ...
-* `--quiet`: applies to all the operations described above, and inhibits printing messages to the console.
+* `--quiet`: (option) applies to all the operations described above, and inhibits printing messages to the console.
 
-These subcommands cannot be combined. The **whenever** installation step should be performed first if there is no working copy of the core scheduler on the system.
+The subcommands cannot be combined. The **whenever** installation step should be performed first if there is no working copy of the core scheduler on the system.
 
 
 ## See Also
@@ -49,5 +49,6 @@ These subcommands cannot be combined. The **whenever** installation step should 
 
 
 [`◀ Main`](main.md)
+
 
 [^1]: on some Linux desktop (for example, the most recent versions of Gnome) the deployment of launcher files in the `~/Desktop` subfolder is not honored as a way to create desktop icons, thus the `--desktop` option is actually executed, but has no effect.
