@@ -5,4 +5,6 @@ OLD/
 _scratch/
 _local/
 .vscode/
+.gitignore
 TODO.md
+poetry.lock
