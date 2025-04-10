@@ -307,6 +307,8 @@ def main_toolbox(args):
     verbose = not args.quiet
     # download the latest stable release of whenever and install it
     if args.install_whenever:
+        if is_whenever_running():
+            exit_error(CLI_ERR_CANNOT_INSTALL_ON_RUNNING)
         if args.desktop and verbose:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH, "--desktop")
         if args.autostart and verbose:

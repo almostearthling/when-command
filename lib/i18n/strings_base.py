@@ -4,7 +4,7 @@
 UI_APP = "When"
 UI_APP_LABEL = "When Automation Tool"
 UI_APP_COPYRIGHT = "© 2023-2025 Francesco Garosi"
-UI_APP_VERSION = "1.9.14b1"
+UI_APP_VERSION = "1.9.15b1"
 
 # item types
 ITEM_TASK = "Task"
@@ -397,6 +397,7 @@ CLI_ERR_UNSUPPORTED_ON_PLATFORM = "The operation is not supported on this platfo
 
 CLI_ERR_CANNOT_CREATE_ICON = "Could not create program icon"
 CLI_ERR_CANNOT_CREATE_SHORTCUT = "Could not create shortcut or desktop file"
+CLI_ERR_CANNOT_INSTALL_ON_RUNNING = f"An instance of [bold]`{CLI_WHENEVER}`[/] is running: shut it down before installation"
 
 CLI_ERR_FILE_EXISTS = "File [bold]`%s`[/] already exists"
 CLI_ERR_FILE_EXISTS_SKIP = "File [bold]`%s`[/] already exists: creation skipped"
