@@ -3,7 +3,7 @@
 # builds a limited log that only holds history records and task duration
 
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
 
 class History(object):

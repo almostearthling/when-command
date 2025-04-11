@@ -39,7 +39,7 @@ from lib.utility import (
 from lib.repocfg import AppConfig
 
 from lib.runner.process import Wrapper
-from lib.trayapp import set_tray_icon_gray, set_tray_icon_normal
+from lib.trayapp import set_tray_icon_gray, set_tray_icon_busy, set_tray_icon_normal
 
 from lib.forms.about import show_about_box
 from lib.forms.menubox import form_MenuBox
@@ -74,6 +74,7 @@ class App(object):
         self._window = get_tkroot()
         self._window.withdraw()
         self._icon = ImageTk.PhotoImage(get_image(APP_ICON))
+        self._paused = False
         self._window.iconphoto(True, self._icon)
         style = ttk.Style()
         style.theme_use(get_UI_theme())
@@ -83,11 +84,14 @@ class App(object):
         self._window.bind('<<OpenMenuBox>>', self.open_menubox)
         self._window.bind('<<SchedPause>>', self.sched_pause)
         self._window.bind('<<SchedResume>>', self.sched_resume)
+        self._window.bind('<<SchedSetBusy>>', self.sched_set_busy)
+        self._window.bind('<<SchedSetNotBusy>>', self.sched_set_not_busy)
         self._window.bind('<<SchedResetConditions>>', self.sched_reset_conditions)
         self._window.bind('<<SchedReloadConfig>>', self.sched_reload_configuration)
         self._window.bind('<<ExitApplication>>', self.exit_app)
         self._wrapper = None
         self._trayicon = None
+        self._busy = False
 
 
     # the main loop is mandatory to react to events
@@ -143,12 +147,14 @@ class App(object):
         if self._window and self._wrapper:
             if self._wrapper.whenever_pause():
                 if self._icon:
+                    self._paused = True
                     set_tray_icon_gray(self._trayicon)
 
     def sched_resume(self, _):
         if self._window and self._wrapper:
             if self._wrapper.whenever_resume():
                 if self._icon:
+                    self._paused = False
                     set_tray_icon_normal(self._trayicon)
 
     def sched_reset_conditions(self, _):
@@ -158,6 +164,24 @@ class App(object):
     def sched_reload_configuration(self, _):
         if self._window and self._wrapper:
             self._wrapper.whenever_reload_configuration()
+
+    def sched_set_busy(self, _):
+        if self._icon:
+            # check current status to avoid useless icon swaps
+            if not self._busy:
+                self._busy = True
+                if not self._paused:
+                    set_tray_icon_busy(self._trayicon)
+
+    def sched_set_not_busy(self, _):
+        if self._icon:
+            # check current status to avoid useless icon swaps
+            if self._busy:
+                self._busy = False
+                if self._paused:
+                    set_tray_icon_gray(self._trayicon)
+                else:
+                    set_tray_icon_normal(self._trayicon)
 
     def open_cfgapp(self, _):
         if self._window:
@@ -268,12 +292,11 @@ def main_start(args):
         whenever = AppConfig.get('WHENEVER')
         if whenever is None or not os.path.exists(whenever) or not os.access(whenever, os.X_OK):
             exit_error(CLI_ERR_WHENEVER_NOT_FOUND)
-        wrapper = Wrapper(config_file, whenever, log_file, log_level)
         setup_windows()
+        wrapper = Wrapper(config_file, whenever, log_file, log_level, _root)
         # start the scheduler in a separate thread
         if not wrapper.start():
             raise Exception(CLI_ERR_STARTING_SCHEDULER)
-        _root.set_wrapper(wrapper)
         # run the tray icon application main loop
         from lib.trayapp import main
         main(_root)
@@ -284,12 +307,11 @@ def main_start(args):
             whenever = AppConfig.get('WHENEVER')
             if whenever is None or not os.path.exists(whenever) or not os.access(whenever, os.X_OK):
                 exit_error(CLI_ERR_WHENEVER_NOT_FOUND)
-            wrapper = Wrapper(config_file, whenever, log_file, log_level)
             setup_windows()
+            wrapper = Wrapper(config_file, whenever, log_file, log_level, _root)
             # start the scheduler in a separate thread
             if not wrapper.start():
                 raise Exception(CLI_ERR_STARTING_SCHEDULER)
-            _root.set_wrapper(wrapper)
             # run the tray icon application main loop
             from lib.trayapp import main
             main(_root)

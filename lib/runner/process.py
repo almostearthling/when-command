@@ -8,10 +8,10 @@ import threading
 
 import json
 
-from lib.runner.logger import Logger
-from lib.runner.history import History
+from .logger import Logger
+from .history import History
 
-from lib.repocfg import AppConfig
+from ..repocfg import AppConfig
 
 
 # some constants:
@@ -39,15 +39,16 @@ def _logreader(wrapper):
 # wrapper around the scheduler process
 class Wrapper(object):
 
-    def __init__(self, configpath, exepath, logfile, loglevel):
+    def __init__(self, configpath, exepath, logfile, loglevel, root=None):
         self._exepath = exepath
         self._logfile = logfile
         self._config = configpath
         self._history = History(_HISTORY_LENGTH)
-        self._logger = Logger(logfile, loglevel)
+        self._logger = Logger(logfile, loglevel, root)
         self._thread = None
         self._pipe = None
         self._running = False
+        root.set_wrapper(self)
 
 
     # utilities to read inner values

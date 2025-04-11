@@ -6,19 +6,19 @@ import pystray
 import sys
 import threading
 
-from lib.utility import get_image
+from .utility import get_image
 
-from lib.icons import CLOCK_ICON48 as CLOCK_ICON
-from lib.icons import CLOCK_ICON_GRAY48 as CLOCK_ICON_GRAY
+from .icons import CLOCK_ICON48 as CLOCK_ICON
+from .icons import CLOCK_ICON_GRAY48 as CLOCK_ICON_GRAY
+from .icons import CLOCK_ICON_BUSY48 as CLOCK_ICON_BUSY
 
-from lib.runner.process import Wrapper
-
-from lib.repocfg import AppConfig
+from .repocfg import AppConfig
 
 
 # icons
 _tray_icon = get_image(CLOCK_ICON)
 _tray_icon_gray = get_image(CLOCK_ICON_GRAY)
+_tray_icon_busy = get_image(CLOCK_ICON_BUSY)
 
 
 # menu reactions: all events are managed by the main application, and
@@ -57,6 +57,9 @@ def set_tray_icon_gray(icon):
 
 def set_tray_icon_normal(icon):
         icon.icon = _tray_icon
+
+def set_tray_icon_busy(icon):
+    icon.icon = _tray_icon_busy
 
 
 # entry point for the tray resident application
