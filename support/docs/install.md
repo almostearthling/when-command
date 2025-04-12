@@ -51,7 +51,7 @@ These steps can be followed on recent Linux distributions that derive from Debia
    while on Ubuntu and derivatives, the _AppIndicator_ support libraries are needed:
 
    ```shell
-   sudo apt install libcairo2-dev libgirepository-2.0-dev gir1.2-ayatanaappindicator3-0.1
+   sudo apt install libcairo2-dev libgirepository-1.0-dev gir1.2-ayatanaappindicator3-0.1
    ```
 
    (the _gir1.2-ayatanaappindicator3-0.1_ might be already present on the system)
