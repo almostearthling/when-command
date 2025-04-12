@@ -32,7 +32,7 @@ Once a configuration is available, the resident application can be started from 
 
 ## Linux
 
-These steps can be followed on recent Linux distributions that derive from Debian, using a terminal:
+These steps can be followed on recent Linux distributions that derive from Debian such as Ubuntu and Mint, using a terminal:
 
 1. install, as root or via _sudo_, the common requirements:
 
