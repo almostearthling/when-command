@@ -110,11 +110,11 @@ class TimeSpec(object):
             ret['day'] = self.day
         if self.weekday:
             ret['weekday'] = self.weekday
-        if self.hour:
+        if self.hour is not None:
             ret['hour'] = self.hour
-        if self.minute:
+        if self.minute is not None:
             ret['minute'] = self.minute
-        if self.second:
+        if self.second is not None:
             ret['second'] = self.second
         return ret
 
