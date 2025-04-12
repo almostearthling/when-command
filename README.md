@@ -22,7 +22,9 @@ A simple [tutorial](https://almostearthling.github.io/when-command/tutorial.html
 
 ## Compatibility
 
-**When** has been successfully tested on Windows (10 and 11) and mostly Debian based distributions. It actually does not run on these distributions OOTB as it does on Windows, and some packages are needed that are not installed by default. In some cases (in _Wayland_ based environments that still do not support the _X.org_ protocol completely) the _X.org_ backend may have to be used in order to successfully run **When**. Generally, following the hereby provided [installation instructions](https://almostearthling.github.io/when-command/install.html#linux), a fully working instance of **When** will be available.
+**When** has been successfully tested on Windows (10 and 11) and some Debian based Linux distributions: Debian, Ubuntu, and Mint. Some packages are required to run on these Linux distros, that are not installed by default, and probably it is just the same for distributions that derive from other bases: probably it will not be difficult to find equivalent packages to those specified for a successful installation in the tested environments.
+
+In some cases (that is, in _Wayland_ based environments that still do not support the _X.org_ protocol completely) the _X.org_ backend may have to be used in order to successfully run **When**. Generally, following the hereby provided [installation instructions](https://almostearthling.github.io/when-command/install.html#linux), a fully working instance of **When** will be available.
 
 > **Note**: If **poetry** is used to launch the application on Linux (e.g. Debian 12), then the following option needs to be set in order to let the Python virtual environment access all the needed system modules: `poetry config virtualenvs.options.system-site-packages false` (possibly before the `poetry install` step). Otherwise Python can not reach the modules needed to display the system tray icon and menu.
 
