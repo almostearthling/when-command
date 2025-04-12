@@ -10,19 +10,19 @@ The application is under active development: although not all of the desired fea
 
 Most of the interface of this release of **When** tries to be similar to the old version, although the need for cross-platform components pushes towards the adoption of the most widespread GUI library for Python, that is [_tkinter_](https://docs.python.org/3/library/tkinter.html). Also, some of the extra features that are built into **whenever** call for a somewhat less-streamlined interface especially in terms of form layout.
 
-The [documentation](support/docs/main.md) is still underway, however it covers almost everything that is available in **When** .
+The [documentation](https://almostearthling.github.io/when-command/) almost covers all aspects of **When** .
 
 
 ## Usage
 
-Please refer to the documentation for a simplified [installation procedure](support/docs/install.md) based on [pipx](https://pipx.pypa.io/), and for the [commands](support/docs/cli.md) available to configure and launch **When**. Also, [poetry](https://python-poetry.org/) can be used to run the application, which is particularly useful to start **When** from a source repository.
+Please refer to the documentation for a simplified [installation procedure](https://almostearthling.github.io/when-command/install.html) based on [pipx](https://pipx.pypa.io/), and for the [commands](https://almostearthling.github.io/when-command/cli.html) available to configure and launch **When**. Also, [poetry](https://python-poetry.org/) can be used to run the application, which is particularly useful to start **When** from a source repository.
 
-A simple [tutorial](support/docs/tutorial.md) is available to see some quick examples of common use cases.
+A simple [tutorial](https://almostearthling.github.io/when-command/tutorial.html) is available to see some quick examples of common use cases.
 
 
 ## Compatibility
 
-**When** has been successfully tested on Windows (10 and 11) and mostly Debian based distributions. It actually does not run on these distributions OOTB as it does on Windows, and some packages are needed that are not installed by default. In some cases (in _Wayland_ based environments that still do not support the _X.org_ protocol completely) the _X.org_ backend may have to be used in order to successfully run **When**. Generally, following the hereby provided [installation instructions](support/docs/install.md#linux), a fully working instance of **When** will be available.
+**When** has been successfully tested on Windows (10 and 11) and mostly Debian based distributions. It actually does not run on these distributions OOTB as it does on Windows, and some packages are needed that are not installed by default. In some cases (in _Wayland_ based environments that still do not support the _X.org_ protocol completely) the _X.org_ backend may have to be used in order to successfully run **When**. Generally, following the hereby provided [installation instructions](https://almostearthling.github.io/when-command/install.html#linux), a fully working instance of **When** will be available.
 
 > **Note**: If **poetry** is used to launch the application on Linux (e.g. Debian 12), then the following option needs to be set in order to let the Python virtual environment access all the needed system modules: `poetry config virtualenvs.options.system-site-packages false` (possibly before the `poetry install` step). Otherwise Python can not reach the modules needed to display the system tray icon and menu.
 
