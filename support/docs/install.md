@@ -39,42 +39,45 @@ These steps can be followed on recent Linux distributions that derive from Debia
    ```shell
    sudo apt install build-essential libdbus-1-dev pkg-config \
                     libx11-dev libxss-dev libglib2.0-dev libdbus-1-dev \
+                    libcairo2-dev libgirepository-1.0-dev \
+                    gir1.2-ayatanaappindicator3-0.1 \
                     python3-tk python3-pip pipx
    ```
 
-2. on Debian, install the Gnome Shell Extension Manager (which will appear in the activities dashboard as _Extension Manager_):
+   On Debian, specifically, the _introspection_ package is called `libgirepository1.0-dev` instead of `libgirepository-1.0-dev`, and an extra package is needed (the _Gnome shell extension manager_) so use the following command:
 
    ```shell
-   sudo apt install gnome-shell-extension-manager
+   sudo apt install build-essential libdbus-1-dev pkg-config \
+                    libx11-dev libxss-dev libglib2.0-dev libdbus-1-dev \
+                    libcairo2-dev libgirepository1.0-dev \
+                    gir1.2-ayatanaappindicator3-0.1 \
+                    gnome-shell-extension-manager \
+                    python3-tk python3-pip pipx
    ```
 
-   while on Ubuntu and derivatives, the _AppIndicator_ support libraries are needed:
-
-   ```shell
-   sudo apt install libcairo2-dev libgirepository-1.0-dev gir1.2-ayatanaappindicator3-0.1
-   ```
-
-   (the _gir1.2-ayatanaappindicator3-0.1_ might be already present on the system)
-
-3. launch `pipx ensurepath` from the terminal: it should be done as the current user and **not** as root
-4. on Debian, start the _Gnome shell extension manager_, choose the _Browse_ tab, scroll down to _AppIndicator and KStatusNotifierItem Support_ (you can use the search bar to find the entry) and install it
+   Then, if you use Debian, launch the _Extension Manager_, choose the _Browse_ tab, scroll down to _AppIndicator and KStatusNotifierItem Support_ (you can use the search bar to find the entry) and install it
 
    ![GnomeExtensionManager](graphics/install-linux-extmgr.png)
 
-5. install the latest release of **When**, using **pipx**:
+   Make sure that it is enabled in order for **When** to work.
+
+   On other, non-Debian based distributions, there are probably equivalent packages to install for **When** to function properly.
+
+2. launch `pipx ensurepath` from the terminal: it should be done as the current user and **not** as root
+3. install the latest release of **When**, using **pipx**:
 
    ```shell
    pipx install https://github.com/almostearthling/when-command/releases/latest/download/when-command-latest.zip
    ```
 
-6. close the current console window, and open a new one: this is to ensure that the updated `PATH` environemnt variable is active
-7. install **whenever** using the **When** installation tool:
+4. close the current console window, and open a new one: this is to ensure that the updated `PATH` environemnt variable is active
+5. install **whenever** using the **When** installation tool:
 
    ```shell
    when tool --install-whenever
    ```
 
-8. launch the configuration utility, by typing `when config` on the command line: create a task and a condition of your choice, and save the configuration file by clicking the _Save_ button. The [simple trace](tutorial.md#simple-trace) example in the tutorial can be a good choice to verify that everything works as expected.
+6. launch the configuration utility, by typing `when config` on the command line: create a task and a condition of your choice, and save the configuration file by clicking the _Save_ button. The [simple trace](tutorial.md#simple-trace) example in the tutorial can be a good choice to verify that everything works as expected.
 
 Once a configuration is available, the resident application can be started from the command line using the `when start` command. A shortcut can be created as described [below](#create-application-icons). The `when-bg` command also exists on Linux, but its behavior is absolutely identical to `when`.
 
