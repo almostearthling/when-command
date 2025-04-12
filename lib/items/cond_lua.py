@@ -3,9 +3,9 @@
 from lib.i18n.strings import *
 
 from tomlkit import table
-from lib.utility import check_not_none, append_not_none
+from ..utility import check_not_none, append_not_none
 
-from lib.items.cond import Condition
+from .cond import Condition
 
 
 # default values for non-optional parameters

@@ -4,8 +4,8 @@
 from tomlkit import parse
 
 # import item definitions
-from lib.items.item import ALL_AVAILABLE_ITEMS_D
-from lib.utility import write_warning
+from ..items.item import ALL_AVAILABLE_ITEMS_D
+from ..utility import write_warning
 
 
 # read the configuration: this reader supports the `tags` entry as table

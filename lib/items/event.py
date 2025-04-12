@@ -10,7 +10,7 @@
 # not known to the scheduler occur.
 
 from tomlkit import table
-from lib.utility import check_not_none, append_not_none, generate_item_name
+from ..utility import check_not_none, append_not_none, generate_item_name
 
 
 # base class for event: all event items will have the same interface thus they
