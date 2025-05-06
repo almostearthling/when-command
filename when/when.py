@@ -21,6 +21,7 @@ sys.path.append(BASEDIR)
 from lib.i18n.strings import *
 from lib.icons import APP_ICON32 as APP_ICON
 from lib.utility import (
+    retrieve_whenever_options,
     get_default_configdir,
     get_default_whenever,
     get_scriptsdir,
@@ -244,6 +245,7 @@ def main_config(args):
     AppConfig.delete('APPDATA')
     AppConfig.set('APPDATA', args.dir_appdata)
     prepare_environment()
+    retrieve_whenever_options()
     if DEBUG:
         configfile = get_configfile()
         if not os.path.exists(configfile):
@@ -281,6 +283,7 @@ def main_start(args):
     AppConfig.delete('WHENEVER')
     AppConfig.set('WHENEVER', args.whenever)
     prepare_environment()
+    retrieve_whenever_options()
     if is_whenever_running():
         exit_error(CLI_ERR_ALREADY_RUNNING)
     # get configuration options

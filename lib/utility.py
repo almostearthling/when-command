@@ -196,7 +196,7 @@ def get_whenever_version():
             stderr = subprocess.PIPE,
             universal_newlines = True,
             text=True,
-            creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0,
+            creationflags=subprocess.CREATE_NO_WINDOW if sys.platform.startswith("win") else 0,
         )
     except Exception:
         return None
@@ -204,6 +204,45 @@ def get_whenever_version():
         return result.stdout.strip()
     else:
         return None
+
+
+# return the output of `whenever --version`
+def retrieve_whenever_options():
+    whenever_path = AppConfig.get('WHENEVER')
+    try:
+        result = subprocess.run(
+            [whenever_path, '--options'],
+            stdout = subprocess.PIPE,
+            stderr = subprocess.PIPE,
+            universal_newlines = True,
+            text=True,
+            creationflags=subprocess.CREATE_NO_WINDOW if sys.platform.startswith("win") else 0,
+        )
+    except Exception:
+        # maybe no executable has been found?
+        AppConfig.set('WHENEVER_HAS_DBUS', False)
+        AppConfig.set('WHENEVER_HAS_WMI', False)
+        # ...other options might appear
+        return None
+    if result:
+        # output has the form: `options: [wmi] [dbus]`, each one might or
+        # might not be present in the output, so we check whether the list
+        # below contains or not one of them
+        opts = result.stdout.strip().split()
+        if "dbus" in opts:
+            AppConfig.set('WHENEVER_HAS_DBUS', True)
+        else:
+            AppConfig.set('WHENEVER_HAS_DBUS', False)
+        if sys.platform.startswith("win") and "wmi" in opts:
+            AppConfig.set('WHENEVER_HAS_WMI', True)
+        else:
+            AppConfig.set('WHENEVER_HAS_WMI', False)
+        # ...other options might appear
+    else:
+        # this might be an older version, assume DBus is available
+        AppConfig.set('WHENEVER_HAS_DBUS', True)
+        AppConfig.set('WHENEVER_HAS_WMI', False)
+        # ...other options might appear
 
 
 # check whether the scheduler is running
