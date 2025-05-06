@@ -228,16 +228,22 @@ def retrieve_whenever_options():
         # output has the form: `options: [wmi] [dbus]`, each one might or
         # might not be present in the output, so we check whether the list
         # below contains or not one of them
-        opts = result.stdout.strip().split()
-        if "dbus" in opts:
+        if result.returncode == 0:
+            opts = result.stdout.strip().split()
+            if "dbus" in opts:
+                AppConfig.set('WHENEVER_HAS_DBUS', True)
+            else:
+                AppConfig.set('WHENEVER_HAS_DBUS', False)
+            if sys.platform.startswith("win") and "wmi" in opts:
+                AppConfig.set('WHENEVER_HAS_WMI', True)
+            else:
+                AppConfig.set('WHENEVER_HAS_WMI', False)
+            # ...other options might appear
+        else:
+            # this might be an older version, assume DBus is available
             AppConfig.set('WHENEVER_HAS_DBUS', True)
-        else:
-            AppConfig.set('WHENEVER_HAS_DBUS', False)
-        if sys.platform.startswith("win") and "wmi" in opts:
-            AppConfig.set('WHENEVER_HAS_WMI', True)
-        else:
             AppConfig.set('WHENEVER_HAS_WMI', False)
-        # ...other options might appear
+            # ...other options might appear
     else:
         # this might be an older version, assume DBus is available
         AppConfig.set('WHENEVER_HAS_DBUS', True)
