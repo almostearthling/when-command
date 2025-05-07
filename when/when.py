@@ -85,8 +85,10 @@ class App(object):
         self._window.bind('<<OpenMenuBox>>', self.open_menubox)
         self._window.bind('<<SchedPause>>', self.sched_pause)
         self._window.bind('<<SchedResume>>', self.sched_resume)
-        self._window.bind('<<SchedSetBusy>>', self.sched_set_busy)
-        self._window.bind('<<SchedSetNotBusy>>', self.sched_set_not_busy)
+        self._window.bind('<<SchedSetBusy>>', self.sched_icon_busy)
+        self._window.bind('<<SchedSetNotBusy>>', self.sched_icon_not_busy)
+        self._window.bind('<<SchedSetPaused>>', self.sched_icon_busy)
+        self._window.bind('<<SchedSetNotPaused>>', self.sched_icon_not_busy)
         self._window.bind('<<SchedResetConditions>>', self.sched_reset_conditions)
         self._window.bind('<<SchedReloadConfig>>', self.sched_reload_configuration)
         self._window.bind('<<ExitApplication>>', self.exit_app)
@@ -145,18 +147,20 @@ class App(object):
             del form
 
     def sched_pause(self, _):
-        if self._window and self._wrapper:
-            if self._wrapper.whenever_pause():
-                if self._icon:
-                    self._paused = True
-                    set_tray_icon_gray(self._trayicon)
+        if not self._paused and self._window and self._wrapper:
+            self._wrapper.whenever_pause()
+            # if self._wrapper.whenever_pause():
+            #     if self._icon:
+            #         self._paused = True
+            #         set_tray_icon_gray(self._trayicon)
 
     def sched_resume(self, _):
-        if self._window and self._wrapper:
-            if self._wrapper.whenever_resume():
-                if self._icon:
-                    self._paused = False
-                    set_tray_icon_normal(self._trayicon)
+        if self._paused and self._window and self._wrapper:
+            self._wrapper.whenever_resume()
+            # if self._wrapper.whenever_resume():
+            #     if self._icon:
+            #         self._paused = False
+            #         set_tray_icon_normal(self._trayicon)
 
     def sched_reset_conditions(self, _):
         if self._window and self._wrapper:
@@ -166,7 +170,7 @@ class App(object):
         if self._window and self._wrapper:
             self._wrapper.whenever_reload_configuration()
 
-    def sched_set_busy(self, _):
+    def sched_icon_busy(self, _):
         if self._icon:
             # check current status to avoid useless icon swaps
             if not self._busy:
@@ -174,13 +178,30 @@ class App(object):
                 if not self._paused:
                     set_tray_icon_busy(self._trayicon)
 
-    def sched_set_not_busy(self, _):
+    def sched_icon_not_busy(self, _):
         if self._icon:
             # check current status to avoid useless icon swaps
             if self._busy:
                 self._busy = False
                 if self._paused:
                     set_tray_icon_gray(self._trayicon)
+                else:
+                    set_tray_icon_normal(self._trayicon)
+
+    def sched_icon_paused(self, _):
+        if self._icon:
+            # check current status to avoid useless icon swaps
+            if not self._paused:
+                self._paused = True
+                set_tray_icon_gray(self._trayicon)
+    
+    def sched_icon_not_paused(self, _):
+        if self._icon:
+            # check current status to avoid useless icon swaps
+            if self._paused:
+                self._paused = False
+                if self._busy:
+                    set_tray_icon_busy(self._trayicon)
                 else:
                     set_tray_icon_normal(self._trayicon)
 

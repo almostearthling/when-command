@@ -79,6 +79,12 @@ class Logger(object):
                     self._root.send_event('<<SchedSetBusy>>')
                 else:
                     self._root.send_event('<<SchedSetNotBusy>>')
+        elif when == 'PAUSE':
+            if self._root:
+                if status == 'YES':
+                    self._root.send_event('<<SchedSetPaused>>')
+                else:
+                    self._root.send_event('<<SchedSetNotPaused>>')
         else:
             if ln >= self._level_num:
                 self._logfile.write("%s\n" % _LOGFMT.format(
