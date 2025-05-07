@@ -18,11 +18,13 @@ ITEM_COND_INTERVAL = "Interval Based Condition"
 ITEM_COND_IDLE = "Idle Session Based Condition"
 ITEM_COND_TIME = "Time Based Condition"
 ITEM_COND_DBUS = "DBus Inspection Based Condition"
+ITEM_COND_WMI = "WMI Query Based Condition"
 ITEM_COND_EVENT = "Event Based Condition"
 
 ITEM_EVENT = "Event"
 ITEM_EVENT_FSCHANGE = "Filesystem Monitoring Based Event"
 ITEM_EVENT_DBUS = "DBus Subscription Based Event"
+ITEM_EVENT_WMI = "WMI Subscription Based Event"
 ITEM_EVENT_CLI = "Command Based Event"
 
 

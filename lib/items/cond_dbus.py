@@ -16,7 +16,7 @@ DEFAULT_INTERFACE = 'org.gtk.Actions'
 DEFAULT_METHOD = 'List'
 
 
-# a DBus inspaction based condition
+# a DBus inspection based condition
 class DBusCondition(Condition):
 
     # availability at class level
