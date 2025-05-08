@@ -49,11 +49,7 @@ _CHECK_EXTRA_DELAY = 60
 
 # check for availability: in this case check all needed commands
 def _available():
-    if sys.platform.startswith("win"):
-        if shutil.which("pwsh.exe"):
-            return True
-        return False
-    elif sys.platform == 'linux':
+    if  sys.platform == 'linux':
         if shutil.which("bash") and shutil.which("vmstat") and shutil.which("bc"):
             return True
         return False
@@ -79,9 +75,6 @@ class SystemLoadCondition(CommandCondition):
         self.subtype = self.item_subtype
         self.hrtype = self.item_hrtype
         if t:
-            # TODO: change the following so that instead of raising an
-            # exception, a messagebox is shown suggesting that maybe this
-            # is not the tool used to generate the configuration file before
             assert(t.get('type') == self.type)
             self.tags = t.get('tags')
             assert(isinstance(self.tags, items.Table))
@@ -93,20 +86,12 @@ class SystemLoadCondition(CommandCondition):
         self.updateitem()
 
     def updateitem(self):
-        if sys.platform.startswith("win"):
-            self.command = "pwsh.exe"
-            self.command_arguments = [
-                "-Command",
-                "If ((Get-CimInstance -Class Win32_Processor).LoadPercentage -lt %s) { echo OK }" % self.tags.get('threshold', _DEFAULT_LOW_LOAD_PERC),
-            ]
-            self.success_stdout = "OK"
-        elif sys.platform == 'linux':
-            self.command = "bash"
-            self.command_arguments = [
-                "-c",
-                "echo '%s <' `vmstat | tail -1 | awk '{print \$14}'` | bc" % self.tags.get('threshold', _DEFAULT_LOW_LOAD_PERC),
-            ]
-            self.success_stdout = "1"
+        self.command = "bash"
+        self.command_arguments = [
+            "-c",
+            "echo '%s <' `vmstat | tail -1 | awk '{print \$14}'` | bc" % self.tags.get('threshold', _DEFAULT_LOW_LOAD_PERC),
+        ]
+        self.success_stdout = "1"
         self.startup_path = "."
         self.check_after = _CHECK_EXTRA_DELAY   # for now keep it fixed to one minute
         self.recur_after_failed_check = True

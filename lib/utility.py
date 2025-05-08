@@ -274,6 +274,16 @@ def is_whenever_running():
         return None
 
 
+# a couple of shortcuts for whenever options
+def whenever_has_dbus():
+    res = AppConfig.get('WHENEVER_HAS_DBUS')
+    return res
+
+def whenever_has_wmi():
+    res = AppConfig.get('WHENEVER_HAS_WMI')
+    return res
+
+
 # return the configuration file path
 def get_configfile():
     basename = "%s.toml" % AppConfig.get('CFGNAME').lower()

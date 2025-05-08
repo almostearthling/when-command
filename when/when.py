@@ -40,11 +40,11 @@ from lib.utility import (
 from lib.repocfg import AppConfig
 
 from lib.runner.process import Wrapper
-from lib.trayapp import set_tray_icon_gray, set_tray_icon_busy, set_tray_icon_normal
+# from lib.trayapp import set_tray_icon_gray, set_tray_icon_busy, set_tray_icon_normal
 
-from lib.forms.about import show_about_box
-from lib.forms.menubox import form_MenuBox
-from lib.forms.cfgform import form_Config
+# from lib.forms.about import show_about_box
+# from lib.forms.menubox import form_MenuBox
+# from lib.forms.cfgform import form_Config
 from lib.forms.history import form_History
 
 
@@ -77,6 +77,26 @@ class App(object):
         self._icon = ImageTk.PhotoImage(get_image(APP_ICON))
         self._paused = False
         self._window.iconphoto(True, self._icon)
+
+        # load forms and application related functions *after* initialization,
+        # and take property of member functions: this is done here so that all
+        # configuration that might depend on information that is acquired
+        # after startup (such as the `whenever` executable) is already known
+        # before initializations of forms and application objects
+        from lib.trayapp import set_tray_icon_gray, set_tray_icon_busy, set_tray_icon_normal
+        from lib.forms.about import show_about_box
+        from lib.forms.menubox import form_MenuBox
+        from lib.forms.cfgform import form_Config
+        from lib.forms.history import form_History
+
+        self.set_tray_icon_gray = lambda self, i: set_tray_icon_gray(i)
+        self.set_tray_icon_busy = lambda self, i: set_tray_icon_busy(i)
+        self.set_tray_icon_normal = lambda self, i: set_tray_icon_normal(i)
+        self.show_aboutbox = lambda self: show_about_box()
+        self.form_Menubox = form_MenuBox
+        self.form_Config = form_Config
+        self.form_History = form_History
+
         style = ttk.Style()
         style.theme_use(get_UI_theme())
         self._window.bind('<<OpenHistory>>', self.open_history)
@@ -142,7 +162,7 @@ class App(object):
     # separate, detached thread so that it does not slow down the main loop
     def open_history(self, _):
         if self._window and self._wrapper:
-            form = form_History(self._wrapper)
+            form = self.form_History(self._wrapper)
             form.run()
             del form
 
@@ -176,7 +196,7 @@ class App(object):
             if not self._busy:
                 self._busy = True
                 if not self._paused:
-                    set_tray_icon_busy(self._trayicon)
+                    self.set_tray_icon_busy(self._trayicon)
 
     def sched_icon_not_busy(self, _):
         if self._icon:
@@ -184,16 +204,16 @@ class App(object):
             if self._busy:
                 self._busy = False
                 if self._paused:
-                    set_tray_icon_gray(self._trayicon)
+                    self.set_tray_icon_gray(self._trayicon)
                 else:
-                    set_tray_icon_normal(self._trayicon)
+                    self.set_tray_icon_normal(self._trayicon)
 
     def sched_icon_paused(self, _):
         if self._icon:
             # check current status to avoid useless icon swaps
             if not self._paused:
                 self._paused = True
-                set_tray_icon_gray(self._trayicon)
+                self.set_tray_icon_gray(self._trayicon)
     
     def sched_icon_not_paused(self, _):
         if self._icon:
@@ -201,26 +221,26 @@ class App(object):
             if self._paused:
                 self._paused = False
                 if self._busy:
-                    set_tray_icon_busy(self._trayicon)
+                    self.set_tray_icon_busy(self._trayicon)
                 else:
-                    set_tray_icon_normal(self._trayicon)
+                    self.set_tray_icon_normal(self._trayicon)
 
     def open_cfgapp(self, _):
         if self._window:
-            form = form_Config(self)
+            form = self.form_Config(self)
             form.run()
             del form
 
     def open_menubox(self, _):
         if self._window and self._wrapper:
-            form = form_MenuBox()
+            form = self.form_MenuBox()
             form.set_root(self)
             form.run()
             del form
 
     def open_aboutbox(self, _):
         if self._window:
-            show_about_box()
+            self.show_about_box()
 
     def exit_app(self, _):
         self.destroy()
@@ -265,8 +285,8 @@ def main_config(args):
     # set some global configuration values according to CLI options
     AppConfig.delete('APPDATA')
     AppConfig.set('APPDATA', args.dir_appdata)
-    prepare_environment()
     retrieve_whenever_options()
+    prepare_environment()
     if DEBUG:
         configfile = get_configfile()
         if not os.path.exists(configfile):
@@ -303,8 +323,8 @@ def main_start(args):
     AppConfig.set('LOGLEVEL', args.log_level)
     AppConfig.delete('WHENEVER')
     AppConfig.set('WHENEVER', args.whenever)
-    prepare_environment()
     retrieve_whenever_options()
+    prepare_environment()
     if is_whenever_running():
         exit_error(CLI_ERR_ALREADY_RUNNING)
     # get configuration options
@@ -429,6 +449,12 @@ def main():
         help=CLI_ARG_HELP_DIR_APPDATA,
         type=str,
         default=default_appdata,
+    )
+    parser_config.add_argument(
+        "-W", "--whenever",
+        help=CLI_ARG_HELP_WHENEVER,
+        type=str,
+        default=default_whenever,
     )
     parser_config.set_defaults(func=main_config)
 

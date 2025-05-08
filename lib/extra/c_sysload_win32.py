@@ -16,7 +16,8 @@ import ttkbootstrap as ttk
 from tkinter import messagebox
 
 from ..i18n.strings import *
-from ..utility import check_not_none, append_not_none
+from ..utility import check_not_none, append_not_none, whenever_has_wmi
+from ..repocfg import AppConfig
 
 from ..forms.ui import *
 
@@ -31,7 +32,7 @@ from ..items.cond_wmi import WMICondition
 
 
 # imports specific to this module
-import shutil
+# import shutil
 
 
 # resource strings (not internationalized)
@@ -50,9 +51,9 @@ _CHECK_EXTRA_DELAY = 60
 # check for availability: in this case check all needed commands
 def _available():
     if sys.platform.startswith("win"):
-        if shutil.which("pwsh.exe"):
+        if whenever_has_wmi():
             return True
-        return False
+    return False
 
 
 
@@ -60,7 +61,7 @@ def _available():
 class SystemLoadCondition(WMICondition):
 
     # availability at class level: these variables *MUST* be set for all items
-    item_type = 'command'
+    item_type = 'wmi'
     item_subtype = 'sysload'
     item_hrtype = ITEM_HR_NAME
     available = _available()
@@ -73,9 +74,6 @@ class SystemLoadCondition(WMICondition):
         self.subtype = self.item_subtype
         self.hrtype = self.item_hrtype
         if t:
-            # TODO: change the following so that instead of raising an
-            # exception, a messagebox is shown suggesting that maybe this
-            # is not the tool used to generate the configuration file before
             assert(t.get('type') == self.type)
             self.tags = t.get('tags')
             assert(isinstance(self.tags, items.Table))
@@ -88,12 +86,12 @@ class SystemLoadCondition(WMICondition):
 
     def updateitem(self):
         self.query = "SELECT * from Win32_Processor"
-        self.result_check = {
+        self.result_check = [{
             'index': 0,
             'field': "LoadPercentage",
             'operator': "lt",
             'value': int(self.tags.get('threshold', _DEFAULT_LOW_LOAD_PERC)),
-        }
+        }]
         self.check_after = _CHECK_EXTRA_DELAY   # for now keep it fixed to one minute
         self.recur_after_failed_check = True
 
