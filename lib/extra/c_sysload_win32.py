@@ -16,8 +16,7 @@ import ttkbootstrap as ttk
 from tkinter import messagebox
 
 from ..i18n.strings import *
-from ..utility import check_not_none, append_not_none, whenever_has_wmi
-from ..repocfg import AppConfig
+from ..utility import whenever_has_wmi
 
 from ..forms.ui import *
 
@@ -85,12 +84,13 @@ class SystemLoadCondition(WMICondition):
         self.updateitem()
 
     def updateitem(self):
-        self.query = "SELECT * from Win32_Processor"
+        threshold = self.tags.get('threshold', _DEFAULT_LOW_LOAD_PERC)
+        self.query = "SELECT * FROM Win32_Processor"
         self.result_check = [{
             'index': 0,
             'field': "LoadPercentage",
             'operator': "lt",
-            'value': int(self.tags.get('threshold', _DEFAULT_LOW_LOAD_PERC)),
+            'value': threshold,
         }]
         self.check_after = _CHECK_EXTRA_DELAY   # for now keep it fixed to one minute
         self.recur_after_failed_check = True

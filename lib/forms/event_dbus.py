@@ -42,7 +42,7 @@ class form_DBusEvent(form_Event):
 
         # TODO: choose an appropriate lexer (although `bash` seems to be OK)
         sep1 = ttk.Separator(area)
-        l_dbusRule = ttk.Label(area, text=UI_FORM_DBUS_PARAMS_CALL_SC)
+        l_dbusRule = ttk.Label(area, text=UI_FORM_DBUS_RULE_SC)
         cv_dbusRule = CodeView(area, pygments.lexers.BashLexer, font='TkFixedFont', height=2, color_scheme=get_editor_theme())
 
         sep2 = ttk.Separator(area)

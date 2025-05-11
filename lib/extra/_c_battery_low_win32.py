@@ -17,7 +17,7 @@ import ttkbootstrap as ttk
 from tkinter import messagebox
 
 from ..i18n.strings import *
-from ..utility import whenever_has_wmi
+from ..utility import check_not_none, append_not_none
 
 from ..forms.ui import *
 
@@ -26,11 +26,12 @@ from ..forms.ui import *
 from ..forms.cond import form_Condition
 
 # import item to derive from
-from ..items.cond_wmi import WMICondition
+from ..items.cond_command import CommandCondition
 
 
 # imports specific to this module
 import sys
+import shutil
 
 
 
@@ -44,7 +45,7 @@ _UI_FORM_LOWBATT_THRESHOLD_SC = "Battery charge is below:"
 
 # default values
 _DEFAULT_THRESHOLD_VALUE = 40
-_CHECK_EXTRA_DELAY = 60
+_CHECK_EXTRA_DELAY = 300
 
 
 # check for availability: this version of the check is only for Windows, the
@@ -52,13 +53,15 @@ _CHECK_EXTRA_DELAY = 60
 # exclusive: with this check we assume that this module is only run on Windows
 def _available():
     if sys.platform.startswith("win"):
-        if whenever_has_wmi():
+        if shutil.which("pwsh.exe"):
             return True
-    return False
+        return False
+    else:
+        return False
 
 
 # the specific item is derived from the actual parent item
-class LowBatteryCondition(WMICondition):
+class LowBatteryCondition(CommandCondition):
 
     # availability at class level: these variables *MUST* be set for all items
     item_type = 'command'
@@ -68,7 +71,7 @@ class LowBatteryCondition(WMICondition):
 
     def __init__(self, t: items.Table=None) -> None:
         # first initialize the base class (mandatory)
-        WMICondition.__init__(self, t)
+        CommandCondition.__init__(self, t)
 
         # then set type (same as base), subtype and human readable name: this
         # is mandatory in order to correctly display the item in all forms
@@ -96,23 +99,19 @@ class LowBatteryCondition(WMICondition):
 
         # see interpretation of BatteryStatus == 1 here:
         # https://learn.microsoft.com/it-it/windows/win32/cimwin32prov/win32-battery
-        self.query = "SELECT * FROM Win32_Battery"
-        self.result_check = [
-            {
-                'index': 0,
-                'field': "EstimatedChargeRemaining",
-                'operator': "lt",
-                'value': threshold,
-            },
-            {
-                'index': 0,
-                'field': "BatteryStatus",
-                'operator': "eq",
-                'value': 1,
-            },
+        cmdline = (
+            "$batt = (Get-CimInstance -Class Win32_Battery); " +
+            "If ( $batt.BatteryStatus -eq 1 -and $batt.EstimatedChargeRemaining -lt %s ) " % threshold +
+            "{ echo OK }"
+        )
+        self.command = "pwsh.exe"
+        self.command_arguments = [
+            "-Command",
+            cmdline,
         ]
-        self.result_check_all = True
-        self.check_after = _CHECK_EXTRA_DELAY   # for now keep it fixed to one minute
+        self.success_stdout = "OK"
+        self.startup_path = "."
+        self.check_after = _CHECK_EXTRA_DELAY
         self.recur_after_failed_check = True
 
 

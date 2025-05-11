@@ -341,6 +341,9 @@ def main_start(args):
         # start the scheduler in a separate thread
         if not wrapper.start():
             raise Exception(CLI_ERR_STARTING_SCHEDULER)
+        # check that everything is fine after start
+        if not wrapper.running():
+            raise Exception(CLI_ERR_STARTING_SCHEDULER)
         # run the tray icon application main loop
         from lib.trayapp import main
         main(_root)
@@ -355,6 +358,9 @@ def main_start(args):
             wrapper = Wrapper(config_file, whenever, log_file, log_level, _root)
             # start the scheduler in a separate thread
             if not wrapper.start():
+                raise Exception(CLI_ERR_STARTING_SCHEDULER)
+            # check that everything is fine after start
+            if not wrapper.running():
                 raise Exception(CLI_ERR_STARTING_SCHEDULER)
             # run the tray icon application main loop
             from lib.trayapp import main

@@ -12,10 +12,12 @@ from lib.forms.cond_idle import form_IdleCondition
 from lib.forms.cond_interval import form_IntervalCondition
 from lib.forms.cond_lua import form_LuaScriptCondition
 from lib.forms.cond_time import form_TimeCondition
+from lib.forms.cond_wmi import form_WMICondition
 
 from lib.forms.event_cli import form_CommandEvent
 from lib.forms.event_dbus import form_DBusEvent
 from lib.forms.event_fschange import form_FilesystemChangeEvent
+from lib.forms.event_wmi import form_WMIEvent
 
 
 from lib.items.task_command import CommandTask
@@ -28,10 +30,12 @@ from lib.items.cond_idle import IdleCondition
 from lib.items.cond_interval import IntervalCondition
 from lib.items.cond_lua import LuaScriptCondition
 from lib.items.cond_time import TimeCondition
+from lib.items.cond_wmi import WMICondition
 
 from lib.items.event_cli import CommandEvent
 from lib.items.event_dbus import DBusEvent
 from lib.items.event_fschange import FilesystemChangeEvent
+from lib.items.event_wmi import WMIEvent
 
 # to dynamically determine nature of extra items
 from lib.items.task import Task
@@ -78,10 +82,12 @@ ALL_AVAILABLE_ITEMS = [
     ('cond:interval',  ITEM_COND_INTERVAL,  form_IntervalCondition,     IntervalCondition),
     ('cond:lua',       ITEM_COND_LUA,       form_LuaScriptCondition,    LuaScriptCondition),
     ('cond:time',      ITEM_COND_TIME,      form_TimeCondition,         TimeCondition),
+    ('cond:wmi',       ITEM_COND_WMI,       form_WMICondition,          WMICondition),
 
     ('event:cli',      ITEM_EVENT_CLI,      form_CommandEvent,          CommandEvent),
     ('event:dbus',     ITEM_EVENT_DBUS,     form_DBusEvent,             DBusEvent),
     ('event:fschange', ITEM_EVENT_FSCHANGE, form_FilesystemChangeEvent, FilesystemChangeEvent),
+    ('event:wmi',      ITEM_EVENT_WMI,      form_WMIEvent,              WMIEvent),
 ]
 
 

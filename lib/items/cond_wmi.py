@@ -21,7 +21,7 @@ class WMICondition(Condition):
     def __init__(self, t: table=None) -> None:
         Condition.__init__(self, t)
         self.type = 'wmi'
-        self.hrtype = ITEM_COND_DBUS
+        self.hrtype = ITEM_COND_WMI
         if t:
             assert(t.get('type') == self.type)
             self.check_after = t.get('check_after')

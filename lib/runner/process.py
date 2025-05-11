@@ -63,7 +63,7 @@ class Wrapper(object):
         return self._pipe
 
     def running(self):
-        return self._running
+        return self._running and self._pipe is not None
 
     # used by the tray menu to feed the history box
     def get_history(self):

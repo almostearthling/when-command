@@ -154,6 +154,9 @@ UI_FORM_TESTVAL = "Test value"
 UI_FORM_SCRIPT = "Script"
 UI_FORM_COMMAND = "Command"
 UI_FORM_SEQUENCE = "Sequence"
+UI_FORM_INDEX = "Index"
+UI_FORM_FIELD = "Field"
+UI_FORM_OPERATOR = "Operator"
 
 UI_FORM_HS_TIME = "Time"
 UI_FORM_HS_TASK = "Task"
@@ -181,6 +184,7 @@ UI_FORM_TICKINTERVAL_SC = "Tick interval:"
 UI_FORM_CURRENTITEMS_SC = "Current items:"
 UI_FORM_VARNAME_SC = "Variable name:"
 UI_FORM_NEWVALUE_SC = "New value:"
+UI_FORM_VALUE_SC = "Value:"
 UI_FORM_CHECKFOR_SC = "Check for:"
 UI_FORM_CHECKAGAINST_SC = "Check against:"
 UI_FORM_TESTVAL_SC = "Test value:"
@@ -189,6 +193,8 @@ UI_FORM_DATE_SC = "Date:"
 UI_FORM_TIME_SC = "Time:"
 UI_FORM_DOW_SC = "Weekday:"
 UI_FORM_ITEM_SC = "Item:"
+UI_FORM_FIELD_SC = "Field:"
+UI_FORM_INDEX_SC = "Index:"
 UI_FORM_CURRENTTIMESPECS_SC = "Active time specifications:"
 UI_FORM_MONITOREDFSITEMS_SC = "Monitored filesystem items:"
 UI_FORM_HISTORYITEMS_SC = "Current history:"
@@ -199,8 +205,12 @@ UI_FORM_DBUS_OBJPATH_SC = "Object path:"
 UI_FORM_DBUS_INTERFACE_SC = "Interface:"
 UI_FORM_DBUS_METHOD_SC = "Method:"
 UI_FORM_DBUS_SIGNAL_SC = "Signal:"
+UI_FORM_DBUS_RULE_SC = "Rule:"
 UI_FORM_DBUS_PARAMS_CALL_SC = "Call with the following parameters (use JSON format):"
 UI_FORM_DBUS_PARAMS_CHECK_SC = "Perform the following checks on return values (use JSON format):"
+UI_FORM_WMI_QUERY_SC = "WMI Query (WQL):"
+UI_FORM_WMI_RESULT_CHECKS_SC = "Result checks:"
+
 UI_FORM_ITEMTYPE_SC = "Choose item type:"
 UI_FORM_ITEMSUBTYPES_SC = "Available items:"
 UI_FORM_MAXTASKRETRIES_SC = "Max tasks retries:"
@@ -253,6 +263,7 @@ UI_TITLE_IDLECOND = "%s: Idle Session Condition Editor" % UI_APP
 UI_TITLE_EVENTCOND = "%s: Event Condition Editor" % UI_APP
 UI_TITLE_TIMECOND = "%s: Time Condition Editor" % UI_APP
 UI_TITLE_DBUSCOND = "%s: DBus Method Condition Editor" % UI_APP
+UI_TITLE_WMICOND = "%s: WMI Query Condition Editor" % UI_APP
 
 UI_TITLE_DBUSEVENT = "%s: DBus Signal Event Editor" % UI_APP
 UI_TITLE_FSCHANGEEVENT = "%s: Filesystem Monitoring Event Editor" % UI_APP
@@ -286,11 +297,15 @@ UI_POPUP_INVALIDITEMNAME = "Item name is not valid"
 UI_POPUP_INVALIDPARAMETERS_T = "Some of the form fields contain invalid data:\n\n%s\n\nPlease review them before updating"
 UI_POPUP_INVALIDVARNAME = "Invalid name for variable"
 UI_POPUP_EMPTYVARVALUE = "No value provided for variable"
+UI_POPUP_EMPTYCHECKVALUE = "No value provided for check"
 UI_POPUP_INVALIDFILEORDIR = "Invalid file or directory name"
 UI_POPUP_INVALIDTIMESPEC = "Invalid or missing time specification"
 UI_POPUP_REFERENCEDTASK = "The Task is still referenced in at least\none Condition: remove any references\nbefore attempting to delete it"
 UI_POPUP_REFERENCEDCOND = "The Condition is still referenced in at least\none Event: remove any references before\nattempting to delete it"
 UI_POPUP_MISSINGEVENTCOND = "No condition specified for event"
+UI_POPUP_INVALIDOPERATOR = "The specified operator is not valid"
+UI_POPUP_INVALIDINDEX = "The specified index is not valid"
+UI_POPUP_INVALIDFIELD = "The specified field name is not valid"
 
 
 # about box
