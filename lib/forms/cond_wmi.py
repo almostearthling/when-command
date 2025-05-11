@@ -55,7 +55,7 @@ class form_WMICondition(form_Condition):
         # client area
         area = ttk.Frame(super().contents)
         area.grid(row=0, column=0, sticky=tk.NSEW)
-        PAD = UI_TITLE_WMICOND
+        PAD = WIDGET_PADDING_PIXELS
 
         # script section
         l_wmiQuery = ttk.Label(area, text=UI_FORM_WMI_QUERY_SC)
@@ -77,14 +77,14 @@ class form_WMICondition(form_Condition):
         sb_wmiResults.pack(side=tk.RIGHT, fill=tk.Y)
         l_resultIndex = ttk.Label(area, text=UI_FORM_INDEX_SC)
         e_resultIndex = ttk.Entry(area)
-        l_resultField = ttk.Label(area, text=UI_FORM_VALUE_SC)
+        l_resultField = ttk.Label(area, text=UI_FORM_FIELD_SC)
         e_resultField = ttk.Entry(area)
-        l_resultOperator = ttk.Label(area, text=UI_FORM_VALUE_SC)
+        l_resultOperator = ttk.Label(area, text=UI_FORM_OPERATOR)
         e_resultOperator = ttk.Entry(area)
         l_resultValue = ttk.Label(area, text=UI_FORM_VALUE_SC)
         e_resultValue = ttk.Entry(area)
-        b_addCheck = ttk.Button(area, text=UI_UPDATE, width=BUTTON_STANDARD_WIDTH, command=self.add_var)
-        b_delCheck = ttk.Button(area, text=UI_DEL, width=BUTTON_STANDARD_WIDTH, command=self.del_var)
+        b_addCheck = ttk.Button(area, text=UI_UPDATE, width=BUTTON_STANDARD_WIDTH, command=self.add_check)
+        b_delCheck = ttk.Button(area, text=UI_DEL, width=BUTTON_STANDARD_WIDTH, command=self.del_check)
         ck_checkAll = ttk.Checkbutton(area, text=UI_FORM_MATCHALLRESULTS)
 
         # extra delay section
@@ -95,7 +95,7 @@ class form_WMICondition(form_Condition):
         ck_ignorePersistentSuccess = ttk.Checkbutton(area_commonparams, text=UI_FORM_IGNOREPERSISTSUCCESS)
 
         # bind double click to variable recall
-        tv_wmiResults.bind('<Double-Button-1>', lambda _: self.recall_var())
+        tv_wmiResults.bind('<Double-Button-1>', lambda _: self.recall_check())
 
         # arrange items in frame
         l_checkAfter.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
@@ -107,13 +107,13 @@ class form_WMICondition(form_Condition):
         sep2 = ttk.Separator(area)
 
         # arrange top items in the grid
-        l_wmiQuery.grid(row=0, column=0, columnspan=4, sticky=tk.W, padx=PAD, pady=PAD)
-        cv_wmiQuery.grid(row=1, column=0, columnspan=4, sticky=tk.NSEW, padx=PAD, pady=PAD)
-        sep1.grid(row=2, column=0, columnspan=4, sticky=tk.EW, pady=PAD)
-        area_commonparams.grid(row=3, column=0, columnspan=4, sticky=tk.EW)
-        sep2.grid(row=4, column=0, columnspan=4, sticky=tk.EW, pady=PAD)
-        l_wmiResults.grid(row=10, column=0, columnspan=4, sticky=tk.W, padx=PAD, pady=PAD)
-        sftv_wmiResults.grid(row=11, column=0, columnspan=4, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        l_wmiQuery.grid(row=0, column=0, columnspan=6, sticky=tk.W, padx=PAD, pady=PAD)
+        cv_wmiQuery.grid(row=1, column=0, columnspan=6, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        sep1.grid(row=2, column=0, columnspan=6, sticky=tk.EW, pady=PAD)
+        area_commonparams.grid(row=3, column=0, columnspan=6, sticky=tk.EW)
+        sep2.grid(row=4, column=0, columnspan=6, sticky=tk.EW, pady=PAD)
+        l_wmiResults.grid(row=10, column=0, columnspan=6, sticky=tk.W, padx=PAD, pady=PAD)
+        sftv_wmiResults.grid(row=11, column=0, columnspan=6, sticky=tk.NSEW, padx=PAD, pady=PAD)
         l_resultIndex.grid(row=12, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         l_resultField.grid(row=12, column=1, sticky=tk.W, padx=PAD, pady=PAD)
         l_resultOperator.grid(row=12, column=2, sticky=tk.W, padx=PAD, pady=PAD)
@@ -130,7 +130,7 @@ class form_WMICondition(form_Condition):
         area.rowconfigure(1, weight=1)
         area.rowconfigure(11, weight=1)
         area.columnconfigure(1, weight=1)
-        area.columnconfigure(3, weight=2)
+        area.columnconfigure(3, weight=3)
 
         # bind data to widgets
         self.data_bind('result_selection', tv_wmiResults)
@@ -162,7 +162,7 @@ class form_WMICondition(form_Condition):
         field = self.data_get('field')
         operator = _XLATE_OPERATORS.get(self.data_get('operator'), None)
         value = self.data_get('value')
-        if index < 0:
+        if index is not None and index < 0:
             messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDINDEX)
             return
         if not _RE_VALIDNAME.match(field):
@@ -176,7 +176,6 @@ class form_WMICondition(form_Condition):
             return
         self._results = list(x for x in self._results if x[0] != index and x[1] != field)
         self._results.append([index, field, operator, value])
-        self._results.sort(key=lambda x: (x[0], x[1]))
         e = []
         for x in self._results:
             e.append({
@@ -197,19 +196,25 @@ class form_WMICondition(form_Condition):
         value = entry[3]
         self._results = list(
             x for x in self._results
-            if x[0] == index
-            and x[1] == field
+            if x[0] != index
+            and x[1] != field
             # and x[2] == operator
             # and x[3] == value
         )
         e = []
         for x in self._results:
-            e.append({
-                'index': index,
+            d = {
                 'field': field,
                 'operator': operator,
-                'value': value,
-            })
+                'value': guess_typed_value(value),
+            }
+            if index is not None and index != "":
+                try:
+                    index = int(index)
+                    d['index'] = index
+                except ValueError:
+                    messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDINDEX)
+            e.append(d)
         self._item.result_check = e or None
         self.data_set('index', index)
         self.data_set('field', field)
@@ -236,8 +241,19 @@ class form_WMICondition(form_Condition):
         self._item.recur_after_failed_check = self.data_get('ignore_persistent_success') or None
         e = []
         for l in self._results:
-            e[l[0]] = guess_typed_value(str(l[1]))
-        self._item.expected_results = e or None
+            d = {
+                'field': l[1],
+                'operator': l[2],
+                'value': guess_typed_value(l[3]),
+            }
+            if l[0] != "" and l[0] is not None:
+                try:
+                    index = int(l[0])
+                    d['index'] = index
+                except ValueError:
+                    messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDINDEX)
+            e.append(d)
+        self._item.result_check = e or None
         return super()._updatedata()
 
     def _updateform(self):
@@ -258,7 +274,6 @@ class form_WMICondition(form_Condition):
                     e.get('operator'),
                     e.get('value', ""),
                 ])
-        self._results.sort(key=lambda x: (x[0], x[1]))
         self._tv_results.delete(*self._tv_results.get_children())
         for entry in self._results:
             self._tv_results.insert('', iid="%s-%s" % (entry[0], entry[1]), values=entry, index=tk.END)
