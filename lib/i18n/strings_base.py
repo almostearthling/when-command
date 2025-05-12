@@ -269,6 +269,7 @@ UI_TITLE_WMICOND = "%s: WMI Query Condition Editor" % UI_APP
 UI_TITLE_DBUSEVENT = "%s: DBus Signal Event Editor" % UI_APP
 UI_TITLE_FSCHANGEEVENT = "%s: Filesystem Monitoring Event Editor" % UI_APP
 UI_TITLE_CLIEVENT = "%s: Direct Command Event Editor" % UI_APP
+UI_TITLE_WMIEVENT = "%s: WMI Query Event Editor" % UI_APP
 
 UI_TITLE_HISTORY = "%s: Task History" % UI_APP
 UI_TITLE_MENU = "%s: Menu" % UI_APP
