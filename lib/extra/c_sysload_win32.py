@@ -68,6 +68,7 @@ class SystemLoadCondition(WMICondition):
     def __init__(self, t: items.Table=None) -> None:
         # first initialize the base class
         WMICondition.__init__(self, t)
+
         # then set type (same as base), subtype and human readable name
         self.type = self.item_type
         self.subtype = self.item_subtype
@@ -86,12 +87,14 @@ class SystemLoadCondition(WMICondition):
     def updateitem(self):
         threshold = self.tags.get('threshold', _DEFAULT_LOW_LOAD_PERC)
         self.query = "SELECT * FROM Win32_Processor"
-        self.result_check = [{
-            'index': 0,
-            'field': "LoadPercentage",
-            'operator': "lt",
-            'value': threshold,
-        }]
+        self.result_check = [
+            {
+                'index': 0,
+                'field': "LoadPercentage",
+                'operator': "lt",
+                'value': threshold,
+            },
+        ]
         self.check_after = _CHECK_EXTRA_DELAY   # for now keep it fixed to one minute
         self.recur_after_failed_check = True
 

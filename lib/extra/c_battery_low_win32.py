@@ -1,10 +1,10 @@
 # Module for creating conditions that determine that a battery is draining
 # and below a certain threshold, specific for Windows platforms:
 #
-# - uses the new powershell and the Get-CimInstance utility/command
+# - uses a WMI query to detect battery status
 # - exploits the new feature of only triggering the condition once when
 #   the actual parameters are met
-# - normally the condition is only tested every fifth minute (change the
+# - normally the condition is only tested every minute (change the
 #   _CHECK_EXTRA_DELAY constant to specify a different number of seconds)
 #
 #  A module achieving the same goal on Linux is available.
@@ -61,7 +61,7 @@ def _available():
 class LowBatteryCondition(WMICondition):
 
     # availability at class level: these variables *MUST* be set for all items
-    item_type = 'command'
+    item_type = 'wmi'
     item_subtype = 'battery_low_win'
     item_hrtype = ITEM_COND_LOWBATT
     available = _available()
@@ -112,7 +112,7 @@ class LowBatteryCondition(WMICondition):
             },
         ]
         self.result_check_all = True
-        self.check_after = _CHECK_EXTRA_DELAY   # for now keep it fixed to one minute
+        self.check_after = _CHECK_EXTRA_DELAY
         self.recur_after_failed_check = True
 
 
