@@ -18,7 +18,7 @@ import ttkbootstrap as ttk
 from tkinter import messagebox
 
 from ..i18n.strings import *
-from ..utility import whenever_has_wmi
+from ..utility import check_not_none, append_not_none, whenever_has_wmi
 
 from ..forms.ui import *
 
@@ -64,7 +64,7 @@ class ChargingBatteryCondition(WMICondition):
 
     # availability at class level: these variables *MUST* be set for all items
     item_type = 'wmi'
-    item_subtype = 'battery_charging_win'
+    item_subtype = 'battery_charging'
     item_hrtype = ITEM_HR_NAME
     available = _available()
 

@@ -71,7 +71,7 @@ class SessionLockedCondition(CommandCondition):
 
     # availability at class level: these variables *MUST* be set for all items
     item_type = 'command'
-    item_subtype = 'session_locked_win'
+    item_subtype = 'session_locked'
     item_hrtype = ITEM_COND_SESSION_LOCKED
     available = _available()
 

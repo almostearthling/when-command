@@ -62,7 +62,7 @@ class LowBatteryCondition(WMICondition):
 
     # availability at class level: these variables *MUST* be set for all items
     item_type = 'wmi'
-    item_subtype = 'battery_low_win'
+    item_subtype = 'battery_low'
     item_hrtype = ITEM_COND_LOWBATT
     available = _available()
 

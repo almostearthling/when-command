@@ -9,7 +9,7 @@ import ttkbootstrap as ttk
 from tkinter import messagebox
 
 from ..i18n.strings import *
-from ..utility import check_not_none, append_not_none
+from ..utility import check_not_none, append_not_none, whenever_has_dbus
 
 from ..forms.ui import *
 
@@ -48,7 +48,7 @@ _DBUS_QUERY = """
 [{
     "index": 0,
     "operator": "eq",
-    "value": 
+    "value":
 }]
 """.strip()
 
@@ -61,7 +61,7 @@ def _available():
             import dbus
         except:
             return False
-        return True
+        return whenever_has_dbus()
     else:
         return False
 
@@ -72,7 +72,7 @@ class RemovableDrivePresent(DBusCondition):
 
     # availability at class level: these variables *MUST* be set for all items
     item_type = 'dbus'
-    item_subtype = 'removabledrive_linux'
+    item_subtype = 'removable_drive'
     item_hrtype = ITEM_HR_NAME
     available = _available()
 
