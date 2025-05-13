@@ -58,7 +58,7 @@ class RemovableDrivePresent(CommandCondition):
 
     # availability at class level: these variables *MUST* be set for all items
     item_type = 'command'
-    item_subtype = 'removabledrive_win'
+    item_subtype = 'removable_drive'
     item_hrtype = ITEM_HR_NAME
     available = _available()
 
@@ -92,7 +92,7 @@ class RemovableDrivePresent(CommandCondition):
         # set base item properties according to specific parameters in `tags`
 
         # the check is performed using WMI objects: [System.IO.DriveType] is
-        # a system enum, and ::Removable is the fixed value 2; 
+        # a system enum, and ::Removable is the fixed value 2;
         label = self.tags.get('drive_label', _DEFAULT_DRIVE_LABEL)
         letter = self.tags.get('drive_letter', _DEFAULT_DRIVE_LETTER)
         cmdline = (

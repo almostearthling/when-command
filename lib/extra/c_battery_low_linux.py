@@ -74,7 +74,7 @@ class LowBatteryCondition(CommandCondition):
 
     # availability at class level: these variables *MUST* be set for all items
     item_type = 'command'
-    item_subtype = 'battery_low_linux'
+    item_subtype = 'battery_low'
     item_hrtype = ITEM_HR_NAME
     available = _available()
 

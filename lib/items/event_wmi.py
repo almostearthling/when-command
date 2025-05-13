@@ -9,7 +9,12 @@ from .event import Event
 
 
 # TODO: use a real query
-DEFAULT_QUERY = "TBD"
+DEFAULT_QUERY = """\
+SELECT * FROM __InstanceCreationEvent
+  WITHIN 10
+  WHERE TargetInstance ISA 'Win32_Process'
+    AND TargetInstance.Name = 'Notepad.exe'
+"""
 
 
 # a direct command based event
@@ -24,7 +29,7 @@ class WMIEvent(Event):
         self.hrtype = ITEM_EVENT_WMI
         if t:
             assert(t.get('type') == self.type)
-            self.query = t.get('rule')
+            self.query = t.get('query')
         else:
             self.query = DEFAULT_QUERY
 

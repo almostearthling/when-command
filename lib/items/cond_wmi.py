@@ -16,7 +16,7 @@ DEFAULT_QUERY = 'SELECT * from Win32_Processor'
 class WMICondition(Condition):
 
     # availability at class level
-    available = True
+    available = False
 
     def __init__(self, t: table=None) -> None:
         Condition.__init__(self, t)

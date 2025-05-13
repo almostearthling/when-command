@@ -161,7 +161,7 @@ class form_WMICondition(form_Condition):
                 index = -1
         field = self.data_get('field')
         operator = _XLATE_OPERATORS.get(self.data_get('operator'), None)
-        value = self.data_get('value')
+        value = guess_typed_value(self.data_get('value'))
         if index is not None and index < 0:
             messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDINDEX)
             return
@@ -178,12 +178,18 @@ class form_WMICondition(form_Condition):
         self._results.append([index, field, operator, value])
         e = []
         for x in self._results:
-            e.append({
-                'index': index,
-                'field': field,
-                'operator': operator,
-                'value': value,
-            })
+            d = {
+                'field': x[1],
+                'operator': x[2],
+                'value': x[3],
+            }
+            if x[0] is not None and x[0] != "":
+                try:
+                    index = int(x[0])
+                    d['index'] = index
+                except ValueError:
+                    messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDINDEX)
+            e.append(d)
         self._item.result_check = e or None
         self._updatedata()
         self._updateform()
@@ -198,19 +204,17 @@ class form_WMICondition(form_Condition):
             x for x in self._results
             if x[0] != index
             and x[1] != field
-            # and x[2] == operator
-            # and x[3] == value
         )
         e = []
         for x in self._results:
             d = {
-                'field': field,
-                'operator': operator,
-                'value': guess_typed_value(value),
+                'field': x[1],
+                'operator': x[2],
+                'value': x[3],
             }
-            if index is not None and index != "":
+            if x[0] is not None and x[0] != "":
                 try:
-                    index = int(index)
+                    index = int(x[0])
                     d['index'] = index
                 except ValueError:
                     messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDINDEX)
@@ -244,7 +248,7 @@ class form_WMICondition(form_Condition):
             d = {
                 'field': l[1],
                 'operator': l[2],
-                'value': guess_typed_value(l[3]),
+                'value': l[3],
             }
             if l[0] != "" and l[0] is not None:
                 try:

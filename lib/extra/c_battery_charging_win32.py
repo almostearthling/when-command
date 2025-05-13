@@ -2,10 +2,10 @@
 # or attached to AC and above a certain threshold, specific for Windows
 # platforms:
 #
-# - uses the new powershell and the Get-CimInstance utility/command
+# - uses a WMI query to detect battery status
 # - exploits the new feature of only triggering the condition once when
 #   the actual parameters are met
-# - normally the condition is only tested every fifth minute (change the
+# - normally the condition is only tested every minute (change the
 #   _CHECK_EXTRA_DELAY constant to specify a different number of seconds)
 #
 #  A module achieving the same goal on Linux is available.
@@ -18,7 +18,7 @@ import ttkbootstrap as ttk
 from tkinter import messagebox
 
 from ..i18n.strings import *
-from ..utility import check_not_none, append_not_none
+from ..utility import check_not_none, append_not_none, whenever_has_wmi
 
 from ..forms.ui import *
 
@@ -27,7 +27,7 @@ from ..forms.ui import *
 from ..forms.cond import form_Condition
 
 # import item to derive from
-from ..items.cond_command import CommandCondition
+from ..items.cond_wmi import WMICondition
 
 
 # imports specific to this module
@@ -46,7 +46,7 @@ _UI_FORM_CHARGINGBATT_THRESHOLD_SC = "Battery charge is above:"
 
 # default values
 _DEFAULT_THRESHOLD_VALUE = 80
-_CHECK_EXTRA_DELAY = 300
+_CHECK_EXTRA_DELAY = 60
 
 
 # check for availability: this version of the check is only for Windows, the
@@ -54,25 +54,23 @@ _CHECK_EXTRA_DELAY = 300
 # exclusive: with this check we assume that this module is only run on Windows
 def _available():
     if sys.platform.startswith("win"):
-        if shutil.which("pwsh.exe"):
+        if whenever_has_wmi():
             return True
-        return False
-    else:
-        return False
+    return False
 
 
 # the specific item is derived from the actual parent item
-class ChargingBatteryCondition(CommandCondition):
+class ChargingBatteryCondition(WMICondition):
 
     # availability at class level: these variables *MUST* be set for all items
-    item_type = 'command'
-    item_subtype = 'battery_charging_win'
+    item_type = 'wmi'
+    item_subtype = 'battery_charging'
     item_hrtype = ITEM_HR_NAME
     available = _available()
 
     def __init__(self, t: items.Table=None) -> None:
         # first initialize the base class (mandatory)
-        CommandCondition.__init__(self, t)
+        WMICondition.__init__(self, t)
 
         # then set type (same as base), subtype and human readable name: this
         # is mandatory in order to correctly display the item in all forms
@@ -100,18 +98,19 @@ class ChargingBatteryCondition(CommandCondition):
 
         # see interpretation of BatteryStatus -in 2,6,7,8,9 here:
         # https://learn.microsoft.com/it-it/windows/win32/cimwin32prov/win32-battery
-        cmdline = (
-            "$batt = (Get-CimInstance -Class Win32_Battery); " +
-            "If ( $$batt.BatteryStatus -in 2,6,7,8,9 -and $batt.EstimatedChargeRemaining -gt %s ) " % threshold +
-            "{ echo OK }"
+        self.query = (
+            "SELECT * FROM Win32_Battery " +
+            "WHERE BatteryStatus = 2 OR OR (BatteryStatus >= 6 AND BatteryStatus<= 9)"
         )
-        self.command = "pwsh.exe"
-        self.command_arguments = [
-            "-Command",
-            cmdline,
+        self.result_check = [
+            {
+                'index': 0,
+                'field': "EstimatedChargeRemaining",
+                'operator': "gt",
+                'value': threshold,
+            },
         ]
-        self.success_stdout = "OK"
-        self.startup_path = "."
+        self.result_check_all = True
         self.check_after = _CHECK_EXTRA_DELAY
         self.recur_after_failed_check = True
 

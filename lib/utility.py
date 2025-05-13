@@ -69,9 +69,6 @@ def guess_typed_value(s: str):
                 return float(t)
             except ValueError:
                 return s
-        finally:
-            return s
-
 
 # find an unique-ish name for an item
 def generate_item_name(o=None):

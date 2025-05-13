@@ -24,7 +24,7 @@ class form_WMIEvent(form_Event):
             assert(isinstance(item, WMIEvent))
         else:
             item = WMIEvent()
-        super().__init__(UI_TITLE_DBUSEVENT, conditions_available, item)
+        super().__init__(UI_TITLE_WMIEVENT, conditions_available, item)
 
         # build the UI: build widgets, arrange them in the box, bind data
 
@@ -34,16 +34,15 @@ class form_WMIEvent(form_Event):
         PAD = WIDGET_PADDING_PIXELS
 
         # TODO: choose an appropriate lexer (although `bash` seems to be OK)
-        sep1 = ttk.Separator(area)
         l_wmiQuery = ttk.Label(area, text=UI_FORM_WMI_QUERY_SC)
         cv_wmiQuery = CodeView(area, pygments.lexers.SqlLexer, font='TkFixedFont', height=2, color_scheme=get_editor_theme())
 
-        sep1.grid(row=20, column=0, sticky=tk.EW, pady=PAD)
-        l_wmiQuery.grid(row=21, column=0, sticky=tk.W, padx=PAD, pady=PAD)
-        cv_wmiQuery.grid(row=22, column=0, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        l_wmiQuery.grid(row=1, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        cv_wmiQuery.grid(row=2, column=0, sticky=tk.NSEW, padx=PAD, pady=PAD)
 
         # expand appropriate sections
-        area.rowconfigure(22, weight=1)
+        area.rowconfigure(2, weight=1)
+        area.columnconfigure(0, weight=1)
 
         # bind data to widgets
         self.data_bind('query', cv_wmiQuery, TYPE_STRING)
