@@ -425,6 +425,8 @@ CLI_ERR_FILE_EXISTS_SKIP = "File [bold]`%s`[/] already exists: creation skipped"
 CLI_ERR_CANNOT_COPY_SHORTCUT = "Could not copy a shortcut: [bold]`%s`[/]"
 CLI_ERR_CANNOT_SET_STARTUP = f"Could not set `{UI_APP}` to automatically run at startup"
 
+CLI_ERR_CANNOT_FIX_CONFIG = "Could not fix configuration file [bold]`%s`[/]"
+
 CLI_STATUS_INSTALLING_WHENEVER = f"Installing latest release of [bold]`{CLI_WHENEVER}`[/]..."
 CLI_STATUS_CREATING_ICONS = "Installing requested program icons..."
 
@@ -434,6 +436,10 @@ CLI_MSG_VERIFYING_CHECKSUM = "Verifying checksum of downloaded archive..."
 
 CLI_MSG_CREATING_ICON = "Creating program icon..."
 CLI_MSG_CREATING_SHORTCUT = "Creating program shortcut or desktop file..."
+
+CLI_MSG_CONVERTING_ITEM = "Converting item [bold]`%s`[/]: %s -> %s"
+CLI_MSG_BACKUP_CONFIG = "Backing up configuration to [bold]`%s`[/]"
+CLI_MSG_WRITE_NEW_CONFIG = "Writing new configuration to [bold]`%s`[/]"
 
 CLI_MSG_INSTALLATION_FINISHED = "Installation finished."
 CLI_MSG_OPERATION_FINISHED = "Operation finished."
