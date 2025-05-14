@@ -214,7 +214,7 @@ class App(object):
             if not self._paused:
                 self._paused = True
                 self.set_tray_icon_gray(self._trayicon)
-    
+
     def sched_icon_not_paused(self, _):
         if self._icon:
             # check current status to avoid useless icon swaps
@@ -387,6 +387,8 @@ def main_toolbox(args):
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH, "--autostart")
         if args.create_icons and verbose:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH, "--create-icons")
+        if args.fix_config and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH, "--fix-config")
         from lib.toolbox.install_whenever import install
         install(verbose=verbose)
         if verbose:
@@ -397,9 +399,26 @@ def main_toolbox(args):
         # this will never happen because the switch is handled before this one
         if args.install_whenever and verbose:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH, "--install-whenever")
+        if args.fix_config and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH, "--fix-config")
         from lib.toolbox.create_shortcuts import create_shortcuts
         my_path = os.path.normpath(os.path.realpath(__file__))
         create_shortcuts(my_path, args.desktop, args.autostart, verbose)
+        if verbose:
+            console.print(CLI_MSG_OPERATION_FINISHED, highlight=False)
+
+    # fix configuration
+    elif args.fix_config:
+        if args.desktop and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH, "--desktop")
+        if args.autostart and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH, "--autostart")
+        if args.create_icons and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH, "--create-icons")
+        if args.install_whenever and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH, "--install-whenever")
+        from lib.toolbox.fix_config import fix_config_file
+        fix_config_file(get_configfile())
         if verbose:
             console.print(CLI_MSG_OPERATION_FINISHED, highlight=False)
 
@@ -490,6 +509,11 @@ def main():
     parser_toolbox.add_argument(
         "--autostart",
         help=CLI_ARG_HELP_AUTOSTART,
+        action='store_true',
+    )
+    parser_toolbox.add_argument(
+        "--fix-config",
+        help=CLI_ARG_HELP_FIXCONFIG,
         action='store_true',
     )
     parser_toolbox.add_argument(

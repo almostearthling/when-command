@@ -60,7 +60,7 @@ class _AppConfiguration(object):
 # to the type of release (eg. the DEBUG flag, see below)
 AppConfig = _AppConfiguration({
     # this flag should be set to False on normal operation
-    'DEBUG': False,
+    'DEBUG': True,
 
     # the application base name for configuration directory determination
     'CFGNAME': 'Whenever',

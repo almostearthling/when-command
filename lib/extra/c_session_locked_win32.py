@@ -17,7 +17,7 @@ import ttkbootstrap as ttk
 from tkinter import messagebox
 
 from ..i18n.strings import *
-from ..utility import check_not_none, append_not_none
+from ..utility import whenever_has_wmi
 
 from ..forms.ui import *
 
@@ -26,7 +26,7 @@ from ..forms.ui import *
 from ..forms.cond import form_Condition
 
 # import item to derive from
-from ..items.cond_command import CommandCondition
+from ..items.cond_wmi import WMICondition
 
 
 # imports specific to this module
@@ -59,25 +59,23 @@ _CHECK_EXTRA_DELAY = {
 # exclusive: with this check we assume that this module is only run on Windows
 def _available():
     if sys.platform.startswith("win"):
-        if shutil.which("pwsh.exe"):
+        if whenever_has_wmi():
             return True
-        return False
-    else:
-        return False
+    return False
 
 
 # the specific item is derived from the actual parent item
-class SessionLockedCondition(CommandCondition):
+class SessionLockedCondition(WMICondition):
 
     # availability at class level: these variables *MUST* be set for all items
-    item_type = 'command'
+    item_type = 'wmi'
     item_subtype = 'session_locked'
     item_hrtype = ITEM_COND_SESSION_LOCKED
     available = _available()
 
     def __init__(self, t: items.Table=None) -> None:
         # first initialize the base class (mandatory)
-        CommandCondition.__init__(self, t)
+        WMICondition.__init__(self, t)
 
         # then set type (same as base), subtype and human readable name: this
         # is mandatory in order to correctly display the item in all forms
@@ -106,18 +104,7 @@ class SessionLockedCondition(CommandCondition):
         # everything I found on the subject is about finding a process running
         # whose executable is 'LogonUI.exe'; maybe a better solution is here:
         # https://stackoverflow.com/a/48785428/5138770
-        cmdline = (
-            "$res = Get-WmiObject -Query "
-            "\"SELECT CreationClassName FROM Win32_Process WHERE Name='LogonUI.exe'\" ; "
-            "if ($res) { echo OK }"
-        )
-        self.command = "pwsh.exe"
-        self.command_arguments = [
-            "-Command",
-            cmdline,
-        ]
-        self.success_stdout = "OK"
-        self.startup_path = "."
+        self.query = "SELECT CreationClassName FROM Win32_Process WHERE Name='LogonUI.exe'"
         self.check_after = _CHECK_EXTRA_DELAY[check_frequency]
         self.recur_after_failed_check = True
 

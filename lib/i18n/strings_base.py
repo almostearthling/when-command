@@ -386,6 +386,7 @@ CLI_ARG_HELP_WHENEVER = f"Path to a specific `{CLI_WHENEVER}` executable"
 CLI_ARG_HELP_QUIET = "Don't print messages to the console"
 CLI_ARG_HELP_DESKTOP = "Install program icons on the desktop too"
 CLI_ARG_HELP_AUTOSTART = f"Setup `{UI_APP}` to start when the user logs in"
+CLI_ARG_HELP_FIXCONFIG = f"Find and fix the `{CLI_WHENEVER}` configuration file across incompatible versions"
 
 CLI_ARG_HELP_CMD_START = f"Start the `{CLI_WHENEVER}` scheduler and display the tray icon"
 CLI_ARG_HELP_CMD_CONFIG = f"Start the `{UI_APP}` configuration utility"
