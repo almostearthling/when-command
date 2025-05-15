@@ -16,10 +16,8 @@ from tomlkit import items, table
 
 import tkinter as tk
 import ttkbootstrap as ttk
-from tkinter import messagebox
 
 from ..i18n.strings import *
-from ..utility import check_not_none, append_not_none
 
 from ..forms.ui import *
 
@@ -33,6 +31,7 @@ from ..items.cond_dbus import DBusCondition
 
 # imports specific to this module
 import sys
+import dbus
 
 
 
@@ -93,7 +92,6 @@ class LowBatteryCondition(DBusCondition):
 
         # detect battery by querying DBus
         # see https://upower.freedesktop.org/docs/Device.html
-        import dbus
         bus = dbus.SystemBus()
         service_name = 'org.freedesktop.UPower'
         device_service_name = 'org.freedesktop.UPower.Device'
@@ -115,6 +113,7 @@ class LowBatteryCondition(DBusCondition):
 
     def updateitem(self):
         # set base item properties according to specific parameters in `tags`
+        # for the values of `Type`, `State`, and `Percentage` see link above
         threshold = self.tags.get('threshold', _DEFAULT_THRESHOLD_VALUE)
         self.bus = ":system"
         self.service = "org.freedesktop.UPower"
@@ -123,6 +122,7 @@ class LowBatteryCondition(DBusCondition):
         self.method = "GetAll"
         self.parameter_call = ["org.freedesktop.UPower.Device"]
         self.parameter_check = """
+            { "index": ["Type"], "operator": "eq", "value": 2 },
             { "index": ["State"], "operator": "eq", "value": 2 },
             { "index": ["Percentage"], "operator": "lt", "value": %s }
         """ % threshold

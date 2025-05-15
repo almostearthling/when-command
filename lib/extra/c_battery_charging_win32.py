@@ -15,10 +15,9 @@ from tomlkit import items, table
 
 import tkinter as tk
 import ttkbootstrap as ttk
-from tkinter import messagebox
 
 from ..i18n.strings import *
-from ..utility import check_not_none, append_not_none, whenever_has_wmi
+from ..utility import whenever_has_wmi
 
 from ..forms.ui import *
 
@@ -32,7 +31,6 @@ from ..items.cond_wmi import WMICondition
 
 # imports specific to this module
 import sys
-import shutil
 
 
 

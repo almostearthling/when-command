@@ -50,7 +50,7 @@ _CHECK_EXTRA_DELAY = 60
 # check for availability: in this case check all needed commands
 def _available():
     if  sys.platform == 'linux':
-        if shutil.which("bash") and shutil.which("vmstat") and shutil.which("bc"):
+        if shutil.which("bash") and shutil.which("vmstat") and shutil.which("bc") and shutil.which("awk"):
             return True
         return False
     else:

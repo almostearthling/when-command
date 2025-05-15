@@ -6,10 +6,9 @@ from tomlkit import items, table
 
 import tkinter as tk
 import ttkbootstrap as ttk
-from tkinter import messagebox
 
 from ..i18n.strings import *
-from ..utility import check_not_none, append_not_none, whenever_has_dbus
+from ..utility import whenever_has_dbus
 
 from ..forms.ui import *
 
@@ -23,7 +22,8 @@ from ..items.cond_dbus import DBusCondition
 
 # imports specific to this module
 import sys
-import shutil
+import dbus
+
 
 
 # resource strings (not internationalized for the moment)
@@ -123,9 +123,6 @@ class form_RemovableDrivePresent(form_Condition):
         else:
             item = RemovableDrivePresent()
         super().__init__(_UI_FORM_TITLE, tasks_available, item)
-
-        # this will work here since the module is available
-        import dbus
 
         # now find drive names
         prefix = "/org/freedesktop/UDisks2/drives/"
