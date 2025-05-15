@@ -7,7 +7,7 @@ from ..items.item import ALL_AVAILABLE_ITEMS, ALL_AVAILABLE_ITEMS_D
 from ..items.cond import Condition
 from ..items.event import Event
 from ..items.task import Task
-from ..utility import write_warning, get_rich_console
+from ..utility import write_warning, get_rich_console, whenever_has_dbus, whenever_has_wmi
 
 from tomlkit import items, document, parse, item, aot
 
@@ -87,20 +87,40 @@ def cond_wmi_from_command(t: items.Table, target: Condition) -> items.Table:
 # Legacy table
 #
 # A table of legacy signature to test whether some items have to be modified,
-# mapped to their current counterparts
+# mapped to their current counterparts. The mappings are selected by available
+# option, otherwise a non existing mapping could be applied. DBus is applied
+# first because, in theory, it is less specific, and in case a target has the
+# same name both in WMI and DBus, the WMI version is chosen if WMI is present.
 LEGACY_ITEMS = {
-    'cond:command:sysload': 'cond:wmi:sysload',
-    'cond:command:removabledrive_win': 'cond:wmi:removable_drive',
+    # ...
+}
+
+LEGACY_ITEMS_DBUS = {
     'cond:dbus:removabledrive_linux': 'cond:dbus:removable_drive',
-    'cond:command:session_locked_win': 'cond:wmi:session_locked',
-    'cond:command:battery_low_win': 'cond:wmi:battery_low',
-    'cond:command:battery_charging_win': 'cond:wmi:battery_charging',
     'cond:command:battery_low_linux': 'cond:dbus:battery_low',
     'cond:command:battery_charging_linux': 'cond:dbus:battery_charging',
     'event:dbus:session_lock_linux': 'event:dbus:session_lock',
     'event:dbus:session_unlock_linux': 'event:dbus:session_unlock',
     # ...
 }
+
+LEGACY_ITEMS_WMI = {
+    'cond:command:sysload': 'cond:wmi:sysload',
+    'cond:command:removabledrive_win': 'cond:wmi:removable_drive',
+    'cond:command:session_locked_win': 'cond:wmi:session_locked',
+    'cond:command:battery_low_win': 'cond:wmi:battery_low',
+    'cond:command:battery_charging_win': 'cond:wmi:battery_charging',
+    # ...
+}
+
+if whenever_has_dbus():
+    for k in LEGACY_ITEMS_DBUS:
+        LEGACY_ITEMS[k] = LEGACY_ITEMS_DBUS[k]
+
+if whenever_has_wmi():
+    for k in LEGACY_ITEMS_WMI:
+        LEGACY_ITEMS[k] = LEGACY_ITEMS_WMI[k]
+
 
 
 # Conversion table
@@ -110,13 +130,13 @@ LEGACY_ITEMS = {
 # is found in the old-style table: the old style and new style signatures are
 # matched and the appropriate conversion function is called on the old table
 # in order to produce a new one for the specific item; to achieve this the
-# old and new item factories are used, taken from the respective factory mods
+# old and new item factories are used, taken from the respective factory mods.
+# Here too the mappings are applied according to the supported options.
 CONVERSIONS = {
-    'cond:wmi:sysload': (lambda t: cond_wmi_from_command(t, SystemLoadCondition)),
-    'cond:wmi:battery_charging': (lambda t: cond_wmi_from_command(t, ChargingBatteryCondition_W)),
-    'cond:wmi:battery_low': (lambda t: cond_wmi_from_command(t, LowBatteryCondition_W)),
-    'cond:wmi:session_locked': (lambda t: cond_wmi_from_command(item_change_subtype(t, 'session_locked'), SessionLockedCondition)),
-    'cond:wmi:removable_drive': (lambda t: cond_wmi_from_command(item_change_subtype(t, 'removable_drive'), RemovableDrivePresent)),
+    # ...
+}
+
+CONVERSIONS_DBUS = {
     'cond:dbus:battery_charging': (lambda t: cond_wmi_from_command(item_change_subtype(t, 'battery_charging'), ChargingBatteryCondition_L)),
     'cond:dbus:battery_low': (lambda t: cond_wmi_from_command(item_change_subtype(t, 'battery_low'), LowBatteryCondition_L)),
     'cond:dbus:removable_drive': (lambda t: item_change_subtype(t, 'removable_drive')),
@@ -124,6 +144,23 @@ CONVERSIONS = {
     'event:dbus:session_unlock': (lambda t: item_change_subtype(t, 'session_unlock')),
     # ...
 }
+
+CONVERSIONS_WMI = {
+    'cond:wmi:sysload': (lambda t: cond_wmi_from_command(t, SystemLoadCondition)),
+    'cond:wmi:battery_charging': (lambda t: cond_wmi_from_command(t, ChargingBatteryCondition_W)),
+    'cond:wmi:battery_low': (lambda t: cond_wmi_from_command(t, LowBatteryCondition_W)),
+    'cond:wmi:session_locked': (lambda t: cond_wmi_from_command(item_change_subtype(t, 'session_locked'), SessionLockedCondition)),
+    'cond:wmi:removable_drive': (lambda t: cond_wmi_from_command(item_change_subtype(t, 'removable_drive'), RemovableDrivePresent)),
+    # ...
+}
+
+if whenever_has_dbus():
+    for k in CONVERSIONS_DBUS:
+        CONVERSIONS[k] = CONVERSIONS_DBUS[k]
+
+if whenever_has_wmi():
+    for k in CONVERSIONS_WMI:
+        CONVERSIONS[k] = CONVERSIONS_WMI[k]
 
 
 
