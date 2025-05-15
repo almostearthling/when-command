@@ -57,10 +57,6 @@ _DBUS_QUERY = """
 # check for availability
 def _available():
     if sys.platform == 'linux':
-        try:
-            import dbus
-        except:
-            return False
         return whenever_has_dbus()
     else:
         return False

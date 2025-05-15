@@ -32,8 +32,6 @@ from ..items.cond_command import CommandCondition
 
 # imports specific to this module
 import sys
-import subprocess
-import shutil
 
 
 
@@ -47,7 +45,7 @@ _UI_FORM_CHARGINGBATT_THRESHOLD_SC = "Battery charge is above:"
 
 # default values
 _DEFAULT_THRESHOLD_VALUE = 80
-_CHECK_EXTRA_DELAY = 300
+_CHECK_EXTRA_DELAY = 120
 
 
 # check for availability: this version of the check is only for Linux, the
@@ -55,15 +53,7 @@ _CHECK_EXTRA_DELAY = 300
 # exclusive: with this check we assume that this module is only run on Linux
 def _available():
     if sys.platform == 'linux':
-        if (
-            shutil.which("upower") and
-            shutil.which("bash") and
-            shutil.which("grep") and
-            shutil.which("awk") and
-            shutil.which("sed")
-        ):
-            return True
-        return False
+        return whenever_has_dbus()
     else:
         return False
 
@@ -99,30 +89,45 @@ class ChargingBatteryCondition(CommandCondition):
             self.tags = table()
             self.tags.append('subtype', self.subtype)
             self.tags.append('threshold', _DEFAULT_THRESHOLD_VALUE)
-        self._batterypath = subprocess.run(
-            ['bash', '-c', "upower -e | grep -F 'battery'"],
-            capture_output=True,
-        ).stdout.decode("utf-8").strip()
+
+        # detect battery by querying DBus
+        # see https://upower.freedesktop.org/docs/Device.html
+        import dbus
+        bus = dbus.SystemBus()
+        service_name = 'org.freedesktop.UPower'
+        device_service_name = 'org.freedesktop.UPower.Device'
+        props_name = 'org.freedesktop.DBus.Properties'
+        upower_obj = bus.get_object(service_name, '/org/freedesktop/UPower')
+        upower = dbus.Interface(upower_obj, service_name)
+        all_devices = upower.EnumerateDevices()
+        all_batteries = list(x for x in all_devices[0] if str(x).split('/')[-1].startswith('battery_'))
+        batteries = []
+        for x in all_batteries:
+            batt_obj = bus.get_object(service_name, x)
+            batt = dbus.Interface(batt_obj, props_name)
+            if batt.Get(device_service_name, 'PowerSupply'):
+                batteries.append(x)
+        # WARNING: this is completely arbitrary
+        batteries.sort()
+        self._batterypath = str(batteries[0])
         self.updateitem()
 
     def updateitem(self):
         # set base item properties according to specific parameters in `tags`
         threshold = self.tags.get('threshold', _DEFAULT_THRESHOLD_VALUE)
-
-        battery = self._batterypath
-        cmdline = (
-            # f"( upower -i {battery} | grep -F 'state:' | grep -F -v 'discharging' | grep -F -v 'fully-charged' > /dev/null 2>&1 ) && " +
-            f"( upower -i {battery} | grep -F 'state:' | grep -F -v 'discharging' > /dev/null 2>&1 ) && " +
-            f"[ `upower -i {battery} | grep -F 'percentage:' | awk '{{print $2}}' | sed 's/%//g'` -gt {threshold} ] && " +
-            f"echo OK"
-        )
-        self.command = "bash"
-        self.command_arguments = [
-            "-c",
-            cmdline,
-        ]
-        self.success_stdout = "OK"
-        self.startup_path = "."
+        # set base item properties according to specific parameters in `tags`
+        threshold = self.tags.get('threshold', _DEFAULT_THRESHOLD_VALUE)
+        self.bus = ":system"
+        self.service = "org.freedesktop.UPower"
+        self.object_path = self._batterypath
+        self.interface = "org.freedesktop.DBus.Properties"
+        self.method = "GetAll"
+        self.parameter_call = ["org.freedesktop.UPower.Device"]
+        self.parameter_check = """
+            { "index": ["State"], "operator": "eq", "value": 2 },
+            { "index": ["Percentage"], "operator": "lt", "value": %s }
+        """ % threshold
+        self.parameter_check_all = True
         self.check_after = _CHECK_EXTRA_DELAY
         self.recur_after_failed_check = True
 

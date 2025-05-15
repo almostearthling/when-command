@@ -8,7 +8,7 @@ import ttkbootstrap as ttk
 from tkinter import messagebox
 
 from ..i18n.strings import *
-from ..utility import check_not_none, append_not_none
+from ..utility import whenever_has_wmi
 
 from ..forms.ui import *
 
@@ -17,7 +17,7 @@ from ..forms.ui import *
 from ..forms.cond import form_Condition
 
 # import item to derive from
-from ..items.cond_command import CommandCondition
+from ..items.cond_wmi import WMICondition
 
 
 # imports specific to this module
@@ -39,32 +39,31 @@ _UI_FORM_EXPECTED_LETTER_SC = "Expected drive letter:"
 # default values
 _DEFAULT_DRIVE_LABEL = "DRIVE"
 _DEFAULT_DRIVE_LETTER = ""
+_CHECK_EXTRA_DELAY = 60
 
 
 # check for availability: include all needed checks in this function, may
 # or may not include actually checking the hosting platform
 def _available():
     if sys.platform.startswith("win"):
-        if shutil.which("pwsh.exe"):
+        if whenever_has_wmi():
             return True
-        return False
-    else:
-        return False
+    return False
 
 
 
 # the specific item is derived from the actual parent item
-class RemovableDrivePresent(CommandCondition):
+class RemovableDrivePresent(WMICondition):
 
     # availability at class level: these variables *MUST* be set for all items
-    item_type = 'command'
+    item_type = 'wmi'
     item_subtype = 'removable_drive'
     item_hrtype = ITEM_HR_NAME
     available = _available()
 
     def __init__(self, t: items.Table=None) -> None:
         # first initialize the base class (mandatory)
-        CommandCondition.__init__(self, t)
+        WMICondition.__init__(self, t)
 
         # then set type (same as base), subtype and human readable name: this
         # is mandatory in order to correctly display the item in all forms
@@ -91,26 +90,30 @@ class RemovableDrivePresent(CommandCondition):
     def updateitem(self):
         # set base item properties according to specific parameters in `tags`
 
-        # the check is performed using WMI objects: [System.IO.DriveType] is
+        # the check is performed using a WMI query: [System.IO.DriveType] is
         # a system enum, and ::Removable is the fixed value 2;
         label = self.tags.get('drive_label', _DEFAULT_DRIVE_LABEL)
         letter = self.tags.get('drive_letter', _DEFAULT_DRIVE_LETTER)
-        cmdline = (
-            "Get-WmiObject Win32_Volume -Filter (\"" +
-            "DriveType={0}" +
-            " and Label='%s'" % label +
-            ((" and DriveLetter='%s'" % letter) if letter else "") +
-            "\" -f [int][System.IO.DriveType]::Removable)"
-        )
-        self.command = 'pwsh.exe'
-        self.command_arguments = [
-            '-Command',
-            cmdline,
+        self.query = "SELECT * FROM Win32_Volume WHERE DriveType=2"
+        self.result_check = [
+            {
+                'index': 0,
+                'field': "Label",
+                'operator': "eq",
+                'value': label,
+            },
         ]
-        self.startup_path = "."
-        self.success_stdout = label
-        self.case_sensitive = False
-        self.check_after = 60
+        if letter:
+            self.result_check.append(
+                {
+                    'index': 0,
+                    'field': "Label",
+                    'operator': "eq",
+                    'value': label,
+                }
+            )
+        self.result_check_all = True
+        self.check_after = _CHECK_EXTRA_DELAY
         self.recur_after_failed_check = True
 
 

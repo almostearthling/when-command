@@ -46,10 +46,6 @@ _UI_FORM_TITLE = "%s: Session Unlocked Event Editor" % UI_APP
 # check for availability
 def _available():
     if sys.platform == 'linux':
-        try:
-            import dbus
-        except:
-            return False
         return whenever_has_dbus()
     else:
         return False

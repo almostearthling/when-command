@@ -13,9 +13,13 @@ from tomlkit import items, document, parse, item, aot
 
 # specific imports for handled types of item
 from ..extra.c_sysload_win32 import SystemLoadCondition
-from ..extra.c_battery_charging_win32 import ChargingBatteryCondition
-from ..extra.c_battery_low_win32 import LowBatteryCondition
+from ..extra.c_battery_charging_win32 import ChargingBatteryCondition as ChargingBatteryCondition_W
+from ..extra.c_battery_low_win32 import LowBatteryCondition as LowBatteryCondition_W
 from ..extra.c_session_locked_win32 import SessionLockedCondition
+from ..extra.c_removabledrive_win32 import RemovableDrivePresent
+from ..extra.c_battery_charging_linux import ChargingBatteryCondition as ChargingBatteryCondition_L
+from ..extra.c_battery_low_linux import LowBatteryCondition as LowBatteryCondition_L
+# ...
 
 
 
@@ -51,8 +55,27 @@ def item_change_subtype(t: items.Table, new_subtype: str) -> items.Table:
 # generic command-to-wmi converter for conditions
 def cond_wmi_from_command(t: items.Table, target: Condition) -> items.Table:
     t1 = t.copy()
-    t1.remove('command')
-    t1.remove('command_arguments')
+    command_params = [
+        'startup_path',
+        'command',
+        'match_exact',
+        'match_regular_expression',
+        'success_stdout',
+        'success_stderr',
+        'success_status',
+        'failure_stdout',
+        'failure_stderr',
+        'failure_status',
+        'timeout_seconds',
+        'case_sensitive',
+        'include_environment',
+        'set_environment_variables',
+        'command_arguments',
+        'environment_variables',
+    ]
+    for k in command_params:
+        if k in t1:
+            t1.remove(k)
     t1.remove('type')
     t1.append('type', 'wmi')
     cond = target(t1)
@@ -67,13 +90,13 @@ def cond_wmi_from_command(t: items.Table, target: Condition) -> items.Table:
 # mapped to their current counterparts
 LEGACY_ITEMS = {
     'cond:command:sysload': 'cond:wmi:sysload',
-    'cond:command:removabledrive_win': 'cond:command:removable_drive',
-    'cond:command:removabledrive_linux': 'cond:command:removable_drive',
+    'cond:command:removabledrive_win': 'cond:wmi:removable_drive',
+    'cond:dbus:removabledrive_linux': 'cond:dbus:removable_drive',
     'cond:command:session_locked_win': 'cond:wmi:session_locked',
     'cond:command:battery_low_win': 'cond:wmi:battery_low',
     'cond:command:battery_charging_win': 'cond:wmi:battery_charging',
-    'cond:command:battery_low_linux': 'cond:command:battery_low',
-    'cond:command:battery_charging_linux': 'cond:command:battery_charging',
+    'cond:command:battery_low_linux': 'cond:dbus:battery_low',
+    'cond:command:battery_charging_linux': 'cond:dbus:battery_charging',
     'event:dbus:session_lock_linux': 'event:dbus:session_lock',
     'event:dbus:session_unlock_linux': 'event:dbus:session_unlock',
     # ...
@@ -90,12 +113,13 @@ LEGACY_ITEMS = {
 # old and new item factories are used, taken from the respective factory mods
 CONVERSIONS = {
     'cond:wmi:sysload': (lambda t: cond_wmi_from_command(t, SystemLoadCondition)),
-    'cond:wmi:battery_charging': (lambda t: cond_wmi_from_command(t, ChargingBatteryCondition)),
-    'cond:wmi:battery_low': (lambda t: cond_wmi_from_command(t, LowBatteryCondition)),
+    'cond:wmi:battery_charging': (lambda t: cond_wmi_from_command(t, ChargingBatteryCondition_W)),
+    'cond:wmi:battery_low': (lambda t: cond_wmi_from_command(t, LowBatteryCondition_W)),
     'cond:wmi:session_locked': (lambda t: cond_wmi_from_command(item_change_subtype(t, 'session_locked'), SessionLockedCondition)),
-    'cond:command:battery_charging': (lambda t: item_change_subtype(t, 'battery_charging')),
-    'cond:command:battery_low': (lambda t: item_change_subtype(t, 'battery_low')),
-    'cond:command:removable_drive': (lambda t: item_change_subtype(t, 'removable_drive')),
+    'cond:wmi:removable_drive': (lambda t: cond_wmi_from_command(item_change_subtype(t, 'removable_drive'), RemovableDrivePresent)),
+    'cond:dbus:battery_charging': (lambda t: cond_wmi_from_command(item_change_subtype(t, 'battery_charging'), ChargingBatteryCondition_L)),
+    'cond:dbus:battery_low': (lambda t: cond_wmi_from_command(item_change_subtype(t, 'battery_low'), LowBatteryCondition_L)),
+    'cond:dbus:removable_drive': (lambda t: item_change_subtype(t, 'removable_drive')),
     'event:dbus:session_lock': (lambda t: item_change_subtype(t, 'session_lock')),
     'event:dbus:session_unlock': (lambda t: item_change_subtype(t, 'session_unlock')),
     # ...
