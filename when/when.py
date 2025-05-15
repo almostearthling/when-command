@@ -382,13 +382,13 @@ def main_toolbox(args):
         if is_whenever_running():
             exit_error(CLI_ERR_CANNOT_INSTALL_ON_RUNNING)
         if args.desktop and verbose:
-            write_warning(CLI_ERR_UNSUPPORTED_SWITCH, "--desktop")
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--desktop")
         if args.autostart and verbose:
-            write_warning(CLI_ERR_UNSUPPORTED_SWITCH, "--autostart")
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--autostart")
         if args.create_icons and verbose:
-            write_warning(CLI_ERR_UNSUPPORTED_SWITCH, "--create-icons")
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--create-icons")
         if args.fix_config and verbose:
-            write_warning(CLI_ERR_UNSUPPORTED_SWITCH, "--fix-config")
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--fix-config")
         from lib.toolbox.install_whenever import install
         install(verbose=verbose)
         if verbose:
@@ -398,9 +398,9 @@ def main_toolbox(args):
     elif args.create_icons:
         # this will never happen because the switch is handled before this one
         if args.install_whenever and verbose:
-            write_warning(CLI_ERR_UNSUPPORTED_SWITCH, "--install-whenever")
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--install-whenever")
         if args.fix_config and verbose:
-            write_warning(CLI_ERR_UNSUPPORTED_SWITCH, "--fix-config")
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--fix-config")
         from lib.toolbox.create_shortcuts import create_shortcuts
         my_path = os.path.normpath(os.path.realpath(__file__))
         create_shortcuts(my_path, args.desktop, args.autostart, verbose)
@@ -410,13 +410,14 @@ def main_toolbox(args):
     # fix configuration
     elif args.fix_config:
         if args.desktop and verbose:
-            write_warning(CLI_ERR_UNSUPPORTED_SWITCH, "--desktop")
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--desktop")
         if args.autostart and verbose:
-            write_warning(CLI_ERR_UNSUPPORTED_SWITCH, "--autostart")
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--autostart")
         if args.create_icons and verbose:
-            write_warning(CLI_ERR_UNSUPPORTED_SWITCH, "--create-icons")
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--create-icons")
         if args.install_whenever and verbose:
-            write_warning(CLI_ERR_UNSUPPORTED_SWITCH, "--install-whenever")
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--install-whenever")
+        retrieve_whenever_options()
         from lib.toolbox.fix_config import fix_config_file
         fix_config_file(get_configfile())
         if verbose:

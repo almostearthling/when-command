@@ -99,16 +99,16 @@ class ChargingBatteryCondition(DBusCondition):
         upower_obj = bus.get_object(service_name, '/org/freedesktop/UPower')
         upower = dbus.Interface(upower_obj, service_name)
         all_devices = upower.EnumerateDevices()
-        all_batteries = list(x for x in all_devices[0] if str(x).split('/')[-1].startswith('battery_'))
+        all_batteries = list(x for x in all_devices if str(x).split('/')[-1].startswith('battery_'))
         batteries = []
         for x in all_batteries:
             batt_obj = bus.get_object(service_name, x)
             batt = dbus.Interface(batt_obj, props_name)
             if batt.Get(device_service_name, 'PowerSupply'):
-                batteries.append(x)
+                batteries.append(str(x))
         # WARNING: this is completely arbitrary
         batteries.sort()
-        self._batterypath = str(batteries[0])
+        self._batterypath = batteries.pop(0)
         self.updateitem()
 
     def updateitem(self):

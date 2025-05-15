@@ -83,6 +83,37 @@ def cond_wmi_from_command(t: items.Table, target: Condition) -> items.Table:
     return cond.as_table()
 
 
+# generic command-to-dbus converter for conditions
+def cond_dbus_from_command(t: items.Table, target: Condition) -> items.Table:
+    t1 = t.copy()
+    command_params = [
+        'startup_path',
+        'command',
+        'match_exact',
+        'match_regular_expression',
+        'success_stdout',
+        'success_stderr',
+        'success_status',
+        'failure_stdout',
+        'failure_stderr',
+        'failure_status',
+        'timeout_seconds',
+        'case_sensitive',
+        'include_environment',
+        'set_environment_variables',
+        'command_arguments',
+        'environment_variables',
+    ]
+    for k in command_params:
+        if k in t1:
+            t1.remove(k)
+    t1.remove('type')
+    t1.append('type', 'dbus')
+    cond = target(t1)
+    cond.updateitem()
+    return cond.as_table()
+
+
 
 # Legacy table
 #
@@ -113,13 +144,13 @@ LEGACY_ITEMS_WMI = {
     # ...
 }
 
-if whenever_has_dbus():
-    for k in LEGACY_ITEMS_DBUS:
-        LEGACY_ITEMS[k] = LEGACY_ITEMS_DBUS[k]
-
-if whenever_has_wmi():
-    for k in LEGACY_ITEMS_WMI:
-        LEGACY_ITEMS[k] = LEGACY_ITEMS_WMI[k]
+def update_legacy_items():
+    if whenever_has_dbus():
+        for k in LEGACY_ITEMS_DBUS:
+            LEGACY_ITEMS[k] = LEGACY_ITEMS_DBUS[k]
+    if whenever_has_wmi():
+        for k in LEGACY_ITEMS_WMI:
+            LEGACY_ITEMS[k] = LEGACY_ITEMS_WMI[k]
 
 
 
@@ -137,8 +168,8 @@ CONVERSIONS = {
 }
 
 CONVERSIONS_DBUS = {
-    'cond:dbus:battery_charging': (lambda t: cond_wmi_from_command(item_change_subtype(t, 'battery_charging'), ChargingBatteryCondition_L)),
-    'cond:dbus:battery_low': (lambda t: cond_wmi_from_command(item_change_subtype(t, 'battery_low'), LowBatteryCondition_L)),
+    'cond:dbus:battery_charging': (lambda t: cond_dbus_from_command(item_change_subtype(t, 'battery_charging'), ChargingBatteryCondition_L)),
+    'cond:dbus:battery_low': (lambda t: cond_dbus_from_command(item_change_subtype(t, 'battery_low'), LowBatteryCondition_L)),
     'cond:dbus:removable_drive': (lambda t: item_change_subtype(t, 'removable_drive')),
     'event:dbus:session_lock': (lambda t: item_change_subtype(t, 'session_lock')),
     'event:dbus:session_unlock': (lambda t: item_change_subtype(t, 'session_unlock')),
@@ -154,13 +185,13 @@ CONVERSIONS_WMI = {
     # ...
 }
 
-if whenever_has_dbus():
-    for k in CONVERSIONS_DBUS:
-        CONVERSIONS[k] = CONVERSIONS_DBUS[k]
-
-if whenever_has_wmi():
-    for k in CONVERSIONS_WMI:
-        CONVERSIONS[k] = CONVERSIONS_WMI[k]
+def update_conversions():
+    if whenever_has_dbus():
+        for k in CONVERSIONS_DBUS:
+            CONVERSIONS[k] = CONVERSIONS_DBUS[k]
+    if whenever_has_wmi():
+        for k in CONVERSIONS_WMI:
+            CONVERSIONS[k] = CONVERSIONS_WMI[k]
 
 
 
@@ -200,6 +231,8 @@ def fix_config(filename: str, console=None) -> items.Table:
 
 # fix config file at once, save a backup copy
 def fix_config_file(filename, backup=True):
+    update_legacy_items()
+    update_conversions()
     console = get_rich_console()
     try:
         doc = fix_config(filename, console)
