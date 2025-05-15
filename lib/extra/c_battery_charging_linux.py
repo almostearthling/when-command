@@ -17,6 +17,7 @@ import tkinter as tk
 import ttkbootstrap as ttk
 
 from ..i18n.strings import *
+from ..utility import whenever_has_dbus
 
 from ..forms.ui import *
 
