@@ -114,17 +114,17 @@ class ChargingBatteryCondition(DBusCondition):
     def updateitem(self):
         # set base item properties according to specific parameters in `tags`
         # for the values of `Type`, `State`, and `Percentage` see link above
-        threshold = self.tags.get('threshold', _DEFAULT_THRESHOLD_VALUE)
+        threshold = int(self.tags.get('threshold', _DEFAULT_THRESHOLD_VALUE))
         self.bus = ":system"
         self.service = "org.freedesktop.UPower"
         self.object_path = self._batterypath
-        self.interface = '"org.freedesktop.DBus.Properties"'
+        self.interface = "org.freedesktop.DBus.Properties"
         self.method = "GetAll"
-        self.parameter_call = ["org.freedesktop.UPower.Device"]
+        self.parameter_call = '["org.freedesktop.UPower.Device"]'
         self.parameter_check = """[
             { "index": [0, "Type"], "operator": "eq", "value": 2 },
             { "index": [0, "State"], "operator": "eq", "value": 1 },
-            { "index": [0, "Percentage"], "operator": "gt", "value": %s }
+            { "index": [0, "Percentage"], "operator": "gt", "value": %s.0 }
         ]""" % threshold
         self.parameter_check_all = True
         self.check_after = _CHECK_EXTRA_DELAY
