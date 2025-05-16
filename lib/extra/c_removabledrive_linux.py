@@ -38,22 +38,6 @@ _UI_FORM_REMOVABLEDRIVE_DEVICE_SC = "Device:"
 _DEFAULT_DRIVE_DEVICE = "DRIVE"
 
 
-# the DBus query template (as JSON, see whenever documentation): here we
-# rely on the MediaAvailable flag, which can be found directly by querying
-# the GetManagedObjects() method of the UDisks2 Object Manager; the property
-# is at a quite nested point, in a structure made up of three levels of
-# dictionaries (see how the index is nested) and luckily JSON allows for a
-# more readable construction of the query
-_DBUS_QUERY = """
-[{
-    "index": 0,
-    "operator": "eq",
-    "value":
-}]
-""".strip()
-
-
-
 # check for availability
 def _available():
     if sys.platform == 'linux':

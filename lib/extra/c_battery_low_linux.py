@@ -121,12 +121,12 @@ class LowBatteryCondition(DBusCondition):
         self.object_path = self._batterypath
         self.interface = "org.freedesktop.DBus.Properties"
         self.method = "GetAll"
-        self.parameter_call = ["org.freedesktop.UPower.Device"]
-        self.parameter_check = """
-            { "index": ["Type"], "operator": "eq", "value": 2 },
-            { "index": ["State"], "operator": "eq", "value": 2 },
-            { "index": ["Percentage"], "operator": "lt", "value": %s }
-        """ % threshold
+        self.parameter_call = '["org.freedesktop.UPower.Device"]'
+        self.parameter_check = """[
+            { "index": [0, "Type"], "operator": "eq", "value": 2 },
+            { "index": [0, "State"], "operator": "eq", "value": 2 },
+            { "index": [0, "Percentage"], "operator": "lt", "value": %s }
+        ]""" % threshold
         self.parameter_check_all = True
         self.check_after = _CHECK_EXTRA_DELAY
         self.recur_after_failed_check = True
