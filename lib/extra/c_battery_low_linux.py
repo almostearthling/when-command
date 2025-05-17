@@ -114,7 +114,7 @@ class LowBatteryCondition(DBusCondition):
 
     def updateitem(self):
         # set base item properties according to specific parameters in `tags`
-        # for the values of `Type`, `State`, and `Percentage` see link above
+        # for the values of `State` and `Percentage` see the above link
         threshold = int(self.tags.get('threshold', _DEFAULT_THRESHOLD_VALUE))
         self.bus = ":system"
         self.service = "org.freedesktop.UPower"
@@ -123,9 +123,8 @@ class LowBatteryCondition(DBusCondition):
         self.method = "GetAll"
         self.parameter_call = '["org.freedesktop.UPower.Device"]'
         self.parameter_check = """[
-            { "index": [0, "Type"], "operator": "eq", "value": 2 },
             { "index": [0, "State"], "operator": "eq", "value": 2 },
-            { "index": [0, "Percentage"], "operator": "lt", "value": %s.0 }
+            { "index": [0, "Percentage"], "operator": "lt", "value": %s }
         ]""" % threshold
         self.parameter_check_all = True
         self.check_after = _CHECK_EXTRA_DELAY
