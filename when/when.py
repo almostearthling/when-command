@@ -86,10 +86,14 @@ class App(object):
         from lib.forms.cfgform import form_Config
         from lib.forms.history import form_History
 
-        self.set_tray_icon_gray = lambda self, i: set_tray_icon_gray(i)
-        self.set_tray_icon_busy = lambda self, i: set_tray_icon_busy(i)
-        self.set_tray_icon_normal = lambda self, i: set_tray_icon_normal(i)
-        self.show_aboutbox = lambda self: show_about_box()
+        # self.set_tray_icon_gray = lambda self, i: set_tray_icon_gray(i)
+        # self.set_tray_icon_busy = lambda self, i: set_tray_icon_busy(i)
+        # self.set_tray_icon_normal = lambda self, i: set_tray_icon_normal(i)
+        # self.show_about_box = lambda self: show_about_box()
+        self.set_tray_icon_gray = set_tray_icon_gray
+        self.set_tray_icon_busy = set_tray_icon_busy
+        self.set_tray_icon_normal = set_tray_icon_normal
+        self.show_about_box = show_about_box
         self.form_Menubox = form_MenuBox
         self.form_Config = form_Config
         self.form_History = form_History
@@ -104,8 +108,8 @@ class App(object):
         self._window.bind("<<SchedResume>>", self.sched_resume)
         self._window.bind("<<SchedSetBusy>>", self.sched_icon_busy)
         self._window.bind("<<SchedSetNotBusy>>", self.sched_icon_not_busy)
-        self._window.bind("<<SchedSetPaused>>", self.sched_icon_busy)
-        self._window.bind("<<SchedSetNotPaused>>", self.sched_icon_not_busy)
+        self._window.bind("<<SchedSetPaused>>", self.sched_icon_paused)
+        self._window.bind("<<SchedSetNotPaused>>", self.sched_icon_not_paused)
         self._window.bind("<<SchedResetConditions>>", self.sched_reset_conditions)
         self._window.bind("<<SchedReloadConfig>>", self.sched_reload_configuration)
         self._window.bind("<<ExitApplication>>", self.exit_app)
@@ -228,7 +232,7 @@ class App(object):
 
     def open_aboutbox(self, _):
         if self._window:
-            self.show_about_box()
+            self.show_about_box(None)
 
     def exit_app(self, _):
         self.destroy()
