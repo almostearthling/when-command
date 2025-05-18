@@ -16,7 +16,7 @@ class form_CommandEvent(form_Event):
 
     def __init__(self, conditions_available, item=None):
         if item:
-            assert(isinstance(item, CommandEvent))
+            assert isinstance(item, CommandEvent)
         else:
             item = CommandEvent()
         form_Event.__init__(self, UI_TITLE_CLIEVENT, conditions_available, item)

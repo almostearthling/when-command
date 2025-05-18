@@ -2,7 +2,7 @@
 
 from lib.i18n.strings import *
 
-from tomlkit import table
+from tomlkit import table, items
 from ..utility import check_not_none, append_not_none
 
 from .event import Event
@@ -23,13 +23,13 @@ class WMIEvent(Event):
     # availability at class level
     available = False
 
-    def __init__(self, t: table=None) -> None:
+    def __init__(self, t: items.Table = None) -> None:
         Event.__init__(self, t)
-        self.type = 'wmi'
+        self.type = "wmi"
         self.hrtype = ITEM_EVENT_WMI
         if t:
-            assert(t.get('type') == self.type)
-            self.query = t.get('query')
+            assert t.get("type") == self.type
+            self.query = t.get("query")
         else:
             self.query = DEFAULT_QUERY
 
@@ -39,5 +39,5 @@ class WMIEvent(Event):
         ):
             raise ValueError("Invalid WMI Event: mandatory field(s) missing")
         t = Event.as_table(self)
-        t.append('query', self.query)
+        t.append("query", self.query)
         return t

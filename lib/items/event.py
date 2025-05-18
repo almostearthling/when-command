@@ -9,7 +9,7 @@
 # events and trigger dedicated command line reactions when certain events
 # not known to the scheduler occur.
 
-from tomlkit import table
+from tomlkit import table, items
 from ..utility import check_not_none, append_not_none, generate_item_name
 
 
@@ -22,13 +22,13 @@ class Event(object):
     # availability at class level
     available = False
 
-    def __init__(self, t: table=None) -> None:
+    def __init__(self, t: items.Table = None) -> None:
         self.type = None
         self.hrtype = None
         if t:
-            self.name = t.get('name')
-            self.condition = t.get('condition')
-            tags = t.get('tags')
+            self.name = t.get("name")
+            self.condition = t.get("condition")
+            tags = t.get("tags")
             if tags:
                 self.tags = dict(tags)
             else:
@@ -41,6 +41,13 @@ class Event(object):
     def __str__(self):
         return "[[event]]\n%s" % self.as_table().as_string()
 
+    @property
+    def signature(self):
+        s = "event:%s" % self.type
+        if 'subtype' in self.__dict__:
+            s += ":%s" % self.subtype
+        return s
+
     def as_table(self):
         if not check_not_none(
             self.name,
@@ -48,10 +55,10 @@ class Event(object):
         ):
             raise ValueError("Invalid Event: mandatory field(s) missing")
         t = table()
-        t.append('name', self.name)
-        t.append('type', self.type)
-        t = append_not_none(t, 'condition', self.condition)
-        t = append_not_none(t, 'tags', self.tags)
+        t.append("name", self.name)
+        t.append("type", self.type)
+        t = append_not_none(t, "condition", self.condition)
+        t = append_not_none(t, "tags", self.tags)
         return t
 
 

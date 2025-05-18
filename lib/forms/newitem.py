@@ -14,18 +14,20 @@ from ..items.item import ALL_AVAILABLE_ITEMS, ALL_AVAILABLE_ITEMS_D
 class form_NewItem(ApplicationForm):
 
     def __init__(self):
-        size = AppConfig.get('SIZE_NEWITEM_FORM')
+        size = AppConfig.get("SIZE_NEWITEM_FORM")
         bbox = (BBOX_OK, BBOX_CANCEL)
         super().__init__(UI_TITLE_NEWITEM, size, None, bbox)
 
         # form data
         self._subtypes_display = []
-        self._type = 'task'
+        self._type = "task"
         self._ret = None
 
-        subtypes = list(x for x in ALL_AVAILABLE_ITEMS
-                        if x[0].startswith('%s:' % self._type)
-                        and x[3].available)
+        subtypes = list(
+            x
+            for x in ALL_AVAILABLE_ITEMS
+            if x[0].startswith("%s:" % self._type) and x[3].available
+        )
         self._subtypes_display = list([x[1], x[0]] for x in subtypes)
         self._subtypes_display.sort(key=lambda x: x[0])
 
@@ -38,18 +40,32 @@ class form_NewItem(ApplicationForm):
 
         # type section
         l_itemType = ttk.Label(area, text=UI_FORM_ITEMTYPE_SC)
-        rb_itemTask = ttk.Radiobutton(area, text=ITEM_TASK, value='task', command=lambda : self.set_itemtype())
-        rb_itemCond = ttk.Radiobutton(area, text=ITEM_COND, value='cond', command=lambda : self.set_itemtype())
-        rb_itemEvent = ttk.Radiobutton(area, text=ITEM_EVENT, value='event', command=lambda : self.set_itemtype())
+        rb_itemTask = ttk.Radiobutton(
+            area, text=ITEM_TASK, value="task", command=lambda: self.set_itemtype()
+        )
+        rb_itemCond = ttk.Radiobutton(
+            area, text=ITEM_COND, value="cond", command=lambda: self.set_itemtype()
+        )
+        rb_itemEvent = ttk.Radiobutton(
+            area, text=ITEM_EVENT, value="event", command=lambda: self.set_itemtype()
+        )
         f_spacer1 = ttk.Frame(area)
 
         # subtype section
         l_itemSubTypes = ttk.Label(area, text=UI_FORM_ITEMSUBTYPES_SC)
         # build a scrolled frame for the treeview
         sftv_itemSubTypes = ttk.Frame(area)
-        tv_itemSubTypes = ttk.Treeview(sftv_itemSubTypes, columns=('type', 'code'), displaycolumns=('type',), show='', height=5)
-        tv_itemSubTypes.heading('type', anchor=tk.W, text=UI_FORM_ITEM)
-        sb_itemSubTypes = ttk.Scrollbar(sftv_itemSubTypes, orient=tk.VERTICAL, command=tv_itemSubTypes.yview)
+        tv_itemSubTypes = ttk.Treeview(
+            sftv_itemSubTypes,
+            columns=("type", "code"),
+            displaycolumns=("type",),
+            show="",
+            height=5,
+        )
+        tv_itemSubTypes.heading("type", anchor=tk.W, text=UI_FORM_ITEM)
+        sb_itemSubTypes = ttk.Scrollbar(
+            sftv_itemSubTypes, orient=tk.VERTICAL, command=tv_itemSubTypes.yview
+        )
         tv_itemSubTypes.configure(yscrollcommand=sb_itemSubTypes.set)
         tv_itemSubTypes.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         sb_itemSubTypes.pack(side=tk.RIGHT, fill=tk.Y)
@@ -64,15 +80,17 @@ class form_NewItem(ApplicationForm):
         sftv_itemSubTypes.grid(row=11, column=0, sticky=tk.NSEW, padx=PAD, pady=PAD)
 
         # bind double click to variable recall
-        tv_itemSubTypes.bind('<Double-Button-1>', lambda _: self.exit_ok())
+        tv_itemSubTypes.bind("<Double-Button-1>", lambda _: self.exit_ok())
 
         # expand appropriate sections
         area.columnconfigure(0, weight=1)
         area.rowconfigure(11, weight=1)
 
         # bind data to widgets
-        self.data_bind('item_type', (rb_itemTask, rb_itemCond, rb_itemEvent), TYPE_STRING)
-        self.data_bind('item_selection', tv_itemSubTypes)
+        self.data_bind(
+            "item_type", (rb_itemTask, rb_itemCond, rb_itemEvent), TYPE_STRING
+        )
+        self.data_bind("item_selection", tv_itemSubTypes)
 
         # propagate widgets that need to be accessed
         self._tv_itemtypes = tv_itemSubTypes
@@ -80,24 +98,25 @@ class form_NewItem(ApplicationForm):
         # update the form
         self._updateform()
 
-
     def set_itemtype(self):
-        self._type = self.data_get('item_type')
-        subtypes = list(x for x in ALL_AVAILABLE_ITEMS
-                        if x[0].startswith('%s:' % self._type)
-                        and x[3].available)
+        self._type = self.data_get("item_type")
+        subtypes = list(
+            x
+            for x in ALL_AVAILABLE_ITEMS
+            if x[0].startswith("%s:" % self._type) and x[3].available
+        )
         self._subtypes_display = list([x[1], x[0]] for x in subtypes)
         self._subtypes_display.sort(key=lambda x: x[0])
         self._updateform()
 
     def _updateform(self):
-        self.data_set('item_type', self._type)
+        self.data_set("item_type", self._type)
         self._tv_itemtypes.delete(*self._tv_itemtypes.get_children())
         for entry in self._subtypes_display:
-            self._tv_itemtypes.insert('', iid=entry[1], values=entry, index=ttk.END)
+            self._tv_itemtypes.insert("", iid=entry[1], values=entry, index=ttk.END)
 
     def exit_ok(self):
-        choice = self.data_get('item_selection')
+        choice = self.data_get("item_selection")
         if choice:
             self._ret = self._type, ALL_AVAILABLE_ITEMS_D[choice[1]][1]
         return super().exit_ok()

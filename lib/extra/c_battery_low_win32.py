@@ -32,7 +32,6 @@ from ..items.cond_wmi import WMICondition
 import sys
 
 
-
 # resource strings (not internationalized for the moment)
 ITEM_COND_LOWBATT = "Low Battery Condition"
 
@@ -60,12 +59,12 @@ def _available():
 class LowBatteryCondition(WMICondition):
 
     # availability at class level: these variables *MUST* be set for all items
-    item_type = 'wmi'
-    item_subtype = 'battery_low'
+    item_type = "wmi"
+    item_subtype = "battery_low"
     item_hrtype = ITEM_COND_LOWBATT
     available = _available()
 
-    def __init__(self, t: items.Table=None) -> None:
+    def __init__(self, t: items.Table = None) -> None:
         # first initialize the base class (mandatory)
         WMICondition.__init__(self, t)
 
@@ -77,37 +76,37 @@ class LowBatteryCondition(WMICondition):
 
         # initializing from a table should always have this form:
         if t:
-            assert(t.get('type') == self.type)
-            self.tags = t.get('tags')
-            assert(isinstance(self.tags, items.Table))
-            assert(self.tags.get('subtype') == self.subtype)
+            assert t.get("type") == self.type
+            self.tags = t.get("tags")
+            assert isinstance(self.tags, items.Table)
+            assert self.tags.get("subtype") == self.subtype
 
         # while creating a new item must always initialize specific parameters
         else:
             self.tags = table()
-            self.tags.append('subtype', self.subtype)
-            self.tags.append('threshold', _DEFAULT_THRESHOLD_VALUE)
+            self.tags.append("subtype", self.subtype)
+            self.tags.append("threshold", _DEFAULT_THRESHOLD_VALUE)
         self.updateitem()
 
     def updateitem(self):
         # set base item properties according to specific parameters in `tags`
-        threshold = self.tags.get('threshold', _DEFAULT_THRESHOLD_VALUE)
+        threshold = self.tags.get("threshold", _DEFAULT_THRESHOLD_VALUE)
 
         # see interpretation of BatteryStatus == 1 here:
         # https://learn.microsoft.com/it-it/windows/win32/cimwin32prov/win32-battery
         self.query = "SELECT * FROM Win32_Battery"
         self.result_check = [
             {
-                'index': 0,
-                'field': "EstimatedChargeRemaining",
-                'operator': "lt",
-                'value': threshold,
+                "index": 0,
+                "field": "EstimatedChargeRemaining",
+                "operator": "lt",
+                "value": threshold,
             },
             {
-                'index': 0,
-                'field': "BatteryStatus",
-                'operator': "eq",
-                'value': 1,
+                "index": 0,
+                "field": "BatteryStatus",
+                "operator": "eq",
+                "value": 1,
             },
         ]
         self.result_check_all = True
@@ -122,7 +121,7 @@ class form_LowBatteryCondition(form_Condition):
 
         # check that item is the expected one for safety, build one by default
         if item:
-            assert(isinstance(item, LowBatteryCondition))
+            assert isinstance(item, LowBatteryCondition)
         else:
             item = LowBatteryCondition()
         super().__init__(_UI_FORM_TITLE, tasks_available, item)
@@ -136,7 +135,7 @@ class form_LowBatteryCondition(form_Condition):
         l_threshold = ttk.Label(area, text=_UI_FORM_LOWBATT_THRESHOLD_SC)
         e_threshold = ttk.Entry(area)
         l_percent = ttk.Label(area, text="%")
-        self.data_bind('threshold', e_threshold, TYPE_INT, lambda t: t > 0 and t < 100)
+        self.data_bind("threshold", e_threshold, TYPE_INT, lambda t: t > 0 and t < 100)
 
         l_threshold.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         e_threshold.grid(row=0, column=1, sticky=tk.NSEW, padx=PAD, pady=PAD)
@@ -149,15 +148,14 @@ class form_LowBatteryCondition(form_Condition):
 
     # update the form with the specific parameters (usually in the `tags`)
     def _updateform(self):
-        self.data_set('threshold', self._item.tags.get('threshold'))
+        self.data_set("threshold", self._item.tags.get("threshold"))
         return super()._updateform()
 
     # update the item from the form elements (usually update `tags`)
     def _updatedata(self):
-        self._item.tags['threshold'] = self.data_get('threshold')
+        self._item.tags["threshold"] = self.data_get("threshold")
         self._item.updateitem()
         return super()._updatedata()
-
 
 
 # function common to all extra modules to declare class items as factories

@@ -23,7 +23,6 @@ import shutil
 import sys
 
 
-
 # resource strings (not internationalized for the moment)
 ITEM_HR_NAME = "Shutdown Task"
 
@@ -41,7 +40,7 @@ def _available():
         if shutil.which("shutdown.exe"):
             return True
         return False
-    elif sys.platform == 'linux':
+    elif sys.platform == "linux":
         global ITEM_HR_NAME, _UI_FORM_TITLE
         ITEM_HR_NAME += " (Gnome)"
         _UI_FORM_TITLE += " (Gnome)"
@@ -51,17 +50,16 @@ def _available():
     return False
 
 
-
 # the specific item is derived from the actual parent item
 class ShutdownTask(CommandTask):
 
     # availability at class level: these variables *MUST* be set for all items
-    item_type = 'command'
-    item_subtype = 'shutdown'
+    item_type = "command"
+    item_subtype = "shutdown"
     item_hrtype = ITEM_HR_NAME
     available = _available()
 
-    def __init__(self, t: items.Table=None) -> None:
+    def __init__(self, t: items.Table = None) -> None:
         # first initialize the base class (mandatory)
         CommandTask.__init__(self, t)
 
@@ -73,15 +71,15 @@ class ShutdownTask(CommandTask):
 
         # initializing from a table should always have this form:
         if t:
-            assert(t.get('type') == self.type)
-            self.tags = t.get('tags')
-            assert(isinstance(self.tags, items.Table))
-            assert(self.tags.get('subtype') == self.subtype)
+            assert t.get("type") == self.type
+            self.tags = t.get("tags")
+            assert isinstance(self.tags, items.Table)
+            assert self.tags.get("subtype") == self.subtype
 
         # while creating a new item must always initialize specific parameters
         else:
             self.tags = table()
-            self.tags.append('subtype', self.subtype)
+            self.tags.append("subtype", self.subtype)
 
         self.updateitem()
 
@@ -90,7 +88,7 @@ class ShutdownTask(CommandTask):
         if sys.platform.startswith("win"):
             self.command = "shutdown.exe"
             self.command_arguments = ["/s"]
-        elif sys.platform == 'linux':
+        elif sys.platform == "linux":
             self.command = "gnome-session-quit"
             self.command_arguments = [
                 # "--no-prompt",
@@ -106,7 +104,7 @@ class form_ShutdownTask(form_Task):
 
         # check that item is the expected one for safety, build one by default
         if item:
-            assert(isinstance(item, ShutdownTask))
+            assert isinstance(item, ShutdownTask)
         else:
             item = ShutdownTask()
         super().__init__(_UI_FORM_TITLE, item)
@@ -119,9 +117,13 @@ class form_ShutdownTask(form_Task):
         # build the UI elements as needed and configure the layout
         l_noparams = ttk.Label(area, text=_UI_FORM_NOPARAMS)
         l_noparams.configure(anchor=tk.CENTER)
+        pad = ttk.Frame(area)
+
         l_noparams.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        pad.grid(row=10, column=0, sticky=tk.NSEW)
+
         area.columnconfigure(0, weight=1)
-        area.rowconfigure(0, weight=1)
+        area.rowconfigure(10, weight=1)
 
         # always update the form at the end of initialization
         self._updateform()
@@ -133,7 +135,6 @@ class form_ShutdownTask(form_Task):
     # no need actually for this  definition
     # def _updatedata(self):
     #     return super()._updatedata()
-
 
 
 # function common to all extra modules to declare class items as factories

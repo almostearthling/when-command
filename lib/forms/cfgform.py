@@ -38,13 +38,28 @@ class form_Config(ApplicationForm):
 
         # the main tree view has an increased row size
         style = ttk.Style()
-        style.configure('Items.Treeview', rowheight=30)
+        style.configure("Items.Treeview", rowheight=30)
 
-        size = AppConfig.get('SIZE_MAIN_FORM')
+        size = AppConfig.get("SIZE_MAIN_FORM")
         if self._root:
-            bbox = (BBOX_NEW, BBOX_EDIT, BBOX_DELETE, BBOX_RELOAD, BBOX_SEPARATOR, BBOX_SAVE, BBOX_CLOSE)
+            bbox = (
+                BBOX_NEW,
+                BBOX_EDIT,
+                BBOX_DELETE,
+                BBOX_RELOAD,
+                BBOX_SEPARATOR,
+                BBOX_SAVE,
+                BBOX_CLOSE,
+            )
         else:
-            bbox = (BBOX_NEW, BBOX_EDIT, BBOX_DELETE, BBOX_SEPARATOR, BBOX_SAVE, BBOX_CLOSE)
+            bbox = (
+                BBOX_NEW,
+                BBOX_EDIT,
+                BBOX_DELETE,
+                BBOX_SEPARATOR,
+                BBOX_SAVE,
+                BBOX_CLOSE,
+            )
         super().__init__(UI_APP, size, None, bbox, main)
 
         # list box icons
@@ -60,8 +75,8 @@ class form_Config(ApplicationForm):
         self._data = {}
         self._itemlistentries = []
         self._globals = {
-            'scheduler_tick_seconds': DEFAULT_SCHEDULER_TICK_SECONDS,
-            'randomize_checks_within_ticks': DEFAULT_RANDOMIZE_CHECKS_WITHIN_TICKS,
+            "scheduler_tick_seconds": DEFAULT_SCHEDULER_TICK_SECONDS,
+            "randomize_checks_within_ticks": DEFAULT_RANDOMIZE_CHECKS_WITHIN_TICKS,
         }
         self._changed = False
 
@@ -74,7 +89,7 @@ class form_Config(ApplicationForm):
 
         # configuration file section
         l_cfgFile = ttk.Label(area, text=UI_FORM_FILELOCATION_SC)
-        e_cfgFile = ttk.Entry(area, state=['disabled'])
+        e_cfgFile = ttk.Entry(area, state=["disabled"])
         # sep1 = ttk.Separator(area)
 
         # global flags and parameters
@@ -90,16 +105,16 @@ class form_Config(ApplicationForm):
         sftv_items = ttk.Frame(area)
         tv_items = ttk.Treeview(
             sftv_items,
-            columns=('name', 'type', 'signature'),
-            displaycolumns=('name', 'type'),
-            show='tree headings',
-            style='Items.Treeview',
+            columns=("name", "type", "signature"),
+            displaycolumns=("name", "type"),
+            show="tree headings",
+            style="Items.Treeview",
             height=5,
         )
-        tv_items.column('#0', anchor=tk.CENTER, width=40, stretch=tk.NO)
-        tv_items.heading('#0', anchor=tk.CENTER, text="")
-        tv_items.heading('name', anchor=tk.W, text=UI_FORM_LHD_NAME)
-        tv_items.heading('type', anchor=tk.W, text=UI_FORM_LHD_TYPE)
+        tv_items.column("#0", anchor=tk.CENTER, width=40, stretch=tk.NO)
+        tv_items.heading("#0", anchor=tk.CENTER, text="")
+        tv_items.heading("name", anchor=tk.W, text=UI_FORM_LHD_NAME)
+        tv_items.heading("type", anchor=tk.W, text=UI_FORM_LHD_TYPE)
         sb_items = ttk.Scrollbar(sftv_items, orient=tk.VERTICAL, command=tv_items.yview)
         tv_items.configure(yscrollcommand=sb_items.set)
         tv_items.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
@@ -115,20 +130,27 @@ class form_Config(ApplicationForm):
         fill1.grid(row=10, column=2, sticky=tk.NSEW)
         sep2.grid(row=11, column=0, columnspan=4, pady=PAD, sticky=tk.EW)
         l_items.grid(row=20, column=0, columnspan=4, sticky=tk.W, padx=PAD, pady=PAD)
-        sftv_items.grid(row=21, column=0, columnspan=4, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        sftv_items.grid(
+            row=21, column=0, columnspan=4, sticky=tk.NSEW, padx=PAD, pady=PAD
+        )
 
         # expand appropriate sections
         area.rowconfigure(index=21, weight=1)
         area.columnconfigure(2, weight=1)
 
         # bind data to widgets
-        self.data_bind('config_file', e_cfgFile, TYPE_STRING)
-        self.data_bind('scheduler_tick_seconds', e_tickSeconds, TYPE_INT, lambda x: x is None or x > 0)
-        self.data_bind('randomize_checks_within_ticks', ck_randChecks)
-        self.data_bind('item_selection', tv_items)
+        self.data_bind("config_file", e_cfgFile, TYPE_STRING)
+        self.data_bind(
+            "scheduler_tick_seconds",
+            e_tickSeconds,
+            TYPE_INT,
+            lambda x: x is None or x > 0,
+        )
+        self.data_bind("randomize_checks_within_ticks", ck_randChecks)
+        self.data_bind("item_selection", tv_items)
 
         # bind double click in list to item editor
-        tv_items.bind('<Double-Button-1>', lambda _: self.edit())
+        tv_items.bind("<Double-Button-1>", lambda _: self.edit())
 
         # bind changes to global params so that the _changed flag becomes true
         ck_randChecks.configure(command=self._set_changed)
@@ -138,10 +160,9 @@ class form_Config(ApplicationForm):
 
         # load the configuration file and update the form
         config_file = get_configfile()
-        self.data_set('config_file', config_file)
+        self.data_set("config_file", config_file)
         self._load_config(config_file)
         self._updateform()
-
 
     # update the associated data according to what is in the form
     def _updatedata(self):
@@ -152,21 +173,21 @@ class form_Config(ApplicationForm):
         for key in self._tasks:
             item = self._tasks[key]
             if item.tags:
-                signature = "task:%s:%s" % (item.type, item.tags.get('subtype'))
+                signature = "task:%s:%s" % (item.type, item.tags.get("subtype"))
             else:
                 signature = "task:%s" % item.type
             self._itemlistentries.append([item.name, item.hrtype, signature])
         for key in self._conditions:
             item = self._conditions[key]
             if item.tags:
-                signature = "cond:%s:%s" % (item.type, item.tags.get('subtype'))
+                signature = "cond:%s:%s" % (item.type, item.tags.get("subtype"))
             else:
                 signature = "cond:%s" % item.type
             self._itemlistentries.append([item.name, item.hrtype, signature])
         for key in self._events:
             item = self._events[key]
             if item.tags:
-                signature = "event:%s:%s" % (item.type, item.tags.get('subtype'))
+                signature = "event:%s:%s" % (item.type, item.tags.get("subtype"))
             else:
                 signature = "event:%s" % item.type
             self._itemlistentries.append([item.name, item.hrtype, signature])
@@ -174,11 +195,15 @@ class form_Config(ApplicationForm):
         # set the changed flag when tick seconds have changed: this is not
         # necessary for the check box based parameter, because the flag is
         # updated every time it gets clicked
-        tick_secs = self.data_get('scheduler_tick_seconds', DEFAULT_SCHEDULER_TICK_SECONDS)
-        if tick_secs != self._globals['scheduler_tick_seconds']:
-            self._globals['scheduler_tick_seconds'] = tick_secs
+        tick_secs = self.data_get(
+            "scheduler_tick_seconds", DEFAULT_SCHEDULER_TICK_SECONDS
+        )
+        if tick_secs != self._globals["scheduler_tick_seconds"]:
+            self._globals["scheduler_tick_seconds"] = tick_secs
             self._changed = True
-        self._globals['randomize_checks_within_ticks'] = self.data_get('randomize_checks_within_ticks', DEFAULT_RANDOMIZE_CHECKS_WITHIN_TICKS)
+        self._globals["randomize_checks_within_ticks"] = self.data_get(
+            "randomize_checks_within_ticks", DEFAULT_RANDOMIZE_CHECKS_WITHIN_TICKS
+        )
 
     # update the form fields according to the associated actual data
     def _updateform(self):
@@ -194,9 +219,21 @@ class form_Config(ApplicationForm):
             # the following actually never happens
             else:
                 icon = self._icon_unknown
-            self._tv_items.insert("", iid="%s-%s" % (entry[0], entry[2]), image=icon, values=entry, index=tk.END)
-        self.data_set('scheduler_tick_seconds', self._globals['scheduler_tick_seconds'] or DEFAULT_SCHEDULER_TICK_SECONDS)
-        self.data_set('randomize_checks_within_ticks', self._globals['randomize_checks_within_ticks'])
+            self._tv_items.insert(
+                "",
+                iid="%s-%s" % (entry[0], entry[2]),
+                image=icon,
+                values=entry,
+                index=tk.END,
+            )
+        self.data_set(
+            "scheduler_tick_seconds",
+            self._globals["scheduler_tick_seconds"] or DEFAULT_SCHEDULER_TICK_SECONDS,
+        )
+        self.data_set(
+            "randomize_checks_within_ticks",
+            self._globals["randomize_checks_within_ticks"],
+        )
 
     # reset all associated data in the form (does not update fields)
     def _resetdata(self):
@@ -204,11 +241,10 @@ class form_Config(ApplicationForm):
         self._conditions = {}
         self._events = {}
         self._globals = {
-            'scheduler_tick_seconds': DEFAULT_SCHEDULER_TICK_SECONDS,
-            'randomize_checks_within_ticks': DEFAULT_RANDOMIZE_CHECKS_WITHIN_TICKS,
+            "scheduler_tick_seconds": DEFAULT_SCHEDULER_TICK_SECONDS,
+            "randomize_checks_within_ticks": DEFAULT_RANDOMIZE_CHECKS_WITHIN_TICKS,
         }
         self._changed = False
-
 
     # load the configuration from a TOML file
     def _load_config(self, fn):
@@ -224,21 +260,21 @@ class form_Config(ApplicationForm):
         for key in self._tasks:
             item = self._tasks[key]
             if item.tags:
-                signature = "task:%s:%s" % (item.type, item.tags.get('subtype'))
+                signature = "task:%s:%s" % (item.type, item.tags.get("subtype"))
             else:
                 signature = "task:%s" % item.type
             self._itemlistentries.append([item.name, item.hrtype, signature])
         for key in self._conditions:
             item = self._conditions[key]
             if item.tags:
-                signature = "cond:%s:%s" % (item.type, item.tags.get('subtype'))
+                signature = "cond:%s:%s" % (item.type, item.tags.get("subtype"))
             else:
                 signature = "cond:%s" % item.type
             self._itemlistentries.append([item.name, item.hrtype, signature])
         for key in self._events:
             item = self._events[key]
             if item.tags:
-                signature = "event:%s:%s" % (item.type, item.tags.get('subtype'))
+                signature = "event:%s:%s" % (item.type, item.tags.get("subtype"))
             else:
                 signature = "event:%s" % item.type
             self._itemlistentries.append([item.name, item.hrtype, signature])
@@ -255,22 +291,34 @@ class form_Config(ApplicationForm):
             self._globals,
         )
 
-
     # to be called when one of the global parameters has been changed
     def _set_changed(self, changed=True):
         self._changed = changed
 
+    # check currently loaded items for signature coherence
+    def _check_items(self):
+        signatures = ALL_AVAILABLE_ITEMS_D.keys()
+        for k in self._tasks:
+            if self._tasks[k].signature not in signatures:
+                return False
+        for k in self._conditions:
+            if self._conditions[k].signature not in signatures:
+                return False
+        for k in self._events:
+            if self._events[k].signature not in signatures:
+                return False
+        return True
 
     # command button reactions
     def delete(self):
-        item_name, _, item_signature = self.data_get('item_selection')
-        item_type = item_signature.split(':', 1)[0]
+        item_name, _, item_signature = self.data_get("item_selection")
+        item_type = item_signature.split(":", 1)[0]
         if messagebox.askyesno(UI_POPUP_T_CONFIRM, UI_POPUP_DELETEITEM_Q):
-            if item_type == 'task':
+            if item_type == "task":
                 del self._tasks[item_name]
-            elif item_type == 'cond':
+            elif item_type == "cond":
                 del self._conditions[item_name]
-            elif item_type == 'event':
+            elif item_type == "event":
                 del self._events[item_name]
             self._updatedata()
             self._updateform()
@@ -278,7 +326,7 @@ class form_Config(ApplicationForm):
 
     def save(self):
         self._updatedata()
-        fn = self.data_get('config_file')
+        fn = self.data_get("config_file")
         if fn and self._changed:
             if os.path.exists(fn):
                 if messagebox.askyesno(UI_POPUP_T_CONFIRM, UI_POPUP_OVERWRITEFILE_Q):
@@ -291,11 +339,11 @@ class form_Config(ApplicationForm):
     # edit a specific item: to be complete, this is also bound
     # to the double click event for an element of the list
     def edit(self):
-        item_name, _, item_signature = self.data_get('item_selection')
-        item_type = item_signature.split(':', 1)[0]
+        item_name, _, item_signature = self.data_get("item_selection")
+        item_type = item_signature.split(":", 1)[0]
 
         # task items
-        if item_type == 'task':
+        if item_type == "task":
             _, fform, fitem = ALL_AVAILABLE_ITEMS_D.get(item_signature)
             if fform and fitem.available:
                 e = fform(self._tasks[item_name])
@@ -322,7 +370,7 @@ class form_Config(ApplicationForm):
                         self._changed = True
 
         # condition items
-        elif item_type == 'cond':
+        elif item_type == "cond":
             _, fform, fitem = ALL_AVAILABLE_ITEMS_D.get(item_signature)
             if fform and fitem.available:
                 e = fform(list(self._tasks.keys()), self._conditions[item_name])
@@ -331,7 +379,7 @@ class form_Config(ApplicationForm):
                     if new_item:
                         if new_item.name != item_name:
                             # adjust dependencies
-                            if new_item.type in ('event', 'bucket'):
+                            if new_item.type in ("event", "bucket"):
                                 for name in self._events:
                                     event = self._events[name]
                                     if event.condition == item_name:
@@ -344,11 +392,13 @@ class form_Config(ApplicationForm):
                         self._changed = True
 
         # event items
-        elif item_type == 'event':
-            event_conds = list(x for x in self._conditions if self._conditions[x].type == 'event')
+        elif item_type == "event":
+            event_conds = list(
+                x for x in self._conditions if self._conditions[x].type == "event"
+            )
             _, fform, fitem = ALL_AVAILABLE_ITEMS_D.get(item_signature)
             if fform and fitem.available:
-                e =  fform(event_conds, self._events[item_name])
+                e = fform(event_conds, self._events[item_name])
                 if e is not None:
                     new_item = e.run()
                     if new_item:
@@ -370,19 +420,25 @@ class form_Config(ApplicationForm):
             r = e.run()
             if r:
                 t, form_class = r
-                if t == 'task':
+                if t == "task":
                     form = form_class()
-                elif t == 'cond':
+                elif t == "cond":
                     form = form_class(list(self._tasks.keys()))
                 # note that, since providing a suitable event based
                 # condition is mandatory for an event, the form will
                 # refuse to create a new event
-                elif t == 'event':
-                    event_conds = list(x for x in self._conditions if self._conditions[x].type == 'event')
+                elif t == "event":
+                    event_conds = list(
+                        x
+                        for x in self._conditions
+                        if self._conditions[x].type == "event"
+                    )
                     if event_conds:
                         form = form_class(event_conds)
                     else:
-                        messagebox.showerror(UI_POPUP_T_ERR, message=UI_POPUP_NOEVENTCONDITIONS_ERR)
+                        messagebox.showerror(
+                            UI_POPUP_T_ERR, message=UI_POPUP_NOEVENTCONDITIONS_ERR
+                        )
                         form = None
                 try:
                     if form is not None:
@@ -394,11 +450,11 @@ class form_Config(ApplicationForm):
                 if form is not None:
                     del form
                 if new_item:
-                    if t == 'task':
+                    if t == "task":
                         self._tasks[new_item.name] = new_item
-                    elif t == 'cond':
+                    elif t == "cond":
                         self._conditions[new_item.name] = new_item
-                    elif t == 'event':
+                    elif t == "event":
                         self._events[new_item.name] = new_item
                     self._changed = True
 
@@ -412,7 +468,7 @@ class form_Config(ApplicationForm):
     def reload(self):
         if messagebox.askyesno(UI_POPUP_T_CONFIRM, UI_POPUP_RELOADCONFIG_Q):
             if self._root:
-                self._root.send_event('<<SchedReloadConfig>>')
+                self._root.send_event("<<SchedReloadConfig>>")
         return super().reload()
 
     # modify the reaction to the quit button so that if the configuration

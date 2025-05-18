@@ -32,7 +32,6 @@ from ..items.cond_wmi import WMICondition
 import sys
 
 
-
 # resource strings (not internationalized for the moment)
 ITEM_COND_SESSION_LOCKED = "Session Locked Condition"
 
@@ -46,9 +45,9 @@ _UI_FORM_RB_CHECKFREQ_RELAXED = "Relaxed"
 
 # values for check styles
 _CHECK_EXTRA_DELAY = {
-    'pedantic': 60,
-    'normal': 120,
-    'relaxed': 300,
+    "pedantic": 60,
+    "normal": 120,
+    "relaxed": 300,
 }
 
 
@@ -66,12 +65,12 @@ def _available():
 class SessionLockedCondition(WMICondition):
 
     # availability at class level: these variables *MUST* be set for all items
-    item_type = 'wmi'
-    item_subtype = 'session_locked'
+    item_type = "wmi"
+    item_subtype = "session_locked"
     item_hrtype = ITEM_COND_SESSION_LOCKED
     available = _available()
 
-    def __init__(self, t: items.Table=None) -> None:
+    def __init__(self, t: items.Table = None) -> None:
         # first initialize the base class (mandatory)
         WMICondition.__init__(self, t)
 
@@ -83,26 +82,28 @@ class SessionLockedCondition(WMICondition):
 
         # initializing from a table should always have this form:
         if t:
-            assert(t.get('type') == self.type)
-            self.tags = t.get('tags')
-            assert(isinstance(self.tags, items.Table))
-            assert(self.tags.get('subtype') == self.subtype)
+            assert t.get("type") == self.type
+            self.tags = t.get("tags")
+            assert isinstance(self.tags, items.Table)
+            assert self.tags.get("subtype") == self.subtype
 
         # while creating a new item must always initialize specific parameters
         else:
             self.tags = table()
-            self.tags.append('subtype', self.subtype)
-            self.tags.append('check_frequency', 'normal')
+            self.tags.append("subtype", self.subtype)
+            self.tags.append("check_frequency", "normal")
         self.updateitem()
 
     def updateitem(self):
         # set base item properties according to specific parameters in `tags`
-        check_frequency = self.tags.get('check_frequency', 'normal')
+        check_frequency = self.tags.get("check_frequency", "normal")
 
         # everything I found on the subject is about finding a process running
         # whose executable is 'LogonUI.exe'; maybe a better solution is here:
         # https://stackoverflow.com/a/48785428/5138770
-        self.query = "SELECT CreationClassName FROM Win32_Process WHERE Name='LogonUI.exe'"
+        self.query = (
+            "SELECT CreationClassName FROM Win32_Process WHERE Name='LogonUI.exe'"
+        )
         self.check_after = _CHECK_EXTRA_DELAY[check_frequency]
         self.recur_after_failed_check = True
 
@@ -114,7 +115,7 @@ class form_SessionLockedCondition(form_Condition):
 
         # check that item is the expected one for safety, build one by default
         if item:
-            assert(isinstance(item, SessionLockedCondition))
+            assert isinstance(item, SessionLockedCondition)
         else:
             item = SessionLockedCondition()
         super().__init__(_UI_FORM_TITLE, tasks_available, item)
@@ -126,10 +127,20 @@ class form_SessionLockedCondition(form_Condition):
 
         # build the UI elements as needed and configure the layout
         l_checkFreq = ttk.Label(area, text=_UI_FORM_CHECKFREQ_SC)
-        rb_checkFreqPedantic = ttk.Radiobutton(area, text=_UI_FORM_RB_CHECKFREQ_PEDANTIC, value='pedantic')
-        rb_checkFreqNormal = ttk.Radiobutton(area, text=_UI_FORM_RB_CHECKFREQ_NORMAL, value='normal')
-        rb_checkFreqRelaxed = ttk.Radiobutton(area, text=_UI_FORM_RB_CHECKFREQ_RELAXED, value='relaxed')
-        self.data_bind('check_frequency', (rb_checkFreqPedantic, rb_checkFreqNormal, rb_checkFreqRelaxed), TYPE_STRING)
+        rb_checkFreqPedantic = ttk.Radiobutton(
+            area, text=_UI_FORM_RB_CHECKFREQ_PEDANTIC, value="pedantic"
+        )
+        rb_checkFreqNormal = ttk.Radiobutton(
+            area, text=_UI_FORM_RB_CHECKFREQ_NORMAL, value="normal"
+        )
+        rb_checkFreqRelaxed = ttk.Radiobutton(
+            area, text=_UI_FORM_RB_CHECKFREQ_RELAXED, value="relaxed"
+        )
+        self.data_bind(
+            "check_frequency",
+            (rb_checkFreqPedantic, rb_checkFreqNormal, rb_checkFreqRelaxed),
+            TYPE_STRING,
+        )
 
         l_checkFreq.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         rb_checkFreqPedantic.grid(row=0, column=1, sticky=tk.NSEW, padx=PAD, pady=PAD)
@@ -143,15 +154,14 @@ class form_SessionLockedCondition(form_Condition):
 
     # update the form with the specific parameters (usually in the `tags`)
     def _updateform(self):
-        self.data_set('check_frequency', self._item.tags.get('check_frequency'))
+        self.data_set("check_frequency", self._item.tags.get("check_frequency"))
         return super()._updateform()
 
     # update the item from the form elements (usually update `tags`)
     def _updatedata(self):
-        self._item.tags['check_frequency'] = self.data_get('check_frequency')
+        self._item.tags["check_frequency"] = self.data_get("check_frequency")
         self._item.updateitem()
         return super()._updatedata()
-
 
 
 # function common to all extra modules to declare class items as factories

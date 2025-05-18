@@ -5,7 +5,7 @@
 # - Lua script tasks
 # as per whenever documentation.
 
-from tomlkit import table
+from tomlkit import table, items
 from ..utility import check_not_none, append_not_none, generate_item_name
 
 
@@ -18,12 +18,12 @@ class Task(object):
     # availability at class level
     available = False
 
-    def __init__(self, t: table=None) -> None:
+    def __init__(self, t: items.Table = None) -> None:
         self.type = None
         self.hrtype = None
         if t:
-            self.name = t.get('name')
-            tags = t.get('tags')
+            self.name = t.get("name")
+            tags = t.get("tags")
             if tags:
                 self.tags = dict(tags)
             else:
@@ -35,6 +35,13 @@ class Task(object):
     def __str__(self):
         return "[[task]]\n%s" % self.as_table().as_string()
 
+    @property
+    def signature(self):
+        s = "task:%s" % self.type
+        if 'subtype' in self.__dict__:
+            s += ":%s" % self.subtype
+        return s
+
     def as_table(self):
         if not check_not_none(
             self.name,
@@ -42,9 +49,9 @@ class Task(object):
         ):
             raise ValueError("Invalid Task: mandatory field(s) missing")
         t = table()
-        t.append('name', self.name)
-        t.append('type', self.type)
-        t = append_not_none(t, 'tags', self.tags)
+        t.append("name", self.name)
+        t.append("type", self.type)
+        t = append_not_none(t, "tags", self.tags)
         return t
 
 

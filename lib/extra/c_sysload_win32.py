@@ -54,17 +54,16 @@ def _available():
     return False
 
 
-
 # the specific item is derived from the actual parent item
 class SystemLoadCondition(WMICondition):
 
     # availability at class level: these variables *MUST* be set for all items
-    item_type = 'wmi'
-    item_subtype = 'sysload'
+    item_type = "wmi"
+    item_subtype = "sysload"
     item_hrtype = ITEM_HR_NAME
     available = _available()
 
-    def __init__(self, t: items.Table=None) -> None:
+    def __init__(self, t: items.Table = None) -> None:
         # first initialize the base class
         WMICondition.__init__(self, t)
 
@@ -73,28 +72,28 @@ class SystemLoadCondition(WMICondition):
         self.subtype = self.item_subtype
         self.hrtype = self.item_hrtype
         if t:
-            assert(t.get('type') == self.type)
-            self.tags = t.get('tags')
-            assert(isinstance(self.tags, items.Table))
-            assert(self.tags.get('subtype') == self.subtype)
+            assert t.get("type") == self.type
+            self.tags = t.get("tags")
+            assert isinstance(self.tags, items.Table)
+            assert self.tags.get("subtype") == self.subtype
         else:
             self.tags = table()
-            self.tags.append('subtype', self.subtype)
-            self.tags.append('threshold', _DEFAULT_LOW_LOAD_PERC)
+            self.tags.append("subtype", self.subtype)
+            self.tags.append("threshold", _DEFAULT_LOW_LOAD_PERC)
         self.updateitem()
 
     def updateitem(self):
-        threshold = self.tags.get('threshold', _DEFAULT_LOW_LOAD_PERC)
+        threshold = self.tags.get("threshold", _DEFAULT_LOW_LOAD_PERC)
         self.query = "SELECT * FROM Win32_Processor"
         self.result_check = [
             {
-                'index': 0,
-                'field': "LoadPercentage",
-                'operator': "lt",
-                'value': threshold,
+                "index": 0,
+                "field": "LoadPercentage",
+                "operator": "lt",
+                "value": threshold,
             },
         ]
-        self.check_after = _CHECK_EXTRA_DELAY   # for now keep it fixed to one minute
+        self.check_after = _CHECK_EXTRA_DELAY  # for now keep it fixed to one minute
         self.recur_after_failed_check = True
 
 
@@ -105,7 +104,7 @@ class form_SystemLoadCondition(form_Condition):
 
         # check that item is the expected one for safety, build one by default
         if item:
-            assert(isinstance(item, SystemLoadCondition))
+            assert isinstance(item, SystemLoadCondition)
         else:
             item = SystemLoadCondition()
         super().__init__(_UI_FORM_TITLE, tasks_available, item)
@@ -119,7 +118,7 @@ class form_SystemLoadCondition(form_Condition):
         l_threshold = ttk.Label(area, text=_UI_FORM_SYSLOADTHRESHOLD_SC)
         e_threshold = ttk.Entry(area)
         l_percent = ttk.Label(area, text="%")
-        self.data_bind('threshold', e_threshold, TYPE_INT, lambda x: 0 < x < 100)
+        self.data_bind("threshold", e_threshold, TYPE_INT, lambda x: 0 < x < 100)
 
         l_threshold.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         e_threshold.grid(row=0, column=1, sticky=tk.NSEW, padx=PAD, pady=PAD)
@@ -130,18 +129,16 @@ class form_SystemLoadCondition(form_Condition):
         # always update the form at the end of initialization
         self._updateform()
 
-
     # update the form with the specific parameters (usually in the `tags`)
     def _updateform(self):
-        self.data_set('threshold', self._item.tags.get('threshold'))
+        self.data_set("threshold", self._item.tags.get("threshold"))
         return super()._updateform()
 
     # update the item from the form elements (usually update `tags`)
     def _updatedata(self):
-        self._item.tags['threshold'] = self.data_get('threshold')
+        self._item.tags["threshold"] = self.data_get("threshold")
         self._item.updateitem()
         return super()._updatedata()
-
 
 
 # function common to all extra modules to declare class items as factories

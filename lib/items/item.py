@@ -4,6 +4,7 @@ from lib.i18n.strings import *
 
 from lib.forms.task_command import form_CommandTask
 from lib.forms.task_lua import form_LuaScriptTask
+from lib.forms.task_internal import form_InternalCommandTask
 
 from lib.forms.cond_command import form_CommandCondition
 from lib.forms.cond_dbus import form_DBusCondition
@@ -22,6 +23,7 @@ from lib.forms.event_wmi import form_WMIEvent
 
 from lib.items.task_command import CommandTask
 from lib.items.task_lua import LuaScriptTask
+from lib.items.task_internal import InternalCommandTask
 
 from lib.items.cond_command import CommandCondition
 from lib.items.cond_event import EventCondition
@@ -45,7 +47,6 @@ from lib.items.event import Event
 
 # other items will share the same file for both the item and the form, and
 # all related string resources should be defined within the same file
-
 
 
 # a list of all available items to allow creating new ones: all tuples consist
@@ -74,6 +75,7 @@ ALL_AVAILABLE_ITEMS = [
     # signature        hr name              form                        item
     ('task:command',   ITEM_TASK_COMMAND,   form_CommandTask,           CommandTask),
     ('task:lua',       ITEM_TASK_LUA,       form_LuaScriptTask,         LuaScriptTask),
+    ('task:internal',  ITEM_TASK_INTERNAL,  form_InternalCommandTask,   InternalCommandTask),
 
     ('cond:command',   ITEM_COND_COMMAND,   form_CommandCondition,      CommandCondition),
     ('cond:dbus',      ITEM_COND_DBUS,      form_DBusCondition,         DBusCondition),

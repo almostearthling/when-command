@@ -31,46 +31,52 @@ from ..items.event_dbus import DBusEvent
 import sys
 
 
-
 # resource strings (not internationalized for the moment)
 ITEM_HR_NAME = "Session Unlocked Event"
 
 _UI_FORM_TITLE = "%s: Session Unlocked Event Editor" % UI_APP
 
 
-
 # check for availability: include all needed checks in this function, may
 # or may not include actually checking the hosting platform
 # check for availability
 def _available():
-    if sys.platform == 'linux':
+    if sys.platform == "linux":
         return whenever_has_dbus()
     else:
         return False
 
 
 # the DBus filter
-_DBUS_FILTER_EXPRESSION = "".join(("""
-    type='signal',
-    sender='org.freedesktop.login1',
-    interface='org.freedesktop.DBus.Properties',
-    member='PropertiesChanged'
-    """).strip().split())
+_DBUS_FILTER_EXPRESSION = "".join(
+    (
+        """
+        type='signal',
+        sender='org.freedesktop.login1',
+        interface='org.freedesktop.DBus.Properties',
+        member='PropertiesChanged'
+        """
+    )
+    .strip()
+    .split()
+)
 
 # the DBus message parameters check
-_DBUS_PARAMETER_CHECK = '[{ "index": [1, "LockedHint"], "operator": "eq", "value": false }]'
+_DBUS_PARAMETER_CHECK = (
+    '[{ "index": [1, "LockedHint"], "operator": "eq", "value": false }]'
+)
 
 
 # the specific item is derived from the actual parent item
 class SessionUnlockEvent(DBusEvent):
 
     # availability at class level: these variables *MUST* be set for all items
-    item_type = 'dbus'
-    item_subtype = 'session_unlock'
+    item_type = "dbus"
+    item_subtype = "session_unlock"
     item_hrtype = ITEM_HR_NAME
     available = _available()
 
-    def __init__(self, t: items.Table=None) -> None:
+    def __init__(self, t: items.Table = None) -> None:
         # first initialize the base class (mandatory)
         super().__init__(t)
 
@@ -82,15 +88,15 @@ class SessionUnlockEvent(DBusEvent):
 
         # initializing from a table should always have this form:
         if t:
-            assert(t.get('type') == self.type)
-            self.tags = t.get('tags')
-            assert(isinstance(self.tags, items.Table))
-            assert(self.tags.get('subtype') == self.subtype)
+            assert t.get("type") == self.type
+            self.tags = t.get("tags")
+            assert isinstance(self.tags, items.Table)
+            assert self.tags.get("subtype") == self.subtype
 
         # while creating a new item must always initialize specific parameters
         else:
             self.tags = table()
-            self.tags.append('subtype', self.subtype)
+            self.tags.append("subtype", self.subtype)
 
         self.updateitem()
 
@@ -108,7 +114,7 @@ class form_SessionUnlockEvent(form_Event):
 
         # check that item is the expected one for safety, build one by default
         if item:
-            assert(isinstance(item, SessionUnlockEvent))
+            assert isinstance(item, SessionUnlockEvent)
         else:
             item = SessionUnlockEvent()
         super().__init__(_UI_FORM_TITLE, conditions_available, item)
@@ -133,7 +139,6 @@ class form_SessionUnlockEvent(form_Event):
     def _updatedata(self):
         self._item.updateitem()
         return super()._updatedata()
-
 
 
 # function common to all extra modules to declare class items as factories

@@ -21,7 +21,7 @@ class form_WMIEvent(form_Event):
 
     def __init__(self, conditions_available, item=None):
         if item:
-            assert(isinstance(item, WMIEvent))
+            assert isinstance(item, WMIEvent)
         else:
             item = WMIEvent()
         super().__init__(UI_TITLE_WMIEVENT, conditions_available, item)
@@ -35,7 +35,13 @@ class form_WMIEvent(form_Event):
 
         # TODO: choose an appropriate lexer (although `bash` seems to be OK)
         l_wmiQuery = ttk.Label(area, text=UI_FORM_WMI_QUERY_SC)
-        cv_wmiQuery = CodeView(area, pygments.lexers.SqlLexer, font='TkFixedFont', height=2, color_scheme=get_editor_theme())
+        cv_wmiQuery = CodeView(
+            area,
+            pygments.lexers.SqlLexer,
+            font="TkFixedFont",
+            height=2,
+            color_scheme=get_editor_theme(),
+        )
 
         l_wmiQuery.grid(row=1, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         cv_wmiQuery.grid(row=2, column=0, sticky=tk.NSEW, padx=PAD, pady=PAD)
@@ -45,7 +51,7 @@ class form_WMIEvent(form_Event):
         area.columnconfigure(0, weight=1)
 
         # bind data to widgets
-        self.data_bind('query', cv_wmiQuery, TYPE_STRING)
+        self.data_bind("query", cv_wmiQuery, TYPE_STRING)
 
         # propagate widgets that need to be accessed
         # NOTE: no data to propagate
@@ -53,11 +59,10 @@ class form_WMIEvent(form_Event):
         # update the form
         self._updateform()
 
-
     def _updateform(self):
-        self.data_set('query', self._item.query)
+        self.data_set("query", self._item.query)
         return super()._updateform()
-    
+
     def _updatedata(self):
-        self._item.query = self.data_get('query')
+        self._item.query = self.data_get("query")
         return super()._updatedata()

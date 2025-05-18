@@ -24,25 +24,32 @@ _tray_icon_busy = get_image(CLOCK_ICON_BUSY)
 # menu reactions: all events are managed by the main application, and
 # therefore they are implemented as messages passed to the root window
 def on_configure(root):
-    root.send_event('<<OpenCfgApp>>')
+    root.send_event("<<OpenCfgApp>>")
+
 
 def on_about(root):
-    root.send_event('<<OpenAboutBox>>')
+    root.send_event("<<OpenAboutBox>>")
+
 
 def on_menu_box(root):
-    root.send_event('<<OpenMenuBox>>')
+    root.send_event("<<OpenMenuBox>>")
+
 
 def on_pause_scheduler(root):
-    root.send_event('<<SchedPause>>')
+    root.send_event("<<SchedPause>>")
+
 
 def on_resume_scheduler(root):
-    root.send_event('<<SchedResume>>')
+    root.send_event("<<SchedResume>>")
+
 
 def on_reset_conditions(root):
-    root.send_event('<<SchedResetConditions>>')
+    root.send_event("<<SchedResetConditions>>")
+
 
 def on_history(root):
-    root.send_event('<<OpenHistory>>')
+    root.send_event("<<OpenHistory>>")
+
 
 # this sends an EXIT event to the main loop, so that the invisible
 # main window is destroyed and all the cleanup is performed
@@ -55,8 +62,10 @@ def on_exit(root):
 def set_tray_icon_gray(icon):
     icon.icon = _tray_icon_gray
 
+
 def set_tray_icon_normal(icon):
-        icon.icon = _tray_icon
+    icon.icon = _tray_icon
+
 
 def set_tray_icon_busy(icon):
     icon.icon = _tray_icon_busy
@@ -121,7 +130,7 @@ def main(root):
                 ),
             )
     # also enable the menu box when debugging - even on Windows
-    elif AppConfig.get('DEBUG'):
+    elif AppConfig.get("DEBUG"):
         if pystray.Icon.HAS_DEFAULT_ACTION:
             entries.append(
                 pystray.MenuItem(

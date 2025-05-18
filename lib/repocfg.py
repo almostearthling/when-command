@@ -7,6 +7,7 @@ _singleton_lock = False
 
 from pygments.styles import get_style_by_name
 
+
 class _AppConfiguration(object):
 
     def __init__(self, initial_table=None):
@@ -40,10 +41,10 @@ class _AppConfiguration(object):
     def __getitem__(self, key: str):
         return self.get(key)
 
-    def __setitem__(self, key:str, value):
+    def __setitem__(self, key: str, value):
         self.set(key, value)
 
-    def __delitem__(self, key:str):
+    def __delitem__(self, key: str):
         self.delete(key)
 
     def __str__(self) -> str:
@@ -58,52 +59,54 @@ class _AppConfiguration(object):
 # the unique instance of the configuration object: note that it also contains
 # some initial configuration values that might have to be modified according
 # to the type of release (eg. the DEBUG flag, see below)
-AppConfig = _AppConfiguration({
-    # this flag should be set to False on normal operation
-    'DEBUG': False,
+AppConfig = _AppConfiguration(
+    {
+        # this flag should be set to False on normal operation
+        "DEBUG": True,
 
-    # the application base name for configuration directory determination
-    'CFGNAME': 'Whenever',
+        # the application base name for configuration directory determination
+        "CFGNAME": "Whenever",
 
-    # milliseconds between log reads by the secondary thread
-    'MSECS_BETWEEN_READS': 100.0,
+        # milliseconds between log reads by the secondary thread
+        "MSECS_BETWEEN_READS": 100.0,
 
-    # history queue length
-    'HISTORY_LENGTH': 100,
+        # history queue length
+        "HISTORY_LENGTH": 100,
 
-    # configuration window size
-    'SIZE_MAIN_FORM': (960, 640),
+        # configuration window size
+        "SIZE_MAIN_FORM": (960, 640),
 
-    # editor form size
-    'SIZE_EDITOR_FORM': (960, 640),
+        # editor form size
+        "SIZE_EDITOR_FORM": (960, 640),
 
-    # new item chooser size
-    'SIZE_NEWITEM_FORM': (640, 400),
+        # new item chooser size
+        "SIZE_NEWITEM_FORM": (640, 400),
 
-    # history box size
-    'SIZE_HISTORY_FORM': (960, 640),
+        # history box size
+        "SIZE_HISTORY_FORM": (960, 640),
 
-    # about box size
-    'SIZE_ABOUT_BOX': (480, 300),
+        # about box size
+        "SIZE_ABOUT_BOX": (480, 300),
 
-    # menu box size
-    'SIZE_MENU_BOX': (272, 440),
+        # menu box size
+        "SIZE_MENU_BOX": (272, 440),
 
-    # themes
-    'DEFAULT_THEME_DARK': 'darkly',
-    'DEFAULT_THEME_LIGHT': 'flatly',
-    'DEFAULT_THEME_DEBUG': 'morph',
+        # themes
+        "DEFAULT_THEME_DARK": "darkly",
+        "DEFAULT_THEME_LIGHT": "flatly",
+        "DEFAULT_THEME_DEBUG": "morph",
 
-    # editor themes
-    'EDITOR_THEME_DARK': 'ayu-dark',
-    'EDITOR_THEME_LIGHT': 'ayu-light',
-    'EDITOR_THEME_DEBUG': 'ayu-light',
+        # editor themes
+        "EDITOR_THEME_DARK": "ayu-dark",
+        "EDITOR_THEME_LIGHT": "ayu-light",
+        "EDITOR_THEME_DEBUG": "ayu-light",
 
-    # ...
-})
+        # ...
+    }
+)
 
 
-__all__ = [ AppConfig ]
+__all__ = [AppConfig]
 
 
 # end.

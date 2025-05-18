@@ -10,6 +10,7 @@ UI_APP_VERSION = "1.10.1b1"
 ITEM_TASK = "Task"
 ITEM_TASK_COMMAND = "Command Based Task"
 ITEM_TASK_LUA = "Lua Script Based Task"
+ITEM_TASK_INTERNAL = "Internal Command Based Task"
 
 ITEM_COND = "Condition"
 ITEM_COND_COMMAND = "Command Based Condition"
@@ -256,6 +257,7 @@ UI_TITLE_NEWITEM = "%s: Choose New Item" % UI_APP
 
 UI_TITLE_COMMANDTASK = "%s: Command Task Editor" % UI_APP
 UI_TITLE_LUATASK = "%s: Lua Script Task Editor" % UI_APP
+UI_TITLE_INTERNALTASK = "%s: Internal Command Task Editor" % UI_APP
 
 UI_TITLE_COMMANDCOND = "%s: Command Condition Editor" % UI_APP
 UI_TITLE_LUACOND = "%s: Lua Script Condition Editor" % UI_APP
@@ -308,6 +310,11 @@ UI_POPUP_MISSINGEVENTCOND = "No condition specified for event"
 UI_POPUP_INVALIDOPERATOR = "The specified operator is not valid"
 UI_POPUP_INVALIDINDEX = "The specified index is not valid"
 UI_POPUP_INVALIDFIELD = "The specified field name is not valid"
+UI_POPUP_WARNFIXCONFIG = """\
+One or more items are not recognized: if the configuration
+has been generated with a previous version of When, you may
+need to run `when tool --fix-config` from the command line.
+"""
 
 
 # about box

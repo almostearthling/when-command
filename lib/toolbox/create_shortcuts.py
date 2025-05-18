@@ -18,7 +18,6 @@ from .create_shortcuts_icons import ICON_ICO, ICON_PNG
 from ..repocfg import AppConfig
 
 
-
 # template desktop files for Linux
 TEMPLATE_XDG_WHEN = """\
 #!/usr/bin/env xdg-open
@@ -51,7 +50,7 @@ def create_icon(verbose=False):
     target = os.path.join(target_dir, icon_filename)
     if not os.path.exists(target):
         try:
-            with open(target, 'wb') as f:
+            with open(target, "wb") as f:
                 f.write(base64.b64decode(icon))
         except Exception as e:
             if verbose:
@@ -60,11 +59,20 @@ def create_icon(verbose=False):
     return target
 
 
-
 # shortcut creation for Windows
 if sys.platform.startswith("win"):
     import winshell
-    def mk_shortcuts(target, arg_string, icon, name, description=None, desktop=True, appmenu=True, startup=True):
+
+    def mk_shortcuts(
+        target,
+        arg_string,
+        icon,
+        name,
+        description=None,
+        desktop=True,
+        appmenu=True,
+        startup=True,
+    ):
         locations = []
         if description is None:
             description = name
@@ -88,14 +96,25 @@ if sys.platform.startswith("win"):
                 arguments=arg_string,
                 icon_location=(icon, 0),
                 description=description,
-                show_cmd='min',
-                working_directory=os.path.expanduser("~")
+                show_cmd="min",
+                working_directory=os.path.expanduser("~"),
             )
             s.write()
 
+
 # shortcut creation for Linux
 elif sys.platform == "linux":
-    def mk_shortcuts(target, arg_string, icon, name, description=None, desktop=True, appmenu=True, startup=True):
+
+    def mk_shortcuts(
+        target,
+        arg_string,
+        icon,
+        name,
+        description=None,
+        desktop=True,
+        appmenu=True,
+        startup=True,
+    ):
         if description is None:
             description = name
         if target.endswith(".py"):
@@ -125,22 +144,22 @@ elif sys.platform == "linux":
         if appmenu:
             filename = f"{name}.desktop"
             destdir = appsdir
-            with open(os.path.join(destdir, filename), 'w') as f:
+            with open(os.path.join(destdir, filename), "w") as f:
                 f.write(text)
         if desktop:
             filename = f"{name}.desktop"
             destdir = desktopdir
-            with open(os.path.join(destdir, filename), 'w') as f:
+            with open(os.path.join(destdir, filename), "w") as f:
                 f.write(text)
         if startup:
-            s = name.replace(' ', '_')
+            s = name.replace(" ", "_")
             filename = f"{s}-autostart.desktop"
             destdir = autostartdir
-            with open(os.path.join(destdir, filename), 'w') as f:
+            with open(os.path.join(destdir, filename), "w") as f:
                 f.write(text)
 
-# no other platforms supported at the moment
 
+# no other platforms supported at the moment
 
 
 # use the utilities defined above to create the requested shortcuts
@@ -166,7 +185,7 @@ def create_shortcuts(main_script, desktop=True, autostart=True, verbose=False):
     if not (os.path.isfile(target) and os.access(target, os.X_OK)):
         target = main_script
     args_start = 'start --whenever="%s"' % AppConfig.get("WHENEVER")
-    args_config = 'config'
+    args_config = "config"
     if verbose:
         console.print(CLI_MSG_CREATING_SHORTCUT, highlight=False)
     try:

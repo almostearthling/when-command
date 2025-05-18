@@ -29,7 +29,7 @@ from ..utility import get_tkroot
 from ..repocfg import AppConfig
 
 # levels are fixed, format mimics original **whenever** format
-_LOGLEVELS = ['trace', 'debug', 'info', 'warn', 'error']
+_LOGLEVELS = ["trace", "debug", "info", "warn", "error"]
 _LOGFMT = "{time} ({application}) {level} {emitter} {action}{itemstr}: [{when}/{status}]: {message}"
 
 
@@ -37,67 +37,73 @@ _LOGFMT = "{time} ({application}) {level} {emitter} {action}{itemstr}: [{when}/{
 class Logger(object):
 
     def __init__(self, filename, level, root=None):
-        self._logfile = open(filename, 'w')
+        self._logfile = open(filename, "w")
         self._level = level
         self._level_num = _LOGLEVELS.index(self._level)
         self._root = root
 
     def log(self, record):
-        time = record['header']['time']
-        application = record['header']['application']
-        level = record['header']['level']
-        emitter = record['contents']['context']['emitter']
-        action = record['contents']['context']['action']
-        item = record['contents']['context']['item']
-        item_id = record['contents']['context']['item_id']
-        when = record['contents']['message_type']['when']
-        status = record['contents']['message_type']['status']
-        message = record['contents']['message']
+        time = record["header"]["time"]
+        application = record["header"]["application"]
+        level = record["header"]["level"]
+        emitter = record["contents"]["context"]["emitter"]
+        action = record["contents"]["context"]["action"]
+        item = record["contents"]["context"]["item"]
+        item_id = record["contents"]["context"]["item_id"]
+        when = record["contents"]["message_type"]["when"]
+        status = record["contents"]["message_type"]["status"]
+        message = record["contents"]["message"]
         if item is not None and item_id is not None:
             itemstr = " %s/%s" % (item, item_id)
         else:
             itemstr = ""
         ln = _LOGLEVELS.index(level.lower())
-        if when == 'HIST':
-            if AppConfig.get('DEBUG'):
-                self._logfile.write("%s\n" % _LOGFMT.format(
-                    time=time,
-                    application=application,
-                    level=level,
-                    emitter=emitter,
-                    action=action,
-                    itemstr=itemstr,
-                    when=when,
-                    status=status,
-                    message=message,
-                ))
+        if when == "HIST":
+            if AppConfig.get("DEBUG"):
+                self._logfile.write(
+                    "%s\n"
+                    % _LOGFMT.format(
+                        time=time,
+                        application=application,
+                        level=level,
+                        emitter=emitter,
+                        action=action,
+                        itemstr=itemstr,
+                        when=when,
+                        status=status,
+                        message=message,
+                    )
+                )
                 self._logfile.flush()
             return False
-        elif when == 'BUSY':
+        elif when == "BUSY":
             if self._root:
-                if status == 'YES':
-                    self._root.send_event('<<SchedSetBusy>>')
+                if status == "YES":
+                    self._root.send_event("<<SchedSetBusy>>")
                 else:
-                    self._root.send_event('<<SchedSetNotBusy>>')
-        elif when == 'PAUSE':
+                    self._root.send_event("<<SchedSetNotBusy>>")
+        elif when == "PAUSE":
             if self._root:
-                if status == 'YES':
-                    self._root.send_event('<<SchedSetPaused>>')
+                if status == "YES":
+                    self._root.send_event("<<SchedSetPaused>>")
                 else:
-                    self._root.send_event('<<SchedSetNotPaused>>')
+                    self._root.send_event("<<SchedSetNotPaused>>")
         else:
             if ln >= self._level_num:
-                self._logfile.write("%s\n" % _LOGFMT.format(
-                    time=time,
-                    application=application,
-                    level=level,
-                    emitter=emitter,
-                    action=action,
-                    itemstr=itemstr,
-                    when=when,
-                    status=status,
-                    message=message,
-                ))
+                self._logfile.write(
+                    "%s\n"
+                    % _LOGFMT.format(
+                        time=time,
+                        application=application,
+                        level=level,
+                        emitter=emitter,
+                        action=action,
+                        itemstr=itemstr,
+                        when=when,
+                        status=status,
+                        message=message,
+                    )
+                )
                 self._logfile.flush()
             return True
 

@@ -42,7 +42,13 @@ class AboutBox(ApplicationForm):
             )
         else:
             text = UI_ABOUT_TEXT
-        super().__init__(UI_ABOUT_TITLE, AppConfig.get('SIZE_ABOUT_BOX'), None, (BBOX_CLOSE,), main)
+        super().__init__(
+            UI_ABOUT_TITLE,
+            AppConfig.get("SIZE_ABOUT_BOX"),
+            None,
+            (BBOX_CLOSE,),
+            main
+        )
         self._image = ImageTk.PhotoImage(get_image(APP_BITMAP))
 
         # build the UI: build widgets, arrange them in the box, bind data
@@ -69,5 +75,6 @@ def show_about_box(main=False):
     box = AboutBox(main)
     box.run()
     del box
+
 
 # end.

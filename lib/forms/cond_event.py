@@ -15,7 +15,7 @@ class form_EventCondition(form_Condition):
 
     def __init__(self, tasks_available, item=None):
         if item:
-            assert(isinstance(item, EventCondition))
+            assert isinstance(item, EventCondition)
         else:
             item = EventCondition()
         super().__init__(UI_TITLE_EVENTCOND, tasks_available, item)

@@ -23,7 +23,6 @@ import shutil
 import sys
 
 
-
 # resource strings (not internationalized for the moment)
 ITEM_HR_NAME = "Session Lock Task"
 
@@ -41,24 +40,23 @@ def _available():
         if shutil.which("rundll32.exe") and shutil.which("user32.dll"):
             return True
         return False
-    elif sys.platform == 'linux':
+    elif sys.platform == "linux":
         if shutil.which("dbus-send"):
             return True
         return False
     return False
 
 
-
 # the specific item is derived from the actual parent item
 class LockSessionTask(CommandTask):
 
     # availability at class level: these variables *MUST* be set for all items
-    item_type = 'command'
-    item_subtype = 'lock_session'
+    item_type = "command"
+    item_subtype = "lock_session"
     item_hrtype = ITEM_HR_NAME
     available = _available()
 
-    def __init__(self, t: items.Table=None) -> None:
+    def __init__(self, t: items.Table = None) -> None:
         # first initialize the base class (mandatory)
         CommandTask.__init__(self, t)
 
@@ -70,15 +68,15 @@ class LockSessionTask(CommandTask):
 
         # initializing from a table should always have this form:
         if t:
-            assert(t.get('type') == self.type)
-            self.tags = t.get('tags')
-            assert(isinstance(self.tags, items.Table))
-            assert(self.tags.get('subtype') == self.subtype)
+            assert t.get("type") == self.type
+            self.tags = t.get("tags")
+            assert isinstance(self.tags, items.Table)
+            assert self.tags.get("subtype") == self.subtype
 
         # while creating a new item must always initialize specific parameters
         else:
             self.tags = table()
-            self.tags.append('subtype', self.subtype)
+            self.tags.append("subtype", self.subtype)
 
         self.updateitem()
 
@@ -87,7 +85,7 @@ class LockSessionTask(CommandTask):
         if sys.platform.startswith("win"):
             self.command = "rundll32.exe"
             self.command_arguments = ["user32.dll,LockWorkStation"]
-        elif sys.platform == 'linux':
+        elif sys.platform == "linux":
             self.command = "dbus-send"
             self.command_arguments = [
                 "--type=method_call",
@@ -105,7 +103,7 @@ class form_LockSessionTask(form_Task):
 
         # check that item is the expected one for safety, build one by default
         if item:
-            assert(isinstance(item, LockSessionTask))
+            assert isinstance(item, LockSessionTask)
         else:
             item = LockSessionTask()
         super().__init__(_UI_FORM_TITLE, item)
@@ -118,9 +116,13 @@ class form_LockSessionTask(form_Task):
         # build the UI elements as needed and configure the layout
         l_noparams = ttk.Label(area, text=_UI_FORM_NOPARAMS)
         l_noparams.configure(anchor=tk.CENTER)
+        pad = ttk.Frame(area)
+
         l_noparams.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        pad.grid(row=10, column=0, sticky=tk.NSEW)
+
         area.columnconfigure(0, weight=1)
-        area.rowconfigure(0, weight=1)
+        area.rowconfigure(10, weight=1)
 
         # always update the form at the end of initialization
         self._updateform()
@@ -132,7 +134,6 @@ class form_LockSessionTask(form_Task):
     # no need actually for this  definition
     # def _updatedata(self):
     #     return super()._updatedata()
-
 
 
 # function common to all extra modules to declare class items as factories

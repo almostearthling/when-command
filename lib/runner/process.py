@@ -17,10 +17,10 @@ from ..repocfg import AppConfig
 # some constants:
 
 # milliseconds between log reads
-_MSECS_BETWEEN_READS = AppConfig.get('MSECS_BETWEEN_READS')
+_MSECS_BETWEEN_READS = AppConfig.get("MSECS_BETWEEN_READS")
 
 # max length of task execution history
-_HISTORY_LENGTH = AppConfig.get('HISTORY_LENGTH')
+_HISTORY_LENGTH = AppConfig.get("HISTORY_LENGTH")
 
 
 # the following function will be used to start a thread that actually
@@ -33,7 +33,6 @@ def _logreader(wrapper):
         for line in iter(pipe.stdout.readline, ""):
             wrapper.process_output(line.strip())
         time.sleep(sleep_seconds)
-
 
 
 # wrapper around the scheduler process
@@ -49,7 +48,6 @@ class Wrapper(object):
         self._pipe = None
         self._running = False
         root.set_wrapper(self)
-
 
     # utilities to read inner values
     # def thread(self):
@@ -163,7 +161,7 @@ class Wrapper(object):
     # start the wrapper and spawn both **whenever** and the reader
     def start(self):
         self._pipe = subprocess.Popen(
-            [self._exepath, '--log-level', 'trace', '--log-json', self._config],
+            [self._exepath, "--log-level", "trace", "--log-json", self._config],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,

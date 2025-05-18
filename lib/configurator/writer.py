@@ -13,16 +13,16 @@ def write_whenever_config(filename, tasks, conditions, events, globals):
     t = aot()
     for elem in tasks:
         t.append(elem.as_table())
-    doc.append('task', t)
+    doc.append("task", t)
     t = aot()
     for elem in conditions:
         t.append(elem.as_table())
-    doc.append('condition', t)
+    doc.append("condition", t)
     t = aot()
     for elem in events:
         t.append(elem.as_table())
-    doc.append('event', t)
-    with open(filename, 'w') as f:
+    doc.append("event", t)
+    with open(filename, "w") as f:
         f.write(doc.as_string())
 
 

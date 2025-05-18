@@ -18,22 +18,22 @@ from ..items.cond_wmi import WMICondition
 # regular expression for field checking
 _RE_VALIDNAME = re.compile("^[a-zA-Z_][a-zA-Z0-9_]*$")
 _XLATE_OPERATORS = {
-    '=': 'eq',
-    '==': 'eq',
-    '!=': 'neq',
-    '<>': 'neq',
-    '>': 'gt',
-    '<': 'lt',
-    '>=': 'ge',
-    '<=': 'le',
-    '~': 'match',
-    'eq': 'eq',
-    'neq': 'neq',
-    'gt': 'gt',
-    'lt': 'lt',
-    'ge': 'ge',
-    'le': 'le',
-    'match': 'match',
+    "=": "eq",
+    "==": "eq",
+    "!=": "neq",
+    "<>": "neq",
+    ">": "gt",
+    "<": "lt",
+    ">=": "ge",
+    "<=": "le",
+    "~": "match",
+    "eq": "eq",
+    "neq": "neq",
+    "gt": "gt",
+    "lt": "lt",
+    "ge": "ge",
+    "le": "le",
+    "match": "match",
 }
 _ALLOWED_OPERATORS = _XLATE_OPERATORS.keys()
 
@@ -42,7 +42,7 @@ class form_WMICondition(form_Condition):
 
     def __init__(self, tasks_available, item=None):
         if item:
-            assert(isinstance(item, WMICondition))
+            assert isinstance(item, WMICondition)
         else:
             item = WMICondition()
         super().__init__(UI_TITLE_LUACOND, tasks_available, item)
@@ -59,19 +59,32 @@ class form_WMICondition(form_Condition):
 
         # script section
         l_wmiQuery = ttk.Label(area, text=UI_FORM_WMI_QUERY_SC)
-        cv_wmiQuery = CodeView(area, pygments.lexers.LuaLexer, font='TkFixedFont', height=10, color_scheme=get_editor_theme())
+        cv_wmiQuery = CodeView(
+            area,
+            pygments.lexers.LuaLexer,
+            font="TkFixedFont",
+            height=10,
+            color_scheme=get_editor_theme(),
+        )
         sep1 = ttk.Separator(area)
 
         # results section
         l_wmiResults = ttk.Label(area, text=UI_FORM_EXPECTRESULTS)
         # build a scrolled frame for the treeview
         sftv_wmiResults = ttk.Frame(area)
-        tv_wmiResults = ttk.Treeview(sftv_wmiResults, columns=('index', 'field', 'operator', 'value'), show='headings', height=10)
-        tv_wmiResults.heading('index', anchor=tk.W, text=UI_FORM_INDEX)
-        tv_wmiResults.heading('field', anchor=tk.W, text=UI_FORM_FIELD)
-        tv_wmiResults.heading('operator', anchor=tk.W, text=UI_FORM_OPERATOR)
-        tv_wmiResults.heading('value', anchor=tk.W, text=UI_FORM_VALUE)
-        sb_wmiResults = ttk.Scrollbar(sftv_wmiResults, orient=tk.VERTICAL, command=tv_wmiResults.yview)
+        tv_wmiResults = ttk.Treeview(
+            sftv_wmiResults,
+            columns=("index", "field", "operator", "value"),
+            show="headings",
+            height=10,
+        )
+        tv_wmiResults.heading("index", anchor=tk.W, text=UI_FORM_INDEX)
+        tv_wmiResults.heading("field", anchor=tk.W, text=UI_FORM_FIELD)
+        tv_wmiResults.heading("operator", anchor=tk.W, text=UI_FORM_OPERATOR)
+        tv_wmiResults.heading("value", anchor=tk.W, text=UI_FORM_VALUE)
+        sb_wmiResults = ttk.Scrollbar(
+            sftv_wmiResults, orient=tk.VERTICAL, command=tv_wmiResults.yview
+        )
         tv_wmiResults.configure(yscrollcommand=sb_wmiResults.set)
         tv_wmiResults.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         sb_wmiResults.pack(side=tk.RIGHT, fill=tk.Y)
@@ -83,8 +96,12 @@ class form_WMICondition(form_Condition):
         e_resultOperator = ttk.Entry(area)
         l_resultValue = ttk.Label(area, text=UI_FORM_VALUE_SC)
         e_resultValue = ttk.Entry(area)
-        b_addCheck = ttk.Button(area, text=UI_UPDATE, width=BUTTON_STANDARD_WIDTH, command=self.add_check)
-        b_delCheck = ttk.Button(area, text=UI_DEL, width=BUTTON_STANDARD_WIDTH, command=self.del_check)
+        b_addCheck = ttk.Button(
+            area, text=UI_UPDATE, width=BUTTON_STANDARD_WIDTH, command=self.add_check
+        )
+        b_delCheck = ttk.Button(
+            area, text=UI_DEL, width=BUTTON_STANDARD_WIDTH, command=self.del_check
+        )
         ck_checkAll = ttk.Checkbutton(area, text=UI_FORM_MATCHALLRESULTS)
 
         # extra delay section
@@ -92,28 +109,38 @@ class form_WMICondition(form_Condition):
         l_checkAfter = ttk.Label(area_commonparams, text=UI_FORM_EXTRADELAY_SC)
         e_checkAfter = ttk.Entry(area_commonparams)
         l_checkAfterSeconds = ttk.Label(area_commonparams, text=UI_TIME_SECONDS)
-        ck_ignorePersistentSuccess = ttk.Checkbutton(area_commonparams, text=UI_FORM_IGNOREPERSISTSUCCESS)
+        ck_ignorePersistentSuccess = ttk.Checkbutton(
+            area_commonparams, text=UI_FORM_IGNOREPERSISTSUCCESS
+        )
 
         # bind double click to variable recall
-        tv_wmiResults.bind('<Double-Button-1>', lambda _: self.recall_check())
+        tv_wmiResults.bind("<Double-Button-1>", lambda _: self.recall_check())
 
         # arrange items in frame
         l_checkAfter.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         e_checkAfter.grid(row=0, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
         l_checkAfterSeconds.grid(row=0, column=2, sticky=tk.W, padx=PAD, pady=PAD)
-        ck_ignorePersistentSuccess.grid(row=2, column=1, sticky=tk.W, padx=PAD, pady=PAD)
+        ck_ignorePersistentSuccess.grid(
+            row=2, column=1, sticky=tk.W, padx=PAD, pady=PAD
+        )
         area_commonparams.columnconfigure(1, weight=1)
 
         sep2 = ttk.Separator(area)
 
         # arrange top items in the grid
         l_wmiQuery.grid(row=0, column=0, columnspan=6, sticky=tk.W, padx=PAD, pady=PAD)
-        cv_wmiQuery.grid(row=1, column=0, columnspan=6, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        cv_wmiQuery.grid(
+            row=1, column=0, columnspan=6, sticky=tk.NSEW, padx=PAD, pady=PAD
+        )
         sep1.grid(row=2, column=0, columnspan=6, sticky=tk.EW, pady=PAD)
         area_commonparams.grid(row=3, column=0, columnspan=6, sticky=tk.EW)
         sep2.grid(row=4, column=0, columnspan=6, sticky=tk.EW, pady=PAD)
-        l_wmiResults.grid(row=10, column=0, columnspan=6, sticky=tk.W, padx=PAD, pady=PAD)
-        sftv_wmiResults.grid(row=11, column=0, columnspan=6, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        l_wmiResults.grid(
+            row=10, column=0, columnspan=6, sticky=tk.W, padx=PAD, pady=PAD
+        )
+        sftv_wmiResults.grid(
+            row=11, column=0, columnspan=6, sticky=tk.NSEW, padx=PAD, pady=PAD
+        )
         l_resultIndex.grid(row=12, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         l_resultField.grid(row=12, column=1, sticky=tk.W, padx=PAD, pady=PAD)
         l_resultOperator.grid(row=12, column=2, sticky=tk.W, padx=PAD, pady=PAD)
@@ -133,15 +160,21 @@ class form_WMICondition(form_Condition):
         area.columnconfigure(3, weight=3)
 
         # bind data to widgets
-        self.data_bind('result_selection', tv_wmiResults)
-        self.data_bind('query', cv_wmiQuery, TYPE_STRING)
-        self.data_bind('index', e_resultIndex, TYPE_STRING, lambda x: x == "" or int(x) >= 0)
-        self.data_bind('field', e_resultField, TYPE_STRING, lambda x: _RE_VALIDNAME.match(x))
-        self.data_bind('operator', e_resultOperator, TYPE_STRING, lambda x: x in _ALLOWED_OPERATORS)
-        self.data_bind('value', e_resultValue, TYPE_STRING)
-        self.data_bind('check_all', ck_checkAll)
-        self.data_bind('check_after', e_checkAfter, TYPE_INT, lambda x: x >= 0)
-        self.data_bind('ignore_persistent_success', ck_ignorePersistentSuccess)
+        self.data_bind("result_selection", tv_wmiResults)
+        self.data_bind("query", cv_wmiQuery, TYPE_STRING)
+        self.data_bind(
+            "index", e_resultIndex, TYPE_STRING, lambda x: x == "" or int(x) >= 0
+        )
+        self.data_bind(
+            "field", e_resultField, TYPE_STRING, lambda x: _RE_VALIDNAME.match(x)
+        )
+        self.data_bind(
+            "operator", e_resultOperator, TYPE_STRING, lambda x: x in _ALLOWED_OPERATORS
+        )
+        self.data_bind("value", e_resultValue, TYPE_STRING)
+        self.data_bind("check_all", ck_checkAll)
+        self.data_bind("check_after", e_checkAfter, TYPE_INT, lambda x: x >= 0)
+        self.data_bind("ignore_persistent_success", ck_ignorePersistentSuccess)
 
         # propagate widgets that need to be accessed
         self._tv_results = tv_wmiResults
@@ -150,18 +183,18 @@ class form_WMICondition(form_Condition):
         self._updateform()
 
     def add_check(self):
-        if self.data_get('index') == "":
+        if self.data_get("index") == "":
             index = None
         else:
             try:
-                index = int(self.data_get('index'))
+                index = int(self.data_get("index"))
                 if index < 0:
                     raise ValueError
             except ValueError:
                 index = -1
-        field = self.data_get('field')
-        operator = _XLATE_OPERATORS.get(self.data_get('operator'), None)
-        value = guess_typed_value(self.data_get('value'))
+        field = self.data_get("field")
+        operator = _XLATE_OPERATORS.get(self.data_get("operator"), None)
+        value = guess_typed_value(self.data_get("value"))
         if index is not None and index < 0:
             messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDINDEX)
             return
@@ -174,86 +207,88 @@ class form_WMICondition(form_Condition):
         if not value:
             messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_EMPTYCHECKVALUE)
             return
-        self._results = list(x for x in self._results if x[0] != index and x[1] != field)
+        self._results = list(
+            x for x in self._results if x[0] != index and x[1] != field
+        )
         self._results.append([index, field, operator, value])
         e = []
         for x in self._results:
             d = {
-                'field': x[1],
-                'operator': x[2],
-                'value': x[3],
+                "field": x[1],
+                "operator": x[2],
+                "value": x[3],
             }
             if x[0] is not None and x[0] != "":
                 try:
                     index = int(x[0])
-                    d['index'] = index
+                    d["index"] = index
                 except ValueError:
                     messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDINDEX)
             e.append(d)
         self._item.result_check = e or None
         self._updatedata()
         self._updateform()
-    
+
     def del_check(self):
-        entry = self.data_get('result_selection')
+        entry = self.data_get("result_selection")
         index = entry[0]
         field = entry[1]
         operator = entry[2]
         value = entry[3]
         self._results = list(
-            x for x in self._results
-            if x[0] != index
-            and x[1] != field
+            x for x in self._results if x[0] != index and x[1] != field
         )
         e = []
         for x in self._results:
             d = {
-                'field': x[1],
-                'operator': x[2],
-                'value': x[3],
+                "field": x[1],
+                "operator": x[2],
+                "value": x[3],
             }
             if x[0] is not None and x[0] != "":
                 try:
                     index = int(x[0])
-                    d['index'] = index
+                    d["index"] = index
                 except ValueError:
                     messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDINDEX)
             e.append(d)
         self._item.result_check = e or None
-        self.data_set('index', index)
-        self.data_set('field', field)
-        self.data_set('operator', operator)
-        self.data_set('value', value)
+        self.data_set("index", index)
+        self.data_set("field", field)
+        self.data_set("operator", operator)
+        self.data_set("value", value)
         self._updatedata()
         self._updateform()
 
     def recall_check(self):
-        entry = self.data_get('result_selection')
+        entry = self.data_get("result_selection")
         index = entry[0]
         field = entry[1]
         operator = entry[2]
         value = entry[3]
-        self.data_set('index', index)
-        self.data_set('field', field)
-        self.data_set('operator', operator)
-        self.data_set('value', value)
+        self.data_set("index", index)
+        self.data_set("field", field)
+        self.data_set("operator", operator)
+        self.data_set("value", value)
 
     def _updatedata(self):
-        self._item.query = self.data_get('query').strip() or ""
-        self._item.result_check_all = self.data_get('expect_all') or None
-        self._item.check_after = self.data_get('check_after') or None
-        self._item.recur_after_failed_check = self.data_get('ignore_persistent_success') or None
+        self._item.query = self.data_get("query").strip() or ""
+        self._item.result_check_all = self.data_get("expect_all") or None
+        self._item.check_after = self.data_get("check_after") or None
+        self._item.recur_after_failed_check = (
+            self.data_get("ignore_persistent_success") or None
+        )
         e = []
         for l in self._results:
             d = {
-                'field': l[1],
-                'operator': l[2],
-                'value': l[3],
+                "field": l[1],
+                "operator": l[2],
+                "value": l[3],
             }
             if l[0] != "" and l[0] is not None:
                 try:
                     index = int(l[0])
-                    d['index'] = index
+                    d["index"] = index
                 except ValueError:
                     messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDINDEX)
             e.append(d)
@@ -261,28 +296,33 @@ class form_WMICondition(form_Condition):
         return super()._updatedata()
 
     def _updateform(self):
-        self.data_set('query', self._item.query)
-        self.data_set('check_all', self._item.result_check_all or False)
-        self.data_set('check_after', self._item.check_after or 0)
-        self.data_set('ignore_persistent_success', self._item.recur_after_failed_check or False)
-        self.data_set('index')
-        self.data_set('field')
-        self.data_set('operator')
-        self.data_set('value')
+        self.data_set("query", self._item.query)
+        self.data_set("check_all", self._item.result_check_all or False)
+        self.data_set("check_after", self._item.check_after or 0)
+        self.data_set(
+            "ignore_persistent_success", self._item.recur_after_failed_check or False
+        )
+        self.data_set("index")
+        self.data_set("field")
+        self.data_set("operator")
+        self.data_set("value")
         self._results = []
         if self._item.result_check:
             for e in self._item.result_check:
-                self._results.append([
-                    e.get('index', ""),
-                    e.get('field'),
-                    e.get('operator'),
-                    e.get('value', ""),
-                ])
+                self._results.append(
+                    [
+                        e.get("index", ""),
+                        e.get("field"),
+                        e.get("operator"),
+                        e.get("value", ""),
+                    ]
+                )
         self._tv_results.delete(*self._tv_results.get_children())
         for entry in self._results:
-            self._tv_results.insert('', iid="%s-%s" % (entry[0], entry[1]), values=entry, index=tk.END)
+            self._tv_results.insert(
+                "", iid="%s-%s" % (entry[0], entry[1]), values=entry, index=tk.END
+            )
         return super()._updateform()
-
 
 
 # end.

@@ -25,7 +25,6 @@ import sys
 import dbus
 
 
-
 # resource strings (not internationalized for the moment)
 ITEM_HR_NAME = "Removable Drive Available Condition"
 
@@ -40,23 +39,22 @@ _DEFAULT_DRIVE_DEVICE = "DRIVE"
 
 # check for availability
 def _available():
-    if sys.platform == 'linux':
+    if sys.platform == "linux":
         return whenever_has_dbus()
     else:
         return False
-
 
 
 # the specific item is derived from the actual parent item
 class RemovableDrivePresent(DBusCondition):
 
     # availability at class level: these variables *MUST* be set for all items
-    item_type = 'dbus'
-    item_subtype = 'removable_drive'
+    item_type = "dbus"
+    item_subtype = "removable_drive"
     item_hrtype = ITEM_HR_NAME
     available = _available()
 
-    def __init__(self, t: items.Table=None) -> None:
+    def __init__(self, t: items.Table = None) -> None:
         # first initialize the base class (mandatory)
         DBusCondition.__init__(self, t)
 
@@ -68,16 +66,16 @@ class RemovableDrivePresent(DBusCondition):
 
         # initializing from a table should always have this form:
         if t:
-            assert(t.get('type') == self.type)
-            self.tags = t.get('tags')
-            assert(isinstance(self.tags, items.Table))
-            assert(self.tags.get('subtype') == self.subtype)
+            assert t.get("type") == self.type
+            self.tags = t.get("tags")
+            assert isinstance(self.tags, items.Table)
+            assert self.tags.get("subtype") == self.subtype
 
         # while creating a new item must always initialize specific parameters
         else:
             self.tags = table()
-            self.tags.append('subtype', self.subtype)
-            self.tags.append('drive_name', _DEFAULT_DRIVE_DEVICE)
+            self.tags.append("subtype", self.subtype)
+            self.tags.append("drive_name", _DEFAULT_DRIVE_DEVICE)
 
         self.updateitem()
 
@@ -85,13 +83,17 @@ class RemovableDrivePresent(DBusCondition):
         # set base item properties according to specific parameters in `tags`
 
         # the check is performed a DBus query
-        check_drive = "/org/freedesktop/UDisks2/drives/%s" % self.tags.get('drive_name', _DEFAULT_DRIVE_DEVICE)
+        check_drive = "/org/freedesktop/UDisks2/drives/%s" % self.tags.get(
+            "drive_name", _DEFAULT_DRIVE_DEVICE
+        )
         self.bus = ":system"
         self.service = "org.freedesktop.UDisks2"
         self.object_path = "/org/freedesktop/UDisks2"
         self.interface = "org.freedesktop.DBus.ObjectManager"
         self.method = "GetManagedObjects"
-        self.parameter_check = '[{ "index": 0, "operator": "contains", "value": "%s" }]' % check_drive
+        self.parameter_check = (
+            '[{ "index": 0, "operator": "contains", "value": "%s" }]' % check_drive
+        )
         self.check_after = 60
         self.recur_after_failed_check = True
 
@@ -103,7 +105,7 @@ class form_RemovableDrivePresent(form_Condition):
 
         # check that item is the expected one for safety, build one by default
         if item:
-            assert(isinstance(item, RemovableDrivePresent))
+            assert isinstance(item, RemovableDrivePresent)
         else:
             item = RemovableDrivePresent()
         super().__init__(_UI_FORM_TITLE, tasks_available, item)
@@ -114,13 +116,13 @@ class form_RemovableDrivePresent(form_Condition):
         o = bus.get_object(
             "org.freedesktop.UDisks2",
             "/org/freedesktop/UDisks2",
-            )
+        )
         o_iface = dbus.Interface(o, "org.freedesktop.DBus.ObjectManager")
         mgobjs = o_iface.GetManagedObjects()
         drive_names = []
         for k in list(s for s in mgobjs.keys() if s.startswith(prefix)):
-            if mgobjs[k]['org.freedesktop.UDisks2.Drive']['Removable']:
-                drive_names.append(k[len(prefix):])
+            if mgobjs[k]["org.freedesktop.UDisks2.Drive"]["Removable"]:
+                drive_names.append(k[len(prefix) :])
 
         # create a specific frame for the contents
         area = ttk.Frame(super().contents)
@@ -130,7 +132,7 @@ class form_RemovableDrivePresent(form_Condition):
         # build the UI elements as needed and configure the layout
         l_deviceName = ttk.Label(area, text=_UI_FORM_REMOVABLEDRIVE_DEVICE_SC)
         cb_deviceName = ttk.Combobox(area, values=drive_names)
-        self.data_bind('drive_name', cb_deviceName, TYPE_STRING)
+        self.data_bind("drive_name", cb_deviceName, TYPE_STRING)
 
         l_deviceName.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         cb_deviceName.grid(row=0, column=1, sticky=tk.NSEW, padx=PAD, pady=PAD)
@@ -142,15 +144,14 @@ class form_RemovableDrivePresent(form_Condition):
 
     # update the form with the specific parameters (usually in the `tags`)
     def _updateform(self):
-        self.data_set('drive_name', self._item.tags.get('drive_name'))
+        self.data_set("drive_name", self._item.tags.get("drive_name"))
         return super()._updateform()
 
     # update the item from the form elements (usually update `tags`)
     def _updatedata(self):
-        self._item.tags['drive_name'] = self.data_get('drive_name')
+        self._item.tags["drive_name"] = self.data_get("drive_name")
         self._item.updateitem()
         return super()._updatedata()
-
 
 
 # function common to all extra modules to declare class items as factories

@@ -19,7 +19,7 @@ class form_IntervalCondition(form_Condition):
 
     def __init__(self, tasks_available, item=None):
         if item:
-            assert(isinstance(item, IntervalCondition))
+            assert isinstance(item, IntervalCondition)
         else:
             item = IntervalCondition()
         super().__init__(UI_TITLE_INTERVALCOND, tasks_available, item)
@@ -34,7 +34,11 @@ class form_IntervalCondition(form_Condition):
         # parameters section
         l_intervalTime = ttk.Label(area, text=UI_FORM_DELAYSPEC)
         e_intervalTime = ttk.Entry(area)
-        cb_timeUnit = ttk.Combobox(area, values=[UI_TIME_SECONDS, UI_TIME_MINUTES, UI_TIME_HOURS], state='readonly')
+        cb_timeUnit = ttk.Combobox(
+            area,
+            values=[UI_TIME_SECONDS, UI_TIME_MINUTES, UI_TIME_HOURS],
+            state="readonly",
+        )
         pad = ttk.Frame(area)
 
         # arrange top items in the grid
@@ -48,8 +52,8 @@ class form_IntervalCondition(form_Condition):
         area.rowconfigure(1, weight=1)
 
         # bind data to widgets
-        self.data_bind('idle_time', e_intervalTime, TYPE_INT, lambda x: x > 0)
-        self.data_bind('time_unit', cb_timeUnit, TYPE_STRING)
+        self.data_bind("idle_time", e_intervalTime, TYPE_INT, lambda x: x > 0)
+        self.data_bind("time_unit", cb_timeUnit, TYPE_STRING)
 
         # propagate widgets that need to be accessed
         # NOTE: no data to propagate
@@ -57,29 +61,34 @@ class form_IntervalCondition(form_Condition):
         # update the form
         self._updateform()
 
-
     def _updateform(self):
         super()._updateform()
         if self._item:
-            if self._item.interval_seconds is not None and self._item.interval_seconds % 3600 == 0:
+            if (
+                self._item.interval_seconds is not None
+                and self._item.interval_seconds % 3600 == 0
+            ):
                 intv = int(self._item.interval_seconds / 3600)
                 intvu = UI_TIME_HOURS
-            elif self._item.interval_seconds is not None and self._item.interval_seconds % 60 == 0:
+            elif (
+                self._item.interval_seconds is not None
+                and self._item.interval_seconds % 60 == 0
+            ):
                 intv = int(self._item.interval_seconds / 60)
                 intvu = UI_TIME_MINUTES
             else:
                 intv = self._item.interval_seconds
                 intvu = UI_TIME_SECONDS
-            self.data_set('idle_time', intv)
-            self.data_set('time_unit', intvu)
+            self.data_set("idle_time", intv)
+            self.data_set("time_unit", intvu)
         else:
-            self.data_set('idle_time', DEFAULT_INTERVAL_TIME)
-            self.data_set('time_unit', DEFAULT_INTERVAL_UNIT)
+            self.data_set("idle_time", DEFAULT_INTERVAL_TIME)
+            self.data_set("time_unit", DEFAULT_INTERVAL_UNIT)
 
     def _updatedata(self):
         super()._updatedata()
-        intv = self.data_get('idle_time')
-        intvu = self.data_get('time_unit')
+        intv = self.data_get("idle_time")
+        intvu = self.data_get("time_unit")
         if intv is not None:
             if intvu == UI_TIME_HOURS:
                 self._item.interval_seconds = intv * 3600

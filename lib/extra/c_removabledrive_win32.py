@@ -23,7 +23,6 @@ from ..items.cond_wmi import WMICondition
 import sys
 
 
-
 # resource strings (not internationalized for the moment)
 ITEM_HR_NAME = "Removable Drive Available Condition"
 
@@ -49,17 +48,16 @@ def _available():
     return False
 
 
-
 # the specific item is derived from the actual parent item
 class RemovableDrivePresent(WMICondition):
 
     # availability at class level: these variables *MUST* be set for all items
-    item_type = 'wmi'
-    item_subtype = 'removable_drive'
+    item_type = "wmi"
+    item_subtype = "removable_drive"
     item_hrtype = ITEM_HR_NAME
     available = _available()
 
-    def __init__(self, t: items.Table=None) -> None:
+    def __init__(self, t: items.Table = None) -> None:
         # first initialize the base class (mandatory)
         WMICondition.__init__(self, t)
 
@@ -71,17 +69,17 @@ class RemovableDrivePresent(WMICondition):
 
         # initializing from a table should always have this form:
         if t:
-            assert(t.get('type') == self.type)
-            self.tags = t.get('tags')
-            assert(isinstance(self.tags, items.Table))
-            assert(self.tags.get('subtype') == self.subtype)
+            assert t.get("type") == self.type
+            self.tags = t.get("tags")
+            assert isinstance(self.tags, items.Table)
+            assert self.tags.get("subtype") == self.subtype
 
         # while creating a new item must always initialize specific parameters
         else:
             self.tags = table()
-            self.tags.append('subtype', self.subtype)
-            self.tags.append('drive_label', _DEFAULT_DRIVE_LABEL)
-            self.tags.append('drive_letter', _DEFAULT_DRIVE_LETTER)
+            self.tags.append("subtype", self.subtype)
+            self.tags.append("drive_label", _DEFAULT_DRIVE_LABEL)
+            self.tags.append("drive_letter", _DEFAULT_DRIVE_LETTER)
 
         self.updateitem()
 
@@ -90,24 +88,24 @@ class RemovableDrivePresent(WMICondition):
 
         # the check is performed using a WMI query: [System.IO.DriveType] is
         # a system enum, and ::Removable is the fixed value 2;
-        label = self.tags.get('drive_label', _DEFAULT_DRIVE_LABEL)
-        letter = self.tags.get('drive_letter', _DEFAULT_DRIVE_LETTER)
+        label = self.tags.get("drive_label", _DEFAULT_DRIVE_LABEL)
+        letter = self.tags.get("drive_letter", _DEFAULT_DRIVE_LETTER)
         self.query = "SELECT * FROM Win32_Volume WHERE DriveType=2"
         self.result_check = [
             {
-                'index': 0,
-                'field': "Label",
-                'operator': "eq",
-                'value': label,
+                "index": 0,
+                "field": "Label",
+                "operator": "eq",
+                "value": label,
             },
         ]
         if letter:
             self.result_check.append(
                 {
-                    'index': 0,
-                    'field': "Label",
-                    'operator': "eq",
-                    'value': label,
+                    "index": 0,
+                    "field": "Label",
+                    "operator": "eq",
+                    "value": label,
                 }
             )
         self.result_check_all = True
@@ -122,7 +120,7 @@ class form_RemovableDrivePresent(form_Condition):
 
         # check that item is the expected one for safety, build one by default
         if item:
-            assert(isinstance(item, RemovableDrivePresent))
+            assert isinstance(item, RemovableDrivePresent)
         else:
             item = RemovableDrivePresent()
         super().__init__(_UI_FORM_TITLE, tasks_available, item)
@@ -138,25 +136,29 @@ class form_RemovableDrivePresent(form_Condition):
         # build the UI elements as needed and configure the layout
         l_driveLabel = ttk.Label(area, text=_UI_FORM_REMOVABLEDRIVE_LABEL_SC)
         e_driveLabel = ttk.Entry(area)
-        self.data_bind('drive_label', e_driveLabel, TYPE_STRING)
+        self.data_bind("drive_label", e_driveLabel, TYPE_STRING)
         sep1 = ttk.Separator(area)
 
         ck_specifyLetter = ttk.Checkbutton(area, text=_UI_FORM_SPECIFY_DRIVE_LETTER)
         l_driveLetter = ttk.Label(area, text=_UI_FORM_EXPECTED_LETTER_SC)
-        cb_driveLetter = ttk.Combobox(area, values=drive_letters, state='readonly')
+        cb_driveLetter = ttk.Combobox(area, values=drive_letters, state="readonly")
 
         l_driveLabel.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         e_driveLabel.grid(row=0, column=1, sticky=tk.NSEW, padx=PAD, pady=PAD)
         sep1.grid(row=1, column=0, columnspan=2, sticky=tk.EW, pady=PAD)
-        ck_specifyLetter.grid(row=2, column=0, columnspan=2, sticky=tk.W, padx=PAD, pady=PAD)
+        ck_specifyLetter.grid(
+            row=2, column=0, columnspan=2, sticky=tk.W, padx=PAD, pady=PAD
+        )
         l_driveLetter.grid(row=3, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         cb_driveLetter.grid(row=3, column=1, sticky=tk.NSEW, padx=PAD, pady=PAD)
 
-        self.data_bind('specify_letter', ck_specifyLetter)
-        self.data_bind('drive_letter', cb_driveLetter, TYPE_STRING)
+        self.data_bind("specify_letter", ck_specifyLetter)
+        self.data_bind("drive_letter", cb_driveLetter, TYPE_STRING)
 
-        ck_specifyLetter.bind('<ButtonPress-1>', lambda _: self._check_specify_letter())
-        ck_specifyLetter.bind('<KeyPress-space>', lambda _: self._check_specify_letter())
+        ck_specifyLetter.bind("<ButtonPress-1>", lambda _: self._check_specify_letter())
+        ck_specifyLetter.bind(
+            "<KeyPress-space>", lambda _: self._check_specify_letter()
+        )
 
         area.columnconfigure(1, weight=1)
 
@@ -170,33 +172,34 @@ class form_RemovableDrivePresent(form_Condition):
         # we use the opposite of the value because of <ButtonPress-1>: anyway
         # the <ButtonRelease-1> counterpart does not work so well (same thing
         # for <KeyPress-space>, while <KeyRelease-space> does better)
-        not_spec = self.data_get('specify_letter')
+        not_spec = self.data_get("specify_letter")
         if not_spec:
             self._cb_driveLetter.config(state=tk.DISABLED)
-            self._item.tags['drive_letter'] = ""
+            self._item.tags["drive_letter"] = ""
         else:
-            self._cb_driveLetter.config(state='readonly')
-            sel = self.data_get('drive_letter') or "D:"
-            self._item.tags['drive_letter'] = sel
+            self._cb_driveLetter.config(state="readonly")
+            sel = self.data_get("drive_letter") or "D:"
+            self._item.tags["drive_letter"] = sel
 
     # update the form with the specific parameters (usually in the `tags`)
     def _updateform(self):
-        self.data_set('drive_label', self._item.tags.get('drive_label'))
-        if not self._item.tags.get('drive_letter'):
-            self.data_set('specify_letter', False)
+        self.data_set("drive_label", self._item.tags.get("drive_label"))
+        if not self._item.tags.get("drive_letter"):
+            self.data_set("specify_letter", False)
             self._cb_driveLetter.config(state=tk.DISABLED)
         else:
-            self.data_set('specify_letter', True)
-            self._cb_driveLetter.config(state='readonly')
+            self.data_set("specify_letter", True)
+            self._cb_driveLetter.config(state="readonly")
         return super()._updateform()
 
     # update the item from the form elements (usually update `tags`)
     def _updatedata(self):
-        self._item.tags['drive_label'] = self.data_get('drive_label')
-        self._item.tags['drive_letter'] = self.data_get('drive_letter') if self.data_get('specify_letter') else ""
+        self._item.tags["drive_label"] = self.data_get("drive_label")
+        self._item.tags["drive_letter"] = (
+            self.data_get("drive_letter") if self.data_get("specify_letter") else ""
+        )
         self._item.updateitem()
         return super()._updatedata()
-
 
 
 # function common to all extra modules to declare class items as factories
