@@ -91,7 +91,8 @@ class LowBatteryCondition(DBusCondition):
 
         # detect battery by querying DBus
         # see https://upower.freedesktop.org/docs/Device.html
-        import dbus
+        import dbus # type: ignore
+
         bus = dbus.SystemBus()
         service_name = "org.freedesktop.UPower"
         device_service_name = "org.freedesktop.UPower.Device"

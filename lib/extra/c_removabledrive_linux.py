@@ -110,7 +110,8 @@ class form_RemovableDrivePresent(form_Condition):
         super().__init__(_UI_FORM_TITLE, tasks_available, item)
 
         # now find drive names
-        import dbus
+        import dbus # type: ignore
+
         prefix = "/org/freedesktop/UDisks2/drives/"
         bus = dbus.SystemBus()
         o = bus.get_object(
