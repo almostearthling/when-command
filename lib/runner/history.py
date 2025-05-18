@@ -14,19 +14,19 @@ class History(object):
         self._open_records_timing = {}
 
     def append(self, record):
-        time = record['header']['time']
+        time = record["header"]["time"]
         # application = record['header']['application']
         # level = record['header']['level']
         # emitter = record['contents']['context']['emitter']
         # action = record['contents']['context']['action']
-        item = record['contents']['context']['item']
-        item_id = record['contents']['context']['item_id']
-        when = record['contents']['message_type']['when']
-        status = record['contents']['message_type']['status']
-        message = record['contents']['message']
+        item = record["contents"]["context"]["item"]
+        item_id = record["contents"]["context"]["item_id"]
+        when = record["contents"]["message_type"]["when"]
+        status = record["contents"]["message_type"]["status"]
+        message = record["contents"]["message"]
         itemstr = "%s/%s" % (item, item_id)
-        if when == 'HIST':
-            if status == 'START':
+        if when == "HIST":
+            if status == "START":
                 self._open_records_timing[itemstr] = time
             else:
                 end = datetime.fromisoformat(time)
@@ -35,18 +35,20 @@ class History(object):
                 duration = end - start
                 if len(self._history) == self._maxlen:
                     self._history = self._history[1:]
-                ident, msg = message.split(' ', 1)
-                outcome, t = ident.split('/')
-                _, trigger = t.split(':')
-                self._history.append({
-                    'time': time,
-                    'task': item,
-                    'task_id': item_id,
-                    'trigger': trigger,
-                    'duration': duration,
-                    'success': outcome,
-                    'message': msg,
-                })
+                ident, msg = message.split(" ", 1)
+                outcome, t = ident.split("/")
+                _, trigger = t.split(":")
+                self._history.append(
+                    {
+                        "time": time,
+                        "task": item,
+                        "task_id": item_id,
+                        "trigger": trigger,
+                        "duration": duration,
+                        "success": outcome,
+                        "message": msg,
+                    }
+                )
         else:
             # ignore the message
             pass

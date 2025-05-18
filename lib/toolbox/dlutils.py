@@ -15,7 +15,6 @@ GITHUB_BASE = "github.com/almostearthling"
 GITHUB_PROTOCOL = "https"
 
 
-
 # retrieve an asset from an URL
 def retrieve_asset(URL, verbose=False):
     try:
@@ -38,7 +37,6 @@ def retrieve_text_asset(URL, verbose=False):
         return None
 
 
-
 # download an asset identified by an URL to a provided directory or to
 # the TEMP directory if none is specified
 def download_asset(URL, local=None, verbose=False):
@@ -46,7 +44,7 @@ def download_asset(URL, local=None, verbose=False):
     fname = os.path.basename(sr.path)
     if local is None:
         try:
-            local = os.environ['TEMP']
+            local = os.environ["TEMP"]
         except KeyError:
             tmpdir = "Temp" if sys.platform == "win32" else "tmp"
             local = os.path.join(get_default_configdir(), tmpdir)
@@ -60,7 +58,7 @@ def download_asset(URL, local=None, verbose=False):
     dlname = os.path.join(local, fname)
     b = retrieve_asset(URL)
     if b is not None:
-        with open(dlname, 'wb') as f:
+        with open(dlname, "wb") as f:
             f.write(b)
         return dlname
     else:
@@ -71,10 +69,10 @@ def download_asset(URL, local=None, verbose=False):
 def get_repo_base_url(repo):
     return f"{GITHUB_PROTOCOL}://{GITHUB_BASE}/{repo}"
 
+
 def get_repo_latest_releases(repo):
     base = get_repo_base_url(repo)
     return f"{base}/releases/latest/download"
-
 
 
 __all__ = [

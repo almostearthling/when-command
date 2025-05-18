@@ -16,10 +16,9 @@ from tomlkit import items, table
 
 import tkinter as tk
 import ttkbootstrap as ttk
-from tkinter import messagebox
 
 from ..i18n.strings import *
-from ..utility import check_not_none, append_not_none
+from ..utility import whenever_has_dbus
 
 from ..forms.ui import *
 
@@ -28,14 +27,11 @@ from ..forms.ui import *
 from ..forms.cond import form_Condition
 
 # import item to derive from
-from ..items.cond_command import CommandCondition
+from ..items.cond_dbus import DBusCondition
 
 
 # imports specific to this module
 import sys
-import subprocess
-import shutil
-
 
 
 # resource strings (not internationalized for the moment)
@@ -48,39 +44,31 @@ _UI_FORM_LOWBATT_THRESHOLD_SC = "Battery charge is below:"
 
 # default values
 _DEFAULT_THRESHOLD_VALUE = 40
-_CHECK_EXTRA_DELAY = 300
+_CHECK_EXTRA_DELAY = 120
 
 
 # check for availability: this version of the check is only for Linux, the
 # one for Windows is in a separate file, and availability is in fact mutually
 # exclusive: with this check we assume that this module is only run on Linux
 def _available():
-    if sys.platform == 'linux':
-        if (
-            shutil.which("upower") and
-            shutil.which("bash") and
-            shutil.which("grep") and
-            shutil.which("awk") and
-            shutil.which("sed")
-        ):
-            return True
-        return False
+    if sys.platform == "linux":
+        return whenever_has_dbus()
     else:
         return False
 
 
 # the specific item is derived from the actual parent item
-class LowBatteryCondition(CommandCondition):
+class LowBatteryCondition(DBusCondition):
 
     # availability at class level: these variables *MUST* be set for all items
-    item_type = 'command'
-    item_subtype = 'battery_low_linux'
+    item_type = "dbus"
+    item_subtype = "battery_low"
     item_hrtype = ITEM_HR_NAME
     available = _available()
 
-    def __init__(self, t: items.Table=None) -> None:
+    def __init__(self, t: items.Table = None) -> None:
         # first initialize the base class (mandatory)
-        CommandCondition.__init__(self, t)
+        DBusCondition.__init__(self, t)
 
         # then set type (same as base), subtype and human readable name: this
         # is mandatory in order to correctly display the item in all forms
@@ -90,38 +78,60 @@ class LowBatteryCondition(CommandCondition):
 
         # initializin from a table should always have this form:
         if t:
-            assert(t.get('type') == self.type)
-            self.tags = t.get('tags')
-            assert(isinstance(self.tags, items.Table))
-            assert(self.tags.get('subtype') == self.subtype)
+            assert t.get("type") == self.type
+            self.tags = t.get("tags")
+            assert isinstance(self.tags, items.Table)
+            assert self.tags.get("subtype") == self.subtype
 
         # while creating a new item must always initialize specific parameters
         else:
             self.tags = table()
-            self.tags.append('subtype', self.subtype)
-            self.tags.append('threshold', _DEFAULT_THRESHOLD_VALUE)
-        self._batterypath = subprocess.run(
-            ['bash', '-c', "upower -e | grep -F 'battery'"],
-            capture_output=True,
-        ).stdout.decode("utf-8").strip()
+            self.tags.append("subtype", self.subtype)
+            self.tags.append("threshold", _DEFAULT_THRESHOLD_VALUE)
+
+        # detect battery by querying DBus
+        # see https://upower.freedesktop.org/docs/Device.html
+        import dbus # type: ignore
+
+        bus = dbus.SystemBus()
+        service_name = "org.freedesktop.UPower"
+        device_service_name = "org.freedesktop.UPower.Device"
+        props_name = "org.freedesktop.DBus.Properties"
+        upower_obj = bus.get_object(service_name, "/org/freedesktop/UPower")
+        upower = dbus.Interface(upower_obj, service_name)
+        all_devices = upower.EnumerateDevices()
+        all_batteries = list(
+            x for x in all_devices if str(x).split("/")[-1].startswith("battery_")
+        )
+        batteries = []
+        for x in all_batteries:
+            batt_obj = bus.get_object(service_name, x)
+            batt = dbus.Interface(batt_obj, props_name)
+            if batt.Get(device_service_name, "PowerSupply"):
+                batteries.append(str(x))
+        # WARNING: this is completely arbitrary
+        batteries.sort()
+        self._batterypath = batteries.pop(0)
         self.updateitem()
 
     def updateitem(self):
         # set base item properties according to specific parameters in `tags`
-        threshold = self.tags.get('threshold', _DEFAULT_THRESHOLD_VALUE)
-        battery = self._batterypath
-        cmdline = (
-            f"( upower -i {battery} | grep -F 'state:' | grep -F 'discharging' > /dev/null 2>&1 ) && " +
-            f"[ `upower -i {battery} | grep -F 'percentage:' | awk '{{print $2}}' | sed 's/%//g'` -lt {threshold} ] && " +
-            f"echo OK"
+        # for the values of `State` and `Percentage` see the above link
+        threshold = int(self.tags.get("threshold", _DEFAULT_THRESHOLD_VALUE))
+        self.bus = ":system"
+        self.service = "org.freedesktop.UPower"
+        self.object_path = self._batterypath
+        self.interface = "org.freedesktop.DBus.Properties"
+        self.method = "GetAll"
+        self.parameter_call = '["org.freedesktop.UPower.Device"]'
+        self.parameter_check = (
+            """[
+            { "index": [0, "State"], "operator": "eq", "value": 2 },
+            { "index": [0, "Percentage"], "operator": "lt", "value": %s }
+        ]"""
+            % threshold
         )
-        self.command = "bash"
-        self.command_arguments = [
-            "-c",
-            cmdline,
-        ]
-        self.success_stdout = "OK"
-        self.startup_path = "."
+        self.parameter_check_all = True
         self.check_after = _CHECK_EXTRA_DELAY
         self.recur_after_failed_check = True
 
@@ -133,7 +143,7 @@ class form_LowBatteryCondition(form_Condition):
 
         # check that item is the expected one for safety, build one by default
         if item:
-            assert(isinstance(item, LowBatteryCondition))
+            assert isinstance(item, LowBatteryCondition)
         else:
             item = LowBatteryCondition()
         super().__init__(_UI_FORM_TITLE, tasks_available, item)
@@ -147,7 +157,7 @@ class form_LowBatteryCondition(form_Condition):
         l_threshold = ttk.Label(area, text=_UI_FORM_LOWBATT_THRESHOLD_SC)
         e_threshold = ttk.Entry(area)
         l_percent = ttk.Label(area, text="%")
-        self.data_bind('threshold', e_threshold, TYPE_INT, lambda t: t > 0 and t < 100)
+        self.data_bind("threshold", e_threshold, TYPE_INT, lambda t: t > 0 and t < 100)
 
         l_threshold.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         e_threshold.grid(row=0, column=1, sticky=tk.NSEW, padx=PAD, pady=PAD)
@@ -160,15 +170,14 @@ class form_LowBatteryCondition(form_Condition):
 
     # update the form with the specific parameters (usually in the `tags`)
     def _updateform(self):
-        self.data_set('threshold', self._item.tags.get('threshold'))
+        self.data_set("threshold", self._item.tags.get("threshold"))
         return super()._updateform()
 
     # update the item from the form elements (usually update `tags`)
     def _updatedata(self):
-        self._item.tags['threshold'] = self.data_get('threshold')
+        self._item.tags["threshold"] = self.data_get("threshold")
         self._item.updateitem()
         return super()._updatedata()
-
 
 
 # function common to all extra modules to declare class items as factories

@@ -12,6 +12,8 @@ Most of the interface of this release of **When** tries to be similar to the old
 
 The [documentation](https://almostearthling.github.io/when-command/) almost covers all aspects of **When** .
 
+> **Warning:** as of version 1.10 the configuration file format has changed; while it is safe to use an old configuration file with the resident [tray application](https://almostearthling.github.io/when-command/tray.html), some of the items will not be recognized or edited by the configuration utility. Please use the `--fix-config` [tool](https://almostearthling.github.io/when-command/cli.html#toolbox) to safely convert an old configuration file to the new format, which by the way implements specific items in a more efficient way.
+
 
 ## Usage
 

@@ -2,7 +2,7 @@
 
 from lib.i18n.strings import *
 
-from tomlkit import table
+from tomlkit import table, items
 from ..utility import check_not_none
 
 from .event import Event
@@ -14,12 +14,12 @@ class CommandEvent(Event):
     # availability at class level
     available = False
 
-    def __init__(self, t: table=None) -> None:
+    def __init__(self, t: items.Table = None) -> None:
         Event.__init__(self, t)
-        self.type = 'cli'
+        self.type = "cli"
         self.hrtype = ITEM_EVENT_CLI
         if t:
-            assert(t.get('type') == self.type)
+            assert t.get("type") == self.type
 
     def as_table(self):
         if not check_not_none(

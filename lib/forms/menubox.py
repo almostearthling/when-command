@@ -47,9 +47,9 @@ class _btn_MenuEntry(ttk.Button):
 
     def enable(self, enabled=True):
         if enabled:
-            active=['!disabled']
+            active = ["!disabled"]
         else:
-            active=['disabled']
+            active = ["disabled"]
         self.state(active)
 
 
@@ -63,6 +63,7 @@ class BtnAbout(_btn_MenuEntry):
             enabled=enabled,
         )
 
+
 class BtnConfig(_btn_MenuEntry):
     def __init__(self, master, text=BTN_CONFIG_D, command=None, enabled=True):
         super().__init__(
@@ -72,6 +73,7 @@ class BtnConfig(_btn_MenuEntry):
             command=command,
             enabled=enabled,
         )
+
 
 class BtnPause(_btn_MenuEntry):
     def __init__(self, master, text=BTN_PAUSE, command=None, enabled=True):
@@ -83,6 +85,7 @@ class BtnPause(_btn_MenuEntry):
             enabled=enabled,
         )
 
+
 class BtnResume(_btn_MenuEntry):
     def __init__(self, master, text=BTN_RESUME, command=None, enabled=True):
         super().__init__(
@@ -92,6 +95,7 @@ class BtnResume(_btn_MenuEntry):
             command=command,
             enabled=enabled,
         )
+
 
 class BtnReset(_btn_MenuEntry):
     def __init__(self, master, text=BTN_RESETCONDS, command=None, enabled=True):
@@ -103,6 +107,7 @@ class BtnReset(_btn_MenuEntry):
             enabled=enabled,
         )
 
+
 class BtnHistory(_btn_MenuEntry):
     def __init__(self, master, text=BTN_HISTORY_D, command=None, enabled=True):
         super().__init__(
@@ -112,6 +117,7 @@ class BtnHistory(_btn_MenuEntry):
             command=command,
             enabled=enabled,
         )
+
 
 class BtnLeave(_btn_MenuEntry):
     def __init__(self, master, text=BTN_EXIT, command=None, enabled=True):
@@ -124,7 +130,6 @@ class BtnLeave(_btn_MenuEntry):
         )
 
 
-
 # this window mimics the menu, for use on systems that do not support
 # a proper tray icon menu: activated by a left click on the icon
 class form_MenuBox(ApplicationForm):
@@ -134,7 +139,9 @@ class form_MenuBox(ApplicationForm):
         style = ttk.Style()
         style.configure(style="menubutton.TButton", anchor=tk.W)
 
-        super().__init__(UI_TITLE_MENU, AppConfig.get('SIZE_MENU_BOX'), None, (BBOX_CANCEL,), main)
+        super().__init__(
+            UI_TITLE_MENU, AppConfig.get("SIZE_MENU_BOX"), None, (BBOX_CANCEL,), main
+        )
         self._image = ImageTk.PhotoImage(get_image(APP_BITMAP))
         self._root = None
 
@@ -156,21 +163,20 @@ class form_MenuBox(ApplicationForm):
 
         btn_Exit = BtnLeave(area, command=self.on_exit)
 
-        btn_Pause.grid(row = 1, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
-        btn_Resume.grid(row = 2, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
-        btn_Reset.grid(row = 3, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
-        btn_History.grid(row = 4, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
-        sep1.grid(row = 10, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        btn_Pause.grid(row=1, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        btn_Resume.grid(row=2, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        btn_Reset.grid(row=3, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        btn_History.grid(row=4, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        sep1.grid(row=10, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
 
-        btn_Config.grid(row = 11, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
-        btn_About.grid(row = 12, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
-        sep2.grid(row = 20, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        btn_Config.grid(row=11, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        btn_About.grid(row=12, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        sep2.grid(row=20, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
 
-        btn_Exit.grid(row = 21, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        btn_Exit.grid(row=21, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
 
         # expand appropriate sections
         area.columnconfigure(1, weight=1)
-
 
     def set_root(self, root):
         self._root = root
@@ -179,31 +185,31 @@ class form_MenuBox(ApplicationForm):
     # therefore they are implemented as messages passed to the root window
     def on_configure(self):
         if self._root:
-            self._root.send_event('<<OpenCfgApp>>')
+            self._root.send_event("<<OpenCfgApp>>")
 
     def on_about(self):
         if self._root:
-            self._root.send_event('<<OpenAboutBox>>')
+            self._root.send_event("<<OpenAboutBox>>")
 
     def on_menu_box(self):
         if self._root:
-            self._root.send_event('<<OpenMenuBox>>')
+            self._root.send_event("<<OpenMenuBox>>")
 
     def on_pause_scheduler(self):
         if self._root:
-            self._root.send_event('<<SchedPause>>')
+            self._root.send_event("<<SchedPause>>")
 
     def on_resume_scheduler(self):
         if self._root:
-            self._root.send_event('<<SchedResume>>')
+            self._root.send_event("<<SchedResume>>")
 
     def on_reset_conditions(self):
         if self._root:
-            self._root.send_event('<<SchedResetConditions>>')
+            self._root.send_event("<<SchedResetConditions>>")
 
     def on_history(self):
         if self._root:
-            self._root.send_event('<<OpenHistory>>')
+            self._root.send_event("<<OpenHistory>>")
 
     # this sends an EXIT event to the main loop, so that the invisible
     # main window is destroyed and all the cleanup is performed

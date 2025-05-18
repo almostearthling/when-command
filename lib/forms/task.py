@@ -25,7 +25,7 @@ _RE_VALIDNAME = re.compile("^[a-zA-Z_][a-zA-Z0-9_]*$")
 class form_Task(ApplicationForm):
 
     def __init__(self, title, item=None):
-        size = AppConfig.get('SIZE_EDITOR_FORM')
+        size = AppConfig.get("SIZE_EDITOR_FORM")
         bbox = (BBOX_OK, BBOX_CANCEL)
         super().__init__(title, size, None, bbox)
 
@@ -50,14 +50,16 @@ class form_Task(ApplicationForm):
         l_itemName.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         e_itemName.grid(row=0, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
         sep.grid(row=1, column=0, columnspan=2, sticky=tk.EW, pady=PAD)
-        self._sub_contents.grid(row=99, column=0, columnspan=2, sticky=tk.EW)
+        self._sub_contents.grid(row=99, column=0, columnspan=2, sticky=tk.NSEW)
 
         # expand appropriate sections
         area.rowconfigure(index=99, weight=1)
         area.columnconfigure(1, weight=1)
 
         # bind data to widgets
-        self.data_bind('@name', e_itemName, TYPE_STRING, lambda x: _RE_VALIDNAME.match(x))
+        self.data_bind(
+            "@name", e_itemName, TYPE_STRING, lambda x: _RE_VALIDNAME.match(x)
+        )
 
         # finally set the item
         if item:
@@ -66,37 +68,35 @@ class form_Task(ApplicationForm):
             self.reset_item()
         self.changed = False
 
-
     # contents is the root for slave widgets
     @property
     def contents(self):
         return self._sub_contents
 
-
     def _updateform(self):
         if self._item:
-            self.data_set('@name', self._item.name)
+            self.data_set("@name", self._item.name)
         else:
-            self.data_set('@name', '')
+            self.data_set("@name", "")
 
     # the data update utility loads data into the item
     def _updatedata(self):
-        name = self.data_get('@name')
+        name = self.data_get("@name")
         if name is not None:
             self._item.name = name
 
-
     # set and remove the associated item
     def set_item(self, item):
-        assert(isinstance(item, Task))
+        assert isinstance(item, Task)
         try:
-            self._item = item.__class__(item.as_table())    # get an exact copy to mess with
+            self._item = item.__class__(
+                item.as_table()
+            )  # get an exact copy to mess with
         except ValueError:
-            self._item = item                               # item was newly created: use it
+            self._item = item  # item was newly created: use it
 
     def reset_item(self):
         self._item = None
-
 
     # command button reactions: cancel deletes the current item so that None
     # is returned upon dialog close, while ok finalizes item initialization
@@ -106,7 +106,7 @@ class form_Task(ApplicationForm):
         return super().exit_cancel()
 
     def exit_ok(self):
-        name = self.data_get('@name')
+        name = self.data_get("@name")
         if name is not None:
             self._updatedata()
             return super().exit_ok()

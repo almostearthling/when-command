@@ -16,9 +16,15 @@ not_loaded = {}
 # in the directory to actually serve as a template; note that, since all
 # modules should export the `factories()` function, the names of the item
 # and form classes is ininfluent -- if not for default item names in the
-# editor forms
+# editor forms; factory class names can also be repeated (for example for
+# items that do the same things on different platforms) since the file name
+# of the module acts as an index, and is necessarily unique
 _basepath = os.path.dirname(__file__)
-for elem in [x[:-3] for x in os.listdir(_basepath) if x.lower().endswith('.py') and not x.startswith('_')]:
+for elem in [
+    x[:-3]
+    for x in os.listdir(_basepath)
+    if x.lower().endswith(".py") and not x.startswith("_")
+]:
     try:
         exec("from lib.extra import %s" % elem)
         factories[elem] = eval("%s.factories()" % elem)
@@ -27,7 +33,7 @@ for elem in [x[:-3] for x in os.listdir(_basepath) if x.lower().endswith('.py') 
 
 
 # only export the useful objects, that is, the two dictionaries
-__all__ = ['factories', 'not_loaded']
+__all__ = ["factories", "not_loaded"]
 
 
 # end

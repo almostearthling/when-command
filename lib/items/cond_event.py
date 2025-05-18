@@ -2,7 +2,7 @@
 
 from lib.i18n.strings import *
 
-from tomlkit import table
+from tomlkit import table, items
 from ..utility import check_not_none, append_not_none
 
 from .cond import Condition
@@ -18,12 +18,12 @@ class EventCondition(Condition):
     # availability at class level
     available = True
 
-    def __init__(self, t: table=None) -> None:
+    def __init__(self, t: items.Table = None) -> None:
         Condition.__init__(self, t)
-        self.type = 'event'
+        self.type = "event"
         self.hrtype = ITEM_COND_EVENT
         if t:
-            assert(t.get('type') == self.type)
+            assert t.get("type") == self.type
 
     def as_table(self):
         if not check_not_none(

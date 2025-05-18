@@ -15,7 +15,7 @@
 # created in the configuration file and recognized by the wrapper when the
 # configuration is loaded back.
 
-from tomlkit import items, table
+from tomlkit import table, items
 from ..utility import check_not_none, append_not_none, generate_item_name
 
 
@@ -28,19 +28,19 @@ class Condition(object):
     # availability at class level
     available = False
 
-    def __init__(self, t: table=None) -> None:
+    def __init__(self, t: items.Table = None) -> None:
         self.type = None
         self.hrtype = None
         if t:
-            self.name = t.get('name')
-            self.execute_sequence = t.get('execute_sequence', True)
-            self.break_on_failure = t.get('break_on_failure', False)
-            self.break_on_success = t.get('break_on_success', False)
-            self.suspended = t.get('suspended', False)
-            self.recurring = t.get('recurring', False)
-            self.max_tasks_retries = t.get('max_tasks_retries', 0)
-            self.tasks = t.get('tasks')
-            tags = t.get('tags')
+            self.name = t.get("name")
+            self.execute_sequence = t.get("execute_sequence", True)
+            self.break_on_failure = t.get("break_on_failure", False)
+            self.break_on_success = t.get("break_on_success", False)
+            self.suspended = t.get("suspended", False)
+            self.recurring = t.get("recurring", False)
+            self.max_tasks_retries = t.get("max_tasks_retries", 0)
+            self.tasks = t.get("tasks")
+            tags = t.get("tags")
             if tags:
                 self.tags = dict(tags)
             else:
@@ -59,6 +59,13 @@ class Condition(object):
     def __str__(self):
         return "[[condition]]\n%s" % self.as_table().as_string()
 
+    @property
+    def signature(self):
+        s = "cond:%s" % self.type
+        if 'subtype' in self.__dict__:
+            s += ":%s" % self.subtype
+        return s
+
     def as_table(self):
         if not check_not_none(
             self.name,
@@ -66,16 +73,16 @@ class Condition(object):
         ):
             raise ValueError("Invalid Condition: mandatory field(s) missing")
         t = table()
-        t.append('name', self.name)
-        t.append('type', self.type)
-        t.append('tasks', self.tasks)
-        t = append_not_none(t, 'recurring', self.recurring)
-        t = append_not_none(t, 'max_tasks_retries', self.max_tasks_retries)
-        t = append_not_none(t, 'execute_sequence', self.execute_sequence)
-        t = append_not_none(t, 'break_on_failure', self.break_on_failure)
-        t = append_not_none(t, 'break_on_success', self.break_on_success)
-        t = append_not_none(t, 'suspended', self.suspended)
-        t = append_not_none(t, 'tags', self.tags)
+        t.append("name", self.name)
+        t.append("type", self.type)
+        t.append("tasks", self.tasks)
+        t = append_not_none(t, "recurring", self.recurring)
+        t = append_not_none(t, "max_tasks_retries", self.max_tasks_retries)
+        t = append_not_none(t, "execute_sequence", self.execute_sequence)
+        t = append_not_none(t, "break_on_failure", self.break_on_failure)
+        t = append_not_none(t, "break_on_success", self.break_on_success)
+        t = append_not_none(t, "suspended", self.suspended)
+        t = append_not_none(t, "tags", self.tags)
         return t
 
 

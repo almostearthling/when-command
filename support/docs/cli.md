@@ -35,6 +35,7 @@ The `tool` command provides various utilities that can help in the setup of **Wh
 * `--create-icons`: create the **When** desktop shortcuts (for both the configuration utility and for the resident application) for the current user in the _Start_ or _Applications_ menu -- depending on the host platform; accepts the following modifiers
   * `--autostart`: (option) creates a shortcut that launches the resident version of **When** when the user logs in
   * `--desktop`: (option) also creates icons on the desktop[^1]
+* `--fix-config`: fix legacy configuration files converting [old item definitions](configfile.md#legacy-configuration-files) to new ones
 * ...
 * `--quiet`: (option) applies to all the operations described above, and inhibits printing messages to the console.
 

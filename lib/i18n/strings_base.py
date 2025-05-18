@@ -4,12 +4,13 @@
 UI_APP = "When"
 UI_APP_LABEL = "When Automation Tool"
 UI_APP_COPYRIGHT = "© 2023-2025 Francesco Garosi"
-UI_APP_VERSION = "1.9.16b1"
+UI_APP_VERSION = "1.10.1b1"
 
 # item types
 ITEM_TASK = "Task"
 ITEM_TASK_COMMAND = "Command Based Task"
 ITEM_TASK_LUA = "Lua Script Based Task"
+ITEM_TASK_INTERNAL = "Internal Command Based Task"
 
 ITEM_COND = "Condition"
 ITEM_COND_COMMAND = "Command Based Condition"
@@ -18,11 +19,13 @@ ITEM_COND_INTERVAL = "Interval Based Condition"
 ITEM_COND_IDLE = "Idle Session Based Condition"
 ITEM_COND_TIME = "Time Based Condition"
 ITEM_COND_DBUS = "DBus Inspection Based Condition"
+ITEM_COND_WMI = "WMI Query Based Condition"
 ITEM_COND_EVENT = "Event Based Condition"
 
 ITEM_EVENT = "Event"
 ITEM_EVENT_FSCHANGE = "Filesystem Monitoring Based Event"
 ITEM_EVENT_DBUS = "DBus Subscription Based Event"
+ITEM_EVENT_WMI = "WMI Subscription Based Event"
 ITEM_EVENT_CLI = "Command Based Event"
 
 
@@ -152,6 +155,9 @@ UI_FORM_TESTVAL = "Test value"
 UI_FORM_SCRIPT = "Script"
 UI_FORM_COMMAND = "Command"
 UI_FORM_SEQUENCE = "Sequence"
+UI_FORM_INDEX = "Index"
+UI_FORM_FIELD = "Field"
+UI_FORM_OPERATOR = "Operator"
 
 UI_FORM_HS_TIME = "Time"
 UI_FORM_HS_TASK = "Task"
@@ -179,6 +185,7 @@ UI_FORM_TICKINTERVAL_SC = "Tick interval:"
 UI_FORM_CURRENTITEMS_SC = "Current items:"
 UI_FORM_VARNAME_SC = "Variable name:"
 UI_FORM_NEWVALUE_SC = "New value:"
+UI_FORM_VALUE_SC = "Value:"
 UI_FORM_CHECKFOR_SC = "Check for:"
 UI_FORM_CHECKAGAINST_SC = "Check against:"
 UI_FORM_TESTVAL_SC = "Test value:"
@@ -187,6 +194,9 @@ UI_FORM_DATE_SC = "Date:"
 UI_FORM_TIME_SC = "Time:"
 UI_FORM_DOW_SC = "Weekday:"
 UI_FORM_ITEM_SC = "Item:"
+UI_FORM_FIELD_SC = "Field:"
+UI_FORM_INDEX_SC = "Index:"
+UI_FORM_OPERATOR_SC = "Operator:"
 UI_FORM_CURRENTTIMESPECS_SC = "Active time specifications:"
 UI_FORM_MONITOREDFSITEMS_SC = "Monitored filesystem items:"
 UI_FORM_HISTORYITEMS_SC = "Current history:"
@@ -197,8 +207,12 @@ UI_FORM_DBUS_OBJPATH_SC = "Object path:"
 UI_FORM_DBUS_INTERFACE_SC = "Interface:"
 UI_FORM_DBUS_METHOD_SC = "Method:"
 UI_FORM_DBUS_SIGNAL_SC = "Signal:"
+UI_FORM_DBUS_RULE_SC = "Rule:"
 UI_FORM_DBUS_PARAMS_CALL_SC = "Call with the following parameters (use JSON format):"
 UI_FORM_DBUS_PARAMS_CHECK_SC = "Perform the following checks on return values (use JSON format):"
+UI_FORM_WMI_QUERY_SC = "WMI Query (WQL):"
+UI_FORM_WMI_RESULT_CHECKS_SC = "Result checks:"
+
 UI_FORM_ITEMTYPE_SC = "Choose item type:"
 UI_FORM_ITEMSUBTYPES_SC = "Available items:"
 UI_FORM_MAXTASKRETRIES_SC = "Max tasks retries:"
@@ -243,6 +257,7 @@ UI_TITLE_NEWITEM = "%s: Choose New Item" % UI_APP
 
 UI_TITLE_COMMANDTASK = "%s: Command Task Editor" % UI_APP
 UI_TITLE_LUATASK = "%s: Lua Script Task Editor" % UI_APP
+UI_TITLE_INTERNALTASK = "%s: Internal Command Task Editor" % UI_APP
 
 UI_TITLE_COMMANDCOND = "%s: Command Condition Editor" % UI_APP
 UI_TITLE_LUACOND = "%s: Lua Script Condition Editor" % UI_APP
@@ -251,10 +266,12 @@ UI_TITLE_IDLECOND = "%s: Idle Session Condition Editor" % UI_APP
 UI_TITLE_EVENTCOND = "%s: Event Condition Editor" % UI_APP
 UI_TITLE_TIMECOND = "%s: Time Condition Editor" % UI_APP
 UI_TITLE_DBUSCOND = "%s: DBus Method Condition Editor" % UI_APP
+UI_TITLE_WMICOND = "%s: WMI Query Condition Editor" % UI_APP
 
 UI_TITLE_DBUSEVENT = "%s: DBus Signal Event Editor" % UI_APP
 UI_TITLE_FSCHANGEEVENT = "%s: Filesystem Monitoring Event Editor" % UI_APP
 UI_TITLE_CLIEVENT = "%s: Direct Command Event Editor" % UI_APP
+UI_TITLE_WMIEVENT = "%s: WMI Query Event Editor" % UI_APP
 
 UI_TITLE_HISTORY = "%s: Task History" % UI_APP
 UI_TITLE_MENU = "%s: Menu" % UI_APP
@@ -284,11 +301,20 @@ UI_POPUP_INVALIDITEMNAME = "Item name is not valid"
 UI_POPUP_INVALIDPARAMETERS_T = "Some of the form fields contain invalid data:\n\n%s\n\nPlease review them before updating"
 UI_POPUP_INVALIDVARNAME = "Invalid name for variable"
 UI_POPUP_EMPTYVARVALUE = "No value provided for variable"
+UI_POPUP_EMPTYCHECKVALUE = "No value provided for check"
 UI_POPUP_INVALIDFILEORDIR = "Invalid file or directory name"
 UI_POPUP_INVALIDTIMESPEC = "Invalid or missing time specification"
 UI_POPUP_REFERENCEDTASK = "The Task is still referenced in at least\none Condition: remove any references\nbefore attempting to delete it"
 UI_POPUP_REFERENCEDCOND = "The Condition is still referenced in at least\none Event: remove any references before\nattempting to delete it"
 UI_POPUP_MISSINGEVENTCOND = "No condition specified for event"
+UI_POPUP_INVALIDOPERATOR = "The specified operator is not valid"
+UI_POPUP_INVALIDINDEX = "The specified index is not valid"
+UI_POPUP_INVALIDFIELD = "The specified field name is not valid"
+UI_POPUP_WARNFIXCONFIG = """\
+One or more items are not recognized: if the configuration
+has been generated with a previous version of When, you may
+need to run `when tool --fix-config` from the command line.
+"""
 
 
 # about box
@@ -367,6 +393,7 @@ CLI_ARG_HELP_WHENEVER = f"Path to a specific `{CLI_WHENEVER}` executable"
 CLI_ARG_HELP_QUIET = "Don't print messages to the console"
 CLI_ARG_HELP_DESKTOP = "Install program icons on the desktop too"
 CLI_ARG_HELP_AUTOSTART = f"Setup `{UI_APP}` to start when the user logs in"
+CLI_ARG_HELP_FIXCONFIG = f"Find and fix the `{CLI_WHENEVER}` configuration file across incompatible versions"
 
 CLI_ARG_HELP_CMD_START = f"Start the `{CLI_WHENEVER}` scheduler and display the tray icon"
 CLI_ARG_HELP_CMD_CONFIG = f"Start the `{UI_APP}` configuration utility"
@@ -405,6 +432,8 @@ CLI_ERR_FILE_EXISTS_SKIP = "File [bold]`%s`[/] already exists: creation skipped"
 CLI_ERR_CANNOT_COPY_SHORTCUT = "Could not copy a shortcut: [bold]`%s`[/]"
 CLI_ERR_CANNOT_SET_STARTUP = f"Could not set `{UI_APP}` to automatically run at startup"
 
+CLI_ERR_CANNOT_FIX_CONFIG = "Could not fix configuration file [bold]`%s`[/]"
+
 CLI_STATUS_INSTALLING_WHENEVER = f"Installing latest release of [bold]`{CLI_WHENEVER}`[/]..."
 CLI_STATUS_CREATING_ICONS = "Installing requested program icons..."
 
@@ -414,6 +443,10 @@ CLI_MSG_VERIFYING_CHECKSUM = "Verifying checksum of downloaded archive..."
 
 CLI_MSG_CREATING_ICON = "Creating program icon..."
 CLI_MSG_CREATING_SHORTCUT = "Creating program shortcut or desktop file..."
+
+CLI_MSG_CONVERTING_ITEM = "Converting item [bold]`%s`[/]: %s -> %s"
+CLI_MSG_BACKUP_CONFIG = "Backing up configuration to [bold]`%s`[/]"
+CLI_MSG_WRITE_NEW_CONFIG = "Writing new configuration to [bold]`%s`[/]"
 
 CLI_MSG_INSTALLATION_FINISHED = "Installation finished."
 CLI_MSG_OPERATION_FINISHED = "Operation finished."

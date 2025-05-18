@@ -14,10 +14,9 @@ from tomlkit import items, table
 
 import tkinter as tk
 import ttkbootstrap as ttk
-from tkinter import messagebox
 
 from ..i18n.strings import *
-from ..utility import check_not_none, append_not_none
+from ..utility import whenever_has_wmi
 
 from ..forms.ui import *
 
@@ -26,13 +25,11 @@ from ..forms.ui import *
 from ..forms.cond import form_Condition
 
 # import item to derive from
-from ..items.cond_command import CommandCondition
+from ..items.cond_wmi import WMICondition
 
 
 # imports specific to this module
 import sys
-import shutil
-
 
 
 # resource strings (not internationalized for the moment)
@@ -48,9 +45,9 @@ _UI_FORM_RB_CHECKFREQ_RELAXED = "Relaxed"
 
 # values for check styles
 _CHECK_EXTRA_DELAY = {
-    'pedantic': 60,
-    'normal': 120,
-    'relaxed': 300,
+    "pedantic": 60,
+    "normal": 120,
+    "relaxed": 300,
 }
 
 
@@ -59,25 +56,23 @@ _CHECK_EXTRA_DELAY = {
 # exclusive: with this check we assume that this module is only run on Windows
 def _available():
     if sys.platform.startswith("win"):
-        if shutil.which("pwsh.exe"):
+        if whenever_has_wmi():
             return True
-        return False
-    else:
-        return False
+    return False
 
 
 # the specific item is derived from the actual parent item
-class SessionLockedCondition(CommandCondition):
+class SessionLockedCondition(WMICondition):
 
     # availability at class level: these variables *MUST* be set for all items
-    item_type = 'command'
-    item_subtype = 'session_locked_win'
+    item_type = "wmi"
+    item_subtype = "session_locked"
     item_hrtype = ITEM_COND_SESSION_LOCKED
     available = _available()
 
-    def __init__(self, t: items.Table=None) -> None:
+    def __init__(self, t: items.Table = None) -> None:
         # first initialize the base class (mandatory)
-        CommandCondition.__init__(self, t)
+        WMICondition.__init__(self, t)
 
         # then set type (same as base), subtype and human readable name: this
         # is mandatory in order to correctly display the item in all forms
@@ -87,37 +82,28 @@ class SessionLockedCondition(CommandCondition):
 
         # initializing from a table should always have this form:
         if t:
-            assert(t.get('type') == self.type)
-            self.tags = t.get('tags')
-            assert(isinstance(self.tags, items.Table))
-            assert(self.tags.get('subtype') == self.subtype)
+            assert t.get("type") == self.type
+            self.tags = t.get("tags")
+            assert isinstance(self.tags, items.Table)
+            assert self.tags.get("subtype") == self.subtype
 
         # while creating a new item must always initialize specific parameters
         else:
             self.tags = table()
-            self.tags.append('subtype', self.subtype)
-            self.tags.append('check_frequency', 'normal')
+            self.tags.append("subtype", self.subtype)
+            self.tags.append("check_frequency", "normal")
         self.updateitem()
 
     def updateitem(self):
         # set base item properties according to specific parameters in `tags`
-        check_frequency = self.tags.get('check_frequency', 'normal')
+        check_frequency = self.tags.get("check_frequency", "normal")
 
         # everything I found on the subject is about finding a process running
         # whose executable is 'LogonUI.exe'; maybe a better solution is here:
         # https://stackoverflow.com/a/48785428/5138770
-        cmdline = (
-            "$res = Get-WmiObject -Query "
-            "\"SELECT CreationClassName FROM Win32_Process WHERE Name='LogonUI.exe'\" ; "
-            "if ($res) { echo OK }"
+        self.query = (
+            "SELECT CreationClassName FROM Win32_Process WHERE Name='LogonUI.exe'"
         )
-        self.command = "pwsh.exe"
-        self.command_arguments = [
-            "-Command",
-            cmdline,
-        ]
-        self.success_stdout = "OK"
-        self.startup_path = "."
         self.check_after = _CHECK_EXTRA_DELAY[check_frequency]
         self.recur_after_failed_check = True
 
@@ -129,7 +115,7 @@ class form_SessionLockedCondition(form_Condition):
 
         # check that item is the expected one for safety, build one by default
         if item:
-            assert(isinstance(item, SessionLockedCondition))
+            assert isinstance(item, SessionLockedCondition)
         else:
             item = SessionLockedCondition()
         super().__init__(_UI_FORM_TITLE, tasks_available, item)
@@ -141,10 +127,20 @@ class form_SessionLockedCondition(form_Condition):
 
         # build the UI elements as needed and configure the layout
         l_checkFreq = ttk.Label(area, text=_UI_FORM_CHECKFREQ_SC)
-        rb_checkFreqPedantic = ttk.Radiobutton(area, text=_UI_FORM_RB_CHECKFREQ_PEDANTIC, value='pedantic')
-        rb_checkFreqNormal = ttk.Radiobutton(area, text=_UI_FORM_RB_CHECKFREQ_NORMAL, value='normal')
-        rb_checkFreqRelaxed = ttk.Radiobutton(area, text=_UI_FORM_RB_CHECKFREQ_RELAXED, value='relaxed')
-        self.data_bind('check_frequency', (rb_checkFreqPedantic, rb_checkFreqNormal, rb_checkFreqRelaxed), TYPE_STRING)
+        rb_checkFreqPedantic = ttk.Radiobutton(
+            area, text=_UI_FORM_RB_CHECKFREQ_PEDANTIC, value="pedantic"
+        )
+        rb_checkFreqNormal = ttk.Radiobutton(
+            area, text=_UI_FORM_RB_CHECKFREQ_NORMAL, value="normal"
+        )
+        rb_checkFreqRelaxed = ttk.Radiobutton(
+            area, text=_UI_FORM_RB_CHECKFREQ_RELAXED, value="relaxed"
+        )
+        self.data_bind(
+            "check_frequency",
+            (rb_checkFreqPedantic, rb_checkFreqNormal, rb_checkFreqRelaxed),
+            TYPE_STRING,
+        )
 
         l_checkFreq.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         rb_checkFreqPedantic.grid(row=0, column=1, sticky=tk.NSEW, padx=PAD, pady=PAD)
@@ -158,15 +154,14 @@ class form_SessionLockedCondition(form_Condition):
 
     # update the form with the specific parameters (usually in the `tags`)
     def _updateform(self):
-        self.data_set('check_frequency', self._item.tags.get('check_frequency'))
+        self.data_set("check_frequency", self._item.tags.get("check_frequency"))
         return super()._updateform()
 
     # update the item from the form elements (usually update `tags`)
     def _updatedata(self):
-        self._item.tags['check_frequency'] = self.data_get('check_frequency')
+        self._item.tags["check_frequency"] = self.data_get("check_frequency")
         self._item.updateitem()
         return super()._updatedata()
-
 
 
 # function common to all extra modules to declare class items as factories

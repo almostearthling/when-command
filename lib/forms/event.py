@@ -24,7 +24,7 @@ _RE_VALIDNAME = re.compile("^[a-zA-Z_][a-zA-Z0-9_]*$")
 class form_Event(ApplicationForm):
 
     def __init__(self, title, conditions_available, item=None):
-        size = AppConfig.get('SIZE_EDITOR_FORM')
+        size = AppConfig.get("SIZE_EDITOR_FORM")
         bbox = (BBOX_OK, BBOX_CANCEL)
         super().__init__(title, size, None, bbox)
 
@@ -42,7 +42,9 @@ class form_Event(ApplicationForm):
         l_itemName = ttk.Label(area, text=UI_FORM_NAME_SC)
         e_itemName = ttk.Entry(area)
         l_associatedCondition = ttk.Label(area, text=UI_FORM_COND_SC)
-        cb_associatedCondition = ttk.Combobox(area, values=conditions_available, state='readonly')
+        cb_associatedCondition = ttk.Combobox(
+            area, values=conditions_available, state="readonly"
+        )
         sep = ttk.Separator(area)
 
         # the following is the client area that is exposed to derived forms
@@ -63,8 +65,10 @@ class form_Event(ApplicationForm):
         area.rowconfigure(10, weight=1)
 
         # bind data to widgets
-        self.data_bind('@name', e_itemName, TYPE_STRING, lambda x: _RE_VALIDNAME.match(x))
-        self.data_bind('@condition', cb_associatedCondition, TYPE_STRING)
+        self.data_bind(
+            "@name", e_itemName, TYPE_STRING, lambda x: _RE_VALIDNAME.match(x)
+        )
+        self.data_bind("@condition", cb_associatedCondition, TYPE_STRING)
 
         # finally set the item
         if item:
@@ -73,40 +77,38 @@ class form_Event(ApplicationForm):
             self.reset_item()
         self.changed = False
 
-
     # contents is the root for slave widgets
     @property
     def contents(self):
         return self._sub_contents
 
-
     def _updateform(self):
         if self._item:
-            self.data_set('@name', self._item.name)
-            self.data_set('@condition', self._item.condition or '')
+            self.data_set("@name", self._item.name)
+            self.data_set("@condition", self._item.condition or "")
         else:
-            self.data_set('@name', '')
-            self.data_set('@condition', '')
+            self.data_set("@name", "")
+            self.data_set("@condition", "")
 
     # the data update utility loads data into the item
     def _updatedata(self):
-        name = self.data_get('@name')
+        name = self.data_get("@name")
         if name is not None:
             self._item.name = name
-            self._item.condition = self.data_get('@condition')
-
+            self._item.condition = self.data_get("@condition")
 
     # set and remove the associated item
     def set_item(self, item):
-        assert(isinstance(item, Event))
+        assert isinstance(item, Event)
         try:
-            self._item = item.__class__(item.as_table())    # get an exact copy to mess with
+            self._item = item.__class__(
+                item.as_table()
+            )  # get an exact copy to mess with
         except ValueError:
-            self._item = item                               # item was newly created: use it
+            self._item = item  # item was newly created: use it
 
     def reset_item(self):
         self._item = None
-
 
     # command button reactions: cancel deletes the current item so that None
     # is returned upon dialog close, while ok finalizes item initialization
@@ -116,8 +118,8 @@ class form_Event(ApplicationForm):
         return super().exit_cancel()
 
     def exit_ok(self):
-        name = self.data_get('@name')
-        condition = self.data_get('@condition')
+        name = self.data_get("@name")
+        condition = self.data_get("@condition")
         if name and condition:
             self._updatedata()
             return super().exit_ok()
@@ -125,7 +127,6 @@ class form_Event(ApplicationForm):
             messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDITEMNAME)
         else:
             messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_MISSINGEVENTCOND)
-
 
     # main loop: returns the current item if any
     def run(self):

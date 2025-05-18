@@ -25,7 +25,7 @@ _RE_VALIDNAME = re.compile("^[a-zA-Z_][a-zA-Z0-9_]*$")
 class form_Condition(ApplicationForm):
 
     def __init__(self, title, tasks_available, item=None):
-        size = AppConfig.get('SIZE_EDITOR_FORM')
+        size = AppConfig.get("SIZE_EDITOR_FORM")
         bbox = (BBOX_OK, BBOX_CANCEL)
         super().__init__(title, size, None, bbox)
 
@@ -57,7 +57,9 @@ class form_Condition(ApplicationForm):
         l_itemName = ttk.Label(area_common, text=UI_FORM_NAME_SC)
         e_itemName = ttk.Entry(area_common)
         ck_itemRecurring = ttk.Checkbutton(area_common, text=UI_FORM_CHECKCONDRECURRENT)
-        ck_itemSuspended = ttk.Checkbutton(area_common, text=UI_FORM_SUSPENDCONDATSTARTUP)
+        ck_itemSuspended = ttk.Checkbutton(
+            area_common, text=UI_FORM_SUSPENDCONDATSTARTUP
+        )
         l_maxTasksRetries = ttk.Label(area_common, text=UI_FORM_MAXTASKRETRIES_SC)
         e_maxTasksRetries = ttk.Entry(area_common)
         sep1 = ttk.Separator(area_common)
@@ -65,19 +67,35 @@ class form_Condition(ApplicationForm):
         l_tasks = ttk.Label(area_common, text=UI_FORM_ACTIVETASKS_SC)
         # build a scrolled frame for the treeview
         sftv_tasks = ttk.Frame(area_common)
-        tv_tasks = ttk.Treeview(sftv_tasks, columns=('seq', 'tasks'), show='', displaycolumns=(1,), height=5)
+        tv_tasks = ttk.Treeview(
+            sftv_tasks, columns=("seq", "tasks"), show="", displaycolumns=(1,), height=5
+        )
         sb_tasks = ttk.Scrollbar(sftv_tasks, orient=tk.VERTICAL, command=tv_tasks.yview)
         tv_tasks.configure(yscrollcommand=sb_tasks.set)
         tv_tasks.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         sb_tasks.pack(side=tk.RIGHT, fill=tk.Y)
-        ck_execSequence = ttk.Checkbutton(area_common, text=UI_FORM_RUNTASKSSEQUENTIALLY)
+        ck_execSequence = ttk.Checkbutton(
+            area_common, text=UI_FORM_RUNTASKSSEQUENTIALLY
+        )
 
         # choose task section
         area_taskchoose = ttk.Frame(area_common)
         l_chooseTask = ttk.Label(area_taskchoose, text=UI_FORM_TASK_SC)
-        cb_chooseTask = ttk.Combobox(area_taskchoose, values=tasks_available, state='readonly')
-        b_addTask = ttk.Button(area_taskchoose, text=UI_ADD, width=BUTTON_STANDARD_WIDTH, command=self.add_task)
-        b_delTask = ttk.Button(area_taskchoose, text=UI_DEL, width=BUTTON_STANDARD_WIDTH, command=self.del_task)
+        cb_chooseTask = ttk.Combobox(
+            area_taskchoose, values=tasks_available, state="readonly"
+        )
+        b_addTask = ttk.Button(
+            area_taskchoose,
+            text=UI_ADD,
+            width=BUTTON_STANDARD_WIDTH,
+            command=self.add_task,
+        )
+        b_delTask = ttk.Button(
+            area_taskchoose,
+            text=UI_DEL,
+            width=BUTTON_STANDARD_WIDTH,
+            command=self.del_task,
+        )
 
         # choose task section: arrange items
         l_chooseTask.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
@@ -89,9 +107,15 @@ class form_Condition(ApplicationForm):
 
         # control flow section
         area_ctlflow = ttk.Frame(area_common)
-        rb_noCheck = ttk.Radiobutton(area_ctlflow, text=UI_FORM_BREAKNEVER, value='break_none')
-        rb_breakFailure = ttk.Radiobutton(area_ctlflow, text=UI_FORM_BREAKONFAILURE, value='break_failure')
-        rb_breakSuccess = ttk.Radiobutton(area_ctlflow, text=UI_FORM_BREAKONSUCCESS, value='break_success')
+        rb_noCheck = ttk.Radiobutton(
+            area_ctlflow, text=UI_FORM_BREAKNEVER, value="break_none"
+        )
+        rb_breakFailure = ttk.Radiobutton(
+            area_ctlflow, text=UI_FORM_BREAKONFAILURE, value="break_failure"
+        )
+        rb_breakSuccess = ttk.Radiobutton(
+            area_ctlflow, text=UI_FORM_BREAKONSUCCESS, value="break_success"
+        )
 
         # control flow section: arrange widgets
         rb_noCheck.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
@@ -107,13 +131,17 @@ class form_Condition(ApplicationForm):
         e_maxTasksRetries.grid(row=4, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
         sep1.grid(row=5, column=0, columnspan=2, sticky=tk.EW, pady=PAD)
         l_tasks.grid(row=10, column=0, columnspan=2, sticky=tk.W, padx=PAD, pady=PAD)
-        sftv_tasks.grid(row=11, column=0, columnspan=2, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        sftv_tasks.grid(
+            row=11, column=0, columnspan=2, sticky=tk.NSEW, padx=PAD, pady=PAD
+        )
         area_taskchoose.grid(row=12, column=0, columnspan=2, sticky=tk.EW)
-        ck_execSequence.grid(row=13, column=0, columnspan=2, sticky=tk.EW, padx=PAD, pady=PAD)
+        ck_execSequence.grid(
+            row=13, column=0, columnspan=2, sticky=tk.EW, padx=PAD, pady=PAD
+        )
         area_ctlflow.grid(row=14, column=0, columnspan=2, sticky=tk.EW)
 
-        ck_itemRecurring.bind('<ButtonPress-1>', lambda _: self._check_recurring())
-        ck_itemRecurring.bind('<KeyPress-space>', lambda _: self._check_recurring())
+        ck_itemRecurring.bind("<ButtonPress-1>", lambda _: self._check_recurring())
+        ck_itemRecurring.bind("<KeyPress-space>", lambda _: self._check_recurring())
 
         # expand appropriate sections
         area_common.rowconfigure(index=11, weight=1)
@@ -123,14 +151,20 @@ class form_Condition(ApplicationForm):
         self._area_specific.columnconfigure(index=0, weight=1)
 
         # bind data to widgets
-        self.data_bind('@name', e_itemName, TYPE_STRING, lambda x: _RE_VALIDNAME.match(x))
-        self.data_bind('@recurring', ck_itemRecurring)
-        self.data_bind('@max_tasks_retries', e_maxTasksRetries, TYPE_INT, lambda x: x >= -1)
-        self.data_bind('@suspended', ck_itemSuspended)
-        self.data_bind('@tasks_selection', tv_tasks)
-        self.data_bind('@choose_task', cb_chooseTask, TYPE_STRING)
-        self.data_bind('@execute_sequence', ck_execSequence)
-        self.data_bind('@control_flow', (rb_noCheck, rb_breakFailure, rb_breakSuccess), TYPE_STRING)
+        self.data_bind(
+            "@name", e_itemName, TYPE_STRING, lambda x: _RE_VALIDNAME.match(x)
+        )
+        self.data_bind("@recurring", ck_itemRecurring)
+        self.data_bind(
+            "@max_tasks_retries", e_maxTasksRetries, TYPE_INT, lambda x: x >= -1
+        )
+        self.data_bind("@suspended", ck_itemSuspended)
+        self.data_bind("@tasks_selection", tv_tasks)
+        self.data_bind("@choose_task", cb_chooseTask, TYPE_STRING)
+        self.data_bind("@execute_sequence", ck_execSequence)
+        self.data_bind(
+            "@control_flow", (rb_noCheck, rb_breakFailure, rb_breakSuccess), TYPE_STRING
+        )
 
         # propagate widgets that need to be accessed
         self._tv_tasks = tv_tasks
@@ -145,16 +179,15 @@ class form_Condition(ApplicationForm):
         # self._max_retries.config(state=tk.NORMAL)
         self.changed = False
 
-
     def add_task(self):
-        task = self.data_get('@choose_task')
+        task = self.data_get("@choose_task")
         if task:
             self._tasks.append(task)
         self._updatedata()
         self._updateform()
 
     def del_task(self):
-        elem = self.data_get('@tasks_selection')
+        elem = self.data_get("@tasks_selection")
         if elem:
             idx = int(elem[0])
             del self._tasks[idx]
@@ -168,7 +201,7 @@ class form_Condition(ApplicationForm):
         # we use the opposite of the value because of <ButtonPress-1>: anyway
         # the <ButtonRelease-1> counterpart does not work so well (same thing
         # for <KeyPress-space>, while <KeyRelease-space> does better)
-        not_rec = not self.data_get('@recurring') or False
+        not_rec = not self.data_get("@recurring") or False
         if not_rec:
             self._max_retries.config(state=tk.DISABLED)
         else:
@@ -179,7 +212,6 @@ class form_Condition(ApplicationForm):
     def contents(self):
         return self._area_specific
 
-
     def _updateform(self):
         self._tv_tasks.delete(*self._tv_tasks.get_children())
         if self._item:
@@ -187,48 +219,56 @@ class form_Condition(ApplicationForm):
                 self._max_retries.config(state=tk.NORMAL)
             else:
                 self._max_retries.config(state=tk.DISABLED)
-            self.data_set('@name', self._item.name)
-            self.data_set('@recurring', self._item.recurring or False)
-            self.data_set('@max_tasks_retries', self._item.max_tasks_retries or 0)
-            self.data_set('@suspended', self._item.suspended or False)
-            self.data_set('@execute_sequence', self._item.execute_sequence if self._item.execute_sequence is False else True)
+            self.data_set("@name", self._item.name)
+            self.data_set("@recurring", self._item.recurring or False)
+            self.data_set("@max_tasks_retries", self._item.max_tasks_retries or 0)
+            self.data_set("@suspended", self._item.suspended or False)
+            self.data_set(
+                "@execute_sequence",
+                (
+                    self._item.execute_sequence
+                    if self._item.execute_sequence is False
+                    else True
+                ),
+            )
             idx = 0
             for task in self._tasks:
-                self._tv_tasks.insert('', iid="%s-%s" % (idx, task), values=(idx, task), index=tk.END)
+                self._tv_tasks.insert(
+                    "", iid="%s-%s" % (idx, task), values=(idx, task), index=tk.END
+                )
                 idx += 1
             if self._item.break_on_failure:
-                self.data_set('@control_flow', 'break_failure')
+                self.data_set("@control_flow", "break_failure")
             elif self._item.break_on_success:
-                self.data_set('@control_flow', 'break_success')
+                self.data_set("@control_flow", "break_success")
             else:
-                self.data_set('@control_flow', 'break_none')
+                self.data_set("@control_flow", "break_none")
         else:
             self._max_retries.config(state=tk.DISABLED)
-            self.data_set('@name', '')
-            self.data_set('@control_flow', 'break_none')
-            self.data_set('@recurring', True)
-            self.data_set('@suspended', False)
-            self.data_set('@execute_sequence', True)
-        self.data_set('@choose_task', '')
-
+            self.data_set("@name", "")
+            self.data_set("@control_flow", "break_none")
+            self.data_set("@recurring", True)
+            self.data_set("@suspended", False)
+            self.data_set("@execute_sequence", True)
+        self.data_set("@choose_task", "")
 
     # the data update utility loads data into the item
     def _updatedata(self):
-        name = self.data_get('@name')
+        name = self.data_get("@name")
         if name is not None:
             self._item.name = name
-        self._item.recurring = self.data_get('@recurring') or None
+        self._item.recurring = self.data_get("@recurring") or None
         if self._item.recurring:
             self._item.max_tasks_retries = 0
         else:
-            self._item.max_tasks_retries = self.data_get('@max_tasks_retries') or None
-        self._item.suspended = self.data_get('@suspended') or None
-        self._item.execute_sequence = self.data_get('@execute_sequence') or None
-        control_flow = self.data_get('@control_flow')
-        if control_flow == 'break_failure':
+            self._item.max_tasks_retries = self.data_get("@max_tasks_retries") or None
+        self._item.suspended = self.data_get("@suspended") or None
+        self._item.execute_sequence = self.data_get("@execute_sequence") or None
+        control_flow = self.data_get("@control_flow")
+        if control_flow == "break_failure":
             self._item.break_on_failure = True
             self._item.break_on_success = None
-        elif control_flow == 'break_failure':
+        elif control_flow == "break_failure":
             self._item.break_on_failure = None
             self._item.break_on_success = True
         else:
@@ -236,20 +276,20 @@ class form_Condition(ApplicationForm):
             self._item.break_on_success = None
         self._item.tasks = self._tasks.copy()
 
-
     # set and remove the associated item
     def set_item(self, item):
-        assert(isinstance(item, Condition))
+        assert isinstance(item, Condition)
         try:
-            self._item = item.__class__(item.as_table())    # get an exact copy to mess with
+            self._item = item.__class__(
+                item.as_table()
+            )  # get an exact copy to mess with
         except ValueError:
-            self._item = item                               # item was newly created: use it
+            self._item = item  # item was newly created: use it
         self._tasks = self._item.tasks.copy()
 
     def reset_item(self):
         self._item = None
         self._tasks = []
-
 
     # command button reactions: cancel deletes the current item so that None
     # is returned upon dialog close, while ok finalizes item initialization
@@ -259,13 +299,12 @@ class form_Condition(ApplicationForm):
         return super().exit_cancel()
 
     def exit_ok(self):
-        name = self.data_get('@name')
+        name = self.data_get("@name")
         if name is not None:
             self._updatedata()
             return super().exit_ok()
         else:
             messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDITEMNAME)
-
 
     # main loop: returns the current item if any
     def run(self):

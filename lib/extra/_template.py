@@ -24,7 +24,6 @@ from ..items.cond_command import CommandCondition
 import shutil
 
 
-
 # resource strings (not internationalized for the moment)
 ITEM_HR_NAME = "Template Condition"
 
@@ -39,22 +38,21 @@ _DEFAULT_PARAM1_VALUE = "somestring"
 # check for availability: include all needed checks in this function, may
 # or may not include actually checking the hosting platform
 def _available():
-    if shutil.which('ls'):
+    if shutil.which("ls"):
         return True
     return False
-
 
 
 # the specific item is derived from the actual parent item
 class TemplateCondition(CommandCondition):
 
     # availability at class level: these variables *MUST* be set for all items
-    item_type = 'command'
-    item_subtype = 'template'
+    item_type = "command"
+    item_subtype = "template"
     item_hrtype = ITEM_HR_NAME
     available = _available()
 
-    def __init__(self, t: items.Table=None) -> None:
+    def __init__(self, t: items.Table = None) -> None:
         # first initialize the base class (mandatory)
         super().__init__(t)
 
@@ -66,23 +64,26 @@ class TemplateCondition(CommandCondition):
 
         # initializing from a table should always have this form:
         if t:
-            assert(t.get('type') == self.type)
-            self.tags = t.get('tags')
-            assert(isinstance(self.tags, items.Table))
-            assert(self.tags.get('subtype') == self.subtype)
+            assert t.get("type") == self.type
+            self.tags = t.get("tags")
+            assert isinstance(self.tags, items.Table)
+            assert self.tags.get("subtype") == self.subtype
 
         # while creating a new item must always initialize specific parameters
         else:
             self.tags = table()
-            self.tags.append('subtype', self.subtype)
-            self.tags.append('parameter1', _DEFAULT_PARAM1_VALUE)
+            self.tags.append("subtype", self.subtype)
+            self.tags.append("parameter1", _DEFAULT_PARAM1_VALUE)
 
         self.updateitem()
 
     def updateitem(self):
         # set base item properties according to specific parameters in `tags`
-        self.command = 'ls'
-        self.command_arguments = ['-l', self.tags.get('parameter1', _DEFAULT_PARAM1_VALUE)]
+        self.command = "ls"
+        self.command_arguments = [
+            "-l",
+            self.tags.get("parameter1", _DEFAULT_PARAM1_VALUE),
+        ]
         self.startup_path = "."
         self.success_status = 0
 
@@ -94,7 +95,7 @@ class form_TemplateCondition(form_Condition):
 
         # check that item is the expected one for safety, build one by default
         if item:
-            assert(isinstance(item, TemplateCondition))
+            assert isinstance(item, TemplateCondition)
         else:
             item = TemplateCondition()
         super().__init__(_UI_FORM_TITLE, tasks_available, item)
@@ -107,7 +108,7 @@ class form_TemplateCondition(form_Condition):
         # build the UI elements as needed and configure the layout
         l_parameter1 = ttk.Label(area, text=_UI_FORM_PARAM1_SC)
         e_parameter1 = ttk.Entry(area)
-        self.data_bind('parameter1', e_parameter1, TYPE_STRING)
+        self.data_bind("parameter1", e_parameter1, TYPE_STRING)
 
         l_parameter1.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         e_parameter1.grid(row=0, column=1, sticky=tk.NSEW, padx=PAD, pady=PAD)
@@ -119,15 +120,14 @@ class form_TemplateCondition(form_Condition):
 
     # update the form with the specific parameters (usually in the `tags`)
     def _updateform(self):
-        self.data_set('parameter1', self._item.tags.get('parameter1'))
+        self.data_set("parameter1", self._item.tags.get("parameter1"))
         return super()._updateform()
 
     # update the item from the form elements (usually update `tags`)
     def _updatedata(self):
-        self._item.tags['parameter1'] = self.data_get('parameter1')
+        self._item.tags["parameter1"] = self.data_get("parameter1")
         self._item.updateitem()
         return super()._updatedata()
-
 
 
 # function common to all extra modules to declare class items as factories

@@ -2,10 +2,10 @@
 # or attached to AC and above a certain threshold, specific for Windows
 # platforms:
 #
-# - uses the new powershell and the Get-CimInstance utility/command
+# - uses a WMI query to detect battery status
 # - exploits the new feature of only triggering the condition once when
 #   the actual parameters are met
-# - normally the condition is only tested every fifth minute (change the
+# - normally the condition is only tested every minute (change the
 #   _CHECK_EXTRA_DELAY constant to specify a different number of seconds)
 #
 #  A module achieving the same goal on Linux is available.
@@ -15,10 +15,9 @@ from tomlkit import items, table
 
 import tkinter as tk
 import ttkbootstrap as ttk
-from tkinter import messagebox
 
 from ..i18n.strings import *
-from ..utility import check_not_none, append_not_none
+from ..utility import whenever_has_wmi
 
 from ..forms.ui import *
 
@@ -27,13 +26,11 @@ from ..forms.ui import *
 from ..forms.cond import form_Condition
 
 # import item to derive from
-from ..items.cond_command import CommandCondition
+from ..items.cond_wmi import WMICondition
 
 
 # imports specific to this module
 import sys
-import shutil
-
 
 
 # resource strings (not internationalized for the moment)
@@ -46,7 +43,7 @@ _UI_FORM_CHARGINGBATT_THRESHOLD_SC = "Battery charge is above:"
 
 # default values
 _DEFAULT_THRESHOLD_VALUE = 80
-_CHECK_EXTRA_DELAY = 300
+_CHECK_EXTRA_DELAY = 60
 
 
 # check for availability: this version of the check is only for Windows, the
@@ -54,25 +51,23 @@ _CHECK_EXTRA_DELAY = 300
 # exclusive: with this check we assume that this module is only run on Windows
 def _available():
     if sys.platform.startswith("win"):
-        if shutil.which("pwsh.exe"):
+        if whenever_has_wmi():
             return True
-        return False
-    else:
-        return False
+    return False
 
 
 # the specific item is derived from the actual parent item
-class ChargingBatteryCondition(CommandCondition):
+class ChargingBatteryCondition(WMICondition):
 
     # availability at class level: these variables *MUST* be set for all items
-    item_type = 'command'
-    item_subtype = 'battery_charging_win'
+    item_type = "wmi"
+    item_subtype = "battery_charging"
     item_hrtype = ITEM_HR_NAME
     available = _available()
 
-    def __init__(self, t: items.Table=None) -> None:
+    def __init__(self, t: items.Table = None) -> None:
         # first initialize the base class (mandatory)
-        CommandCondition.__init__(self, t)
+        WMICondition.__init__(self, t)
 
         # then set type (same as base), subtype and human readable name: this
         # is mandatory in order to correctly display the item in all forms
@@ -82,36 +77,37 @@ class ChargingBatteryCondition(CommandCondition):
 
         # initializing from a table should always have this form:
         if t:
-            assert(t.get('type') == self.type)
-            self.tags = t.get('tags')
-            assert(isinstance(self.tags, items.Table))
-            assert(self.tags.get('subtype') == self.subtype)
+            assert t.get("type") == self.type
+            self.tags = t.get("tags")
+            assert isinstance(self.tags, items.Table)
+            assert self.tags.get("subtype") == self.subtype
 
         # while creating a new item must always initialize specific parameters
         else:
             self.tags = table()
-            self.tags.append('subtype', self.subtype)
-            self.tags.append('threshold', _DEFAULT_THRESHOLD_VALUE)
+            self.tags.append("subtype", self.subtype)
+            self.tags.append("threshold", _DEFAULT_THRESHOLD_VALUE)
         self.updateitem()
 
     def updateitem(self):
         # set base item properties according to specific parameters in `tags`
-        threshold = self.tags.get('threshold', _DEFAULT_THRESHOLD_VALUE)
+        threshold = self.tags.get("threshold", _DEFAULT_THRESHOLD_VALUE)
 
         # see interpretation of BatteryStatus -in 2,6,7,8,9 here:
         # https://learn.microsoft.com/it-it/windows/win32/cimwin32prov/win32-battery
-        cmdline = (
-            "$batt = (Get-CimInstance -Class Win32_Battery); " +
-            "If ( $$batt.BatteryStatus -in 2,6,7,8,9 -and $batt.EstimatedChargeRemaining -gt %s ) " % threshold +
-            "{ echo OK }"
+        self.query = (
+            "SELECT * FROM Win32_Battery "
+            + "WHERE BatteryStatus = 2 OR OR (BatteryStatus >= 6 AND BatteryStatus<= 9)"
         )
-        self.command = "pwsh.exe"
-        self.command_arguments = [
-            "-Command",
-            cmdline,
+        self.result_check = [
+            {
+                "index": 0,
+                "field": "EstimatedChargeRemaining",
+                "operator": "gt",
+                "value": threshold,
+            },
         ]
-        self.success_stdout = "OK"
-        self.startup_path = "."
+        self.result_check_all = True
         self.check_after = _CHECK_EXTRA_DELAY
         self.recur_after_failed_check = True
 
@@ -123,7 +119,7 @@ class form_ChargingBatteryCondition(form_Condition):
 
         # check that item is the expected one for safety, build one by default
         if item:
-            assert(isinstance(item, ChargingBatteryCondition))
+            assert isinstance(item, ChargingBatteryCondition)
         else:
             item = ChargingBatteryCondition()
         super().__init__(_UI_FORM_TITLE, tasks_available, item)
@@ -137,7 +133,7 @@ class form_ChargingBatteryCondition(form_Condition):
         l_threshold = ttk.Label(area, text=_UI_FORM_CHARGINGBATT_THRESHOLD_SC)
         e_threshold = ttk.Entry(area)
         l_percent = ttk.Label(area, text="%")
-        self.data_bind('threshold', e_threshold, TYPE_INT, lambda t: t > 0 and t < 100)
+        self.data_bind("threshold", e_threshold, TYPE_INT, lambda t: t > 0 and t < 100)
 
         l_threshold.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         e_threshold.grid(row=0, column=1, sticky=tk.NSEW, padx=PAD, pady=PAD)
@@ -150,15 +146,14 @@ class form_ChargingBatteryCondition(form_Condition):
 
     # update the form with the specific parameters (usually in the `tags`)
     def _updateform(self):
-        self.data_set('threshold', self._item.tags.get('threshold'))
+        self.data_set("threshold", self._item.tags.get("threshold"))
         return super()._updateform()
 
     # update the item from the form elements (usually update `tags`)
     def _updatedata(self):
-        self._item.tags['threshold'] = self.data_get('threshold')
+        self._item.tags["threshold"] = self.data_get("threshold")
         self._item.updateitem()
         return super()._updatedata()
-
 
 
 # function common to all extra modules to declare class items as factories

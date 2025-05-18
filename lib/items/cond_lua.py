@@ -2,7 +2,7 @@
 
 from lib.i18n.strings import *
 
-from tomlkit import table
+from tomlkit import table, items
 from ..utility import check_not_none, append_not_none
 
 from .cond import Condition
@@ -18,17 +18,17 @@ class LuaScriptCondition(Condition):
     # availability at class level
     available = True
 
-    def __init__(self, t: table=None) -> None:
+    def __init__(self, t: items.Table = None) -> None:
         Condition.__init__(self, t)
-        self.type = 'lua'
+        self.type = "lua"
         self.hrtype = ITEM_COND_LUA
         if t:
-            assert(t.get('type') == self.type)
-            self.check_after = t.get('check_after')
-            self.recur_after_failed_check  = t.get('recur_after_failed_check')
-            self.script = t.get('script')
-            self.expect_all = t.get('expect_all', False)
-            expected_results = t.get('expected_results')
+            assert t.get("type") == self.type
+            self.check_after = t.get("check_after")
+            self.recur_after_failed_check = t.get("recur_after_failed_check")
+            self.script = t.get("script")
+            self.expect_all = t.get("expect_all", False)
+            expected_results = t.get("expected_results")
             if expected_results:
                 self.expected_results = dict(expected_results)
             else:
@@ -36,7 +36,7 @@ class LuaScriptCondition(Condition):
         else:
             self.script = DEFAULT_LUASCRIPT
             self.check_after = None
-            self.recur_after_failed_check  = None
+            self.recur_after_failed_check = None
             self.expect_all = None
             self.expected_results = None
 
@@ -46,11 +46,13 @@ class LuaScriptCondition(Condition):
         ):
             raise ValueError("Invalid Lua Condition: mandatory field(s) missing")
         t = Condition.as_table(self)
-        t = append_not_none(t, 'check_after', self.check_after)
-        t = append_not_none(t, 'recur_after_failed_check', self.recur_after_failed_check )
-        t.append('script', self.script)
-        t = append_not_none(t, 'expect_all', self.expect_all)
-        t = append_not_none(t, 'expected_results', self.expected_results)
+        t = append_not_none(t, "check_after", self.check_after)
+        t = append_not_none(
+            t, "recur_after_failed_check", self.recur_after_failed_check
+        )
+        t.append("script", self.script)
+        t = append_not_none(t, "expect_all", self.expect_all)
+        t = append_not_none(t, "expected_results", self.expected_results)
         return t
 
 
