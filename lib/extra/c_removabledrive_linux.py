@@ -22,7 +22,6 @@ from ..items.cond_dbus import DBusCondition
 
 # imports specific to this module
 import sys
-import dbus
 
 
 # resource strings (not internationalized for the moment)
@@ -111,6 +110,7 @@ class form_RemovableDrivePresent(form_Condition):
         super().__init__(_UI_FORM_TITLE, tasks_available, item)
 
         # now find drive names
+        import dbus
         prefix = "/org/freedesktop/UDisks2/drives/"
         bus = dbus.SystemBus()
         o = bus.get_object(

@@ -31,7 +31,6 @@ from ..items.cond_dbus import DBusCondition
 
 # imports specific to this module
 import sys
-import dbus
 
 
 # resource strings (not internationalized for the moment)
@@ -91,6 +90,7 @@ class ChargingBatteryCondition(DBusCondition):
 
         # detect battery by querying DBus
         # see https://upower.freedesktop.org/docs/Device.html
+        import dbus
         bus = dbus.SystemBus()
         service_name = "org.freedesktop.UPower"
         device_service_name = "org.freedesktop.UPower.Device"
