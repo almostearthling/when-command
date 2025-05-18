@@ -424,7 +424,7 @@ def main_toolbox(args):
         retrieve_whenever_options()
         from lib.toolbox.fix_config import fix_config_file
 
-        fix_config_file(get_configfile())
+        fix_config_file(get_configfile(), verbose=verbose)
         if verbose:
             console.print(CLI_MSG_OPERATION_FINISHED, highlight=False)
 

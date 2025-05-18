@@ -259,17 +259,22 @@ def fix_config(filename: str, console=None) -> items.Table:
 
 
 # fix config file at once, save a backup copy
-def fix_config_file(filename, backup=True):
+def fix_config_file(filename, verbose=True, backup=True):
     update_legacy_items()
     update_conversions()
-    console = get_rich_console()
+    if verbose:
+        console = get_rich_console()
+    else:
+        console = None
     try:
         doc = fix_config(filename, console)
         if backup:
             new_name = "%s~" % filename
-            console.print(CLI_MSG_BACKUP_CONFIG % new_name)
+            if verbose:
+                console.print(CLI_MSG_BACKUP_CONFIG % new_name)
             shutil.move(filename, new_name)
-        console.print(CLI_MSG_WRITE_NEW_CONFIG % filename)
+        if verbose:
+            console.print(CLI_MSG_WRITE_NEW_CONFIG % filename)
         with open(filename, "w") as f:
             f.write(doc.as_string())
     except Exception as e:
