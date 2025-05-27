@@ -43,7 +43,7 @@ _UI_FORM_CHARGINGBATT_THRESHOLD_SC = "Battery charge is above:"
 
 # default values
 _DEFAULT_THRESHOLD_VALUE = 80
-_CHECK_EXTRA_DELAY = 120
+_CHECK_EXTRA_DELAY = 60
 
 
 # check for availability: this version of the check is only for Linux, the

@@ -1,6 +1,6 @@
 # Extra Conditions
 
-The condition items described here cover various different aspects of a session, and their availability may vary depending on the hosting platform and the presence of certain features.
+The condition items described here cover various different aspects of a session, and their availability may vary depending on the hosting platform and the presence of certain features. On Linux **whenever** is generally expected to be compiled with DBus support, on Windows it is expected to be compiled with WMI support.
 
 
 ## System Load
@@ -9,7 +9,7 @@ This test verifies whether or not the system load is below a certain percentage 
 
 ![WhenCondExtraSysload](graphics/when-cond-extra-sysload.png)
 
-The item can be used on Windows and Linux systems, and depends on the availability of the _PowerShell_ in the first case, and the presence of the `vmstat` and `bc` OS commands in the latter, which may need to be installed on some distributions. The checks for this condition are performed about every minute.
+The item can be used on Windows and Linux systems, on Linux it depends on the presence of the `vmstat` and `bc` OS commands, which may need to be installed on some distributions. The checks for this condition are performed about every minute.
 
 
 ## Low Battery
@@ -18,7 +18,7 @@ This test checks whether the battery is draining and its charge is below a certa
 
 ![WhenCondExtraSysload](graphics/when-cond-extra-batterylow.png)
 
-The item can be used on Windows and Linux systems, and depends on the availability of the _PowerShell_ in the first case, and the presence of the `upower`, `grep`, `awk`, and `sed` OS commands in the latter, which are usually installed by default. The checks for this condition are performed about every five minutes.
+The checks for this condition are performed about every minute.
 
 
 ## Charging Battery
@@ -27,7 +27,7 @@ This test checks whether the battery is charging and its charge is above a certa
 
 ![WhenCondExtraSysload](graphics/when-cond-extra-batterycharging.png)
 
-The item can be used on Windows and Linux systems, and depends on the availability of the _PowerShell_ in the first case, and the presence of the `upower`, `grep`, `awk`, and `sed` OS commands in the latter, which are usually installed by default. The checks for this condition are performed about every five minutes.
+The checks for this condition are performed about every minute.
 
 
 ## Removable Drives

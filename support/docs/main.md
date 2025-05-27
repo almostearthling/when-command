@@ -17,6 +17,8 @@ Actually, **When** consists of several different applications which are launched
 
 See the specific parts of the documentation for details on each application. The suggested [installation procedure](install.md), however, can be used to set up application icons for the resident application and for the configuration utility, as well as to configure **When** to start in the background at login.
 
+> **Note**: sometimes you will find suspension points in lists (like the one above) throughout this documentation: this does not mean that part of the documentation is missing or that there are some undocumented features. Suspension points like these indicate that the list might grow in the future.
+
 
 ## About this Documentation
 
@@ -54,7 +56,7 @@ For the sake of readability, a glossary follows for some of the terms used throu
 
 | **Term**           | **Meaning**                                                                                                                                                |
 |--------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| _APPDATA_          | the _application data_ directory is where **When** keeps configuration files, data files, and logs: see [here](appdata.md) for details                     |
+| _APPDATA_          | the _application data_ directory is where **When** keeps configuration files, data files, and logs: see [this page](appdata.md) for details                |
 | _condition_        | circumstance or set of circumstances that may or may not occur in a certain moment and whose occurrence determines the execution of tasks                  |
 | _event_            | signal, message, or external coincidence anyway that **When** (or **whenever**) can be instructed to listen to                                             |
 | _item_             | used throughout the document to specify one of a _task_, a _condition_ or an _event_                                                                       |

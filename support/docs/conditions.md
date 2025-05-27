@@ -25,7 +25,7 @@ The conditions available in **When** that are natively supported by **whenever**
 * [_Lua Script_ conditions](cond_actionrelated.md#lua-script)
 * [_Time_ related conditions](cond_timerelated.md#time-specification)
 
-Other conditions are supported, that are implemented as reactions to particular commands, DBus messages or method invocations, _Lua_ scripts. These conditions appear along with the native ones, and the related documentation can be found at the following locations:
+Other conditions are supported, that are implemented as reactions to particular commands, DBus messages or method invocations, WMI events or queries, _Lua_ scripts. These conditions appear along with the native ones, and the related documentation can be found at the following locations:
 
 * [_System Load_ below Threshold](cond_extra01.md#system-load) conditions
 * [_Battery Charge_ below Threshold](cond_extra01.md#low-battery) conditions
