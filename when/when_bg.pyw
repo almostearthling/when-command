@@ -14,6 +14,7 @@ def run_bg():
                 "start",
                 "",
                 "/B",
+                "/min",
                 pythonw,
                 "-m",
                 "when.when",

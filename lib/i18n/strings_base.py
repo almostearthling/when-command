@@ -350,7 +350,6 @@ SYM_UNKNOWN = "∅"
 
 
 
-
 # default strings for standard buttons
 BTN_OK = "OK"
 BTN_CANCEL = "Cancel"
@@ -455,10 +454,6 @@ CLI_APPICON_NAME_CONFIG = f"Configure {UI_APP}"
 CLI_APPICON_DESC_CONFIG = f"Standalone configuration utility for {UI_APP}"
 CLI_APPICON_NAME_START = f"Start {UI_APP}"
 CLI_APPICON_DESC_START = f"Launch the {CLI_WHENEVER} scheduler and controlling application {UI_APP}"
-
-# CLI_SYM_CROSSMARK = ":cross_mark:"
-# CLI_SYM_CHECKMARK = ":heavy_check_mark:"
-
 
 
 # end.
