@@ -12,9 +12,7 @@ from ..repocfg import AppConfig
 
 from ..items.cond import Condition
 
-
-# regular expression for item name checking
-_RE_VALIDNAME = re.compile("^[a-zA-Z_][a-zA-Z0-9_]*$")
+from ..utility import is_valid_item_name
 
 
 # condition box base class: since this is the class that will be used in
@@ -151,9 +149,7 @@ class form_Condition(ApplicationForm):
         self._area_specific.columnconfigure(index=0, weight=1)
 
         # bind data to widgets
-        self.data_bind(
-            "@name", e_itemName, TYPE_STRING, lambda x: _RE_VALIDNAME.match(x)
-        )
+        self.data_bind("@name", e_itemName, TYPE_STRING, is_valid_item_name)
         self.data_bind("@recurring", ck_itemRecurring)
         self.data_bind(
             "@max_tasks_retries", e_maxTasksRetries, TYPE_INT, lambda x: x >= -1

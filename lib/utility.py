@@ -5,6 +5,7 @@ import os
 import shutil
 import subprocess
 from base64 import b64decode
+import re
 
 from tomlkit import table
 from hashlib import blake2s
@@ -24,6 +25,14 @@ from .i18n.strings import *
 from .repocfg import AppConfig
 
 
+# a regular expression to check whether an user-given name is valid
+_RE_VALID_ITEM_NAME = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*$")
+
+
+# private item name prefix
+_PRIVATE_ITEM_PREFIX = "__When__private__"
+
+
 # the common Tk root
 _tkroot = tk.Tk()
 _console = Console(force_terminal=True)
@@ -38,6 +47,21 @@ def get_tkroot():
 # return the terminal console handled by the "rich" module
 def get_rich_console():
     return _console
+
+
+# return the prefix for private item names
+def get_private_item_name_prefix():
+    return _PRIVATE_ITEM_PREFIX
+
+
+# check whether a name indicates that an item is private
+def is_private_item_name(s: str):
+    return s.startswith(_PRIVATE_ITEM_PREFIX)
+
+
+# check whether an user-provided name is valid
+def is_valid_item_name(s: str):
+    return bool(_RE_VALID_ITEM_NAME.match(s)) and not is_private_item_name(s)
 
 
 # check that all passed arguments are not None

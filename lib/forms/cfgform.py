@@ -246,7 +246,7 @@ class form_Config(ApplicationForm):
         }
         self._changed = False
 
-    # load the configuration from a TOML file
+    # load the configuration from a TOML file, only display non-private items
     def _load_config(self, fn):
         self._resetdata()
         tasks, conditions, events, self._globals = read_whenever_config(fn)
@@ -259,30 +259,43 @@ class form_Config(ApplicationForm):
         # do the same stuff as self._updatedata, without updating globals
         for key in self._tasks:
             item = self._tasks[key]
-            if item.tags:
-                signature = "task:%s:%s" % (item.type, item.tags.get("subtype"))
-            else:
-                signature = "task:%s" % item.type
-            self._itemlistentries.append([item.name, item.hrtype, signature])
+            if not item.private:
+                self._itemlistentries.append([item.name, item.hrtype, item.signature])
         for key in self._conditions:
             item = self._conditions[key]
-            if item.tags:
-                signature = "cond:%s:%s" % (item.type, item.tags.get("subtype"))
-            else:
-                signature = "cond:%s" % item.type
-            self._itemlistentries.append([item.name, item.hrtype, signature])
+            if not item.private:
+                self._itemlistentries.append([item.name, item.hrtype, item.signature])
         for key in self._events:
             item = self._events[key]
-            if item.tags:
-                signature = "event:%s:%s" % (item.type, item.tags.get("subtype"))
-            else:
-                signature = "event:%s" % item.type
-            self._itemlistentries.append([item.name, item.hrtype, signature])
+            if not item.private:
+                self._itemlistentries.append([item.name, item.hrtype, item.signature])
         self._itemlistentries.sort(key=lambda x: x[0])
         self._changed = False
 
-    # save the configuration to a TOML file
+    # save the configuration to a TOML file: add private items when required
     def _save_config(self, fn):
+        # 1. reset conditions on resume
+        if AppConfig.get("RESET_CONDS_ON_RESUME"):
+            from ..internal.reset_conds_on_resume import (
+                task_ResetConditionsOnResume,
+                condition_ResetConditionsOnResume,
+                event_ResetConditionsOnResume,
+                name_ResetConditionsOnResume
+            )
+            if name_ResetConditionsOnResume not in self._tasks.keys():
+                self._tasks[name_ResetConditionsOnResume] = task_ResetConditionsOnResume
+            if name_ResetConditionsOnResume not in self._conditions.keys():
+                self._conditions[name_ResetConditionsOnResume] = condition_ResetConditionsOnResume
+            if name_ResetConditionsOnResume not in self._events.keys():
+                self._events[name_ResetConditionsOnResume] = event_ResetConditionsOnResume
+        else:
+            if name_ResetConditionsOnResume in self._tasks.keys():
+                del self._tasks[name_ResetConditionsOnResume]
+            if name_ResetConditionsOnResume in self._conditions.keys():
+                del self._conditions[name_ResetConditionsOnResume]
+            if name_ResetConditionsOnResume in self._events.keys():
+                del self._events[name_ResetConditionsOnResume]
+        # ...
         write_whenever_config(
             fn,
             [self._tasks[k] for k in self._tasks],

@@ -73,6 +73,9 @@ AppConfig = _AppConfiguration(
         # history queue length
         "HISTORY_LENGTH": 100,
 
+        # whether or not to reset conditions on workstation resume
+        "RESET_CONDS_ON_RESUME": True,
+
         # configuration window size
         "SIZE_MAIN_FORM": (960, 640),
 

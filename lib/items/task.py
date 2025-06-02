@@ -6,7 +6,7 @@
 # as per whenever documentation.
 
 from tomlkit import table, items
-from ..utility import check_not_none, append_not_none, generate_item_name
+from ..utility import check_not_none, append_not_none, generate_item_name, is_private_item_name
 
 
 # base class for tasks: all task items will have the same interface thus they
@@ -41,6 +41,10 @@ class Task(object):
         if 'subtype' in self.__dict__:
             s += ":%s" % self.subtype
         return s
+
+    @property
+    def private(self):
+        return is_private_item_name(self.name)
 
     def as_table(self):
         if not check_not_none(

@@ -12,9 +12,7 @@ from ..repocfg import AppConfig
 
 from ..items.task import Task
 
-
-# regular expression for item name checking
-_RE_VALIDNAME = re.compile("^[a-zA-Z_][a-zA-Z0-9_]*$")
+from ..utility import is_valid_item_name
 
 
 # task box base class: since this is the class that will be used in derived
@@ -57,9 +55,7 @@ class form_Task(ApplicationForm):
         area.columnconfigure(1, weight=1)
 
         # bind data to widgets
-        self.data_bind(
-            "@name", e_itemName, TYPE_STRING, lambda x: _RE_VALIDNAME.match(x)
-        )
+        self.data_bind("@name", e_itemName, TYPE_STRING, is_valid_item_name)
 
         # finally set the item
         if item:
