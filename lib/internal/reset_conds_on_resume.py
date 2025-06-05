@@ -65,20 +65,21 @@ if sys.platform.startswith("win"):
 # build the event for Linux platforms: see
 # https://www.freedesktop.org/software/systemd/man/latest/org.freedesktop.login1.html#Signals
 # for details
-# if sys.platform == "linux":
-if True:
+if sys.platform == "linux":
     from ..items.event_dbus import DBusEvent
     _event = DBusEvent()
     _event.name = _ITEM_NAMES
     _event.condition = _ITEM_NAMES
     _event.bus = ":system"
     _event.rule = (
-        "type=signal,"
-        "interface=org.freedesktop.login1.Manager,"
-        "sender=org.freedesktop.login1,"
-        "member=PrepareForSleep,"
+        "type='signal',"
+        "interface='org.freedesktop.login1.Manager',"
+        "sender='org.freedesktop.login1',"
+        "member='PrepareForSleep'"
     )
-    _event.parameter_check = '[{0, "eq", false}]'
+    _event.parameter_check = [
+        { 'index': 0, 'operator': "eq", 'value': False }
+    ]
 
 event_ResetConditionsOnResume = _event
 
