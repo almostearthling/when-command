@@ -7,7 +7,7 @@ There are two types of base task implemented in **When** which correspond to tas
 
 Other, specific tasks may be added - which actually are specialized versions of the above mentioned ones.
 
-In all editors, the task _Name_ is mandatory and must be an alphanumeric string beginning with a letter or an underscore.
+In all editors, the task _Name_ is mandatory and must be an alphanumeric string beginning with a letter or an underscore.[^1]
 
 
 ## Command
@@ -64,3 +64,6 @@ There are a bunch of simple session related tasks, useful for such things as tur
 
 
 [`◀ Main`](main.md)
+
+
+[^1]: Names beginning with the prefix `__When__private__` are reserved, and are not allowed when creating items.

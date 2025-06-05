@@ -9,7 +9,7 @@ This type of event fires whenever one of the monitored files or directories unde
 
 ![WhenEventFSChange](graphics/when-event-fschange.png)
 
-The event _Name_ is mandatory and must be an alphanumeric string beginning with a letter or an underscore. The associated _Condition_ is also mandatory, and must be selected among the appropriate ones using the drop down list.
+The event _Name_ is mandatory and must be an alphanumeric string beginning with a letter or an underscore.[^1] The associated _Condition_ is also mandatory, and must be selected among the appropriate ones using the drop down list.
 
 The items (files and directories) to be monitored can be provided by entering their path in the _Item_ fiels below the list, and then checking the _Add_ button to populate the list: the button with three dots on the right provides a convenient way to browse the filesystem and select objects. By checking the _Use button to select directories_ option, the dialog box associated with the three-dotted button will allow to choose directories, otherwise to choose files.
 
@@ -34,3 +34,6 @@ and more may be added in the future.
 
 
 [`◀ Main`](main.md)
+
+
+[^1]: Names beginning with the prefix `__When__private__` are reserved, and are not allowed when creating items.
