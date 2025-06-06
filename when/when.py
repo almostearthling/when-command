@@ -94,7 +94,7 @@ class App(object):
         self.set_tray_icon_busy = set_tray_icon_busy
         self.set_tray_icon_normal = set_tray_icon_normal
         self.show_about_box = show_about_box
-        self.form_Menubox = form_MenuBox
+        self.form_MenuBox = form_MenuBox
         self.form_Config = form_Config
         self.form_History = form_History
 
