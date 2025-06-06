@@ -7,6 +7,8 @@ import ttkbootstrap as ttk
 import pygments.lexers
 from chlorophyll import CodeView
 
+import json
+
 from ..i18n.strings import *
 from .ui import *
 
@@ -163,8 +165,8 @@ class form_DBusCondition(form_Condition):
         self.data_set("object_path", self._item.object_path)
         self.data_set("interface", self._item.interface)
         self.data_set("method", self._item.method)
-        self.data_set("parameter_call", self._item.parameter_call or None)
-        self.data_set("parameter_check", self._item.parameter_check or None)
+        self.data_set("parameter_call", json.dumps(self._item.parameter_call) or None)
+        self.data_set("parameter_check", json.dumps(self._item.parameter_check) or None)
         self.data_set("parameter_check_all", self._item.parameter_check_all or False)
         self.data_set("check_after", self._item.check_after or 0)
         self.data_set(
@@ -178,8 +180,8 @@ class form_DBusCondition(form_Condition):
         self._item.object_path = self.data_get("object_path")
         self._item.interface = self.data_get("interface")
         self._item.method = self.data_get("method")
-        self._item.parameter_call = self.data_get("parameter_call") or None
-        self._item.parameter_check = self.data_get("parameter_check") or None
+        self._item.parameter_call = json.loads(self.data_get("parameter_call")) or None
+        self._item.parameter_check = json.loads(self.data_get("parameter_check")) or None
         self._item.parameter_check_all = self.data_get("parameter_check_all") or False
         self._item.check_after = self.data_get("check_after") or None
         self._item.recur_after_failed_check = (

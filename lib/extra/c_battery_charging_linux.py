@@ -123,13 +123,10 @@ class ChargingBatteryCondition(DBusCondition):
         self.interface = "org.freedesktop.DBus.Properties"
         self.method = "GetAll"
         self.parameter_call = '["org.freedesktop.UPower.Device"]'
-        self.parameter_check = (
-            """[
-            { "index": [0, "State"], "operator": "neq", "value": 2 },
-            { "index": [0, "Percentage"], "operator": "gt", "value": %s }
-        ]"""
-            % threshold
-        )
+        self.parameter_check = [
+            { 'index': [0, "State"], 'operator': "neq", 'value': 2 },
+            { 'index': [0, "Percentage"], 'operator': "gt", 'value': threshold },
+        ]
         self.parameter_check_all = True
         self.check_after = _CHECK_EXTRA_DELAY
         self.recur_after_failed_check = True

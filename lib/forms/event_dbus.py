@@ -7,6 +7,8 @@ import ttkbootstrap as ttk
 import pygments.lexers
 from chlorophyll import CodeView
 
+import json
+
 from ..i18n.strings import *
 from .ui import *
 
@@ -103,14 +105,14 @@ class form_DBusEvent(form_Event):
     def _updateform(self):
         self.data_set("bus", self._item.bus)
         self.data_set("rule", self._item.rule)
-        self.data_set("parameter_check", self._item.parameter_check or None)
+        self.data_set("parameter_check", json.dumps(self._item.parameter_check) or None)
         self.data_set("parameter_check_all", self._item.parameter_check_all or False)
         return super()._updateform()
 
     def _updatedata(self):
         self._item.bus = self.data_get("bus")
         self._item.rule = self.data_get("rule")
-        self._item.parameter_check = self.data_get("parameter_check") or ""
+        self._item.parameter_check = json.loads(self.data_get("parameter_check")) or None
         self._item.parameter_check_all = self.data_get("parameter_check_all") or False
         return super()._updatedata()
 

@@ -90,9 +90,9 @@ class RemovableDrivePresent(DBusCondition):
         self.object_path = "/org/freedesktop/UDisks2"
         self.interface = "org.freedesktop.DBus.ObjectManager"
         self.method = "GetManagedObjects"
-        self.parameter_check = (
-            '[{ "index": 0, "operator": "contains", "value": "%s" }]' % check_drive
-        )
+        self.parameter_check = [
+            { 'index': 0, 'operator': "contains", 'value': check_drive },
+        ]
         self.check_after = 60
         self.recur_after_failed_check = True
 
