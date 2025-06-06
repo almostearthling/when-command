@@ -118,6 +118,23 @@ when tool --install-whenever
 which will always download and install the most recent binary release.
 
 
+## Installing Directly from the Repository
+
+If you have _git_ installed and in your _PATH_, you can choose to install a version that has not been published yet as a release, using the same _pipx_ based method. Instead of using the URL shown above, pointing to the ZIP file corresponding to the latest release, you can use the URL that points to the repository, or even a branch: launch
+
+```shell
+pipx install git+https://github.com/almostearthling/when-command.git
+```
+
+to install from the _main_ branch, which is the release candidate and is kept as stable as possible. In order to install from the _development_ branch, the command changes as follows:
+
+```shell
+pipx install git+https://github.com/almostearthling/when-command.git@development
+```
+
+and can be used on both Linux and Windows. The rest of the installation process does not change in both cases. Please note, however, that subsequent upgrades will use the same upstream source: if you want to change source (be it a different repository branch, or the release ZIP file), **When** has to be uninstalled first by running `pipx uninstall when`.
+
+
 ## Installation Scope
 
 Both the installation of **When** using the **pipx** method and the installation of **whenever** using the `--install-whenever` tool are performed at the _user_ level: neither one requires other privileges than write in the home directory. However, this also means that no other user, except the one performing the above defined actions, will be able to access either **When** or **whenever**.
