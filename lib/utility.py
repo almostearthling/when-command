@@ -7,7 +7,7 @@ import subprocess
 from base64 import b64decode
 import re
 
-from tomlkit import table
+from tomlkit import table, array, inline_table, string
 from hashlib import blake2s
 from base64 import decodebytes as b64_decodeb
 from io import BytesIO
@@ -364,6 +364,40 @@ def get_executable_extensions():
         return os.environ["PATHEXT"].split(";")
     else:
         return None
+
+
+# TOML: create an array of inline tables from a list of dicts
+def toml_list_of_tables(lot):
+    if lot is not None:
+        r = array()
+        for x in lot:
+            elem = inline_table()
+            elem.update(x)
+            r.add_line(elem)
+        r.add_line()
+        return r
+
+
+# TOML: convert to a script (multiline literal) string
+def toml_script_string(s):
+    if s is not None:
+        return string(s, multiline=True, literal=True)
+
+
+# TOML: create an array of literal strings
+def toml_list_of_literals(los):
+    if los is not None:
+        r = array()
+        for s in los:
+            r.add_line(string(s, literal=True))
+        r.add_line()
+        return r
+
+
+# TOML: quickly convert a string to literal (preserving None)
+def toml_literal(s):
+    if s is not None:
+        return string(s, literal=True)
 
 
 # ...

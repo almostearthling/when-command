@@ -3,7 +3,7 @@
 from lib.i18n.strings import *
 
 from tomlkit import table, items
-from ..utility import check_not_none, append_not_none
+from ..utility import check_not_none, append_not_none, toml_script_string
 
 from .task import Task
 
@@ -42,7 +42,7 @@ class LuaScriptTask(Task):
         ):
             raise ValueError("Invalid Lua Task: mandatory field(s) missing")
         t = Task.as_table(self)
-        t.append("script", self.script)
+        t.append("script", toml_script_string(self.script))
         t = append_not_none(t, "expect_all", self.expect_all)
         t = append_not_none(t, "expected_results", self.expected_results)
         return t

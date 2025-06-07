@@ -2,13 +2,12 @@
 
 from lib.i18n.strings import *
 
-from tomlkit import table, items
-from ..utility import check_not_none, append_not_none
+from tomlkit import table, items, string
+from ..utility import check_not_none, toml_script_string
 
 from .event import Event
 
 
-# TODO: use a real query
 DEFAULT_QUERY = """\
 SELECT * FROM __InstanceCreationEvent
   WITHIN 10
@@ -39,5 +38,5 @@ class WMIEvent(Event):
         ):
             raise ValueError("Invalid WMI Event: mandatory field(s) missing")
         t = Event.as_table(self)
-        t.append("query", self.query)
+        t.append("query", toml_script_string(self.query))
         return t

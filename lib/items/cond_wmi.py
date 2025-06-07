@@ -3,7 +3,7 @@
 from lib.i18n.strings import *
 
 from tomlkit import table, items
-from ..utility import check_not_none, append_not_none
+from ..utility import check_not_none, append_not_none, toml_script_string
 
 from .cond import Condition
 
@@ -46,7 +46,7 @@ class WMICondition(Condition):
         t = append_not_none(
             t, "recur_after_failed_check", self.recur_after_failed_check
         )
-        t.append("query", self.query)
+        t.append("query", toml_script_string(self.query))
         t = append_not_none(t, "result_check_all", self.result_check_all)
         t = append_not_none(t, "result_check", self.result_check)
         return t

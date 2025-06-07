@@ -349,7 +349,6 @@ SYM_FAIL = "✕"
 SYM_UNKNOWN = "∅"
 
 
-
 # default strings for standard buttons
 BTN_OK = "OK"
 BTN_CANCEL = "Cancel"

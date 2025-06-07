@@ -3,7 +3,13 @@
 from lib.i18n.strings import *
 
 from tomlkit import table, items
-from ..utility import check_not_none, append_not_none
+from ..utility import (
+    check_not_none,
+    append_not_none,
+    toml_list_of_literals,
+    toml_literal,
+    toml_list_of_tables,
+)
 
 from .cond import Condition
 
@@ -85,9 +91,9 @@ class CommandCondition(Condition):
         t = append_not_none(
             t, "recur_after_failed_check", self.recur_after_failed_check
         )
-        t.append("startup_path", self.startup_path)
-        t.append("command", self.command)
-        t.append("command_arguments", self.command_arguments)
+        t.append("startup_path", toml_literal(self.startup_path))
+        t.append("command", toml_literal(self.command))
+        t.append("command_arguments", toml_list_of_literals(self.command_arguments))
         t = append_not_none(t, "match_exact", self.match_exact)
         t = append_not_none(
             t, "match_regular_expression", self.match_regular_expression

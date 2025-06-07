@@ -3,7 +3,7 @@
 from lib.i18n.strings import *
 
 from tomlkit import table, items
-from ..utility import check_not_none, append_not_none
+from ..utility import check_not_none, toml_list_of_tables
 
 from .cond import Condition
 
@@ -261,7 +261,7 @@ class TimeCondition(Condition):
         ):
             raise ValueError("Invalid Time Condition: mandatory field(s) missing")
         t = Condition.as_table(self)
-        t = append_not_none(t, "time_specifications", self.time_specifications)
+        t.append("time_specifications", toml_list_of_tables(self.time_specifications))
         return t
 
 

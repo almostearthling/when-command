@@ -2,8 +2,15 @@
 
 from lib.i18n.strings import *
 
+import json
+
 from tomlkit import table, items
-from ..utility import check_not_none, append_not_none
+from ..utility import (
+    check_not_none,
+    append_not_none,
+    toml_list_of_tables,
+    toml_script_string,
+)
 
 from .cond import Condition
 
@@ -71,7 +78,14 @@ class DBusCondition(Condition):
         t.append("method", self.method)
         t = append_not_none(t, "parameter_call", self.parameter_call)
         t = append_not_none(t, "parameter_check_all", self.parameter_check_all)
-        t = append_not_none(t, "parameter_check", self.parameter_check)
+        # JSON check strings should still be supported, but will eventually go away
+        if isinstance(self.parameter_check, str):
+            pc = json.loads(self.parameter_check)
+            t.append("parameter_check", toml_list_of_tables(pc))
+        else:
+            t = append_not_none(
+                t, "parameter_check", toml_list_of_tables(self.parameter_check)
+            )
         return t
 
 
