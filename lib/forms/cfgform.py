@@ -280,22 +280,25 @@ class form_Config(ApplicationForm):
                 task_ResetConditionsOnResume,
                 condition_ResetConditionsOnResume,
                 event_ResetConditionsOnResume,
-                name_ResetConditionsOnResume
+                name_ResetConditionsOnResume,
             )
-            if name_ResetConditionsOnResume not in self._tasks.keys():
-                self._tasks[name_ResetConditionsOnResume] = task_ResetConditionsOnResume
-            if name_ResetConditionsOnResume not in self._conditions.keys():
-                self._conditions[name_ResetConditionsOnResume] = condition_ResetConditionsOnResume
-            if name_ResetConditionsOnResume not in self._events.keys():
-                self._events[name_ResetConditionsOnResume] = event_ResetConditionsOnResume
+            name = name_ResetConditionsOnResume()
+            if name not in self._tasks.keys():
+                self._tasks[name] = task_ResetConditionsOnResume
+            if name not in self._conditions.keys():
+                self._conditions[name] = condition_ResetConditionsOnResume
+            if name not in self._events.keys():
+                self._events[name] = event_ResetConditionsOnResume
         else:
-            if name_ResetConditionsOnResume in self._tasks.keys():
-                del self._tasks[name_ResetConditionsOnResume]
-            if name_ResetConditionsOnResume in self._conditions.keys():
-                del self._conditions[name_ResetConditionsOnResume]
-            if name_ResetConditionsOnResume in self._events.keys():
-                del self._events[name_ResetConditionsOnResume]
+            if name in self._tasks.keys():
+                del self._tasks[name]
+            if name in self._conditions.keys():
+                del self._conditions[name]
+            if name in self._events.keys():
+                del self._events[name]
         # ...
+
+        # finally write the configuration fle
         write_whenever_config(
             fn,
             [self._tasks[k] for k in self._tasks],
