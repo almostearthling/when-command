@@ -4,6 +4,7 @@
 
 
 from datetime import datetime
+from ..utility import get_private_item_name_prefix
 
 
 class History(object):
@@ -12,6 +13,7 @@ class History(object):
         self._history = []
         self._maxlen = maxlen
         self._open_records_timing = {}
+        self._private_prefix = get_private_item_name_prefix()
 
     def append(self, record):
         time = record["header"]["time"]
@@ -25,7 +27,7 @@ class History(object):
         status = record["contents"]["message_type"]["status"]
         message = record["contents"]["message"]
         itemstr = "%s/%s" % (item, item_id)
-        if when == "HIST":
+        if when == "HIST" and not item.startswith(self._private_prefix):
             if status == "START":
                 self._open_records_timing[itemstr] = time
             else:
