@@ -259,7 +259,9 @@ class form_Condition(ApplicationForm):
         else:
             self._item.max_tasks_retries = self.data_get("@max_tasks_retries") or None
         self._item.suspended = self.data_get("@suspended") or None
-        self._item.execute_sequence = False if not self.data_get("@execute_sequence") else None
+        self._item.execute_sequence = (
+            False if not self.data_get("@execute_sequence") else None
+        )
         control_flow = self.data_get("@control_flow")
         if control_flow == "break_failure":
             self._item.break_on_failure = True
