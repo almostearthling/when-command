@@ -40,7 +40,6 @@ _cond = EventCondition()
 _cond.name = _ITEM_NAMES
 _cond.tasks = [_ITEM_NAMES]
 _cond.recurring = True
-_cond.suspended = False
 condition_ResetConditionsOnResume = _cond
 
 

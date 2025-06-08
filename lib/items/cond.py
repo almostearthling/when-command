@@ -33,12 +33,12 @@ class Condition(object):
         self.hrtype = None
         if t:
             self.name = t.get("name")
-            self.execute_sequence = t.get("execute_sequence", True)
-            self.break_on_failure = t.get("break_on_failure", False)
-            self.break_on_success = t.get("break_on_success", False)
-            self.suspended = t.get("suspended", False)
-            self.recurring = t.get("recurring", False)
-            self.max_tasks_retries = t.get("max_tasks_retries", 0)
+            self.execute_sequence = t.get("execute_sequence")
+            self.break_on_failure = t.get("break_on_failure")
+            self.break_on_success = t.get("break_on_success")
+            self.suspended = t.get("suspended")
+            self.recurring = t.get("recurring")
+            self.max_tasks_retries = t.get("max_tasks_retries")
             self.tasks = t.get("tasks")
             tags = t.get("tags")
             if tags:

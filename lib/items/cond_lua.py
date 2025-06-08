@@ -27,7 +27,7 @@ class LuaScriptCondition(Condition):
             self.check_after = t.get("check_after")
             self.recur_after_failed_check = t.get("recur_after_failed_check")
             self.script = t.get("script")
-            self.expect_all = t.get("expect_all", False)
+            self.expect_all = t.get("expect_all")
             expected_results = t.get("expected_results")
             if expected_results:
                 self.expected_results = dict(expected_results)

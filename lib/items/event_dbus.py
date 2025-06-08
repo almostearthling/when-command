@@ -42,7 +42,7 @@ class DBusEvent(Event):
         else:
             self.bus = DEFAULT_BUS
             self.rule = DEFAULT_RULE
-            self.parameter_check_all = False
+            self.parameter_check_all = None
             self.parameter_check = None
 
     def as_table(self):

@@ -43,7 +43,7 @@ class DBusCondition(Condition):
             self.interface = t.get("interface")
             self.method = t.get("method")
             self.parameter_call = t.get("parameter_call")
-            self.parameter_check_all = t.get("parameter_check_all", False)
+            self.parameter_check_all = t.get("parameter_check_all")
             self.parameter_check = t.get("parameter_check")
         else:
             self.check_after = None
@@ -54,7 +54,7 @@ class DBusCondition(Condition):
             self.interface = DEFAULT_INTERFACE
             self.method = DEFAULT_METHOD
             self.parameter_call = None
-            self.parameter_check_all = False
+            self.parameter_check_all = None
             self.parameter_check = None
 
     def as_table(self):
