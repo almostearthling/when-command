@@ -182,7 +182,7 @@ class form_DBusCondition(form_Condition):
         self._item.method = self.data_get("method")
         self._item.parameter_call = json.loads(self.data_get("parameter_call")) or None
         self._item.parameter_check = json.loads(self.data_get("parameter_check")) or None
-        self._item.parameter_check_all = self.data_get("parameter_check_all") or False
+        self._item.parameter_check_all = self.data_get("parameter_check_all") or None
         self._item.check_after = self.data_get("check_after") or None
         self._item.recur_after_failed_check = (
             self.data_get("ignore_persistent_success") or None
