@@ -390,7 +390,8 @@ def toml_list_of_tables(lot):
             elem = inline_table()
             elem.update(x)
             r.add_line(elem)
-        r.add_line()
+        if len(r) > 0:
+            r.add_line()
         return r
 
 
@@ -406,7 +407,8 @@ def toml_list_of_literals(los):
         r = array()
         for s in los:
             r.add_line(toml_try_literal(s))
-        r.add_line()
+        if len(r) > 0:
+            r.add_line()
         return r
 
 
@@ -434,7 +436,8 @@ def toml_list_of_command_args(los):
                 cur_line.append(toml_try_literal(s))
         if len(cur_line) > 0:
             r.add_line(*cur_line)
-        r.add_line()
+        if len(r) > 0:
+            r.add_line()
         return r
 
 
