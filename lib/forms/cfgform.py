@@ -172,25 +172,16 @@ class form_Config(ApplicationForm):
         # be retrieved dynamically
         for key in self._tasks:
             item = self._tasks[key]
-            if item.tags:
-                signature = "task:%s:%s" % (item.type, item.tags.get("subtype"))
-            else:
-                signature = "task:%s" % item.type
-            self._itemlistentries.append([item.name, item.hrtype, signature])
+            if not item.private:
+                self._itemlistentries.append([item.name, item.hrtype, item.signature])
         for key in self._conditions:
             item = self._conditions[key]
-            if item.tags:
-                signature = "cond:%s:%s" % (item.type, item.tags.get("subtype"))
-            else:
-                signature = "cond:%s" % item.type
-            self._itemlistentries.append([item.name, item.hrtype, signature])
+            if not item.private:
+                self._itemlistentries.append([item.name, item.hrtype, item.signature])
         for key in self._events:
             item = self._events[key]
-            if item.tags:
-                signature = "event:%s:%s" % (item.type, item.tags.get("subtype"))
-            else:
-                signature = "event:%s" % item.type
-            self._itemlistentries.append([item.name, item.hrtype, signature])
+            if not item.private:
+                self._itemlistentries.append([item.name, item.hrtype, item.signature])
         self._itemlistentries.sort(key=lambda x: x[0])
         # set the changed flag when tick seconds have changed: this is not
         # necessary for the check box based parameter, because the flag is

@@ -394,6 +394,34 @@ def toml_list_of_literals(los):
         return r
 
 
+# TOML: list of literals specific for command arguments: tries to put arguments
+# beginning with a dash, a double dash, or a slash (on Windows) on a new line
+# in the array, possibly followed by the first non-dashed argument
+def toml_list_of_command_args(los):
+    if los is not None:
+        switch_start = ['-', '--']
+        if sys.platform.startswith("win"):
+            switch_start.append('/')
+        cur_line = []
+        r = array()
+        for s in los:
+            if any(s.startswith(x) for x in switch_start):
+                if len(cur_line) > 0:
+                    r.add_line(cur_line)
+                    cur_line = []
+                cur_line.append(string(s, literal=True))
+            elif len(cur_line) > 1:
+                r.add_line(*cur_line)
+                cur_line = []
+                r.add_line(string(s, literal=True))
+            else:
+                cur_line.append(string(s, literal=True))
+        if len(cur_line) > 0:
+            r.add_line(*cur_line)
+        r.add_line()
+        return r
+
+
 # TOML: quickly convert a string to literal (preserving None)
 def toml_literal(s):
     if s is not None:

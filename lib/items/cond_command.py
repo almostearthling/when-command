@@ -6,7 +6,7 @@ from tomlkit import table, items
 from ..utility import (
     check_not_none,
     append_not_none,
-    toml_list_of_literals,
+    toml_list_of_command_args,
     toml_literal,
     toml_list_of_tables,
 )
@@ -93,7 +93,7 @@ class CommandCondition(Condition):
         )
         t.append("startup_path", toml_literal(self.startup_path))
         t.append("command", toml_literal(self.command))
-        t.append("command_arguments", toml_list_of_literals(self.command_arguments))
+        t.append("command_arguments", toml_list_of_command_args(self.command_arguments))
         t = append_not_none(t, "match_exact", self.match_exact)
         t = append_not_none(
             t, "match_regular_expression", self.match_regular_expression
