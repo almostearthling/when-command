@@ -274,14 +274,14 @@ class form_CommandTask(form_Task):
                     self._item.match_regular_expression = (
                         bool(match_regular_expression) or None
                     )
-                    self._item.case_sensitive = bool(case_sensitive) or None
+                    self._item.case_sensitive = False if not case_sensitive else None
                 elif check_what == UI_STREAM_STDERR:
                     self._item.success_stderr = str(check_value) or None
                     self._item.match_exact = bool(match_exact) or None
                     self._item.match_regular_expression = (
                         bool(match_regular_expression) or None
                     )
-                    self._item.case_sensitive = bool(case_sensitive) or None
+                    self._item.case_sensitive = False if not case_sensitive else None
             elif check_for == UI_OUTCOME_FAILURE:
                 if check_what == UI_EXIT_CODE:
                     self._item.failure_status = (
@@ -293,14 +293,14 @@ class form_CommandTask(form_Task):
                     self._item.match_regular_expression = (
                         bool(match_regular_expression) or None
                     )
-                    self._item.case_sensitive = bool(case_sensitive) or None
+                    self._item.case_sensitive = False if not case_sensitive else None
                 elif check_what == UI_STREAM_STDERR:
                     self._item.failure_stderr = str(check_value) or None
                     self._item.match_exact = bool(match_exact) or None
                     self._item.match_regular_expression = (
                         bool(match_regular_expression) or None
                     )
-                    self._item.case_sensitive = bool(case_sensitive) or None
+                    self._item.case_sensitive = False if not case_sensitive else None
         return super()._updatedata()
 
     def _updateform(self):

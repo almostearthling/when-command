@@ -3,7 +3,12 @@
 from lib.i18n.strings import *
 
 from tomlkit import table, items
-from ..utility import check_not_none, append_not_none
+from ..utility import (
+    check_not_none,
+    append_not_none,
+    toml_list_of_tables,
+    toml_script_string,
+)
 
 from .cond import Condition
 
@@ -27,13 +32,13 @@ class WMICondition(Condition):
             self.check_after = t.get("check_after")
             self.recur_after_failed_check = t.get("recur_after_failed_check")
             self.query = t.get("query")
-            self.result_check_all = t.get("result_check_all", False)
+            self.result_check_all = t.get("result_check_all")
             self.result_check = t.get("result_check")
         else:
             self.check_after = None
             self.recur_after_failed_check = None
             self.query = DEFAULT_QUERY
-            self.result_check_all = False
+            self.result_check_all = None
             self.result_check = None
 
     def as_table(self):
@@ -46,9 +51,11 @@ class WMICondition(Condition):
         t = append_not_none(
             t, "recur_after_failed_check", self.recur_after_failed_check
         )
-        t.append("query", self.query)
+        t.append("query", toml_script_string(self.query))
         t = append_not_none(t, "result_check_all", self.result_check_all)
-        t = append_not_none(t, "result_check", self.result_check)
+        t = append_not_none(
+            t, "result_check", toml_list_of_tables(self.result_check)
+        )
         return t
 
 

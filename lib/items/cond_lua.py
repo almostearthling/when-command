@@ -2,8 +2,8 @@
 
 from lib.i18n.strings import *
 
-from tomlkit import table, items
-from ..utility import check_not_none, append_not_none
+from tomlkit import table, items, string
+from ..utility import check_not_none, append_not_none, toml_script_string
 
 from .cond import Condition
 
@@ -27,7 +27,7 @@ class LuaScriptCondition(Condition):
             self.check_after = t.get("check_after")
             self.recur_after_failed_check = t.get("recur_after_failed_check")
             self.script = t.get("script")
-            self.expect_all = t.get("expect_all", False)
+            self.expect_all = t.get("expect_all")
             expected_results = t.get("expected_results")
             if expected_results:
                 self.expected_results = dict(expected_results)
@@ -50,7 +50,7 @@ class LuaScriptCondition(Condition):
         t = append_not_none(
             t, "recur_after_failed_check", self.recur_after_failed_check
         )
-        t.append("script", self.script)
+        t.append("script", toml_script_string(self.script))
         t = append_not_none(t, "expect_all", self.expect_all)
         t = append_not_none(t, "expected_results", self.expected_results)
         return t

@@ -3,7 +3,7 @@
 from lib.i18n.strings import *
 
 from tomlkit import table, items
-from ..utility import check_not_none, append_not_none
+from ..utility import check_not_none, append_not_none, toml_list_of_literals
 
 from .event import Event
 
@@ -42,7 +42,7 @@ class FilesystemChangeEvent(Event):
                 "Invalid File System Change Event: mandatory field(s) missing"
             )
         t = Event.as_table(self)
-        t.append("watch", self.watch)
+        t.append("watch", toml_list_of_literals(self.watch))
         t = append_not_none(t, "recursive", self.recursive)
         # t = append_not_none(t, 'poll_seconds', self.poll_seconds)
         return t

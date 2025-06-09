@@ -7,7 +7,7 @@ import subprocess
 from base64 import b64decode
 import re
 
-from tomlkit import table
+from tomlkit import table, array, inline_table, string, exceptions
 from hashlib import blake2s
 from base64 import decodebytes as b64_decodeb
 from io import BytesIO
@@ -364,6 +364,87 @@ def get_executable_extensions():
         return os.environ["PATHEXT"].split(";")
     else:
         return None
+
+
+# TOML: try to render a string as literal
+def toml_try_literal(s):
+    try:
+        return string(s, literal=True)
+    except (exceptions.InvalidStringError, exceptions.InvalidCharInStringError):
+        return string(s, literal=False)
+
+
+# TOML: try to render a string as multiline literal
+def toml_try_ml_literal(s):
+    try:
+        return string(s, multiline=True, literal=True)
+    except (exceptions.InvalidStringError, exceptions.InvalidCharInStringError):
+        return string(s, multiline=True, literal=False)
+
+
+# TOML: create an array of inline tables from a list of dicts
+def toml_list_of_tables(lot):
+    if lot is not None:
+        r = array()
+        for x in lot:
+            elem = inline_table()
+            elem.update(x)
+            r.add_line(elem)
+        if len(r) > 0:
+            r.add_line()
+        return r
+
+
+# TOML: convert to a script (multiline literal) string
+def toml_script_string(s):
+    if s is not None:
+        return toml_try_ml_literal(s)
+
+
+# TOML: create an array of literal strings
+def toml_list_of_literals(los):
+    if los is not None:
+        r = array()
+        for s in los:
+            r.add_line(toml_try_literal(s))
+        if len(r) > 0:
+            r.add_line()
+        return r
+
+
+# TOML: list of literals specific for command arguments: tries to put arguments
+# beginning with a dash, a double dash, or a slash (on Windows) on a new line
+# in the array, possibly followed by the first non-dashed argument
+def toml_list_of_command_args(los):
+    if los is not None:
+        switch_start = ['-', '--']
+        if sys.platform.startswith("win"):
+            switch_start.append('/')
+        cur_line = []
+        r = array()
+        for s in los:
+            if any(s.startswith(x) for x in switch_start):
+                if len(cur_line) > 0:
+                    r.add_line(*cur_line)
+                    cur_line = []
+                cur_line.append(toml_try_literal(s))
+            elif len(cur_line) > 1:
+                r.add_line(*cur_line)
+                cur_line = []
+                r.add_line(toml_try_literal(s))
+            else:
+                cur_line.append(toml_try_literal(s))
+        if len(cur_line) > 0:
+            r.add_line(*cur_line)
+        if len(r) > 0:
+            r.add_line()
+        return r
+
+
+# TOML: quickly convert a string to literal (preserving None)
+def toml_literal(s):
+    if s is not None:
+        return toml_try_literal(s)
 
 
 # ...

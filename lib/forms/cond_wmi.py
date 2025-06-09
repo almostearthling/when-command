@@ -273,7 +273,7 @@ class form_WMICondition(form_Condition):
 
     def _updatedata(self):
         self._item.query = self.data_get("query").strip() or ""
-        self._item.result_check_all = self.data_get("expect_all") or None
+        self._item.result_check_all = self.data_get("check_all") or None
         self._item.check_after = self.data_get("check_after") or None
         self._item.recur_after_failed_check = (
             self.data_get("ignore_persistent_success") or None

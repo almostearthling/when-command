@@ -255,16 +255,18 @@ class form_Condition(ApplicationForm):
             self._item.name = name
         self._item.recurring = self.data_get("@recurring") or None
         if self._item.recurring:
-            self._item.max_tasks_retries = 0
+            self._item.max_tasks_retries = None
         else:
             self._item.max_tasks_retries = self.data_get("@max_tasks_retries") or None
         self._item.suspended = self.data_get("@suspended") or None
-        self._item.execute_sequence = self.data_get("@execute_sequence") or None
+        self._item.execute_sequence = (
+            False if not self.data_get("@execute_sequence") else None
+        )
         control_flow = self.data_get("@control_flow")
         if control_flow == "break_failure":
             self._item.break_on_failure = True
             self._item.break_on_success = None
-        elif control_flow == "break_failure":
+        elif control_flow == "break_success":
             self._item.break_on_failure = None
             self._item.break_on_success = True
         else:
