@@ -7,7 +7,7 @@ import subprocess
 from base64 import b64decode
 import re
 
-from tomlkit import table, array, inline_table, string
+from tomlkit import table, array, inline_table, string, exceptions
 from hashlib import blake2s
 from base64 import decodebytes as b64_decodeb
 from io import BytesIO
@@ -366,6 +366,22 @@ def get_executable_extensions():
         return None
 
 
+# TOML: try to render a string as literal
+def toml_try_literal(s):
+    try:
+        return string(s, literal=True)
+    except (exceptions.InvalidStringError, exceptions.InvalidCharInStringError):
+        return string(s, literal=False)
+
+
+# TOML: try to render a string as multiline literal
+def toml_try_ml_literal(s):
+    try:
+        return string(s, multiline=True, literal=True)
+    except (exceptions.InvalidStringError, exceptions.InvalidCharInStringError):
+        return string(s, multiline=True, literal=False)
+
+
 # TOML: create an array of inline tables from a list of dicts
 def toml_list_of_tables(lot):
     if lot is not None:
@@ -381,7 +397,7 @@ def toml_list_of_tables(lot):
 # TOML: convert to a script (multiline literal) string
 def toml_script_string(s):
     if s is not None:
-        return string(s, multiline=True, literal=True)
+        return toml_try_ml_literal(s)
 
 
 # TOML: create an array of literal strings
@@ -389,7 +405,7 @@ def toml_list_of_literals(los):
     if los is not None:
         r = array()
         for s in los:
-            r.add_line(string(s, literal=True))
+            r.add_line(toml_try_literal(s))
         r.add_line()
         return r
 
@@ -409,13 +425,13 @@ def toml_list_of_command_args(los):
                 if len(cur_line) > 0:
                     r.add_line(*cur_line)
                     cur_line = []
-                cur_line.append(string(s, literal=True))
+                cur_line.append(toml_try_literal(s))
             elif len(cur_line) > 1:
                 r.add_line(*cur_line)
                 cur_line = []
-                r.add_line(string(s, literal=True))
+                r.add_line(toml_try_literal(s))
             else:
-                cur_line.append(string(s, literal=True))
+                cur_line.append(toml_try_literal(s))
         if len(cur_line) > 0:
             r.add_line(*cur_line)
         r.add_line()
@@ -425,7 +441,7 @@ def toml_list_of_command_args(los):
 # TOML: quickly convert a string to literal (preserving None)
 def toml_literal(s):
     if s is not None:
-        return string(s, literal=True)
+        return toml_try_literal(s)
 
 
 # ...
