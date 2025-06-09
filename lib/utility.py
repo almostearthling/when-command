@@ -407,7 +407,7 @@ def toml_list_of_command_args(los):
         for s in los:
             if any(s.startswith(x) for x in switch_start):
                 if len(cur_line) > 0:
-                    r.add_line(cur_line)
+                    r.add_line(*cur_line)
                     cur_line = []
                 cur_line.append(string(s, literal=True))
             elif len(cur_line) > 1:
