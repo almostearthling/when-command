@@ -4,7 +4,7 @@
 UI_APP = "When"
 UI_APP_LABEL = "When Automation Tool"
 UI_APP_COPYRIGHT = "© 2023-2025 Francesco Garosi"
-UI_APP_VERSION = "1.10.6b7"
+UI_APP_VERSION = "1.10.7b1"
 
 # item types
 ITEM_TASK = "Task"
@@ -139,6 +139,9 @@ UI_FORM_ITEMS = "Items"
 
 UI_FORM_COMMON_PARAMS = "Common parameters"
 UI_FORM_SPECIFIC_PARAMS = "Specific parameters"
+
+UI_FORM_ITEMS_PANE = "Items Configuration"
+UI_FORM_GLOBALS_PANE = "Global Parameters"
 
 UI_FORM_ENVIRONMENT = "Environment"
 UI_FORM_VARIABLE = "Variable"

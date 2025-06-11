@@ -85,24 +85,53 @@ class form_Config(ApplicationForm):
         # client area
         area = ttk.Frame(self.contents)
         area.grid(row=0, column=0, sticky=tk.NSEW)
+        area.rowconfigure(0, weight=1)
+        area.columnconfigure(0, weight=1)
         PAD = WIDGET_PADDING_PIXELS
 
+        # notebook for items pane and global configuration pane
+        nb_config = ttk.Notebook(area)
+        area_items = ttk.Frame(nb_config)
+        area_globals = ttk.Frame(nb_config)
+
+        nb_config.add(area_items, text=UI_FORM_ITEMS_PANE)
+        nb_config.add(area_globals, text=UI_FORM_GLOBALS_PANE)
+        nb_config.grid(row=0, column=0, sticky=tk.NSEW)
+
+        # globals pane
         # configuration file section
-        l_cfgFile = ttk.Label(area, text=UI_FORM_FILELOCATION_SC)
-        e_cfgFile = ttk.Entry(area, state=["disabled"])
+        l_cfgFile = ttk.Label(area_globals, text=UI_FORM_FILELOCATION_SC)
+        e_cfgFile = ttk.Entry(area_globals, state=["disabled"])
         # sep1 = ttk.Separator(area)
 
         # global flags and parameters
-        l_tickSeconds = ttk.Label(area, text=UI_FORM_TICKDURATION_SC)
-        e_tickSeconds = ttk.Entry(area, width=5)
-        ck_randChecks = ttk.Checkbutton(area, text=UI_FORM_RANDOMCHECKS)
-        fill1 = ttk.Frame(area)
-        sep2 = ttk.Separator(area)
+        l_tickSeconds = ttk.Label(area_globals, text=UI_FORM_TICKDURATION_SC)
+        e_tickSeconds = ttk.Entry(area_globals, width=5)
+        ck_randChecks = ttk.Checkbutton(area_globals, text=UI_FORM_RANDOMCHECKS)
+        fill1 = ttk.Frame(area_globals)
+        sep2 = ttk.Separator(area_globals)
+        fill2 = ttk.Frame(area_globals)
 
+        # arrange items in the grid
+        l_cfgFile.grid(row=0, column=0, padx=PAD, pady=PAD, sticky=tk.W)
+        e_cfgFile.grid(row=0, column=1, columnspan=4, sticky=tk.EW, padx=PAD, pady=PAD)
+        # sep1.grid(row=1, column=0, columnspan=4, pady=PAD, sticky=tk.EW)
+        l_tickSeconds.grid(row=10, column=0, padx=PAD, pady=PAD)
+        e_tickSeconds.grid(row=10, column=1, sticky=tk.W, padx=PAD, pady=PAD)
+        ck_randChecks.grid(row=10, column=3, sticky=tk.W, padx=PAD, pady=PAD)
+        fill1.grid(row=10, column=2, sticky=tk.NSEW)
+        sep2.grid(row=11, column=0, columnspan=4, pady=PAD, sticky=tk.EW)
+        fill2.grid(row=20, column=2, sticky=tk.NSEW)
+
+        # expand appropriate sections
+        area_globals.rowconfigure(index=20, weight=1)
+        area_globals.columnconfigure(2, weight=1)
+
+        # items pane
         # item list box
-        l_items = ttk.Label(area, text=UI_FORM_ITEMS_SC)
+        l_items = ttk.Label(area_items, text=UI_FORM_ITEMS_SC)
         # build a scrolled frame for the treeview
-        sftv_items = ttk.Frame(area)
+        sftv_items = ttk.Frame(area_items)
         tv_items = ttk.Treeview(
             sftv_items,
             columns=("name", "type", "signature"),
@@ -120,23 +149,14 @@ class form_Config(ApplicationForm):
         tv_items.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         sb_items.pack(side=tk.RIGHT, fill=tk.Y)
 
-        # arrange items in the grid
-        l_cfgFile.grid(row=0, column=0, padx=PAD, pady=PAD, sticky=tk.W)
-        e_cfgFile.grid(row=0, column=1, columnspan=4, sticky=tk.EW, padx=PAD, pady=PAD)
-        # sep1.grid(row=1, column=0, columnspan=4, pady=PAD, sticky=tk.EW)
-        l_tickSeconds.grid(row=10, column=0, padx=PAD, pady=PAD)
-        e_tickSeconds.grid(row=10, column=1, sticky=tk.W, padx=PAD, pady=PAD)
-        ck_randChecks.grid(row=10, column=3, sticky=tk.W, padx=PAD, pady=PAD)
-        fill1.grid(row=10, column=2, sticky=tk.NSEW)
-        sep2.grid(row=11, column=0, columnspan=4, pady=PAD, sticky=tk.EW)
         l_items.grid(row=20, column=0, columnspan=4, sticky=tk.W, padx=PAD, pady=PAD)
         sftv_items.grid(
             row=21, column=0, columnspan=4, sticky=tk.NSEW, padx=PAD, pady=PAD
         )
 
         # expand appropriate sections
-        area.rowconfigure(index=21, weight=1)
-        area.columnconfigure(2, weight=1)
+        area_items.rowconfigure(index=21, weight=1)
+        area_items.columnconfigure(2, weight=1)
 
         # bind data to widgets
         self.data_bind("config_file", e_cfgFile, TYPE_STRING)
@@ -273,6 +293,7 @@ class form_Config(ApplicationForm):
                 event_ResetConditionsOnResume,
                 name_ResetConditionsOnResume,
             )
+
             name = name_ResetConditionsOnResume()
             if name not in self._tasks.keys():
                 self._tasks[name] = task_ResetConditionsOnResume
