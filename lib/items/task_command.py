@@ -35,8 +35,8 @@ class CommandTask(Task):
             assert t.get("type") == self.type
             self.startup_path = t.get("startup_path")
             self.command = t.get("command")
-            self.match_exact = t.get("match_exact", False)
-            self.match_regular_expression = t.get("match_regular_expression", False)
+            self.match_exact = t.get("match_exact")
+            self.match_regular_expression = t.get("match_regular_expression")
             self.success_stdout = t.get("success_stdout")
             self.success_stderr = t.get("success_stderr")
             self.success_status = t.get("success_status")
@@ -44,9 +44,9 @@ class CommandTask(Task):
             self.failure_stderr = t.get("failure_stderr")
             self.failure_status = t.get("failure_status")
             self.timeout_seconds = t.get("timeout_seconds")
-            self.case_sensitive = t.get("case_sensitive", False)
-            self.include_environment = t.get("include_environment", True)
-            self.set_environment_variables = t.get("set_environment_variables", True)
+            self.case_sensitive = t.get("case_sensitive")
+            self.include_environment = t.get("include_environment")
+            self.set_environment_variables = t.get("set_environment_variables")
             command_arguments = t.get("command_arguments")
             if command_arguments:
                 self.command_arguments = list(command_arguments)
