@@ -62,6 +62,13 @@ class form_Config(ApplicationForm):
             )
         super().__init__(UI_APP, size, None, bbox, main)
 
+        # the following buttons may change state according to current pane
+        bbox_changing = [
+            BBOX_NEW,
+            BBOX_EDIT,
+            BBOX_DELETE,
+        ]
+
         # list box icons
         self._icon_task = get_ui_image(TASK_ICON)
         self._icon_condition = get_ui_image(COND_ICON)
@@ -97,6 +104,14 @@ class form_Config(ApplicationForm):
         nb_config.add(area_items, text=UI_FORM_ITEMS_PANE)
         nb_config.add(area_globals, text=UI_FORM_GLOBALS_PANE)
         nb_config.grid(row=0, column=0, sticky=tk.NSEW)
+
+        # enable/disable appropriate buttons when changing tab
+        def tab_change():
+            if nb_config.index(nb_config.select()) == 0:
+                self.enable_buttons(*bbox_changing)
+            else:
+                self.disable_buttons(*bbox_changing)
+        nb_config.bind("<<NotebookTabChanged>>", lambda _: tab_change())
 
         # globals pane
         # configuration file section
