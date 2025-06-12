@@ -61,8 +61,8 @@ class CommandTask(Task):
             self.startup_path = DEFAULT_STARTUP_PATH
             self.command = DEFAULT_COMMAND
             self.command_arguments = []
-            self.match_exact = False
-            self.match_regular_expression = False
+            self.match_exact = None
+            self.match_regular_expression = None
             self.success_stdout = None
             self.success_stderr = None
             self.success_status = None
@@ -70,9 +70,9 @@ class CommandTask(Task):
             self.failure_stderr = None
             self.failure_status = None
             self.timeout_seconds = None
-            self.case_sensitive = False
-            self.include_environment = True
-            self.set_environment_variables = True
+            self.case_sensitive = None
+            self.include_environment = None
+            self.set_environment_variables = None
             self.environment_variables = None
 
     def as_table(self):

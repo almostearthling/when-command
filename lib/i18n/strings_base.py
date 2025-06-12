@@ -4,7 +4,7 @@
 UI_APP = "When"
 UI_APP_LABEL = "When Automation Tool"
 UI_APP_COPYRIGHT = "© 2023-2025 Francesco Garosi"
-UI_APP_VERSION = "1.10.7b1"
+UI_APP_VERSION = "1.10.7b2"
 
 # item types
 ITEM_TASK = "Task"
