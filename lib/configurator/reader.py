@@ -23,6 +23,7 @@ def read_whenever_config(filename):
     res_globals = {
         'scheduler_tick_seconds': doc.get('scheduler_tick_seconds', 5),
         'randomize_checks_within_ticks': doc.get('randomize_checks_within_ticks', False),
+        'tags': doc.get('tags', {}),
     }
     if 'task' in doc:
         for item_table in doc['task']:
