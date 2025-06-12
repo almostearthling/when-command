@@ -136,19 +136,19 @@ class form_Config(ApplicationForm):
         # arrange items in the grid
         l_cfgFile.grid(row=0, column=0, padx=PAD, pady=PAD, sticky=tk.W)
         e_cfgFile.grid(row=0, column=1, columnspan=4, sticky=tk.EW, padx=PAD, pady=PAD)
-        # sep1.grid(row=1, column=0, columnspan=4, pady=PAD, sticky=tk.EW)
-        l_tickSeconds.grid(row=10, column=0, padx=PAD, pady=PAD)
-        e_tickSeconds.grid(row=10, column=1, sticky=tk.W, padx=PAD, pady=PAD)
-        ck_randChecks.grid(row=10, column=3, sticky=tk.W, padx=PAD, pady=PAD)
+        # sep1.grid(row=1, column=0, columnspan=5, pady=PAD, sticky=tk.EW)
+        ck_randChecks.grid(row=10, column=1, sticky=tk.W, padx=PAD, pady=PAD)
+        l_tickSeconds.grid(row=10, column=3, padx=PAD, pady=PAD)
+        e_tickSeconds.grid(row=10, column=4, sticky=tk.W, padx=PAD, pady=PAD)
         fill1.grid(row=10, column=2, sticky=tk.NSEW)
-        # sep2.grid(row=11, column=0, columnspan=4, pady=PAD, sticky=tk.EW)
-        ck_resetOnResume.grid(row=12, column=3, sticky=tk.W, padx=PAD, pady=PAD)
-        sep3.grid(row=13, column=0, columnspan=4, pady=PAD, sticky=tk.EW)
-        fill2.grid(row=20, column=2, sticky=tk.NSEW)
+        # sep2.grid(row=11, column=0, columnspan=5, pady=PAD, sticky=tk.EW)
+        ck_resetOnResume.grid(row=12, column=1, sticky=tk.W, padx=PAD, pady=PAD)
+        sep3.grid(row=13, column=0, columnspan=5, pady=PAD, sticky=tk.EW)
+        fill2.grid(row=20, column=0, columnspan=5, sticky=tk.NSEW)
 
         # expand appropriate sections
         area_globals.rowconfigure(index=20, weight=1)
-        area_globals.columnconfigure(2, weight=1)
+        area_globals.columnconfigure(1, weight=1)
 
         # items pane
         # item list box
@@ -172,14 +172,14 @@ class form_Config(ApplicationForm):
         tv_items.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         sb_items.pack(side=tk.RIGHT, fill=tk.Y)
 
-        l_items.grid(row=20, column=0, columnspan=4, sticky=tk.W, padx=PAD, pady=PAD)
+        l_items.grid(row=20, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         sftv_items.grid(
-            row=21, column=0, columnspan=4, sticky=tk.NSEW, padx=PAD, pady=PAD
+            row=21, column=0, sticky=tk.NSEW, padx=PAD, pady=PAD
         )
 
         # expand appropriate sections
         area_items.rowconfigure(index=21, weight=1)
-        area_items.columnconfigure(2, weight=1)
+        area_items.columnconfigure(0, weight=1)
 
         # bind data to widgets
         self.data_bind("config_file", e_cfgFile, TYPE_STRING)
