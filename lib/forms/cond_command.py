@@ -345,7 +345,7 @@ class form_CommandCondition(form_Condition):
         self.data_set(
             "include_environment",
             (
-                self._item.include_environment
+                False
                 if self._item.include_environment is False
                 else True
             ),
@@ -353,7 +353,7 @@ class form_CommandCondition(form_Condition):
         self.data_set(
             "set_environment_variables",
             (
-                self._item.set_environment_variables
+                False
                 if self._item.set_environment_variables is False
                 else True
             ),

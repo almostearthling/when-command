@@ -62,6 +62,13 @@ class form_Config(ApplicationForm):
             )
         super().__init__(UI_APP, size, None, bbox, main)
 
+        # the following buttons may change state according to current pane
+        bbox_changing = [
+            BBOX_NEW,
+            BBOX_EDIT,
+            BBOX_DELETE,
+        ]
+
         # list box icons
         self._icon_task = get_ui_image(TASK_ICON)
         self._icon_condition = get_ui_image(COND_ICON)
@@ -77,6 +84,9 @@ class form_Config(ApplicationForm):
         self._globals = {
             "scheduler_tick_seconds": DEFAULT_SCHEDULER_TICK_SECONDS,
             "randomize_checks_within_ticks": DEFAULT_RANDOMIZE_CHECKS_WITHIN_TICKS,
+            "tags": {
+                "reset_conditions_on_resume": AppConfig.get("RESET_CONDS_ON_RESUME"),
+            },
         }
         self._changed = False
 
@@ -85,24 +95,66 @@ class form_Config(ApplicationForm):
         # client area
         area = ttk.Frame(self.contents)
         area.grid(row=0, column=0, sticky=tk.NSEW)
+        area.rowconfigure(0, weight=1)
+        area.columnconfigure(0, weight=1)
         PAD = WIDGET_PADDING_PIXELS
 
+        # notebook for items pane and global configuration pane
+        nb_config = ttk.Notebook(area)
+        area_items = ttk.Frame(nb_config)
+        area_globals = ttk.Frame(nb_config)
+
+        nb_config.add(area_items, text=UI_FORM_ITEMS_PANE)
+        nb_config.add(area_globals, text=UI_FORM_GLOBALS_PANE)
+        nb_config.grid(row=0, column=0, sticky=tk.NSEW)
+
+        # enable/disable appropriate buttons when changing tab
+        def tab_change():
+            if nb_config.index(nb_config.select()) == 0:
+                self.enable_buttons(*bbox_changing)
+            else:
+                self.disable_buttons(*bbox_changing)
+
+        nb_config.bind("<<NotebookTabChanged>>", lambda _: tab_change())
+
+        # globals pane
         # configuration file section
-        l_cfgFile = ttk.Label(area, text=UI_FORM_FILELOCATION_SC)
-        e_cfgFile = ttk.Entry(area, state=["disabled"])
+        l_cfgFile = ttk.Label(area_globals, text=UI_FORM_FILELOCATION_SC)
+        e_cfgFile = ttk.Entry(area_globals, state=["disabled"])
         # sep1 = ttk.Separator(area)
 
         # global flags and parameters
-        l_tickSeconds = ttk.Label(area, text=UI_FORM_TICKDURATION_SC)
-        e_tickSeconds = ttk.Entry(area, width=5)
-        ck_randChecks = ttk.Checkbutton(area, text=UI_FORM_RANDOMCHECKS)
-        fill1 = ttk.Frame(area)
-        sep2 = ttk.Separator(area)
+        l_tickSeconds = ttk.Label(area_globals, text=UI_FORM_TICKDURATION_SC)
+        e_tickSeconds = ttk.Entry(area_globals, width=5)
+        ck_randChecks = ttk.Checkbutton(area_globals, text=UI_FORM_RANDOMCHECKS)
+        fill1 = ttk.Frame(area_globals)
+        # sep2 = ttk.Separator(area_globals)
+        ck_resetOnResume = ttk.Checkbutton(area_globals, text=UI_FORM_RESETONRESUME)
+        sep3 = ttk.Separator(area_globals)
+        fill2 = ttk.Frame(area_globals)
 
+        # arrange items in the grid
+        l_cfgFile.grid(row=0, column=0, padx=PAD, pady=PAD, sticky=tk.W)
+        e_cfgFile.grid(row=0, column=1, columnspan=4, sticky=tk.EW, padx=PAD, pady=PAD)
+        # sep1.grid(row=1, column=0, columnspan=5, pady=PAD, sticky=tk.EW)
+        ck_randChecks.grid(row=10, column=1, sticky=tk.W, padx=PAD, pady=PAD)
+        l_tickSeconds.grid(row=10, column=3, padx=PAD, pady=PAD)
+        e_tickSeconds.grid(row=10, column=4, sticky=tk.W, padx=PAD, pady=PAD)
+        fill1.grid(row=10, column=2, sticky=tk.NSEW)
+        # sep2.grid(row=11, column=0, columnspan=5, pady=PAD, sticky=tk.EW)
+        ck_resetOnResume.grid(row=12, column=1, sticky=tk.W, padx=PAD, pady=PAD)
+        sep3.grid(row=13, column=0, columnspan=5, pady=PAD, sticky=tk.EW)
+        fill2.grid(row=20, column=0, columnspan=5, sticky=tk.NSEW)
+
+        # expand appropriate sections
+        area_globals.rowconfigure(index=20, weight=1)
+        area_globals.columnconfigure(1, weight=1)
+
+        # items pane
         # item list box
-        l_items = ttk.Label(area, text=UI_FORM_ITEMS_SC)
+        l_items = ttk.Label(area_items, text=UI_FORM_ITEMS_SC)
         # build a scrolled frame for the treeview
-        sftv_items = ttk.Frame(area)
+        sftv_items = ttk.Frame(area_items)
         tv_items = ttk.Treeview(
             sftv_items,
             columns=("name", "type", "signature"),
@@ -120,23 +172,14 @@ class form_Config(ApplicationForm):
         tv_items.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         sb_items.pack(side=tk.RIGHT, fill=tk.Y)
 
-        # arrange items in the grid
-        l_cfgFile.grid(row=0, column=0, padx=PAD, pady=PAD, sticky=tk.W)
-        e_cfgFile.grid(row=0, column=1, columnspan=4, sticky=tk.EW, padx=PAD, pady=PAD)
-        # sep1.grid(row=1, column=0, columnspan=4, pady=PAD, sticky=tk.EW)
-        l_tickSeconds.grid(row=10, column=0, padx=PAD, pady=PAD)
-        e_tickSeconds.grid(row=10, column=1, sticky=tk.W, padx=PAD, pady=PAD)
-        ck_randChecks.grid(row=10, column=3, sticky=tk.W, padx=PAD, pady=PAD)
-        fill1.grid(row=10, column=2, sticky=tk.NSEW)
-        sep2.grid(row=11, column=0, columnspan=4, pady=PAD, sticky=tk.EW)
-        l_items.grid(row=20, column=0, columnspan=4, sticky=tk.W, padx=PAD, pady=PAD)
+        l_items.grid(row=20, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         sftv_items.grid(
-            row=21, column=0, columnspan=4, sticky=tk.NSEW, padx=PAD, pady=PAD
+            row=21, column=0, sticky=tk.NSEW, padx=PAD, pady=PAD
         )
 
         # expand appropriate sections
-        area.rowconfigure(index=21, weight=1)
-        area.columnconfigure(2, weight=1)
+        area_items.rowconfigure(index=21, weight=1)
+        area_items.columnconfigure(0, weight=1)
 
         # bind data to widgets
         self.data_bind("config_file", e_cfgFile, TYPE_STRING)
@@ -147,6 +190,7 @@ class form_Config(ApplicationForm):
             lambda x: x is None or x > 0,
         )
         self.data_bind("randomize_checks_within_ticks", ck_randChecks)
+        self.data_bind("reset_conditions_on_resume", ck_resetOnResume)
         self.data_bind("item_selection", tv_items)
 
         # bind double click in list to item editor
@@ -154,6 +198,7 @@ class form_Config(ApplicationForm):
 
         # bind changes to global params so that the _changed flag becomes true
         ck_randChecks.configure(command=self._set_changed)
+        ck_resetOnResume.configure(command=self._set_changed)
 
         # propagate widgets that need to be accessed
         self._tv_items = tv_items
@@ -184,8 +229,8 @@ class form_Config(ApplicationForm):
                 self._itemlistentries.append([item.name, item.hrtype, item.signature])
         self._itemlistentries.sort(key=lambda x: x[0])
         # set the changed flag when tick seconds have changed: this is not
-        # necessary for the check box based parameter, because the flag is
-        # updated every time it gets clicked
+        # necessary for the check box based parameters, because the flag is
+        # updated every time they get clicked
         tick_secs = self.data_get(
             "scheduler_tick_seconds", DEFAULT_SCHEDULER_TICK_SECONDS
         )
@@ -194,6 +239,9 @@ class form_Config(ApplicationForm):
             self._changed = True
         self._globals["randomize_checks_within_ticks"] = self.data_get(
             "randomize_checks_within_ticks", DEFAULT_RANDOMIZE_CHECKS_WITHIN_TICKS
+        )
+        self._globals["tags"]["reset_conditions_on_resume"] = self.data_get(
+            "reset_conditions_on_resume", AppConfig.get("RESET_CONDS_ON_RESUME")
         )
 
     # update the form fields according to the associated actual data
@@ -225,6 +273,10 @@ class form_Config(ApplicationForm):
             "randomize_checks_within_ticks",
             self._globals["randomize_checks_within_ticks"],
         )
+        self.data_set(
+            "reset_conditions_on_resume",
+            self._globals["tags"]["reset_conditions_on_resume"],
+        )
 
     # reset all associated data in the form (does not update fields)
     def _resetdata(self):
@@ -234,13 +286,25 @@ class form_Config(ApplicationForm):
         self._globals = {
             "scheduler_tick_seconds": DEFAULT_SCHEDULER_TICK_SECONDS,
             "randomize_checks_within_ticks": DEFAULT_RANDOMIZE_CHECKS_WITHIN_TICKS,
+            "tags": {
+                "reset_conditions_on_resume": AppConfig.get("RESET_CONDS_ON_RESUME"),
+            },
         }
         self._changed = False
 
     # load the configuration from a TOML file, only display non-private items
     def _load_config(self, fn):
         self._resetdata()
+        default_globals = self._globals.copy()
         tasks, conditions, events, self._globals = read_whenever_config(fn)
+        # rebuild default globals that might be missing
+        for k in default_globals.keys():
+            if k not in self._globals:
+                self._globals[k] = default_globals[k]
+        for k in default_globals["tags"].keys():
+            if k not in self._globals["tags"]:
+                self._globals["tags"][k] = default_globals["tags"][k]
+        # retrieve items for display and management
         for item in tasks:
             self._tasks[item.name] = item
         for item in conditions:
@@ -261,10 +325,20 @@ class form_Config(ApplicationForm):
             if not item.private:
                 self._itemlistentries.append([item.name, item.hrtype, item.signature])
         self._itemlistentries.sort(key=lambda x: x[0])
+        # also set global parameters which belong to app configuration
+        AppConfig.delete("RESET_CONDS_ON_RESUME")
+        AppConfig.set(
+            "RESET_CONDS_ON_RESUME", self._globals["tags"]["reset_conditions_on_resume"]
+        )
         self._changed = False
 
     # save the configuration to a TOML file: add private items when required
     def _save_config(self, fn):
+        # 0. set configuration globals as retrieved from the form
+        AppConfig.delete("RESET_CONDS_ON_RESUME")
+        AppConfig.set(
+            "RESET_CONDS_ON_RESUME", self._globals["tags"]["reset_conditions_on_resume"]
+        )
         # 1. reset conditions on resume
         if AppConfig.get("RESET_CONDS_ON_RESUME"):
             from ..internal.reset_conds_on_resume import (
@@ -273,6 +347,7 @@ class form_Config(ApplicationForm):
                 event_ResetConditionsOnResume,
                 name_ResetConditionsOnResume,
             )
+
             name = name_ResetConditionsOnResume()
             if name not in self._tasks.keys():
                 self._tasks[name] = task_ResetConditionsOnResume
@@ -281,6 +356,11 @@ class form_Config(ApplicationForm):
             if name not in self._events.keys():
                 self._events[name] = event_ResetConditionsOnResume
         else:
+            from ..internal.reset_conds_on_resume import (
+                name_ResetConditionsOnResume,
+            )
+
+            name = name_ResetConditionsOnResume()
             if name in self._tasks.keys():
                 del self._tasks[name]
             if name in self._conditions.keys():

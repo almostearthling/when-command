@@ -4,7 +4,7 @@
 UI_APP = "When"
 UI_APP_LABEL = "When Automation Tool"
 UI_APP_COPYRIGHT = "© 2023-2025 Francesco Garosi"
-UI_APP_VERSION = "1.10.6b7"
+UI_APP_VERSION = "1.10.7b3"
 
 # item types
 ITEM_TASK = "Task"
@@ -140,6 +140,9 @@ UI_FORM_ITEMS = "Items"
 UI_FORM_COMMON_PARAMS = "Common parameters"
 UI_FORM_SPECIFIC_PARAMS = "Specific parameters"
 
+UI_FORM_ITEMS_PANE = "Items Configuration"
+UI_FORM_GLOBALS_PANE = "Global Parameters"
+
 UI_FORM_ENVIRONMENT = "Environment"
 UI_FORM_VARIABLE = "Variable"
 UI_FORM_FILE = "File"
@@ -217,7 +220,6 @@ UI_FORM_ITEMTYPE_SC = "Choose item type:"
 UI_FORM_ITEMSUBTYPES_SC = "Available items:"
 UI_FORM_MAXTASKRETRIES_SC = "Max tasks retries:"
 
-UI_FORM_RANDCHECKSINTICKS = "Randomize checks within ticks"
 UI_FORM_CHECKCONDRECURRENT = "Check condition recurrently"
 UI_FORM_SUSPENDCONDATSTARTUP = "Suspend condition at startup"
 UI_FORM_RUNTASKSSEQUENTIALLY = "Execute tasks sequentially"
@@ -248,6 +250,7 @@ UI_FORM_FILELOCATION_SC = "File:"
 UI_FORM_ITEMS_SC = "Items:"
 UI_FORM_RANDOMCHECKS = "Randomize checks between ticks"
 UI_FORM_TICKDURATION_SC = "Seconds per tick:"
+UI_FORM_RESETONRESUME = "Reset conditions on system resume"
 UI_FORM_LHD_NAME = "Name"
 UI_FORM_LHD_TYPE = "Item Type"
 
