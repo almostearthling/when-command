@@ -1,10 +1,6 @@
 # strings for internationalization
 
-# app name
-UI_APP = "When"
-UI_APP_LABEL = "When Automation Tool"
-UI_APP_COPYRIGHT = "© 2023-2025 Francesco Garosi"
-UI_APP_VERSION = "1.10.7b4"
+from .strings import UI_APP
 
 # item types
 ITEM_TASK = "Task"
