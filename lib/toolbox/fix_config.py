@@ -13,6 +13,9 @@ from ..utility import (
     whenever_has_wmi,
 )
 
+from ..configurator.defaults import *
+from ..repocfg import AppConfig
+
 from tomlkit import items, document, parse, item, aot
 
 # specific imports for handled types of item
@@ -225,9 +228,18 @@ def fix_config(filename: str, console=None) -> items.Table:
         toml = f.read()
     doc = parse(toml)
     globals = {
-        "scheduler_tick_seconds": doc.get("scheduler_tick_seconds", 5),
+        "scheduler_tick_seconds": doc.get(
+            "scheduler_tick_seconds", DEFAULT_SCHEDULER_TICK_SECONDS
+        ),
         "randomize_checks_within_ticks": doc.get(
-            "randomize_checks_within_ticks", False
+            "randomize_checks_within_ticks", DEFAULT_RANDOMIZE_CHECKS_WITHIN_TICKS
+        ),
+        "tags": doc.get(
+            "tags",
+            {
+                "reset_conditions_on_resume": AppConfig.get("RESET_CONDS_ON_RESUME"),
+                # ...
+            },
         ),
     }
 

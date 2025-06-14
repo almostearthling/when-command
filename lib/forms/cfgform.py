@@ -86,6 +86,7 @@ class form_Config(ApplicationForm):
             "randomize_checks_within_ticks": DEFAULT_RANDOMIZE_CHECKS_WITHIN_TICKS,
             "tags": {
                 "reset_conditions_on_resume": AppConfig.get("RESET_CONDS_ON_RESUME"),
+                # ...
             },
         }
         self._changed = False
@@ -288,6 +289,7 @@ class form_Config(ApplicationForm):
             "randomize_checks_within_ticks": DEFAULT_RANDOMIZE_CHECKS_WITHIN_TICKS,
             "tags": {
                 "reset_conditions_on_resume": AppConfig.get("RESET_CONDS_ON_RESUME"),
+                # ...
             },
         }
         self._changed = False
