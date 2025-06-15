@@ -27,7 +27,7 @@ import shutil
 # resource strings (not internationalized for the moment)
 ITEM_HR_NAME = "Template Condition"
 
-_UI_FORM_TITLE = "%s: Template Condition Editor" % UI_APP
+_UI_FORM_TITLE = f"{UI_APP}: Template Condition Editor"
 _UI_FORM_PARAM1_SC = "Parameter is:"
 
 

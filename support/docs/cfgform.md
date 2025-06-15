@@ -58,6 +58,7 @@ Also note that, if anything had changed since the configuration file was last sa
 * [Installation](install.md)
 * [Toolbox](cli.md#toolbox)
 * [Resident Wrapper](tray.md)
+* [Configuration File](configfile.md)
 
 
 [`◀ Main`](main.md)
