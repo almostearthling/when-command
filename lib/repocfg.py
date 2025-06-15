@@ -62,7 +62,7 @@ class _AppConfiguration(object):
 AppConfig = _AppConfiguration(
     {
         # this flag should be set to False on normal operation
-        "DEBUG": True,
+        "DEBUG": False,
 
         # the application base name for configuration directory determination
         "CFGNAME": "Whenever",
