@@ -1,7 +1,6 @@
 # load the strings according to current I18N settings
 
 import os
-from locale import getlocale
 
 
 # this is the name of the environment variable that is used to inhibit use
@@ -16,7 +15,7 @@ UI_APP = "When"
 CLI_APP = "when"
 UI_APP_LABEL = "When Automation Tool"
 UI_APP_COPYRIGHT = "© 2023-2025 Francesco Garosi"
-UI_APP_VERSION = "1.10.8b1"
+UI_APP_VERSION = "1.10.9b1"
 
 # other strings that should not be translated
 UI_WHENEVER = "Whenever"
@@ -40,7 +39,7 @@ SYM_UNKNOWN = "∅"
 
 # first: import all fallback strings
 from .strings_base import *
-from .localemap import get_locale as _get_locale
+from .localizer import get_locale as _get_locale
 
 
 # if any exception occurs during this process, fallback strings remain valid

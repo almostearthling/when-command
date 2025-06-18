@@ -1,4 +1,4 @@
-# hybernate
+# hibernate
 
 # this header is common to all extra modules
 from tomlkit import items, table
@@ -24,14 +24,21 @@ import sys
 
 
 # resource strings (not internationalized for the moment)
-ITEM_HR_NAME = "Hybernate Task"
+ITEM_HR_NAME = "Hibernate Task"
 
-_UI_FORM_TITLE = "%s: Hybernate Task Editor" % UI_APP
-
-_UI_FORM_NOPARAMS = "(This type of item does not need any specific parameters)"
-
+UI_FORM_TITLE = f"{UI_APP}: Hibernate Task Editor"
 
 # default values
+
+
+# localize the aforementioned constants: this pattern is the same in every
+# extra module
+from .i18n.localized import localized_strings
+
+m = localized_strings(__name__)
+if m is not None:
+    ITEM_HR_NAME = m.ITEM_HR_NAME
+    UI_FORM_TITLE = m.UI_FORM_TITLE
 
 
 # check for availability (at the moment Windows only)
@@ -41,9 +48,9 @@ def _available():
             return True
         return False
     # elif sys.platform == 'linux':
-    #     global ITEM_HR_NAME, _UI_FORM_TITLE
+    #     global ITEM_HR_NAME, UI_FORM_TITLE
     #     ITEM_HR_NAME += " (Gnome)"
-    #     _UI_FORM_TITLE += " (Gnome)"
+    #     UI_FORM_TITLE += " (Gnome)"
     #     if shutil.which("gnome-session-quit"):
     #         return True
     #     return False
@@ -51,11 +58,11 @@ def _available():
 
 
 # the specific item is derived from the actual parent item
-class HybernateTask(CommandTask):
+class HibernateTask(CommandTask):
 
     # availability at class level: these variables *MUST* be set for all items
     item_type = "command"
-    item_subtype = "hybernate"
+    item_subtype = "hibernate"
     item_hrtype = ITEM_HR_NAME
     available = _available()
 
@@ -92,22 +99,22 @@ class HybernateTask(CommandTask):
         #     self.command = "gnome-session-quit"
         #     self.command_arguments = [
         #         # "--no-prompt",
-        #         # "--hybernate",
+        #         # "--hibernate",
         #     ]
         self.startup_path = "."
 
 
 # dedicated form definition derived directly from one of the base forms
-class form_HybernateTask(form_Task):
+class form_HibernateTask(form_Task):
 
     def __init__(self, item=None):
 
         # check that item is the expected one for safety, build one by default
         if item:
-            assert isinstance(item, HybernateTask)
+            assert isinstance(item, HibernateTask)
         else:
-            item = HybernateTask()
-        super().__init__(_UI_FORM_TITLE, item)
+            item = HibernateTask()
+        super().__init__(UI_FORM_TITLE, item)
 
         # create a specific frame for the contents
         area = ttk.Frame(super().contents)
@@ -115,7 +122,7 @@ class form_HybernateTask(form_Task):
         PAD = WIDGET_PADDING_PIXELS
 
         # build the UI elements as needed and configure the layout
-        l_noparams = ttk.Label(area, text=_UI_FORM_NOPARAMS)
+        l_noparams = ttk.Label(area, text=UI_CAPTION_NOSPECIFICPARAMS)
         l_noparams.configure(anchor=tk.CENTER)
         pad = ttk.Frame(area)
 
@@ -139,7 +146,7 @@ class form_HybernateTask(form_Task):
 
 # function common to all extra modules to declare class items as factories
 def factories():
-    return (HybernateTask, form_HybernateTask)
+    return (HibernateTask, form_HibernateTask)
 
 
 # end.

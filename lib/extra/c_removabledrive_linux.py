@@ -27,13 +27,23 @@ import sys
 # resource strings (not internationalized for the moment)
 ITEM_HR_NAME = "Removable Drive Available Condition"
 
-_UI_FORM_TITLE = "%s: Removable Drive Condition Editor" % UI_APP
-
-_UI_FORM_REMOVABLEDRIVE_DEVICE_SC = "Device:"
+UI_FORM_TITLE = f"{UI_APP}: Removable Drive Condition Editor"
+UI_FORM_DEVICE_SC = "Device:"
 
 
 # default values
-_DEFAULT_DRIVE_DEVICE = "DRIVE"
+DEFAULT_DRIVE_DEVICE = "DRIVE"
+
+
+# localize the aforementioned constants: this pattern is the same in every
+# extra module
+from .i18n.localized import localized_strings
+
+m = localized_strings(__name__)
+if m is not None:
+    ITEM_HR_NAME = m.ITEM_HR_NAME
+    UI_FORM_TITLE = m.UI_FORM_TITLE
+    UI_FORM_DEVICE_SC = m.UI_FORM_DEVICE_SC
 
 
 # check for availability
@@ -74,7 +84,7 @@ class RemovableDrivePresent(DBusCondition):
         else:
             self.tags = table()
             self.tags.append("subtype", self.subtype)
-            self.tags.append("drive_name", _DEFAULT_DRIVE_DEVICE)
+            self.tags.append("drive_name", DEFAULT_DRIVE_DEVICE)
 
         self.updateitem()
 
@@ -83,7 +93,7 @@ class RemovableDrivePresent(DBusCondition):
 
         # the check is performed a DBus query
         check_drive = "/org/freedesktop/UDisks2/drives/%s" % self.tags.get(
-            "drive_name", _DEFAULT_DRIVE_DEVICE
+            "drive_name", DEFAULT_DRIVE_DEVICE
         )
         self.bus = ":system"
         self.service = "org.freedesktop.UDisks2"
@@ -107,7 +117,7 @@ class form_RemovableDrivePresent(form_Condition):
             assert isinstance(item, RemovableDrivePresent)
         else:
             item = RemovableDrivePresent()
-        super().__init__(_UI_FORM_TITLE, tasks_available, item)
+        super().__init__(UI_FORM_TITLE, tasks_available, item)
 
         # now find drive names
         import dbus # type: ignore
@@ -131,7 +141,7 @@ class form_RemovableDrivePresent(form_Condition):
         PAD = WIDGET_PADDING_PIXELS
 
         # build the UI elements as needed and configure the layout
-        l_deviceName = ttk.Label(area, text=_UI_FORM_REMOVABLEDRIVE_DEVICE_SC)
+        l_deviceName = ttk.Label(area, text=UI_FORM_DEVICE_SC)
         cb_deviceName = ttk.Combobox(area, values=drive_names)
         self.data_bind("drive_name", cb_deviceName, TYPE_STRING)
 

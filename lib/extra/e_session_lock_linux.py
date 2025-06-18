@@ -34,7 +34,17 @@ import sys
 # resource strings (not internationalized for the moment)
 ITEM_HR_NAME = "Session Locked Event"
 
-_UI_FORM_TITLE = "%s: Session Locked Event Editor" % UI_APP
+UI_FORM_TITLE = f"{UI_APP}: Session Locked Event Editor"
+
+
+# localize the aforementioned constants: this pattern is the same in every
+# extra module
+from .i18n.localized import localized_strings
+
+m = localized_strings(__name__)
+if m is not None:
+    ITEM_HR_NAME = m.ITEM_HR_NAME
+    UI_FORM_TITLE = m.UI_FORM_TITLE
 
 
 # check for availability: include all needed checks in this function, may
@@ -117,7 +127,7 @@ class form_SessionLockEvent(form_Event):
             assert isinstance(item, SessionLockEvent)
         else:
             item = SessionLockEvent()
-        super().__init__(_UI_FORM_TITLE, conditions_available, item)
+        super().__init__(UI_FORM_TITLE, conditions_available, item)
 
         # create a specific frame for the contents
         area = ttk.Frame(super().contents)

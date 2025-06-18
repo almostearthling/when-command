@@ -26,12 +26,20 @@ import sys
 # resource strings (not internationalized for the moment)
 ITEM_HR_NAME = "Session Lock Task"
 
-_UI_FORM_TITLE = "%s: Session Lock Task Editor" % UI_APP
-
-_UI_FORM_NOPARAMS = "(This type of item does not need any specific parameters)"
+UI_FORM_TITLE = f"{UI_APP}: Session Lock Task Editor"
 
 
 # default values
+
+
+# localize the aforementioned constants: this pattern is the same in every
+# extra module
+from .i18n.localized import localized_strings
+
+m = localized_strings(__name__)
+if m is not None:
+    ITEM_HR_NAME = m.ITEM_HR_NAME
+    UI_FORM_TITLE = m.UI_FORM_TITLE
 
 
 # check for availability
@@ -106,7 +114,7 @@ class form_LockSessionTask(form_Task):
             assert isinstance(item, LockSessionTask)
         else:
             item = LockSessionTask()
-        super().__init__(_UI_FORM_TITLE, item)
+        super().__init__(UI_FORM_TITLE, item)
 
         # create a specific frame for the contents
         area = ttk.Frame(super().contents)
@@ -114,7 +122,7 @@ class form_LockSessionTask(form_Task):
         PAD = WIDGET_PADDING_PIXELS
 
         # build the UI elements as needed and configure the layout
-        l_noparams = ttk.Label(area, text=_UI_FORM_NOPARAMS)
+        l_noparams = ttk.Label(area, text=UI_CAPTION_NOSPECIFICPARAMS)
         l_noparams.configure(anchor=tk.CENTER)
         pad = ttk.Frame(area)
 
