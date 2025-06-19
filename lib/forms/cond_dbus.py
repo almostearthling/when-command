@@ -142,16 +142,24 @@ class form_DBusCondition(form_Condition):
         area.columnconfigure(3, weight=1)
 
         # bind data to widgets
-        self.data_bind("bus", cb_dbusBus, TYPE_STRING)
-        self.data_bind("service", e_dbusService, TYPE_STRING)
-        self.data_bind("object_path", e_dbusObjectPath, TYPE_STRING)
-        self.data_bind("interface", e_dbusInterface, TYPE_STRING)
-        self.data_bind("method", e_dbusMethod, TYPE_STRING)
+        self.data_bind("bus", cb_dbusBus, TYPE_STRING, lambda x: x in _DBUS_BUS_VALUES)
+        self.data_bind("service", e_dbusService, TYPE_STRING, lambda x: bool(x))
+        self.data_bind("object_path", e_dbusObjectPath, TYPE_STRING, lambda x: bool(x))
+        self.data_bind("interface", e_dbusInterface, TYPE_STRING, lambda x: bool(x))
+        self.data_bind("method", e_dbusMethod, TYPE_STRING, lambda x: bool(x))
         self.data_bind("parameter_call", cv_dbusParamsCall, TYPE_STRING)
         self.data_bind("parameter_check", cv_dbusParamsCheck, TYPE_STRING)
         self.data_bind("parameter_check_all", ck_dbusCheckAll)
         self.data_bind("check_after", e_checkAfter, TYPE_INT, lambda x: x >= 0)
         self.data_bind("ignore_persistent_success", ck_ignorePersistentSuccess)
+
+        # add captions of data to be checked
+        self.add_check_caption("bus", UI_FORM_DBUS_BUS_SC)
+        self.add_check_caption("service", UI_FORM_DBUS_SERVICE_SC)
+        self.add_check_caption("object_path", UI_FORM_DBUS_OBJPATH_SC)
+        self.add_check_caption("interface", UI_FORM_DBUS_INTERFACE_SC)
+        self.add_check_caption("method", UI_FORM_DBUS_METHOD_SC)
+        self.add_check_caption("check_after", UI_FORM_EXTRADELAY_SC)
 
         # propagate widgets that need to be accessed
         # NOTE: no data to propagate
@@ -160,18 +168,29 @@ class form_DBusCondition(form_Condition):
         self._updateform()
 
     def _updateform(self):
-        self.data_set("bus", self._item.bus)
-        self.data_set("service", self._item.service)
-        self.data_set("object_path", self._item.object_path)
-        self.data_set("interface", self._item.interface)
-        self.data_set("method", self._item.method)
-        self.data_set("parameter_call", json.dumps(self._item.parameter_call) or None)
-        self.data_set("parameter_check", json.dumps(self._item.parameter_check) or None)
-        self.data_set("parameter_check_all", self._item.parameter_check_all or False)
-        self.data_set("check_after", self._item.check_after or 0)
-        self.data_set(
-            "ignore_persistent_success", self._item.recur_after_failed_check or False
-        )
+        try:
+            self.data_set("bus", self._item.bus)
+            self.data_set("service", self._item.service)
+            self.data_set("object_path", self._item.object_path)
+            self.data_set("interface", self._item.interface)
+            self.data_set("method", self._item.method)
+            self.data_set(
+                "parameter_call", json.dumps(self._item.parameter_call) or None
+            )
+            self.data_set(
+                "parameter_check", json.dumps(self._item.parameter_check) or None
+            )
+            self.data_set(
+                "parameter_check_all", self._item.parameter_check_all or False
+            )
+            self.data_set("check_after", self._item.check_after or 0)
+            self.data_set(
+                "ignore_persistent_success",
+                self._item.recur_after_failed_check or False,
+            )
+        # the real check will be performed when the user presses `OK`
+        except ValueError:
+            pass
         return super()._updateform()
 
     def _updatedata(self):
@@ -181,7 +200,9 @@ class form_DBusCondition(form_Condition):
         self._item.interface = self.data_get("interface")
         self._item.method = self.data_get("method")
         self._item.parameter_call = json.loads(self.data_get("parameter_call")) or None
-        self._item.parameter_check = json.loads(self.data_get("parameter_check")) or None
+        self._item.parameter_check = (
+            json.loads(self.data_get("parameter_check")) or None
+        )
         self._item.parameter_check_all = self.data_get("parameter_check_all") or None
         self._item.check_after = self.data_get("check_after") or None
         self._item.recur_after_failed_check = (

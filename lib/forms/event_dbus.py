@@ -91,10 +91,14 @@ class form_DBusEvent(form_Event):
         area.columnconfigure(1, weight=1)
 
         # bind data to widgets
-        self.data_bind("bus", cb_dbusBus, TYPE_STRING)
-        self.data_bind("rule", cv_dbusRule, TYPE_STRING)
+        self.data_bind("bus", cb_dbusBus, TYPE_STRING, lambda x: x in _DBUS_BUS_VALUES)
+        self.data_bind("rule", cv_dbusRule, TYPE_STRING, lambda x: bool(x))
         self.data_bind("parameter_check", cv_dbusParamsCheck, TYPE_STRING)
         self.data_bind("parameter_check_all", ck_dbusCheckAll)
+
+        # add captions of data to be checked
+        self.add_check_caption("bus", UI_FORM_DBUS_BUS_SC)
+        self.add_check_caption("rule", UI_FORM_DBUS_RULE_SC)
 
         # propagate widgets that need to be accessed
         # NOTE: no data to propagate
@@ -103,16 +107,26 @@ class form_DBusEvent(form_Event):
         self._updateform()
 
     def _updateform(self):
-        self.data_set("bus", self._item.bus)
-        self.data_set("rule", self._item.rule)
-        self.data_set("parameter_check", json.dumps(self._item.parameter_check) or None)
-        self.data_set("parameter_check_all", self._item.parameter_check_all or False)
+        try:
+            self.data_set("bus", self._item.bus)
+            self.data_set("rule", self._item.rule)
+            self.data_set(
+                "parameter_check", json.dumps(self._item.parameter_check) or None
+            )
+            self.data_set(
+                "parameter_check_all", self._item.parameter_check_all or False
+            )
+        # the real check will be performed when the user presses `OK`
+        except ValueError:
+            pass
         return super()._updateform()
 
     def _updatedata(self):
         self._item.bus = self.data_get("bus")
         self._item.rule = self.data_get("rule")
-        self._item.parameter_check = json.loads(self.data_get("parameter_check")) or None
+        self._item.parameter_check = (
+            json.loads(self.data_get("parameter_check")) or None
+        )
         self._item.parameter_check_all = self.data_get("parameter_check_all") or False
         return super()._updatedata()
 

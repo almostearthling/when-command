@@ -51,7 +51,7 @@ class form_WMIEvent(form_Event):
         area.columnconfigure(0, weight=1)
 
         # bind data to widgets
-        self.data_bind("query", cv_wmiQuery, TYPE_STRING)
+        self.data_bind("query", cv_wmiQuery, TYPE_STRING, lambda x: bool(x))
 
         # propagate widgets that need to be accessed
         # NOTE: no data to propagate
@@ -60,7 +60,11 @@ class form_WMIEvent(form_Event):
         self._updateform()
 
     def _updateform(self):
-        self.data_set("query", self._item.query)
+        try:
+            self.data_set("query", self._item.query)
+        # the real check will be performed when the user presses `OK`
+        except ValueError:
+            pass
         return super()._updateform()
 
     def _updatedata(self):

@@ -150,12 +150,19 @@ class form_RemovableDrivePresent(form_Condition):
 
         area.columnconfigure(1, weight=1)
 
+        # add captions of data to be checked
+        self.add_check_caption("drive_name", UI_FORM_DEVICE_SC)
+
         # always update the form at the end of initialization
         self._updateform()
 
     # update the form with the specific parameters (usually in the `tags`)
     def _updateform(self):
-        self.data_set("drive_name", self._item.tags.get("drive_name"))
+        try:
+            self.data_set("drive_name", self._item.tags.get("drive_name"))
+        # the real check will be performed when the user presses `OK`
+        except ValueError:
+            pass
         return super()._updateform()
 
     # update the item from the form elements (usually update `tags`)

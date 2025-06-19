@@ -161,7 +161,7 @@ class form_WMICondition(form_Condition):
 
         # bind data to widgets
         self.data_bind("result_selection", tv_wmiResults)
-        self.data_bind("query", cv_wmiQuery, TYPE_STRING)
+        self.data_bind("query", cv_wmiQuery, TYPE_STRING, lambda x: bool(x))
         self.data_bind(
             "index", e_resultIndex, TYPE_STRING, lambda x: x == "" or int(x) >= 0
         )
@@ -175,6 +175,10 @@ class form_WMICondition(form_Condition):
         self.data_bind("check_all", ck_checkAll)
         self.data_bind("check_after", e_checkAfter, TYPE_INT, lambda x: x >= 0)
         self.data_bind("ignore_persistent_success", ck_ignorePersistentSuccess)
+
+        # add captions of data to be checked
+        self.add_check_caption("query", UI_FORM_WMI_QUERY_SC)
+        self.add_check_caption("check_after", UI_FORM_EXTRADELAY_SC)
 
         # propagate widgets that need to be accessed
         self._tv_results = tv_wmiResults
@@ -296,32 +300,37 @@ class form_WMICondition(form_Condition):
         return super()._updatedata()
 
     def _updateform(self):
-        self.data_set("query", self._item.query)
-        self.data_set("check_all", self._item.result_check_all or False)
-        self.data_set("check_after", self._item.check_after or 0)
-        self.data_set(
-            "ignore_persistent_success", self._item.recur_after_failed_check or False
-        )
-        self.data_set("index")
-        self.data_set("field")
-        self.data_set("operator")
-        self.data_set("value")
-        self._results = []
-        if self._item.result_check:
-            for e in self._item.result_check:
-                self._results.append(
-                    [
-                        e.get("index", ""),
-                        e.get("field"),
-                        e.get("operator"),
-                        e.get("value", ""),
-                    ]
-                )
-        self._tv_results.delete(*self._tv_results.get_children())
-        for entry in self._results:
-            self._tv_results.insert(
-                "", iid="%s-%s" % (entry[0], entry[1]), values=entry, index=tk.END
+        try:
+            self.data_set("query", self._item.query)
+            self.data_set("check_all", self._item.result_check_all or False)
+            self.data_set("check_after", self._item.check_after or 0)
+            self.data_set(
+                "ignore_persistent_success",
+                self._item.recur_after_failed_check or False,
             )
+            self.data_set("index")
+            self.data_set("field")
+            self.data_set("operator")
+            self.data_set("value")
+            self._results = []
+            if self._item.result_check:
+                for e in self._item.result_check:
+                    self._results.append(
+                        [
+                            e.get("index", ""),
+                            e.get("field"),
+                            e.get("operator"),
+                            e.get("value", ""),
+                        ]
+                    )
+            self._tv_results.delete(*self._tv_results.get_children())
+            for entry in self._results:
+                self._tv_results.insert(
+                    "", iid="%s-%s" % (entry[0], entry[1]), values=entry, index=tk.END
+                )
+        # the real check will be performed when the user presses `OK`
+        except ValueError:
+            pass
         return super()._updateform()
 
 

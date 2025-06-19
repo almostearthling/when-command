@@ -136,12 +136,19 @@ class form_SystemLoadCondition(form_Condition):
 
         area.columnconfigure(1, weight=1)
 
+        # add captions of data to be checked
+        self.add_check_caption("threshold", UI_FORM_SYSLOADTHRESHOLD_SC)
+
         # always update the form at the end of initialization
         self._updateform()
 
     # update the form with the specific parameters (usually in the `tags`)
     def _updateform(self):
-        self.data_set("threshold", self._item.tags.get("threshold"))
+        try:
+            self.data_set("threshold", self._item.tags.get("threshold"))
+        # the real check will be performed when the user presses `OK`
+        except ValueError:
+            pass
         return super()._updateform()
 
     # update the item from the form elements (usually update `tags`)

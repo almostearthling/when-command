@@ -306,13 +306,17 @@ class form_TimeCondition(form_Condition):
         return super()._updatedata()
 
     def _updateform(self):
-        self._tv_timeSpecs.delete(*self._tv_timeSpecs.get_children())
-        idx = 0
-        for ts in self._timespecs:
-            hrspec = str(ts)
-            self._tv_timeSpecs.insert("", iid=idx, values=(idx, hrspec), index=tk.END)
-            idx += 1
-        self.clear_timespec()
+        try:
+            self._tv_timeSpecs.delete(*self._tv_timeSpecs.get_children())
+            idx = 0
+            for ts in self._timespecs:
+                hrspec = str(ts)
+                self._tv_timeSpecs.insert("", iid=idx, values=(idx, hrspec), index=tk.END)
+                idx += 1
+            self.clear_timespec()
+        # the real check will be performed when the user presses `OK`
+        except ValueError:
+            pass
         return super()._updateform()
 
 

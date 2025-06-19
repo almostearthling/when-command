@@ -134,12 +134,19 @@ class form_TemplateCondition(form_Condition):
 
         area.columnconfigure(1, weight=1)
 
+        # add captions of data to be checked
+        self.add_check_caption("parameter1", UI_FORM_PARAM1_SC)
+
         # always update the form at the end of initialization
         self._updateform()
 
     # update the form with the specific parameters (usually in the `tags`)
     def _updateform(self):
-        self.data_set("parameter1", self._item.tags.get("parameter1"))
+        try:
+            self.data_set("parameter1", self._item.tags.get("parameter1"))
+        # the real check will be performed when the user presses `OK`
+        except ValueError:
+            pass
         return super()._updateform()
 
     # update the item from the form elements (usually update `tags`)

@@ -1,8 +1,11 @@
 # get localized versions of strings for extra items UIs
 
 
-from ...i18n.localizer import get_locale
+import os
 from importlib import import_module
+
+from ...i18n.localizer import get_locale
+from ...i18n.strings import ENV_WHEN_APP_USELOCALE
 
 
 # this returns a module with localized constants, or None if said module is not
@@ -10,17 +13,21 @@ from importlib import import_module
 # errors (like ImportError) are not caught, because they can be useful for
 # debugging purposes; note that we need the last part of the mod name
 def localized_strings(modname):
-    try:
-        loc = get_locale()
-        if loc is not None:
-            modname = modname.split('.')[-1]
-            loc_modname = f"{modname}_{loc}"
-            loc_mod = import_module(f".{loc_modname}", "lib.extra.i18n")
-            return loc_mod
-        else:
-            return None
-    except ModuleNotFoundError:
+    _use_locale = os.environ.get(ENV_WHEN_APP_USELOCALE)
+    if isinstance(_use_locale, str) and _use_locale.lower() == "no":
         return None
+    else:
+        try:
+            loc = get_locale()
+            if loc is not None:
+                modname = modname.split('.')[-1]
+                loc_modname = f"{modname}_{loc}"
+                loc_mod = import_module(f".{loc_modname}", "lib.extra.i18n")
+                return loc_mod
+            else:
+                return None
+        except ModuleNotFoundError:
+            return None
 
 
 __all__ = ["localized_strings"]

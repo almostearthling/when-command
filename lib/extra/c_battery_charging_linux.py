@@ -100,7 +100,7 @@ class ChargingBatteryCondition(DBusCondition):
 
         # detect battery by querying DBus
         # see https://upower.freedesktop.org/docs/Device.html
-        import dbus # type: ignore
+        import dbus  # type: ignore
 
         bus = dbus.SystemBus()
         service_name = "org.freedesktop.UPower"
@@ -134,8 +134,8 @@ class ChargingBatteryCondition(DBusCondition):
         self.method = "GetAll"
         self.parameter_call = '["org.freedesktop.UPower.Device"]'
         self.parameter_check = [
-            { 'index': [0, "State"], 'operator': "neq", 'value': 2 },
-            { 'index': [0, "Percentage"], 'operator': "gt", 'value': threshold },
+            {"index": [0, "State"], "operator": "neq", "value": 2},
+            {"index": [0, "Percentage"], "operator": "gt", "value": threshold},
         ]
         self.parameter_check_all = True
         self.check_after = CHECK_EXTRA_DELAY
@@ -171,12 +171,19 @@ class form_ChargingBatteryCondition(form_Condition):
 
         area.columnconfigure(1, weight=1)
 
+        # add captions of data to be checked
+        self.add_check_caption("threshold", UI_FORM_THRESHOLD_SC)
+
         # always update the form at the end of initialization
         self._updateform()
 
     # update the form with the specific parameters (usually in the `tags`)
     def _updateform(self):
-        self.data_set("threshold", self._item.tags.get("threshold"))
+        try:
+            self.data_set("threshold", self._item.tags.get("threshold"))
+        # the real check will be performed when the user presses `OK`
+        except ValueError:
+            pass
         return super()._updateform()
 
     # update the item from the form elements (usually update `tags`)

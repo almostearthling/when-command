@@ -148,7 +148,7 @@ class form_RemovableDrivePresent(form_Condition):
         # build the UI elements as needed and configure the layout
         l_driveLabel = ttk.Label(area, text=UI_FORM_REMOVABLEDRIVE_LABEL_SC)
         e_driveLabel = ttk.Entry(area)
-        self.data_bind("drive_label", e_driveLabel, TYPE_STRING)
+        self.data_bind("drive_label", e_driveLabel, TYPE_STRING, lambda x: bool(x))
         sep1 = ttk.Separator(area)
 
         ck_specifyLetter = ttk.Checkbutton(area, text=UI_FORM_SPECIFY_DRIVE_LETTER)
@@ -174,6 +174,9 @@ class form_RemovableDrivePresent(form_Condition):
 
         area.columnconfigure(1, weight=1)
 
+        # add captions of data to be checked
+        self.add_check_caption("drive_label", UI_FORM_REMOVABLEDRIVE_LABEL_SC)
+
         # propagate widget that have to be accessible
         self._cb_driveLetter = cb_driveLetter
 
@@ -195,13 +198,17 @@ class form_RemovableDrivePresent(form_Condition):
 
     # update the form with the specific parameters (usually in the `tags`)
     def _updateform(self):
-        self.data_set("drive_label", self._item.tags.get("drive_label"))
-        if not self._item.tags.get("drive_letter"):
-            self.data_set("specify_letter", False)
-            self._cb_driveLetter.config(state=tk.DISABLED)
-        else:
-            self.data_set("specify_letter", True)
-            self._cb_driveLetter.config(state="readonly")
+        try:
+            self.data_set("drive_label", self._item.tags.get("drive_label"))
+            if not self._item.tags.get("drive_letter"):
+                self.data_set("specify_letter", False)
+                self._cb_driveLetter.config(state=tk.DISABLED)
+            else:
+                self.data_set("specify_letter", True)
+                self._cb_driveLetter.config(state="readonly")
+        # the real check will be performed when the user presses `OK`
+        except ValueError:
+            pass
         return super()._updateform()
 
     # update the item from the form elements (usually update `tags`)

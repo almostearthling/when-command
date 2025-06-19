@@ -227,6 +227,11 @@ class form_CommandTask(form_Task):
         self.data_bind("case_sensitive", ck_caseSensitive)
         self.data_bind("match_regular_expression", ck_matchRegExp)
 
+        # add captions of data to be checked
+        self.add_check_caption("command", UI_FORM_COMMAND_SC)
+        self.add_check_caption("startup_path", UI_FORM_STARTUPPATH_SC)
+        self.add_check_caption("timeout_seconds", UI_FORM_TIMEOUTSECS_SC)
+
         # propagate widgets that need to be accessed
         self._tv_vars = tv_vars
 
@@ -304,80 +309,76 @@ class form_CommandTask(form_Task):
         return super()._updatedata()
 
     def _updateform(self):
-        self.data_set("varname", "")
-        self.data_set("newvalue", "")
-        self.data_set("command", self._item.command)
-        self.data_set(
-            "command_arguments",
-            (
-                " ".join(quote(x) for x in self._item.command_arguments)
-                if self._item.command_arguments
-                else None
-            ),
-        )
-        self.data_set("startup_path", self._item.startup_path)
-        self.data_set(
-            "include_environment",
-            (
-                False
-                if self._item.include_environment is False
-                else True
-            ),
-        )
-        self.data_set(
-            "set_environment_variables",
-            (
-                False
-                if self._item.set_environment_variables is False
-                else True
-            ),
-        )
-        self.data_set("match_exact", self._item.match_exact or False)
-        self.data_set("case_sensitive", self._item.case_sensitive or False)
-        self.data_set(
-            "match_regular_expression", self._item.match_regular_expression or False
-        )
-        self.data_set("timeout_seconds", self._item.timeout_seconds or 0)
-        check_for = UI_OUTCOME_NONE
-        check_what = UI_EXIT_CODE
-        check_value = ""
-        if self._item.success_status is not None:
-            check_for = UI_OUTCOME_SUCCESS
-            check_what = UI_EXIT_CODE
-            check_value = self._item.success_status
-        elif self._item.success_stdout is not None:
-            check_for = UI_OUTCOME_SUCCESS
-            check_what = UI_STREAM_STDOUT
-            check_value = self._item.success_stdout
-        elif self._item.success_stderr is not None:
-            check_for = UI_OUTCOME_SUCCESS
-            check_what = UI_STREAM_STDERR
-            check_value = self._item.success_stderr
-        if self._item.failure_status is not None:
-            check_for = UI_OUTCOME_FAILURE
-            check_what = UI_EXIT_CODE
-            check_value = self._item.failure_status
-        elif self._item.failure_stdout is not None:
-            check_for = UI_OUTCOME_FAILURE
-            check_what = UI_STREAM_STDOUT
-            check_value = self._item.failure_stdout
-        elif self._item.failure_stderr is not None:
-            check_for = UI_OUTCOME_FAILURE
-            check_what = UI_STREAM_STDERR
-            check_value = self._item.failure_stderr
-        self.data_set("check_for", check_for)
-        self.data_set("check_what", check_what)
-        self.data_set("check_value", check_value)
-        self._envvars = []
-        if self._item.environment_variables:
-            for k in self._item.environment_variables:
-                self._envvars.append([k, self._item.environment_variables[k]])
-        self._envvars.sort(key=lambda x: x[0])
-        self._tv_vars.delete(*self._tv_vars.get_children())
-        for entry in self._envvars:
-            self._tv_vars.insert(
-                "", iid="%s-%s" % (entry[0], entry[1]), values=entry, index=tk.END
+        try:
+            self.data_set("varname", "")
+            self.data_set("newvalue", "")
+            self.data_set("command", self._item.command)
+            self.data_set(
+                "command_arguments",
+                (
+                    " ".join(quote(x) for x in self._item.command_arguments)
+                    if self._item.command_arguments
+                    else None
+                ),
             )
+            self.data_set("startup_path", self._item.startup_path)
+            self.data_set(
+                "include_environment",
+                (False if self._item.include_environment is False else True),
+            )
+            self.data_set(
+                "set_environment_variables",
+                (False if self._item.set_environment_variables is False else True),
+            )
+            self.data_set("match_exact", self._item.match_exact or False)
+            self.data_set("case_sensitive", self._item.case_sensitive or False)
+            self.data_set(
+                "match_regular_expression", self._item.match_regular_expression or False
+            )
+            self.data_set("timeout_seconds", self._item.timeout_seconds or 0)
+            check_for = UI_OUTCOME_NONE
+            check_what = UI_EXIT_CODE
+            check_value = ""
+            if self._item.success_status is not None:
+                check_for = UI_OUTCOME_SUCCESS
+                check_what = UI_EXIT_CODE
+                check_value = self._item.success_status
+            elif self._item.success_stdout is not None:
+                check_for = UI_OUTCOME_SUCCESS
+                check_what = UI_STREAM_STDOUT
+                check_value = self._item.success_stdout
+            elif self._item.success_stderr is not None:
+                check_for = UI_OUTCOME_SUCCESS
+                check_what = UI_STREAM_STDERR
+                check_value = self._item.success_stderr
+            if self._item.failure_status is not None:
+                check_for = UI_OUTCOME_FAILURE
+                check_what = UI_EXIT_CODE
+                check_value = self._item.failure_status
+            elif self._item.failure_stdout is not None:
+                check_for = UI_OUTCOME_FAILURE
+                check_what = UI_STREAM_STDOUT
+                check_value = self._item.failure_stdout
+            elif self._item.failure_stderr is not None:
+                check_for = UI_OUTCOME_FAILURE
+                check_what = UI_STREAM_STDERR
+                check_value = self._item.failure_stderr
+            self.data_set("check_for", check_for)
+            self.data_set("check_what", check_what)
+            self.data_set("check_value", check_value)
+            self._envvars = []
+            if self._item.environment_variables:
+                for k in self._item.environment_variables:
+                    self._envvars.append([k, self._item.environment_variables[k]])
+            self._envvars.sort(key=lambda x: x[0])
+            self._tv_vars.delete(*self._tv_vars.get_children())
+            for entry in self._envvars:
+                self._tv_vars.insert(
+                    "", iid="%s-%s" % (entry[0], entry[1]), values=entry, index=tk.END
+                )
+        # the real check will be performed when the user presses `OK`
+        except ValueError:
+            pass
         return super()._updateform()
 
     def add_var(self):

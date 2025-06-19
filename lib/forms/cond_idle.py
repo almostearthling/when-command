@@ -55,6 +55,9 @@ class form_IdleCondition(form_Condition):
         self.data_bind("idle_time", e_intervalTime, TYPE_INT, lambda x: x > 0)
         self.data_bind("time_unit", cb_timeUnit, TYPE_STRING)
 
+        # add captions of data to be checked
+        self.add_check_caption("idle_time", UI_FORM_IDLEDURATION)
+
         # propagate widgets that need to be accessed
         # NOTE: no data to propagate
 
@@ -62,28 +65,32 @@ class form_IdleCondition(form_Condition):
         self._updateform()
 
     def _updateform(self):
-        super()._updateform()
-        if self._item:
-            if (
-                self._item.idle_seconds is not None
-                and self._item.idle_seconds % 3600 == 0
-            ):
-                intv = int(self._item.idle_seconds / 3600)
-                intvu = UI_TIME_HOURS
-            elif (
-                self._item.idle_seconds is not None
-                and self._item.idle_seconds % 60 == 0
-            ):
-                intv = int(self._item.idle_seconds / 60)
-                intvu = UI_TIME_MINUTES
+        try:
+            if self._item:
+                if (
+                    self._item.idle_seconds is not None
+                    and self._item.idle_seconds % 3600 == 0
+                ):
+                    intv = int(self._item.idle_seconds / 3600)
+                    intvu = UI_TIME_HOURS
+                elif (
+                    self._item.idle_seconds is not None
+                    and self._item.idle_seconds % 60 == 0
+                ):
+                    intv = int(self._item.idle_seconds / 60)
+                    intvu = UI_TIME_MINUTES
+                else:
+                    intv = self._item.idle_seconds
+                    intvu = UI_TIME_SECONDS
+                self.data_set("idle_time", intv)
+                self.data_set("time_unit", intvu)
             else:
-                intv = self._item.idle_seconds
-                intvu = UI_TIME_SECONDS
-            self.data_set("idle_time", intv)
-            self.data_set("time_unit", intvu)
-        else:
-            self.data_set("idle_time", DEFAULT_INTERVAL_TIME)
-            self.data_set("time_unit", DEFAULT_INTERVAL_UNIT)
+                self.data_set("idle_time", DEFAULT_INTERVAL_TIME)
+                self.data_set("time_unit", DEFAULT_INTERVAL_UNIT)
+        # the real check will be performed when the user presses `OK`
+        except ValueError:
+            pass
+        return super()._updateform()
 
     def _updatedata(self):
         super()._updatedata()

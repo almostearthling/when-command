@@ -108,7 +108,7 @@ class form_LuaScriptTask(form_Task):
 
         # bind data to widgets
         self.data_bind("luavar_selection", tv_luaVars)
-        self.data_bind("script", cv_luaScript, TYPE_STRING)
+        self.data_bind("script", cv_luaScript, TYPE_STRING, lambda x: bool(x))
         self.data_bind(
             "varname",
             e_varName,
@@ -117,6 +117,9 @@ class form_LuaScriptTask(form_Task):
         )
         self.data_bind("newvalue", e_varValue, TYPE_STRING)
         self.data_bind("expect_all", ck_expectAll)
+
+        # add captions of data to be checked
+        self.add_check_caption("script", UI_FORM_COMMAND_SC)
 
         # propagate widgets that need to be accessed
         self._tv_vars = tv_luaVars
@@ -178,20 +181,24 @@ class form_LuaScriptTask(form_Task):
         return super()._updatedata()
 
     def _updateform(self):
-        self.data_set("script", self._item.script)
-        self.data_set("expect_all", self._item.expect_all or False)
-        self.data_set("varname")
-        self.data_set("newvalue")
-        self._results = []
-        if self._item.expected_results:
-            for k in self._item.expected_results:
-                self._results.append([k, self._item.expected_results[k]])
-        self._results.sort(key=lambda x: x[0])
-        self._tv_vars.delete(*self._tv_vars.get_children())
-        for entry in self._results:
-            self._tv_vars.insert(
-                "", iid="%s-%s" % (entry[0], entry[1]), values=entry, index=tk.END
-            )
+        try:
+            self.data_set("script", self._item.script)
+            self.data_set("expect_all", self._item.expect_all or False)
+            self.data_set("varname")
+            self.data_set("newvalue")
+            self._results = []
+            if self._item.expected_results:
+                for k in self._item.expected_results:
+                    self._results.append([k, self._item.expected_results[k]])
+            self._results.sort(key=lambda x: x[0])
+            self._tv_vars.delete(*self._tv_vars.get_children())
+            for entry in self._results:
+                self._tv_vars.insert(
+                    "", iid="%s-%s" % (entry[0], entry[1]), values=entry, index=tk.END
+                )
+        # the real check will be performed when the user presses `OK`
+        except ValueError:
+            pass
         return super()._updateform()
 
 
