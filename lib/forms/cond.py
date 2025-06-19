@@ -12,7 +12,7 @@ from ..repocfg import AppConfig
 
 from ..items.cond import Condition
 
-from ..utility import is_valid_item_name
+from ..utility import is_valid_item_name, clean_caption
 
 
 # condition box base class: since this is the class that will be used in
@@ -161,6 +161,12 @@ class form_Condition(ApplicationForm):
         self.data_bind(
             "@control_flow", (rb_noCheck, rb_breakFailure, rb_breakSuccess), TYPE_STRING
         )
+
+        # keep a database of captions associated to data subject to check
+        self._captions = {
+            "@name": clean_caption(UI_FORM_NAME_SC),
+            "@max_tasks_retries": clean_caption(UI_FORM_MAXTASKRETRIES_SC),
+        }
 
         # propagate widgets that need to be accessed
         self._tv_tasks = tv_tasks

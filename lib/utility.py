@@ -447,6 +447,16 @@ def toml_literal(s):
         return toml_try_literal(s)
 
 
+
+# clean a caption from non-alphanumeric characters at the end
+def clean_caption(s):
+    s = " ".join(s.split())
+    alnum = "abcdefghijklmnopqrstuvwxyz0123456789"
+    while len(s) > 0 and s[-1].lower() not in alnum:
+        s = s[:-1]
+    return s
+
+
 # ...
 
 
