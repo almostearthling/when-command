@@ -227,6 +227,11 @@ class form_CommandTask(form_Task):
         self.data_bind("case_sensitive", ck_caseSensitive)
         self.data_bind("match_regular_expression", ck_matchRegExp)
 
+        # add captions of data to be checked
+        self.add_check_caption("command", UI_FORM_COMMAND_SC)
+        self.add_check_caption("startup_path", UI_FORM_STARTUPPATH_SC)
+        self.add_check_caption("timeout_seconds", UI_FORM_TIMEOUTSECS_SC)
+
         # propagate widgets that need to be accessed
         self._tv_vars = tv_vars
 
@@ -318,19 +323,11 @@ class form_CommandTask(form_Task):
         self.data_set("startup_path", self._item.startup_path)
         self.data_set(
             "include_environment",
-            (
-                False
-                if self._item.include_environment is False
-                else True
-            ),
+            (False if self._item.include_environment is False else True),
         )
         self.data_set(
             "set_environment_variables",
-            (
-                False
-                if self._item.set_environment_variables is False
-                else True
-            ),
+            (False if self._item.set_environment_variables is False else True),
         )
         self.data_set("match_exact", self._item.match_exact or False)
         self.data_set("case_sensitive", self._item.case_sensitive or False)

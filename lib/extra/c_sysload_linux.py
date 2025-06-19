@@ -37,14 +37,24 @@ import shutil
 # resource strings (not internationalized)
 ITEM_HR_NAME = "System Load Below Threshold Condition"
 
-_UI_FORM_TITLE = "%s: System Load Condition Editor" % UI_APP
-
-_UI_FORM_SYSLOADTHRESHOLD_SC = "Load is below:"
+UI_FORM_TITLE = "%s: System Load Condition Editor" % UI_APP
+UI_FORM_SYSLOADTHRESHOLD_SC = "Load is below:"
 
 
 # default values
-_DEFAULT_LOW_LOAD_PERC = 3
-_CHECK_EXTRA_DELAY = 60
+DEFAULT_LOW_LOAD_PERC = 3
+CHECK_EXTRA_DELAY = 60
+
+
+# localize the aforementioned constants: this pattern is the same in every
+# extra module
+from .i18n.localized import localized_strings
+
+m = localized_strings(__name__)
+if m is not None:
+    ITEM_HR_NAME = m.ITEM_HR_NAME
+    UI_FORM_TITLE = m.UI_FORM_TITLE
+    UI_FORM_SYSLOADTHRESHOLD_SC = m.UI_FORM_SYSLOADTHRESHOLD_SC
 
 
 # check for availability: in this case check all needed commands
@@ -86,7 +96,7 @@ class SystemLoadCondition(CommandCondition):
         else:
             self.tags = table()
             self.tags.append("subtype", self.subtype)
-            self.tags.append("threshold", _DEFAULT_LOW_LOAD_PERC)
+            self.tags.append("threshold", DEFAULT_LOW_LOAD_PERC)
         self.updateitem()
 
     def updateitem(self):
@@ -94,11 +104,11 @@ class SystemLoadCondition(CommandCondition):
         self.command_arguments = [
             "-c",
             "echo '%s <' `vmstat | tail -1 | awk '{print \$14}'` | bc"
-            % self.tags.get("threshold", _DEFAULT_LOW_LOAD_PERC),
+            % self.tags.get("threshold", DEFAULT_LOW_LOAD_PERC),
         ]
         self.success_stdout = "1"
         self.startup_path = "."
-        self.check_after = _CHECK_EXTRA_DELAY  # for now keep it fixed to one minute
+        self.check_after = CHECK_EXTRA_DELAY  # for now keep it fixed to one minute
         self.recur_after_failed_check = True
 
 
@@ -112,7 +122,7 @@ class form_SystemLoadCondition(form_Condition):
             assert isinstance(item, SystemLoadCondition)
         else:
             item = SystemLoadCondition()
-        super().__init__(_UI_FORM_TITLE, tasks_available, item)
+        super().__init__(UI_FORM_TITLE, tasks_available, item)
 
         # create a specific frame for the contents
         area = ttk.Frame(super().contents)
@@ -120,7 +130,7 @@ class form_SystemLoadCondition(form_Condition):
         PAD = WIDGET_PADDING_PIXELS
 
         # build the UI elements as needed and configure the layout
-        l_threshold = ttk.Label(area, text=_UI_FORM_SYSLOADTHRESHOLD_SC)
+        l_threshold = ttk.Label(area, text=UI_FORM_SYSLOADTHRESHOLD_SC)
         e_threshold = ttk.Entry(area)
         l_percent = ttk.Label(area, text="%")
         self.data_bind("threshold", e_threshold, TYPE_INT, lambda x: 0 < x < 100)
@@ -130,6 +140,9 @@ class form_SystemLoadCondition(form_Condition):
         l_percent.grid(row=0, column=2, sticky=tk.E, padx=PAD, pady=PAD)
 
         area.columnconfigure(1, weight=1)
+
+        # add captions of data to be checked
+        self.add_check_caption("threshold", UI_FORM_SYSLOADTHRESHOLD_SC)
 
         # always update the form at the end of initialization
         self._updateform()

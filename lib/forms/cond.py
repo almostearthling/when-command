@@ -12,7 +12,7 @@ from ..repocfg import AppConfig
 
 from ..items.cond import Condition
 
-from ..utility import is_valid_item_name
+from ..utility import is_valid_item_name, clean_caption
 
 
 # condition box base class: since this is the class that will be used in
@@ -26,6 +26,9 @@ class form_Condition(ApplicationForm):
         size = AppConfig.get("SIZE_EDITOR_FORM")
         bbox = (BBOX_OK, BBOX_CANCEL)
         super().__init__(title, size, None, bbox)
+
+        # only perform checks when the user presses OK
+        self.set_autocheck(False)
 
         tasks_available = tasks_available.copy()
         tasks_available.sort()
@@ -162,6 +165,12 @@ class form_Condition(ApplicationForm):
             "@control_flow", (rb_noCheck, rb_breakFailure, rb_breakSuccess), TYPE_STRING
         )
 
+        # keep a database of captions associated to data subject to check
+        self._captions = {
+            "@name": clean_caption(UI_FORM_NAME_SC),
+            "@max_tasks_retries": clean_caption(UI_FORM_MAXTASKRETRIES_SC),
+        }
+
         # propagate widgets that need to be accessed
         self._tv_tasks = tv_tasks
         self._max_retries = e_maxTasksRetries
@@ -190,8 +199,25 @@ class form_Condition(ApplicationForm):
             self._updatedata()
             self._updateform()
 
-    # def recall_task(self):
-    #     pass
+    def add_check_caption(self, dataname, caption):
+        assert self.data_exists(dataname)
+        self._captions[dataname] = clean_caption(caption)
+
+    def _invalid_data_captions(self):
+        res = []
+        for k in self._captions:
+            if not self.data_valid(k):
+                res.append(self._captions[k])
+        if not res:
+            return None
+        else:
+            return res
+
+    def _popup_invalid_data(self, captions):
+        captions.sort()
+        capts = "- " + "\n- ".join(captions)
+        msg = UI_POPUP_INVALIDPARAMETERS_T % capts
+        messagebox.showerror(UI_POPUP_T_ERR, msg)
 
     def _check_recurring(self):
         # we use the opposite of the value because of <ButtonPress-1>: anyway
@@ -297,12 +323,12 @@ class form_Condition(ApplicationForm):
         return super().exit_cancel()
 
     def exit_ok(self):
-        name = self.data_get("@name")
-        if name is not None:
+        errs = self._invalid_data_captions()
+        if errs is None:
             self._updatedata()
             return super().exit_ok()
         else:
-            messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDITEMNAME)
+            self._popup_invalid_data(errs)
 
     # main loop: returns the current item if any
     def run(self):

@@ -33,22 +33,35 @@ import sys
 
 
 # resource strings (not internationalized for the moment)
-ITEM_COND_SESSION_LOCKED = "Session Locked Condition"
+ITEM_HR_NAME = "Session Locked Condition"
 
-_UI_FORM_TITLE = "%s: Session Locked Condition Editor" % UI_APP
-
-_UI_FORM_CHECKFREQ_SC = "Session lock check frequency:"
-_UI_FORM_RB_CHECKFREQ_PEDANTIC = "Pedantic"
-_UI_FORM_RB_CHECKFREQ_NORMAL = "Normal"
-_UI_FORM_RB_CHECKFREQ_RELAXED = "Relaxed"
+UI_FORM_TITLE = f"{UI_APP}: Session Locked Condition Editor"
+UI_FORM_CHECKFREQ_SC = "Session lock check frequency:"
+UI_FORM_RB_CHECKFREQ_PEDANTIC = "Pedantic"
+UI_FORM_RB_CHECKFREQ_NORMAL = "Normal"
+UI_FORM_RB_CHECKFREQ_RELAXED = "Relaxed"
 
 
 # values for check styles
-_CHECK_EXTRA_DELAY = {
+CHECK_EXTRA_DELAY = {
     "pedantic": 60,
     "normal": 120,
     "relaxed": 300,
 }
+
+
+# localize the aforementioned constants: this pattern is the same in every
+# extra module
+from .i18n.localized import localized_strings
+
+m = localized_strings(__name__)
+if m is not None:
+    ITEM_HR_NAME = m.ITEM_HR_NAME
+    UI_FORM_TITLE = m.UI_FORM_TITLE
+    UI_FORM_CHECKFREQ_SC = m.UI_FORM_CHECKFREQ_SC
+    UI_FORM_RB_CHECKFREQ_PEDANTIC = m.UI_FORM_RB_CHECKFREQ_PEDANTIC
+    UI_FORM_RB_CHECKFREQ_NORMAL = m.UI_FORM_RB_CHECKFREQ_NORMAL
+    UI_FORM_UI_FORM_RB_CHECKFREQ_RELAXEDCHECKFREQ_SC = m.UI_FORM_RB_CHECKFREQ_RELAXED
 
 
 # check for availability: this version of the check is only for Windows, the
@@ -67,7 +80,7 @@ class SessionLockedCondition(WMICondition):
     # availability at class level: these variables *MUST* be set for all items
     item_type = "wmi"
     item_subtype = "session_locked"
-    item_hrtype = ITEM_COND_SESSION_LOCKED
+    item_hrtype = ITEM_HR_NAME
     available = _available()
 
     def __init__(self, t: items.Table = None) -> None:
@@ -104,7 +117,7 @@ class SessionLockedCondition(WMICondition):
         self.query = (
             "SELECT CreationClassName FROM Win32_Process WHERE Name='LogonUI.exe'"
         )
-        self.check_after = _CHECK_EXTRA_DELAY[check_frequency]
+        self.check_after = CHECK_EXTRA_DELAY[check_frequency]
         self.recur_after_failed_check = True
 
 
@@ -118,7 +131,7 @@ class form_SessionLockedCondition(form_Condition):
             assert isinstance(item, SessionLockedCondition)
         else:
             item = SessionLockedCondition()
-        super().__init__(_UI_FORM_TITLE, tasks_available, item)
+        super().__init__(UI_FORM_TITLE, tasks_available, item)
 
         # create a specific frame for the contents
         area = ttk.Frame(super().contents)
@@ -126,15 +139,15 @@ class form_SessionLockedCondition(form_Condition):
         PAD = WIDGET_PADDING_PIXELS
 
         # build the UI elements as needed and configure the layout
-        l_checkFreq = ttk.Label(area, text=_UI_FORM_CHECKFREQ_SC)
+        l_checkFreq = ttk.Label(area, text=UI_FORM_CHECKFREQ_SC)
         rb_checkFreqPedantic = ttk.Radiobutton(
-            area, text=_UI_FORM_RB_CHECKFREQ_PEDANTIC, value="pedantic"
+            area, text=UI_FORM_RB_CHECKFREQ_PEDANTIC, value="pedantic"
         )
         rb_checkFreqNormal = ttk.Radiobutton(
-            area, text=_UI_FORM_RB_CHECKFREQ_NORMAL, value="normal"
+            area, text=UI_FORM_RB_CHECKFREQ_NORMAL, value="normal"
         )
         rb_checkFreqRelaxed = ttk.Radiobutton(
-            area, text=_UI_FORM_RB_CHECKFREQ_RELAXED, value="relaxed"
+            area, text=UI_FORM_RB_CHECKFREQ_RELAXED, value="relaxed"
         )
         self.data_bind(
             "check_frequency",

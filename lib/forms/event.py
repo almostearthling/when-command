@@ -12,7 +12,7 @@ from ..repocfg import AppConfig
 
 from ..items.event import Event
 
-from ..utility import is_valid_item_name
+from ..utility import is_valid_item_name, clean_caption
 
 
 # event box base class: since this is the class that will be used in derived
@@ -25,6 +25,9 @@ class form_Event(ApplicationForm):
         size = AppConfig.get("SIZE_EDITOR_FORM")
         bbox = (BBOX_OK, BBOX_CANCEL)
         super().__init__(title, size, None, bbox)
+
+        # only perform checks when the user presses OK
+        self.set_autocheck(False)
 
         conditions_available = conditions_available.copy()
         conditions_available.sort()
@@ -64,7 +67,15 @@ class form_Event(ApplicationForm):
 
         # bind data to widgets
         self.data_bind("@name", e_itemName, TYPE_STRING, is_valid_item_name)
-        self.data_bind("@condition", cb_associatedCondition, TYPE_STRING)
+        self.data_bind(
+            "@condition", cb_associatedCondition, TYPE_STRING, lambda x: bool(x)
+        )
+
+        # keep a database of captions associated to data subject to check
+        self._captions = {
+            "@name": clean_caption(UI_FORM_NAME_SC),
+            "@condition": clean_caption(UI_FORM_COND_SC),
+        }
 
         # finally set the item
         if item:
@@ -72,6 +83,26 @@ class form_Event(ApplicationForm):
         else:
             self.reset_item()
         self.changed = False
+
+    def add_check_caption(self, dataname, caption):
+        assert self.data_exists(dataname)
+        self._captions[dataname] = clean_caption(caption)
+
+    def _invalid_data_captions(self):
+        res = []
+        for k in self._captions:
+            if not self.data_valid(k):
+                res.append(self._captions[k])
+        if not res:
+            return None
+        else:
+            return res
+
+    def _popup_invalid_data(self, captions):
+        captions.sort()
+        capts = "- " + "\n- ".join(captions)
+        msg = UI_POPUP_INVALIDPARAMETERS_T % capts
+        messagebox.showerror(UI_POPUP_T_ERR, msg)
 
     # contents is the root for slave widgets
     @property
@@ -114,15 +145,12 @@ class form_Event(ApplicationForm):
         return super().exit_cancel()
 
     def exit_ok(self):
-        name = self.data_get("@name")
-        condition = self.data_get("@condition")
-        if name and condition:
+        errs = self._invalid_data_captions()
+        if errs is None:
             self._updatedata()
             return super().exit_ok()
-        elif not name:
-            messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDITEMNAME)
         else:
-            messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_MISSINGEVENTCOND)
+            self._popup_invalid_data(errs)
 
     # main loop: returns the current item if any
     def run(self):

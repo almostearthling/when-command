@@ -5,7 +5,7 @@
 # - exploits the new feature of only triggering the condition once when
 #   the actual parameters are met
 # - normally the condition is only tested every minute (change the
-#   _CHECK_EXTRA_DELAY constant to specify a different number of seconds)
+#   CHECK_EXTRA_DELAY constant to specify a different number of seconds)
 #
 #  A module achieving the same goal on Linux is available.
 
@@ -35,14 +35,24 @@ import sys
 # resource strings (not internationalized for the moment)
 ITEM_COND_LOWBATT = "Low Battery Condition"
 
-_UI_FORM_TITLE = "%s: Low Battery Condition Editor" % UI_APP
-
-_UI_FORM_LOWBATT_THRESHOLD_SC = "Battery charge is below:"
+UI_FORM_TITLE = f"{UI_APP}: Low Battery Condition Editor"
+UI_FORM_THRESHOLD_SC = "Battery charge is below:"
 
 
 # default values
-_DEFAULT_THRESHOLD_VALUE = 40
-_CHECK_EXTRA_DELAY = 60
+DEFAULT_THRESHOLD_VALUE = 40
+CHECK_EXTRA_DELAY = 60
+
+
+# localize the aforementioned constants: this pattern is the same in every
+# extra module
+from .i18n.localized import localized_strings
+
+m = localized_strings(__name__)
+if m is not None:
+    ITEM_HR_NAME = m.ITEM_HR_NAME
+    UI_FORM_TITLE = m.UI_FORM_TITLE
+    UI_FORM_THRESHOLD_SC = m.UI_FORM_THRESHOLD_SC
 
 
 # check for availability: this version of the check is only for Windows, the
@@ -85,12 +95,12 @@ class LowBatteryCondition(WMICondition):
         else:
             self.tags = table()
             self.tags.append("subtype", self.subtype)
-            self.tags.append("threshold", _DEFAULT_THRESHOLD_VALUE)
+            self.tags.append("threshold", DEFAULT_THRESHOLD_VALUE)
         self.updateitem()
 
     def updateitem(self):
         # set base item properties according to specific parameters in `tags`
-        threshold = self.tags.get("threshold", _DEFAULT_THRESHOLD_VALUE)
+        threshold = self.tags.get("threshold", DEFAULT_THRESHOLD_VALUE)
 
         # see interpretation of BatteryStatus == 1 here:
         # https://learn.microsoft.com/it-it/windows/win32/cimwin32prov/win32-battery
@@ -110,7 +120,7 @@ class LowBatteryCondition(WMICondition):
             },
         ]
         self.result_check_all = True
-        self.check_after = _CHECK_EXTRA_DELAY
+        self.check_after = CHECK_EXTRA_DELAY
         self.recur_after_failed_check = True
 
 
@@ -124,7 +134,7 @@ class form_LowBatteryCondition(form_Condition):
             assert isinstance(item, LowBatteryCondition)
         else:
             item = LowBatteryCondition()
-        super().__init__(_UI_FORM_TITLE, tasks_available, item)
+        super().__init__(UI_FORM_TITLE, tasks_available, item)
 
         # create a specific frame for the contents
         area = ttk.Frame(super().contents)
@@ -132,7 +142,7 @@ class form_LowBatteryCondition(form_Condition):
         PAD = WIDGET_PADDING_PIXELS
 
         # build the UI elements as needed and configure the layout
-        l_threshold = ttk.Label(area, text=_UI_FORM_LOWBATT_THRESHOLD_SC)
+        l_threshold = ttk.Label(area, text=UI_FORM_THRESHOLD_SC)
         e_threshold = ttk.Entry(area)
         l_percent = ttk.Label(area, text="%")
         self.data_bind("threshold", e_threshold, TYPE_INT, lambda t: t > 0 and t < 100)
@@ -142,6 +152,9 @@ class form_LowBatteryCondition(form_Condition):
         l_percent.grid(row=0, column=2, sticky=tk.E, padx=PAD, pady=PAD)
 
         area.columnconfigure(1, weight=1)
+
+        # add captions of data to be checked
+        self.add_check_caption("threshold", UI_FORM_THRESHOLD_SC)
 
         # always update the form at the end of initialization
         self._updateform()

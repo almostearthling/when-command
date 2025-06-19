@@ -81,6 +81,9 @@ class form_InternalCommandTask(form_Task):
 
         self.data_bind("command", e_command, TYPE_STRING, _check_command)
 
+        # add captions of data to be checked
+        self.add_check_caption("command", UI_FORM_COMMAND_SC)
+
         # update the form
         self._updateform()
 

@@ -109,7 +109,7 @@ AppConfig = _AppConfiguration(
 )
 
 
-__all__ = [AppConfig]
+__all__ = ["AppConfig"]
 
 
 # end.

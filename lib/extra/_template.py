@@ -1,4 +1,13 @@
 # template for extra modules
+#
+# Note about localization: each extra module can be provided with companion
+# internationalization submodules, which should be named with the same name
+# as the extra module itself, followed by an underscore and a 2 character l18n
+# code (en for English, it for Italian, de for German, and so on). These
+# submodules must redefine the constants in the "resource strings" section
+# below. If one or more language submodules are missing, the corresponding
+# UI strings will simply remain untranslated. See this file and its companion
+# i18n submodules _template_en.py and _template_it.py for a simple example.
 
 # this header is common to all extra modules
 from tomlkit import items, table
@@ -12,7 +21,6 @@ from ..utility import check_not_none, append_not_none
 
 from ..forms.ui import *
 
-
 # since a condition is defined, the base form is the one for conditions
 from ..forms.cond import form_Condition
 
@@ -24,15 +32,26 @@ from ..items.cond_command import CommandCondition
 import shutil
 
 
-# resource strings (not internationalized for the moment)
+# resource strings (not internationalized)
 ITEM_HR_NAME = "Template Condition"
 
-_UI_FORM_TITLE = "%s: Template Condition Editor" % UI_APP
-_UI_FORM_PARAM1_SC = "Parameter is:"
+UI_FORM_TITLE = f"{UI_APP}: Template Condition Editor"
+UI_FORM_PARAM1_SC = "Parameter is:"
 
 
 # default values
-_DEFAULT_PARAM1_VALUE = "somestring"
+DEFAULT_PARAM1_VALUE = "somestring"
+
+# localize the aforementioned constants: this pattern must be the same in
+# every extra module, the only changing part is that the assignments of type
+# `CONST_NAME=m.CONST_NAME` should be reported for every resource constant
+from .i18n.localized import localized_strings
+
+m = localized_strings(__name__)
+if m is not None:
+    ITEM_HR_NAME = m.ITEM_HR_NAME
+    UI_FORM_TITLE = m.UI_FORM_TITLE
+    UI_FORM_PARAM1_SC = m.UI_FORM_PARAM1_SC
 
 
 # check for availability: include all needed checks in this function, may
@@ -73,7 +92,7 @@ class TemplateCondition(CommandCondition):
         else:
             self.tags = table()
             self.tags.append("subtype", self.subtype)
-            self.tags.append("parameter1", _DEFAULT_PARAM1_VALUE)
+            self.tags.append("parameter1", DEFAULT_PARAM1_VALUE)
 
         self.updateitem()
 
@@ -82,7 +101,7 @@ class TemplateCondition(CommandCondition):
         self.command = "ls"
         self.command_arguments = [
             "-l",
-            self.tags.get("parameter1", _DEFAULT_PARAM1_VALUE),
+            self.tags.get("parameter1", DEFAULT_PARAM1_VALUE),
         ]
         self.startup_path = "."
         self.success_status = 0
@@ -98,7 +117,7 @@ class form_TemplateCondition(form_Condition):
             assert isinstance(item, TemplateCondition)
         else:
             item = TemplateCondition()
-        super().__init__(_UI_FORM_TITLE, tasks_available, item)
+        super().__init__(UI_FORM_TITLE, tasks_available, item)
 
         # create a specific frame for the contents
         area = ttk.Frame(super().contents)
@@ -106,7 +125,7 @@ class form_TemplateCondition(form_Condition):
         PAD = WIDGET_PADDING_PIXELS
 
         # build the UI elements as needed and configure the layout
-        l_parameter1 = ttk.Label(area, text=_UI_FORM_PARAM1_SC)
+        l_parameter1 = ttk.Label(area, text=UI_FORM_PARAM1_SC)
         e_parameter1 = ttk.Entry(area)
         self.data_bind("parameter1", e_parameter1, TYPE_STRING)
 
@@ -114,6 +133,9 @@ class form_TemplateCondition(form_Condition):
         e_parameter1.grid(row=0, column=1, sticky=tk.NSEW, padx=PAD, pady=PAD)
 
         area.columnconfigure(1, weight=1)
+
+        # add captions of data to be checked
+        self.add_check_caption("parameter1", UI_FORM_PARAM1_SC)
 
         # always update the form at the end of initialization
         self._updateform()

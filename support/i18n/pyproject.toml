@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "const-xlate"
+version = "0.1.0"
+description = ""
+authors = ["Francesco Garosi <almostearthling@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+jupyter = "^1.1.1"
+jupyterlab = "^4.4.3"
+googletrans = "^4.0.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

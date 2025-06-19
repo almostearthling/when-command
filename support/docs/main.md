@@ -46,6 +46,7 @@ The documentation handles the following topics:
 * [Toolbox](cli.md#toolbox)
 * Simple [Tutorial](tutorial.md)
 * Generated [Configuration Files](configfile.md)
+* [Localization](i18n.md)
 
 For more information about the companion tools, **whenever** and **whenever_tray**, please refer to their respective above-mentioned repositories.
 

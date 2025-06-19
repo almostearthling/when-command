@@ -26,17 +26,29 @@ import sys
 # resource strings (not internationalized for the moment)
 ITEM_HR_NAME = "Removable Drive Available Condition"
 
-_UI_FORM_TITLE = "%s: Removable Drive Condition Editor" % UI_APP
-
-_UI_FORM_REMOVABLEDRIVE_LABEL_SC = "Expected label:"
-_UI_FORM_SPECIFY_DRIVE_LETTER = "Specify drive letter"
-_UI_FORM_EXPECTED_LETTER_SC = "Expected drive letter:"
+UI_FORM_TITLE = f"{UI_APP}: Removable Drive Condition Editor"
+UI_FORM_REMOVABLEDRIVE_LABEL_SC = "Expected label:"
+UI_FORM_SPECIFY_DRIVE_LETTER = "Specify drive letter"
+UI_FORM_EXPECTED_LETTER_SC = "Expected drive letter:"
 
 
 # default values
-_DEFAULT_DRIVE_LABEL = "DRIVE"
-_DEFAULT_DRIVE_LETTER = ""
-_CHECK_EXTRA_DELAY = 60
+DEFAULT_DRIVE_LABEL = "DRIVE"
+DEFAULT_DRIVE_LETTER = ""
+CHECK_EXTRA_DELAY = 60
+
+
+# localize the aforementioned constants: this pattern is the same in every
+# extra module
+from .i18n.localized import localized_strings
+
+m = localized_strings(__name__)
+if m is not None:
+    ITEM_HR_NAME = m.ITEM_HR_NAME
+    UI_FORM_TITLE = m.UI_FORM_TITLE
+    UI_FORM_REMOVABLEDRIVE_LABEL_SC = m.UI_FORM_REMOVABLEDRIVE_LABEL_SC
+    UI_FORM_SPECIFY_DRIVE_LETTER = m.UI_FORM_SPECIFY_DRIVE_LETTER
+    UI_FORM_EXPECTED_LETTER_SC = m.UI_FORM_EXPECTED_LETTER_SC
 
 
 # check for availability: include all needed checks in this function, may
@@ -78,8 +90,8 @@ class RemovableDrivePresent(WMICondition):
         else:
             self.tags = table()
             self.tags.append("subtype", self.subtype)
-            self.tags.append("drive_label", _DEFAULT_DRIVE_LABEL)
-            self.tags.append("drive_letter", _DEFAULT_DRIVE_LETTER)
+            self.tags.append("drive_label", DEFAULT_DRIVE_LABEL)
+            self.tags.append("drive_letter", DEFAULT_DRIVE_LETTER)
 
         self.updateitem()
 
@@ -88,8 +100,8 @@ class RemovableDrivePresent(WMICondition):
 
         # the check is performed using a WMI query: [System.IO.DriveType] is
         # a system enum, and ::Removable is the fixed value 2;
-        label = self.tags.get("drive_label", _DEFAULT_DRIVE_LABEL)
-        letter = self.tags.get("drive_letter", _DEFAULT_DRIVE_LETTER)
+        label = self.tags.get("drive_label", DEFAULT_DRIVE_LABEL)
+        letter = self.tags.get("drive_letter", DEFAULT_DRIVE_LETTER)
         self.query = "SELECT * FROM Win32_Volume WHERE DriveType=2"
         self.result_check = [
             {
@@ -109,7 +121,7 @@ class RemovableDrivePresent(WMICondition):
                 }
             )
         self.result_check_all = True
-        self.check_after = _CHECK_EXTRA_DELAY
+        self.check_after = CHECK_EXTRA_DELAY
         self.recur_after_failed_check = True
 
 
@@ -123,7 +135,7 @@ class form_RemovableDrivePresent(form_Condition):
             assert isinstance(item, RemovableDrivePresent)
         else:
             item = RemovableDrivePresent()
-        super().__init__(_UI_FORM_TITLE, tasks_available, item)
+        super().__init__(UI_FORM_TITLE, tasks_available, item)
 
         # list the drive letters to create a combo box
         drive_letters = list("%s:" % x for x in "DEFGHIJKLMNOPQRSTUVWXYZ")
@@ -134,13 +146,13 @@ class form_RemovableDrivePresent(form_Condition):
         PAD = WIDGET_PADDING_PIXELS
 
         # build the UI elements as needed and configure the layout
-        l_driveLabel = ttk.Label(area, text=_UI_FORM_REMOVABLEDRIVE_LABEL_SC)
+        l_driveLabel = ttk.Label(area, text=UI_FORM_REMOVABLEDRIVE_LABEL_SC)
         e_driveLabel = ttk.Entry(area)
-        self.data_bind("drive_label", e_driveLabel, TYPE_STRING)
+        self.data_bind("drive_label", e_driveLabel, TYPE_STRING, lambda x: bool(x))
         sep1 = ttk.Separator(area)
 
-        ck_specifyLetter = ttk.Checkbutton(area, text=_UI_FORM_SPECIFY_DRIVE_LETTER)
-        l_driveLetter = ttk.Label(area, text=_UI_FORM_EXPECTED_LETTER_SC)
+        ck_specifyLetter = ttk.Checkbutton(area, text=UI_FORM_SPECIFY_DRIVE_LETTER)
+        l_driveLetter = ttk.Label(area, text=UI_FORM_EXPECTED_LETTER_SC)
         cb_driveLetter = ttk.Combobox(area, values=drive_letters, state="readonly")
 
         l_driveLabel.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
@@ -161,6 +173,9 @@ class form_RemovableDrivePresent(form_Condition):
         )
 
         area.columnconfigure(1, weight=1)
+
+        # add captions of data to be checked
+        self.add_check_caption("drive_label", UI_FORM_REMOVABLEDRIVE_LABEL_SC)
 
         # propagate widget that have to be accessible
         self._cb_driveLetter = cb_driveLetter

@@ -26,12 +26,20 @@ import sys
 # resource strings (not internationalized for the moment)
 ITEM_HR_NAME = "Logoff Task"
 
-_UI_FORM_TITLE = "%s: Logoff Task Editor" % UI_APP
-
-_UI_FORM_NOPARAMS = "(This type of item does not need any specific parameters)"
+UI_FORM_TITLE = f"{UI_APP}: Logoff Task Editor"
 
 
 # default values
+
+
+# localize the aforementioned constants: this pattern is the same in every
+# extra module
+from .i18n.localized import localized_strings
+
+m = localized_strings(__name__)
+if m is not None:
+    ITEM_HR_NAME = m.ITEM_HR_NAME
+    UI_FORM_TITLE = m.UI_FORM_TITLE
 
 
 # check for availability
@@ -41,9 +49,9 @@ def _available():
             return True
         return False
     elif sys.platform == "linux":
-        global ITEM_HR_NAME, _UI_FORM_TITLE
+        global ITEM_HR_NAME, UI_FORM_TITLE
         ITEM_HR_NAME += " (Gnome)"
-        _UI_FORM_TITLE += " (Gnome)"
+        UI_FORM_TITLE += " (Gnome)"
         if shutil.which("gnome-session-quit"):
             return True
         return False
@@ -107,7 +115,7 @@ class form_LogoffTask(form_Task):
             assert isinstance(item, LogoffTask)
         else:
             item = LogoffTask()
-        super().__init__(_UI_FORM_TITLE, item)
+        super().__init__(UI_FORM_TITLE, item)
 
         # create a specific frame for the contents
         area = ttk.Frame(super().contents)
@@ -115,7 +123,7 @@ class form_LogoffTask(form_Task):
         PAD = WIDGET_PADDING_PIXELS
 
         # create a specific frame for the contents
-        l_noparams = ttk.Label(area, text=_UI_FORM_NOPARAMS)
+        l_noparams = ttk.Label(area, text=UI_CAPTION_NOSPECIFICPARAMS)
         l_noparams.configure(anchor=tk.CENTER)
         pad = ttk.Frame(area)
 
@@ -126,7 +134,7 @@ class form_LogoffTask(form_Task):
         area.rowconfigure(10, weight=1)
 
         # build the UI elements as needed and configure the layout
-        l_noparams = ttk.Label(area, text=_UI_FORM_NOPARAMS)
+        l_noparams = ttk.Label(area, text=UI_CAPTION_NOSPECIFICPARAMS)
         l_noparams.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         area.columnconfigure(1, weight=1)
 

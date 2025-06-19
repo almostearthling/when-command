@@ -52,8 +52,11 @@ class form_IntervalCondition(form_Condition):
         area.rowconfigure(1, weight=1)
 
         # bind data to widgets
-        self.data_bind("idle_time", e_intervalTime, TYPE_INT, lambda x: x > 0)
+        self.data_bind("interval_time", e_intervalTime, TYPE_INT, lambda x: x > 0)
         self.data_bind("time_unit", cb_timeUnit, TYPE_STRING)
+
+        # add captions of data to be checked
+        self.add_check_caption("interval_time", UI_FORM_DELAYSPEC)
 
         # propagate widgets that need to be accessed
         # NOTE: no data to propagate
@@ -62,7 +65,6 @@ class form_IntervalCondition(form_Condition):
         self._updateform()
 
     def _updateform(self):
-        super()._updateform()
         if self._item:
             if (
                 self._item.interval_seconds is not None
@@ -79,15 +81,16 @@ class form_IntervalCondition(form_Condition):
             else:
                 intv = self._item.interval_seconds
                 intvu = UI_TIME_SECONDS
-            self.data_set("idle_time", intv)
+            self.data_set("interval_time", intv)
             self.data_set("time_unit", intvu)
         else:
-            self.data_set("idle_time", DEFAULT_INTERVAL_TIME)
+            self.data_set("interval_time", DEFAULT_INTERVAL_TIME)
             self.data_set("time_unit", DEFAULT_INTERVAL_UNIT)
+        super()._updateform()
 
     def _updatedata(self):
         super()._updatedata()
-        intv = self.data_get("idle_time")
+        intv = self.data_get("interval_time")
         intvu = self.data_get("time_unit")
         if intv is not None:
             if intvu == UI_TIME_HOURS:

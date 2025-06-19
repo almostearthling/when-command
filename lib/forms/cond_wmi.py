@@ -161,7 +161,7 @@ class form_WMICondition(form_Condition):
 
         # bind data to widgets
         self.data_bind("result_selection", tv_wmiResults)
-        self.data_bind("query", cv_wmiQuery, TYPE_STRING)
+        self.data_bind("query", cv_wmiQuery, TYPE_STRING, lambda x: bool(x))
         self.data_bind(
             "index", e_resultIndex, TYPE_STRING, lambda x: x == "" or int(x) >= 0
         )
@@ -175,6 +175,10 @@ class form_WMICondition(form_Condition):
         self.data_bind("check_all", ck_checkAll)
         self.data_bind("check_after", e_checkAfter, TYPE_INT, lambda x: x >= 0)
         self.data_bind("ignore_persistent_success", ck_ignorePersistentSuccess)
+
+        # add captions of data to be checked
+        self.add_check_caption("query", UI_FORM_WMI_QUERY_SC)
+        self.add_check_caption("check_after", UI_FORM_EXTRADELAY_SC)
 
         # propagate widgets that need to be accessed
         self._tv_results = tv_wmiResults
@@ -300,7 +304,8 @@ class form_WMICondition(form_Condition):
         self.data_set("check_all", self._item.result_check_all or False)
         self.data_set("check_after", self._item.check_after or 0)
         self.data_set(
-            "ignore_persistent_success", self._item.recur_after_failed_check or False
+            "ignore_persistent_success",
+            self._item.recur_after_failed_check or False,
         )
         self.data_set("index")
         self.data_set("field")

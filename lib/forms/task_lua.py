@@ -108,7 +108,7 @@ class form_LuaScriptTask(form_Task):
 
         # bind data to widgets
         self.data_bind("luavar_selection", tv_luaVars)
-        self.data_bind("script", cv_luaScript, TYPE_STRING)
+        self.data_bind("script", cv_luaScript, TYPE_STRING, lambda x: bool(x))
         self.data_bind(
             "varname",
             e_varName,
@@ -117,6 +117,9 @@ class form_LuaScriptTask(form_Task):
         )
         self.data_bind("newvalue", e_varValue, TYPE_STRING)
         self.data_bind("expect_all", ck_expectAll)
+
+        # add captions of data to be checked
+        self.add_check_caption("script", UI_FORM_COMMAND_SC)
 
         # propagate widgets that need to be accessed
         self._tv_vars = tv_luaVars
