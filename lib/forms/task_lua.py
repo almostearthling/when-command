@@ -181,24 +181,20 @@ class form_LuaScriptTask(form_Task):
         return super()._updatedata()
 
     def _updateform(self):
-        try:
-            self.data_set("script", self._item.script)
-            self.data_set("expect_all", self._item.expect_all or False)
-            self.data_set("varname")
-            self.data_set("newvalue")
-            self._results = []
-            if self._item.expected_results:
-                for k in self._item.expected_results:
-                    self._results.append([k, self._item.expected_results[k]])
-            self._results.sort(key=lambda x: x[0])
-            self._tv_vars.delete(*self._tv_vars.get_children())
-            for entry in self._results:
-                self._tv_vars.insert(
-                    "", iid="%s-%s" % (entry[0], entry[1]), values=entry, index=tk.END
-                )
-        # the real check will be performed when the user presses `OK`
-        except ValueError:
-            pass
+        self.data_set("script", self._item.script)
+        self.data_set("expect_all", self._item.expect_all or False)
+        self.data_set("varname")
+        self.data_set("newvalue")
+        self._results = []
+        if self._item.expected_results:
+            for k in self._item.expected_results:
+                self._results.append([k, self._item.expected_results[k]])
+        self._results.sort(key=lambda x: x[0])
+        self._tv_vars.delete(*self._tv_vars.get_children())
+        for entry in self._results:
+            self._tv_vars.insert(
+                "", iid="%s-%s" % (entry[0], entry[1]), values=entry, index=tk.END
+            )
         return super()._updateform()
 
 

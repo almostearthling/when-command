@@ -27,6 +27,9 @@ class form_Task(ApplicationForm):
         bbox = (BBOX_OK, BBOX_CANCEL)
         super().__init__(title, size, None, bbox)
 
+        # only perform checks when the user presses OK
+        self.set_autocheck(False)
+
         # build the UI: build widgets, arrange them in the box, bind data
 
         # client area
@@ -95,14 +98,10 @@ class form_Task(ApplicationForm):
         return self._sub_contents
 
     def _updateform(self):
-        try:
-            if self._item:
-                self.data_set("@name", self._item.name)
-            else:
-                self.data_set("@name", "")
-        # the real check will be performed when the user presses `OK`
-        except ValueError:
-            pass
+        if self._item:
+            self.data_set("@name", self._item.name)
+        else:
+            self.data_set("@name", "")
 
     # the data update utility loads data into the item
     def _updatedata(self):

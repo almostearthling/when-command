@@ -198,17 +198,13 @@ class form_RemovableDrivePresent(form_Condition):
 
     # update the form with the specific parameters (usually in the `tags`)
     def _updateform(self):
-        try:
-            self.data_set("drive_label", self._item.tags.get("drive_label"))
-            if not self._item.tags.get("drive_letter"):
-                self.data_set("specify_letter", False)
-                self._cb_driveLetter.config(state=tk.DISABLED)
-            else:
-                self.data_set("specify_letter", True)
-                self._cb_driveLetter.config(state="readonly")
-        # the real check will be performed when the user presses `OK`
-        except ValueError:
-            pass
+        self.data_set("drive_label", self._item.tags.get("drive_label"))
+        if not self._item.tags.get("drive_letter"):
+            self.data_set("specify_letter", False)
+            self._cb_driveLetter.config(state=tk.DISABLED)
+        else:
+            self.data_set("specify_letter", True)
+            self._cb_driveLetter.config(state="readonly")
         return super()._updateform()
 
     # update the item from the form elements (usually update `tags`)

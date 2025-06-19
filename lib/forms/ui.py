@@ -414,6 +414,7 @@ class ApplicationForm(object):
         self._widgets = {}
         self._data = {}
         self._checks = {}
+        self._autocheck = True
 
         # bind common shortcut keys
         self._dialog.bind("<FocusIn>", lambda _: self.focus_in())
@@ -621,14 +622,11 @@ class ApplicationForm(object):
                 if isinstance(widget, tk.Text):
                     widget.delete(1.0, tk.END)
                     widget.insert(tk.END, "" if value is None else value)
-            except TypeError:
-                raise ValueError(
-                    "invalid value %s for entry `%s`" % (repr(value), dataname)
-                )
-            except ValueError:
-                raise ValueError(
-                    "invalid value %s for entry `%s`" % (repr(value), dataname)
-                )
+            except (TypeError, ValueError):
+                if self._autocheck:
+                    raise ValueError(
+                        "invalid value %s for entry `%s`" % (repr(value), dataname)
+                    )
         else:
             raise IndexError("entry `%s` not found" % dataname)
 
@@ -638,10 +636,17 @@ class ApplicationForm(object):
 
     def data_valid(self, dataname: str):
         if dataname in self._data:
-            rv = self._data[dataname].get()
-            return self._checks[dataname](rv)
+            try:
+                rv = self._data[dataname].get()
+                return self._checks[dataname](rv)
+            except (ValueError, TypeError, tk.TclError):
+                return False
         else:
             return False
+
+    # set autocheck feature on or off
+    def set_autocheck(self, c: bool):
+        self._autocheck = bool(c)
 
     # return a list of the widget-bound variables
     @property

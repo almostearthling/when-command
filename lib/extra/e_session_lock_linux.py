@@ -73,7 +73,7 @@ _DBUS_FILTER_EXPRESSION = "".join(
 
 # the DBus message parameters check
 _DBUS_PARAMETER_CHECK = [
-    { 'index': [1, "LockedHint"], 'operator': "eq", 'value': True },
+    {"index": [1, "LockedHint"], "operator": "eq", "value": True},
 ]
 
 

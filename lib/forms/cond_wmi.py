@@ -300,37 +300,33 @@ class form_WMICondition(form_Condition):
         return super()._updatedata()
 
     def _updateform(self):
-        try:
-            self.data_set("query", self._item.query)
-            self.data_set("check_all", self._item.result_check_all or False)
-            self.data_set("check_after", self._item.check_after or 0)
-            self.data_set(
-                "ignore_persistent_success",
-                self._item.recur_after_failed_check or False,
-            )
-            self.data_set("index")
-            self.data_set("field")
-            self.data_set("operator")
-            self.data_set("value")
-            self._results = []
-            if self._item.result_check:
-                for e in self._item.result_check:
-                    self._results.append(
-                        [
-                            e.get("index", ""),
-                            e.get("field"),
-                            e.get("operator"),
-                            e.get("value", ""),
-                        ]
-                    )
-            self._tv_results.delete(*self._tv_results.get_children())
-            for entry in self._results:
-                self._tv_results.insert(
-                    "", iid="%s-%s" % (entry[0], entry[1]), values=entry, index=tk.END
+        self.data_set("query", self._item.query)
+        self.data_set("check_all", self._item.result_check_all or False)
+        self.data_set("check_after", self._item.check_after or 0)
+        self.data_set(
+            "ignore_persistent_success",
+            self._item.recur_after_failed_check or False,
+        )
+        self.data_set("index")
+        self.data_set("field")
+        self.data_set("operator")
+        self.data_set("value")
+        self._results = []
+        if self._item.result_check:
+            for e in self._item.result_check:
+                self._results.append(
+                    [
+                        e.get("index", ""),
+                        e.get("field"),
+                        e.get("operator"),
+                        e.get("value", ""),
+                    ]
                 )
-        # the real check will be performed when the user presses `OK`
-        except ValueError:
-            pass
+        self._tv_results.delete(*self._tv_results.get_children())
+        for entry in self._results:
+            self._tv_results.insert(
+                "", iid="%s-%s" % (entry[0], entry[1]), values=entry, index=tk.END
+            )
         return super()._updateform()
 
 

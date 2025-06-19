@@ -92,11 +92,7 @@ class form_InternalCommandTask(form_Task):
         return super()._updatedata()
 
     def _updateform(self):
-        try:
-            self.data_set("command", self._item.command)
-        # the real check will be performed when the user presses `OK`
-        except ValueError:
-            pass
+        self.data_set("command", self._item.command)
         return super()._updateform()
 
 

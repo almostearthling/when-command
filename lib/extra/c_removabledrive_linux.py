@@ -101,7 +101,7 @@ class RemovableDrivePresent(DBusCondition):
         self.interface = "org.freedesktop.DBus.ObjectManager"
         self.method = "GetManagedObjects"
         self.parameter_check = [
-            { 'index': 0, 'operator': "contains", 'value': check_drive },
+            {"index": 0, "operator": "contains", "value": check_drive},
         ]
         self.check_after = 60
         self.recur_after_failed_check = True
@@ -120,7 +120,7 @@ class form_RemovableDrivePresent(form_Condition):
         super().__init__(UI_FORM_TITLE, tasks_available, item)
 
         # now find drive names
-        import dbus # type: ignore
+        import dbus  # type: ignore
 
         prefix = "/org/freedesktop/UDisks2/drives/"
         bus = dbus.SystemBus()
@@ -158,11 +158,7 @@ class form_RemovableDrivePresent(form_Condition):
 
     # update the form with the specific parameters (usually in the `tags`)
     def _updateform(self):
-        try:
-            self.data_set("drive_name", self._item.tags.get("drive_name"))
-        # the real check will be performed when the user presses `OK`
-        except ValueError:
-            pass
+        self.data_set("drive_name", self._item.tags.get("drive_name"))
         return super()._updateform()
 
     # update the item from the form elements (usually update `tags`)

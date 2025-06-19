@@ -102,18 +102,12 @@ class form_FilesystemChangeEvent(form_Event):
         self._updateform()
 
     def _updateform(self):
-        try:
-            self.data_set("recursive", self._item.recursive or False)
-            self._tv_monitored.delete(*self._tv_monitored.get_children())
-            idx = 0
-            for entry in self._watch:
-                self._tv_monitored.insert(
-                    "", iid=idx, values=(idx, entry), index=tk.END
-                )
-                idx += 1
-        # the real check will be performed when the user presses `OK`
-        except ValueError:
-            pass
+        self.data_set("recursive", self._item.recursive or False)
+        self._tv_monitored.delete(*self._tv_monitored.get_children())
+        idx = 0
+        for entry in self._watch:
+            self._tv_monitored.insert("", iid=idx, values=(idx, entry), index=tk.END)
+            idx += 1
         return super()._updateform()
 
     def _updatedata(self):

@@ -27,6 +27,9 @@ class form_Condition(ApplicationForm):
         bbox = (BBOX_OK, BBOX_CANCEL)
         super().__init__(title, size, None, bbox)
 
+        # only perform checks when the user presses OK
+        self.set_autocheck(False)
+
         tasks_available = tasks_available.copy()
         tasks_available.sort()
 
@@ -233,47 +236,43 @@ class form_Condition(ApplicationForm):
 
     def _updateform(self):
         self._tv_tasks.delete(*self._tv_tasks.get_children())
-        try:
-            if self._item:
-                if not self._item.recurring:
-                    self._max_retries.config(state=tk.NORMAL)
-                else:
-                    self._max_retries.config(state=tk.DISABLED)
-                self.data_set("@name", self._item.name)
-                self.data_set("@recurring", self._item.recurring or False)
-                self.data_set("@max_tasks_retries", self._item.max_tasks_retries or 0)
-                self.data_set("@suspended", self._item.suspended or False)
-                self.data_set(
-                    "@execute_sequence",
-                    (
-                        self._item.execute_sequence
-                        if self._item.execute_sequence is False
-                        else True
-                    ),
-                )
-                idx = 0
-                for task in self._tasks:
-                    self._tv_tasks.insert(
-                        "", iid="%s-%s" % (idx, task), values=(idx, task), index=tk.END
-                    )
-                    idx += 1
-                if self._item.break_on_failure:
-                    self.data_set("@control_flow", "break_failure")
-                elif self._item.break_on_success:
-                    self.data_set("@control_flow", "break_success")
-                else:
-                    self.data_set("@control_flow", "break_none")
+        if self._item:
+            if not self._item.recurring:
+                self._max_retries.config(state=tk.NORMAL)
             else:
                 self._max_retries.config(state=tk.DISABLED)
-                self.data_set("@name", "")
+            self.data_set("@name", self._item.name)
+            self.data_set("@recurring", self._item.recurring or False)
+            self.data_set("@max_tasks_retries", self._item.max_tasks_retries or 0)
+            self.data_set("@suspended", self._item.suspended or False)
+            self.data_set(
+                "@execute_sequence",
+                (
+                    self._item.execute_sequence
+                    if self._item.execute_sequence is False
+                    else True
+                ),
+            )
+            idx = 0
+            for task in self._tasks:
+                self._tv_tasks.insert(
+                    "", iid="%s-%s" % (idx, task), values=(idx, task), index=tk.END
+                )
+                idx += 1
+            if self._item.break_on_failure:
+                self.data_set("@control_flow", "break_failure")
+            elif self._item.break_on_success:
+                self.data_set("@control_flow", "break_success")
+            else:
                 self.data_set("@control_flow", "break_none")
-                self.data_set("@recurring", True)
-                self.data_set("@suspended", False)
-                self.data_set("@execute_sequence", True)
-            self.data_set("@choose_task", "")
-        # the real check will be performed when the user presses `OK`
-        except ValueError:
-            pass
+        else:
+            self._max_retries.config(state=tk.DISABLED)
+            self.data_set("@name", "")
+            self.data_set("@control_flow", "break_none")
+            self.data_set("@recurring", True)
+            self.data_set("@suspended", False)
+            self.data_set("@execute_sequence", True)
+        self.data_set("@choose_task", "")
 
     # the data update utility loads data into the item
     def _updatedata(self):

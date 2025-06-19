@@ -107,18 +107,10 @@ class form_DBusEvent(form_Event):
         self._updateform()
 
     def _updateform(self):
-        try:
-            self.data_set("bus", self._item.bus)
-            self.data_set("rule", self._item.rule)
-            self.data_set(
-                "parameter_check", json.dumps(self._item.parameter_check) or None
-            )
-            self.data_set(
-                "parameter_check_all", self._item.parameter_check_all or False
-            )
-        # the real check will be performed when the user presses `OK`
-        except ValueError:
-            pass
+        self.data_set("bus", self._item.bus)
+        self.data_set("rule", self._item.rule)
+        self.data_set("parameter_check", json.dumps(self._item.parameter_check) or None)
+        self.data_set("parameter_check_all", self._item.parameter_check_all or False)
         return super()._updateform()
 
     def _updatedata(self):

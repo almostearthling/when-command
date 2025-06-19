@@ -26,6 +26,9 @@ class form_Event(ApplicationForm):
         bbox = (BBOX_OK, BBOX_CANCEL)
         super().__init__(title, size, None, bbox)
 
+        # only perform checks when the user presses OK
+        self.set_autocheck(False)
+
         conditions_available = conditions_available.copy()
         conditions_available.sort()
 
@@ -64,7 +67,9 @@ class form_Event(ApplicationForm):
 
         # bind data to widgets
         self.data_bind("@name", e_itemName, TYPE_STRING, is_valid_item_name)
-        self.data_bind("@condition", cb_associatedCondition, TYPE_STRING, lambda x: bool(x))
+        self.data_bind(
+            "@condition", cb_associatedCondition, TYPE_STRING, lambda x: bool(x)
+        )
 
         # keep a database of captions associated to data subject to check
         self._captions = {
@@ -105,16 +110,12 @@ class form_Event(ApplicationForm):
         return self._sub_contents
 
     def _updateform(self):
-        try:
-            if self._item:
-                self.data_set("@name", self._item.name)
-                self.data_set("@condition", self._item.condition or "")
-            else:
-                self.data_set("@name", "")
-                self.data_set("@condition", "")
-        # the real check will be performed when the user presses `OK`
-        except ValueError:
-            pass
+        if self._item:
+            self.data_set("@name", self._item.name)
+            self.data_set("@condition", self._item.condition or "")
+        else:
+            self.data_set("@name", "")
+            self.data_set("@condition", "")
 
     # the data update utility loads data into the item
     def _updatedata(self):

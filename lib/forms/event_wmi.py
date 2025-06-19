@@ -60,13 +60,12 @@ class form_WMIEvent(form_Event):
         self._updateform()
 
     def _updateform(self):
-        try:
-            self.data_set("query", self._item.query)
-        # the real check will be performed when the user presses `OK`
-        except ValueError:
-            pass
+        self.data_set("query", self._item.query)
         return super()._updateform()
 
     def _updatedata(self):
         self._item.query = self.data_get("query")
         return super()._updatedata()
+
+
+# end.

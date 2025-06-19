@@ -168,29 +168,19 @@ class form_DBusCondition(form_Condition):
         self._updateform()
 
     def _updateform(self):
-        try:
-            self.data_set("bus", self._item.bus)
-            self.data_set("service", self._item.service)
-            self.data_set("object_path", self._item.object_path)
-            self.data_set("interface", self._item.interface)
-            self.data_set("method", self._item.method)
-            self.data_set(
-                "parameter_call", json.dumps(self._item.parameter_call) or None
-            )
-            self.data_set(
-                "parameter_check", json.dumps(self._item.parameter_check) or None
-            )
-            self.data_set(
-                "parameter_check_all", self._item.parameter_check_all or False
-            )
-            self.data_set("check_after", self._item.check_after or 0)
-            self.data_set(
-                "ignore_persistent_success",
-                self._item.recur_after_failed_check or False,
-            )
-        # the real check will be performed when the user presses `OK`
-        except ValueError:
-            pass
+        self.data_set("bus", self._item.bus)
+        self.data_set("service", self._item.service)
+        self.data_set("object_path", self._item.object_path)
+        self.data_set("interface", self._item.interface)
+        self.data_set("method", self._item.method)
+        self.data_set("parameter_call", json.dumps(self._item.parameter_call) or None)
+        self.data_set("parameter_check", json.dumps(self._item.parameter_check) or None)
+        self.data_set("parameter_check_all", self._item.parameter_check_all or False)
+        self.data_set("check_after", self._item.check_after or 0)
+        self.data_set(
+            "ignore_persistent_success",
+            self._item.recur_after_failed_check or False,
+        )
         return super()._updateform()
 
     def _updatedata(self):

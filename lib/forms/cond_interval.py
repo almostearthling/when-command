@@ -65,31 +65,27 @@ class form_IntervalCondition(form_Condition):
         self._updateform()
 
     def _updateform(self):
-        try:
-            if self._item:
-                if (
-                    self._item.interval_seconds is not None
-                    and self._item.interval_seconds % 3600 == 0
-                ):
-                    intv = int(self._item.interval_seconds / 3600)
-                    intvu = UI_TIME_HOURS
-                elif (
-                    self._item.interval_seconds is not None
-                    and self._item.interval_seconds % 60 == 0
-                ):
-                    intv = int(self._item.interval_seconds / 60)
-                    intvu = UI_TIME_MINUTES
-                else:
-                    intv = self._item.interval_seconds
-                    intvu = UI_TIME_SECONDS
-                self.data_set("interval_time", intv)
-                self.data_set("time_unit", intvu)
+        if self._item:
+            if (
+                self._item.interval_seconds is not None
+                and self._item.interval_seconds % 3600 == 0
+            ):
+                intv = int(self._item.interval_seconds / 3600)
+                intvu = UI_TIME_HOURS
+            elif (
+                self._item.interval_seconds is not None
+                and self._item.interval_seconds % 60 == 0
+            ):
+                intv = int(self._item.interval_seconds / 60)
+                intvu = UI_TIME_MINUTES
             else:
-                self.data_set("interval_time", DEFAULT_INTERVAL_TIME)
-                self.data_set("time_unit", DEFAULT_INTERVAL_UNIT)
-        # the real check will be performed when the user presses `OK`
-        except ValueError:
-            pass
+                intv = self._item.interval_seconds
+                intvu = UI_TIME_SECONDS
+            self.data_set("interval_time", intv)
+            self.data_set("time_unit", intvu)
+        else:
+            self.data_set("interval_time", DEFAULT_INTERVAL_TIME)
+            self.data_set("time_unit", DEFAULT_INTERVAL_UNIT)
         super()._updateform()
 
     def _updatedata(self):

@@ -167,11 +167,7 @@ class form_SessionLockedCondition(form_Condition):
 
     # update the form with the specific parameters (usually in the `tags`)
     def _updateform(self):
-        try:
-            self.data_set("check_frequency", self._item.tags.get("check_frequency"))
-        # the real check will be performed when the user presses `OK`
-        except ValueError:
-            pass
+        self.data_set("check_frequency", self._item.tags.get("check_frequency"))
         return super()._updateform()
 
     # update the item from the form elements (usually update `tags`)
