@@ -16,7 +16,7 @@ from ..icons import UNKNOWN_ICON20x20 as UNKNOWN_ICON
 from .ui import *
 
 from ..repocfg import AppConfig
-from ..utility import get_configfile, get_ui_image
+from ..utility import get_configfile, get_ui_image, is_private_item_name
 from ..items.item import ALL_AVAILABLE_ITEMS_D
 
 from ..configurator.reader import read_whenever_config
@@ -174,9 +174,7 @@ class form_Config(ApplicationForm):
         sb_items.pack(side=tk.RIGHT, fill=tk.Y)
 
         l_items.grid(row=20, column=0, sticky=tk.W, padx=PAD, pady=PAD)
-        sftv_items.grid(
-            row=21, column=0, sticky=tk.NSEW, padx=PAD, pady=PAD
-        )
+        sftv_items.grid(row=21, column=0, sticky=tk.NSEW, padx=PAD, pady=PAD)
 
         # expand appropriate sections
         area_items.rowconfigure(index=21, weight=1)
@@ -462,7 +460,10 @@ class form_Config(ApplicationForm):
         elif item_type == "cond":
             _, fform, fitem = ALL_AVAILABLE_ITEMS_D.get(item_signature)
             if fform and fitem.available:
-                e = fform(list(self._tasks.keys()), self._conditions[item_name])
+                available_tasks = list(
+                    x for x in self._tasks.keys() if not is_private_item_name(x)
+                )
+                e = fform(available_tasks, self._conditions[item_name])
                 if e is not None:
                     new_item = e.run()
                     if new_item:
@@ -483,7 +484,10 @@ class form_Config(ApplicationForm):
         # event items
         elif item_type == "event":
             event_conds = list(
-                x for x in self._conditions if self._conditions[x].type == "event"
+                x
+                for x in self._conditions
+                if self._conditions[x].type == "event"
+                and not is_private_item_name(x)
             )
             _, fform, fitem = ALL_AVAILABLE_ITEMS_D.get(item_signature)
             if fform and fitem.available:
@@ -512,7 +516,10 @@ class form_Config(ApplicationForm):
                 if t == "task":
                     form = form_class()
                 elif t == "cond":
-                    form = form_class(list(self._tasks.keys()))
+                    available_tasks = [
+                        x for x in self._tasks.keys() if not is_private_item_name(x)
+                    ]
+                    form = form_class(list(available_tasks))
                 # note that, since providing a suitable event based
                 # condition is mandatory for an event, the form will
                 # refuse to create a new event
@@ -521,6 +528,7 @@ class form_Config(ApplicationForm):
                         x
                         for x in self._conditions
                         if self._conditions[x].type == "event"
+                        and not is_private_item_name(x)
                     )
                     if event_conds:
                         form = form_class(event_conds)
