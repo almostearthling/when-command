@@ -86,10 +86,6 @@ class App(object):
         from lib.forms.cfgform import form_Config
         from lib.forms.history import form_History
 
-        # self.set_tray_icon_gray = lambda self, i: set_tray_icon_gray(i)
-        # self.set_tray_icon_busy = lambda self, i: set_tray_icon_busy(i)
-        # self.set_tray_icon_normal = lambda self, i: set_tray_icon_normal(i)
-        # self.show_about_box = lambda self: show_about_box()
         self.set_tray_icon_gray = set_tray_icon_gray
         self.set_tray_icon_busy = set_tray_icon_busy
         self.set_tray_icon_normal = set_tray_icon_normal
@@ -225,8 +221,7 @@ class App(object):
 
     def open_menubox(self, _):
         if self._window and self._wrapper:
-            form = self.form_MenuBox()
-            form.set_root(self)
+            form = self.form_MenuBox(self)
             form.run()
             del form
 

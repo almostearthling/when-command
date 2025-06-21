@@ -134,7 +134,7 @@ class BtnLeave(_btn_MenuEntry):
 # a proper tray icon menu: activated by a left click on the icon
 class form_MenuBox(ApplicationForm):
 
-    def __init__(self, main=False):
+    def __init__(self, app=None, main=False):
 
         style = ttk.Style()
         style.configure(style="menubutton.TButton", anchor=tk.W)
@@ -143,7 +143,7 @@ class form_MenuBox(ApplicationForm):
             UI_TITLE_MENU, AppConfig.get("SIZE_MENU_BOX"), None, (BBOX_CANCEL,), main
         )
         self._image = ImageTk.PhotoImage(get_image(APP_BITMAP))
-        self._root = None
+        self._app = app
 
         # build the UI: build widgets, arrange them in the box, bind data
         # client area
@@ -178,44 +178,41 @@ class form_MenuBox(ApplicationForm):
         # expand appropriate sections
         area.columnconfigure(1, weight=1)
 
-    def set_root(self, root):
-        self._root = root
-
     # menu reactions: all events are managed by the main application, and
     # therefore they are implemented as messages passed to the root window
     def on_configure(self):
-        if self._root:
-            self._root.send_event("<<OpenCfgApp>>")
+        if self._app:
+            self._app.send_event("<<OpenCfgApp>>")
 
     def on_about(self):
-        if self._root:
-            self._root.send_event("<<OpenAboutBox>>")
+        if self._app:
+            self._app.send_event("<<OpenAboutBox>>")
 
     def on_menu_box(self):
-        if self._root:
-            self._root.send_event("<<OpenMenuBox>>")
+        if self._app:
+            self._app.send_event("<<OpenMenuBox>>")
 
     def on_pause_scheduler(self):
-        if self._root:
-            self._root.send_event("<<SchedPause>>")
+        if self._app:
+            self._app.send_event("<<SchedPause>>")
 
     def on_resume_scheduler(self):
-        if self._root:
-            self._root.send_event("<<SchedResume>>")
+        if self._app:
+            self._app.send_event("<<SchedResume>>")
 
     def on_reset_conditions(self):
-        if self._root:
-            self._root.send_event("<<SchedResetConditions>>")
+        if self._app:
+            self._app.send_event("<<SchedResetConditions>>")
 
     def on_history(self):
-        if self._root:
-            self._root.send_event("<<OpenHistory>>")
+        if self._app:
+            self._app.send_event("<<OpenHistory>>")
 
     # this sends an EXIT event to the main loop, so that the invisible
     # main window is destroyed and all the cleanup is performed
     def on_exit(self):
-        if self._root:
-            self._root.send_exit()
+        if self._app:
+            self._app.send_exit()
 
 
 # end.
