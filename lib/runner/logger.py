@@ -36,11 +36,11 @@ _LOGFMT = "{time} ({application}) {level} {emitter} {action}{itemstr}: [{when}/{
 # for now a very basic logger: improvements will be rotation and persistence
 class Logger(object):
 
-    def __init__(self, filename, level, root=None):
+    def __init__(self, filename, level, app=None):
         self._logfile = open(filename, "w")
         self._level = level
         self._level_num = _LOGLEVELS.index(self._level)
-        self._root = root
+        self._app = app
 
     def log(self, record):
         time = record["header"]["time"]
@@ -77,17 +77,17 @@ class Logger(object):
                 self._logfile.flush()
             return False
         elif when == "BUSY":
-            if self._root:
+            if self._app:
                 if status == "YES":
-                    self._root.send_event("<<SchedSetBusy>>")
+                    self._app.send_event("<<SchedSetBusy>>")
                 else:
-                    self._root.send_event("<<SchedSetNotBusy>>")
+                    self._app.send_event("<<SchedSetNotBusy>>")
         elif when == "PAUSE":
-            if self._root:
+            if self._app:
                 if status == "YES":
-                    self._root.send_event("<<SchedSetPaused>>")
+                    self._app.send_event("<<SchedSetPaused>>")
                 else:
-                    self._root.send_event("<<SchedSetNotPaused>>")
+                    self._app.send_event("<<SchedSetNotPaused>>")
         else:
             if ln >= self._level_num:
                 self._logfile.write(

@@ -137,12 +137,14 @@ class form_FilesystemChangeEvent(form_Event):
             self.data_set("item_monitor", entry)
 
     def add_fsitem(self):
+        self._updatedata()
         item = normpath(self.data_get("item_monitor"))
         if item and item not in self._watch:
             self._watch.append(item)
             self._updateform()
 
     def del_fsitem(self):
+        self._updatedata()
         e = self.data_get("item_monitor")
         if e:
             idx = self._watch.index(e)

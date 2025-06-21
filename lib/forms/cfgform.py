@@ -29,19 +29,19 @@ from .newitem import form_NewItem
 # configuration box class
 class form_Config(ApplicationForm):
 
-    def __init__(self, root=None, main=False):
+    def __init__(self, app=None, main=False):
 
         # the root window: if not set this runs as the main app
         # and is aware that no scheduler is under control of this
         # application
-        self._root = root
+        self._app = app
 
         # the main tree view has an increased row size
         style = ttk.Style()
         style.configure("Items.Treeview", rowheight=30)
 
         size = AppConfig.get("SIZE_MAIN_FORM")
-        if self._root:
+        if self._app:
             bbox = (
                 BBOX_NEW,
                 BBOX_EDIT,
@@ -564,8 +564,8 @@ class form_Config(ApplicationForm):
     # main (hidden) application form
     def reload(self):
         if messagebox.askyesno(UI_POPUP_T_CONFIRM, UI_POPUP_RELOADCONFIG_Q):
-            if self._root:
-                self._root.send_event("<<SchedReloadConfig>>")
+            if self._app:
+                self._app.send_event("<<SchedReloadConfig>>")
         return super().reload()
 
     # modify the reaction to the quit button so that if the configuration
