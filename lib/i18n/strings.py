@@ -15,7 +15,7 @@ UI_APP = "When"
 CLI_APP = "when"
 UI_APP_LABEL = "When Automation Tool"
 UI_APP_COPYRIGHT = "© 2023-2025 Francesco Garosi"
-UI_APP_VERSION = "1.10.11b4"
+UI_APP_VERSION = "1.10.11b5"
 
 # other strings that should not be translated
 UI_WHENEVER = "Whenever"
@@ -40,23 +40,29 @@ SYM_UNKNOWN = "∅"
 # first: import all fallback strings
 from .strings_base import *
 from .localizer import get_locale as _get_locale
-from ..utility import write_warning
+
+
+# decide current locale according to OS and variable WHEN_APP_USELOCALE
+def which_locale() -> str | None:
+    use_locale = os.environ.get(ENV_WHEN_APP_USELOCALE)
+    if isinstance(use_locale, str):
+        use_locale = use_locale.lower()
+        if use_locale != "no":
+            if use_locale.startswith("yes:"):
+                return _get_locale(use_locale.split(":", 1)[1])
+            else:
+                return _get_locale()
+        else:
+            return None
+    else:
+        return None
 
 
 # if any exception occurs during this process, fallback strings remain valid
 # otherwise the new ones, if found, overwrite the fallback strings: this also
 # allows for string that do not exist in a translation to be still present,
 # although not translated
-_use_locale = os.environ.get(ENV_WHEN_APP_USELOCALE)
-_short_locale = None
-if isinstance(_use_locale, str):
-    _use_locale = _use_locale.lower()
-    if _use_locale != "no":
-        if _use_locale.startswith("yes:"):
-            _short_locale = _get_locale(_use_locale.split(":", 1)[1])
-        else:
-            _short_locale = _get_locale()
-
+_short_locale = which_locale()
 if _short_locale is not None:
     try:
         exec(f"from .strings_{_short_locale} import *")

@@ -5,7 +5,7 @@ import os
 from importlib import import_module
 
 from ...i18n.localizer import get_locale
-from ...i18n.strings import ENV_WHEN_APP_USELOCALE
+from ...i18n.strings import which_locale
 
 
 # this returns a module with localized constants, or None if said module is not
@@ -13,15 +13,7 @@ from ...i18n.strings import ENV_WHEN_APP_USELOCALE
 # errors (like ImportError) are not caught, because they can be useful for
 # debugging purposes; note that we need the last part of the mod name
 def localized_strings(modname):
-    _use_locale = os.environ.get(ENV_WHEN_APP_USELOCALE)
-    loc = None
-    if isinstance(_use_locale, str):
-        _use_locale = _use_locale.lower()
-        if _use_locale != "no":
-            if _use_locale.startswith("yes:"):
-                loc = get_locale(_use_locale.split(":", 1)[1])
-            else:
-                loc = get_locale()
+    loc = which_locale()
     if loc is not None:
         try:
             modname = modname.split('.')[-1]

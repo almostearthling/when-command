@@ -37,7 +37,7 @@ DEFAULT_DRIVE_DEVICE = "DRIVE"
 
 # localize the aforementioned constants: this pattern is the same in every
 # extra module
-from .i18n.localized import localized_strings
+from .i18n.extra_locale import localized_strings
 
 m = localized_strings(__name__)
 if m is not None:

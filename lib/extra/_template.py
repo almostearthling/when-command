@@ -45,7 +45,7 @@ DEFAULT_PARAM1_VALUE = "somestring"
 # localize the aforementioned constants: this pattern must be the same in
 # every extra module, the only changing part is that the assignments of type
 # `CONST_NAME=m.CONST_NAME` should be reported for every resource constant
-from .i18n.localized import localized_strings
+from .i18n.extra_locale import localized_strings
 
 m = localized_strings(__name__)
 if m is not None:
