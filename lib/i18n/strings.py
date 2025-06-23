@@ -40,6 +40,7 @@ SYM_UNKNOWN = "∅"
 # first: import all fallback strings
 from .strings_base import *
 from .localizer import get_locale as _get_locale
+from ..utility import write_warning
 
 
 # if any exception occurs during this process, fallback strings remain valid
@@ -47,13 +48,18 @@ from .localizer import get_locale as _get_locale
 # allows for string that do not exist in a translation to be still present,
 # although not translated
 _use_locale = os.environ.get(ENV_WHEN_APP_USELOCALE)
-if isinstance(_use_locale, str) and _use_locale.lower() == "no":
-    pass
-else:
+_short_locale = None
+if isinstance(_use_locale, str):
+    _use_locale = _use_locale.lower()
+    if _use_locale != "no":
+        if _use_locale.startswith("yes:"):
+            _short_locale = _get_locale(_use_locale.split(":", 1)[1])
+        else:
+            _short_locale = _get_locale()
+
+if _short_locale is not None:
     try:
-        _short_locale = _get_locale()
-        if _short_locale is not None:
-            exec(f"from .strings_{_short_locale} import *")
+        exec(f"from .strings_{_short_locale} import *")
     except:
         pass
 

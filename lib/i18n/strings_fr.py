@@ -130,7 +130,7 @@ UI_FORM_COMMON_PARAMS = "Paramètres communs"
 UI_FORM_SPECIFIC_PARAMS = "Paramètres spécifiques"
 
 UI_FORM_ITEMS_PANE = "Configuration des éléments"
-UI_FORM_GLOBALS_PANE = "Paramètres mondiaux"
+UI_FORM_GLOBALS_PANE = "Paramètres globaux"
 
 UI_FORM_ENVIRONMENT = "Environnement"
 UI_FORM_VARIABLE = "Variable"
@@ -155,7 +155,7 @@ UI_FORM_HS_TIME = "Temps"
 UI_FORM_HS_TASK = "Task"
 UI_FORM_HS_TRIGGER = "Déclenché par"
 UI_FORM_HS_DURATION = "Durée"
-UI_FORM_HS_SUCCESS = "D'ACCORD"
+UI_FORM_HS_SUCCESS = "OK"
 UI_FORM_HS_MESSAGE = "Message"
 
 UI_FORM_ITEMTYPE = "Choisissez le type d'élément"

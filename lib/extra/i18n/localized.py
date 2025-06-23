@@ -14,18 +14,20 @@ from ...i18n.strings import ENV_WHEN_APP_USELOCALE
 # debugging purposes; note that we need the last part of the mod name
 def localized_strings(modname):
     _use_locale = os.environ.get(ENV_WHEN_APP_USELOCALE)
-    if isinstance(_use_locale, str) and _use_locale.lower() == "no":
-        return None
-    else:
-        try:
-            loc = get_locale()
-            if loc is not None:
-                modname = modname.split('.')[-1]
-                loc_modname = f"{modname}_{loc}"
-                loc_mod = import_module(f".{loc_modname}", "lib.extra.i18n")
-                return loc_mod
+    loc = None
+    if isinstance(_use_locale, str):
+        _use_locale = _use_locale.lower()
+        if _use_locale != "no":
+            if _use_locale.startswith("yes:"):
+                loc = get_locale(_use_locale.split(":", 1)[1])
             else:
-                return None
+                loc = get_locale()
+    if loc is not None:
+        try:
+            modname = modname.split('.')[-1]
+            loc_modname = f"{modname}_{loc}"
+            loc_mod = import_module(f".{loc_modname}", "lib.extra.i18n")
+            return loc_mod
         except ModuleNotFoundError:
             return None
 
