@@ -15,7 +15,7 @@ UI_APP = "When"
 CLI_APP = "when"
 UI_APP_LABEL = "When Automation Tool"
 UI_APP_COPYRIGHT = "© 2023-2025 Francesco Garosi"
-UI_APP_VERSION = "1.10.11b5"
+UI_APP_VERSION = "1.10.11b6"
 
 # other strings that should not be translated
 UI_WHENEVER = "Whenever"
@@ -55,7 +55,7 @@ def which_locale() -> str | None:
         else:
             return None
     else:
-        return None
+        return _get_locale()
 
 
 # if any exception occurs during this process, fallback strings remain valid
