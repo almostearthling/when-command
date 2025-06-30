@@ -289,7 +289,7 @@ UI_POPUP_FILENOTFOUND_ERR = "Die angegebene Datei konnte nicht gefunden werden"
 UI_POPUP_NOEVENTCONDITIONS_ERR = "Es gibt keine ereignisbasierte Konditionen, die zugeordnet werden können"
 
 UI_POPUP_UNKNOWNERROR = "Ein unbekannter Fehler trat auf"
-UI_POPUP_INVALIDITEMNAME = "Artikelname ist nicht gültig"
+UI_POPUP_INVALIDITEMNAME = "Elementname ist nicht gültig"
 UI_POPUP_INVALIDPARAMETERS_T = "Einige der Formularfelder enthalten ungültige Daten:\n\n%s\n\nBitte überprüfen Sie sie, bevor sie aktualisieren"
 UI_POPUP_INVALIDVARNAME = "Ungültiger Name für Variable"
 UI_POPUP_EMPTYVARVALUE = "Kein Wert für Variable bereitgestellt"
