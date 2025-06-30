@@ -29,5 +29,6 @@ This document describes the new version of **When**, a Python-based automation t
    events
    events_extra01
    history
+   i18n
    appdata
    configfile
