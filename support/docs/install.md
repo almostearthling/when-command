@@ -81,7 +81,19 @@ These steps can be followed on recent Linux distributions that derive from Debia
 
 Once a configuration is available, the resident application can be started from the command line using the `when start` command. A shortcut can be created as described [below](#create-application-icons). The `when-bg` command also exists on Linux, but its behavior is absolutely identical to `when`.
 
-On non-Debian-based distributions, the package manager and the package names in steps 1 and 2 will be different, while everything else should work exactly as described above.
+On non-Debian-based distributions, the package manager and the package names in step 1 will be different, while everything else should work exactly as described above. For instance, on Fedora, **When** runs apparently without major problems by installing the appropriate packages as follows:
+
+```shell
+sudo dnf group install c-development development-tools
+sudo dnf install libX11-devel libXScrnSaver-devel
+sudo dnf install python3-tkinter python3-pip pipx python3-devel
+sudo dnf install cairo-devel cairo-gobject-devel
+sudo dnf install libglibutil-devel glib2-devel gobject-introspection-devel
+sudo dnf install libappindicator-gtk3
+sudo dnf install dbus-devel
+```
+
+and adding the _Gnome Shell Extension Manager_ using the _Software_ utility, as well as _AppIndicator and KStatusNotifierItem Support_ using the extensions manager. After this, steps 2 to 6 are the same as in Debian based distributions.
 
 > **Note**: in case the appearance of **When** is quirky, for example the text elements in the interface are unreadable, you might need to start the desktop environment in an _X.org_ session instead of _Wayland_ that is the default on many Linux distributions:
 >
