@@ -117,8 +117,8 @@ UI_LOAD = "Laden"
 UI_SAVE = "Speichern"
 
 # form captions
-UI_FORM_TASK = "Aufgabe"
-UI_FORM_TASKS = "Aufgaben"
+UI_FORM_TASK = "Task"
+UI_FORM_TASKS = "Tasks"
 UI_FORM_CONDITION = "Kondition"
 UI_FORM_CONDITIONS = "Konditionen"
 UI_FORM_EVENT = "Ereignis"
