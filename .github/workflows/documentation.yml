@@ -18,7 +18,6 @@ jobs:
           pip install sphinx sphinx_rtd_theme sphinx-favicon myst_parser
       - name: Sphinx build
         run: |
-          git checkout docs
           sphinx-build support/docs _build
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
