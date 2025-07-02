@@ -13,6 +13,9 @@ from ..utility import (
     whenever_has_wmi,
 )
 
+from ..items.cond_dbus import DBusCondition
+from ..items.event_dbus import DBusEvent
+
 from ..configurator.defaults import *
 from ..repocfg import AppConfig
 
@@ -60,6 +63,21 @@ def item_change_subtype(t: items.Table, new_subtype: str) -> items.Table:
     tags["subtype"] = new_subtype
     t1["tags"] = tags
     return t1
+
+
+# change JSON to pure TOML: this is done automatically by items
+def remove_json(elem: str, t: items.Table, console=None):
+    elemtype = t.get("type")
+    t1 = None
+    if elemtype == "dbus":
+        if elem == "condition":
+            t1 = DBusCondition(t).as_table()
+        elif elem == "event":
+            t1 = DBusEvent(t).as_table()
+    if t1 is not None:
+        return t1
+    else:
+        return t
 
 
 # generic command-to-wmi converter for conditions
@@ -265,7 +283,7 @@ def fix_config(filename: str, console=None) -> items.Table:
                     new_t = converter(t)
                     lot.append(new_t)
                 else:
-                    lot.append(t)
+                    lot.append(remove_json(t))
             res.append(elem, lot)
     return res
 
