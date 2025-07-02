@@ -1,7 +1,7 @@
 # reader
 # read and parse a configuration file
 
-from tomlkit import parse
+from tomlkit import parse, items
 
 # import item definitions
 from ..items.item import ALL_AVAILABLE_ITEMS_D
@@ -17,6 +17,11 @@ def read_whenever_config(filename):
     with open(filename) as f:
         toml = f.read()
     doc = parse(toml)
+    return whenever_config_from_doc(doc)
+
+
+# this can be used to read the configuration from a document in memory
+def whenever_config_from_doc(doc: items.Table):
     res_tasks = []
     res_conditions = []
     res_events = []

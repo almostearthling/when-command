@@ -13,10 +13,9 @@ from ..utility import (
     whenever_has_wmi,
 )
 
-from ..items.cond_dbus import DBusCondition
-from ..items.event_dbus import DBusEvent
-
 from ..configurator.defaults import *
+from ..configurator.reader import whenever_config_from_doc
+from ..configurator.writer import write_whenever_config
 from ..repocfg import AppConfig
 
 from tomlkit import items, document, parse, item, aot
@@ -63,21 +62,6 @@ def item_change_subtype(t: items.Table, new_subtype: str) -> items.Table:
     tags["subtype"] = new_subtype
     t1["tags"] = tags
     return t1
-
-
-# change JSON to pure TOML: this is done automatically by items
-def remove_json(elem: str, t: items.Table):
-    elemtype = t.get("type")
-    t1 = None
-    if elemtype == "dbus":
-        if elem == "condition":
-            t1 = DBusCondition(t).as_table()
-        elif elem == "event":
-            t1 = DBusEvent(t).as_table()
-    if t1 is not None:
-        return t1
-    else:
-        return t
 
 
 # generic command-to-wmi converter for conditions
@@ -281,9 +265,9 @@ def fix_config(filename: str, console=None) -> items.Table:
                         )
                     converter = CONVERSIONS[new_sig]
                     new_t = converter(t)
-                    lot.append(remove_json(elem, new_t))
+                    lot.append(new_t)
                 else:
-                    lot.append(remove_json(elem, t))
+                    lot.append(t)
             res.append(elem, lot)
     return res
 
@@ -298,6 +282,7 @@ def fix_config_file(filename, verbose=True, backup=True):
         console = None
     try:
         doc = fix_config(filename, console)
+        tasks, conditions, events, globals = whenever_config_from_doc(doc)
         if backup:
             new_name = "%s~" % filename
             if verbose:
@@ -305,8 +290,7 @@ def fix_config_file(filename, verbose=True, backup=True):
             shutil.move(filename, new_name)
         if verbose:
             console.print(CLI_MSG_WRITE_NEW_CONFIG % filename)
-        with open(filename, "w") as f:
-            f.write(doc.as_string())
+        write_whenever_config(filename, tasks, conditions, events, globals)
     except Exception as e:
         write_warning(CLI_ERR_CANNOT_FIX_CONFIG % filename)
 
