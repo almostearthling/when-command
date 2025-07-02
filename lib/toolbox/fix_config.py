@@ -281,7 +281,7 @@ def fix_config(filename: str, console=None) -> items.Table:
                         )
                     converter = CONVERSIONS[new_sig]
                     new_t = converter(t)
-                    lot.append(new_t)
+                    lot.append(remove_json(elem, new_t))
                 else:
                     lot.append(remove_json(elem, t))
             res.append(elem, lot)
