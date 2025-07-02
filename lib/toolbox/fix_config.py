@@ -66,7 +66,7 @@ def item_change_subtype(t: items.Table, new_subtype: str) -> items.Table:
 
 
 # change JSON to pure TOML: this is done automatically by items
-def remove_json(elem: str, t: items.Table, console=None):
+def remove_json(elem: str, t: items.Table):
     elemtype = t.get("type")
     t1 = None
     if elemtype == "dbus":
@@ -283,7 +283,7 @@ def fix_config(filename: str, console=None) -> items.Table:
                     new_t = converter(t)
                     lot.append(new_t)
                 else:
-                    lot.append(remove_json(t))
+                    lot.append(remove_json(elem, t))
             res.append(elem, lot)
     return res
 
