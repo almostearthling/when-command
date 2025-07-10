@@ -35,6 +35,8 @@ from lib.utility import (
     exit_error,
     write_error,
     write_warning,
+    init_logger,
+    get_logger,
 )
 from lib.repocfg import AppConfig
 
@@ -317,6 +319,7 @@ def main_start(args):
     # get configuration options
     log_level = AppConfig.get("LOGLEVEL")
     log_file = get_logfile()
+    init_logger(log_file, log_level, _root)
     config_file = get_configfile()
     if DEBUG:
         # setup the scheduler and associate it to the application
@@ -328,7 +331,7 @@ def main_start(args):
         ):
             exit_error(CLI_ERR_WHENEVER_NOT_FOUND)
         setup_windows()
-        wrapper = Wrapper(config_file, whenever, log_file, log_level, _root)
+        wrapper = Wrapper(config_file, whenever, _root)
         # start the scheduler in a separate thread
         if not wrapper.start():
             raise Exception(CLI_ERR_STARTING_SCHEDULER)
@@ -351,7 +354,7 @@ def main_start(args):
             ):
                 exit_error(CLI_ERR_WHENEVER_NOT_FOUND)
             setup_windows()
-            wrapper = Wrapper(config_file, whenever, log_file, log_level, _root)
+            wrapper = Wrapper(config_file, whenever, _root)
             # start the scheduler in a separate thread
             if not wrapper.start():
                 raise Exception(CLI_ERR_STARTING_SCHEDULER)

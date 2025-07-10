@@ -23,6 +23,7 @@ import darkdetect
 
 from .i18n.strings import *
 from .repocfg import AppConfig
+from .runner.logger import Logger
 
 
 # a regular expression to check whether an user-given name is valid
@@ -35,8 +36,13 @@ _PRIVATE_ITEM_PREFIX = "__When__private__"
 
 # the common Tk root
 _tkroot = tk.Tk()
+
+# consoles for stdio and stderr
 _console = Console(force_terminal=True)
 _err_console = Console(force_terminal=True, stderr=True)
+
+# the common logger
+_logger = None
 
 
 # return the current Tk root: create one if not already present
@@ -47,6 +53,14 @@ def get_tkroot():
 # return the terminal console handled by the "rich" module
 def get_rich_console():
     return _console
+
+
+# return the current logger
+def get_logger():
+    # TODO: instead of asserting, create an abort() function that aborts
+    #       with a meaningful error message or reporting an exception
+    assert(_logger is not None)
+    return _logger
 
 
 # return the prefix for private item names
@@ -455,6 +469,12 @@ def clean_caption(s):
     while len(s) > 0 and s[-1].lower() not in alnum:
         s = s[:-1]
     return s
+
+
+# initialize the logger
+def init_logger(filename, level, app=None):
+    global _logger
+    _logger = Logger(filename, level, app)
 
 
 # ...
