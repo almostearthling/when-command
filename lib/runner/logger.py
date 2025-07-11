@@ -33,7 +33,7 @@ from ..i18n.strings import CLI_APP
 from ..repocfg import AppConfig
 
 # levels are fixed, format mimics original **whenever** format
-_LOGLEVELS = ["trace", "debug", "info", "warn", "error"]
+_LOGLEVELS = ["TRACE", "DEBUG", "INFO", "WARN", "ERROR"]
 _LOGFMT = "{time} ({application}) {level} {emitter} {action}{itemstr}: [{when}/{status}]: {message}"
 
 
@@ -63,7 +63,7 @@ class Logger(object):
                 itemstr = " %s/%s" % (item, item_id)
             else:
                 itemstr = ""
-            ln = _LOGLEVELS.index(level.lower())
+            ln = _LOGLEVELS.index(level)
             if when == "HIST":
                 if AppConfig.get("DEBUG"):
                     self._logfile.write(
@@ -120,6 +120,23 @@ class Logger(object):
 
 class Context(object):
 
+    # constants
+    LEVEL_ERROR = "ERROR"
+    LEVEL_WARNING = "WARN"
+    LEVEL_INFO = "INFO"
+    LEVEL_DEBUG = "DEBUG"
+    LEVEL_TRACE = "TRACE"
+
+    WHEN_START = "START"
+    WHEN_PROC = "PROC"
+    WHEN_END = "END"
+
+    STATUS_OK = "OK"
+    STATUS_FAIL = "FAIL"
+    STATUS_ERR = "ERR"
+    STATUS_MSG = "MSG"
+
+    # create a logging context
     def __init__(
         self,
         level=None,
@@ -132,14 +149,14 @@ class Context(object):
         message=None,
         logger=None,
     ):
-        self.level = level or "INFO"
-        self.emitter = emitter
-        self.action = action
-        self.item = item or None
-        self.item_id = item_id or None
-        self.when = when or "PROC"
-        self.status = status or "OK"
-        self.message = message
+        self._level = level or self.LEVEL_INFO
+        self._emitter = emitter
+        self._action = action
+        self._item = item or None
+        self._item_id = item_id or None
+        self._when = when or "PROC"
+        self._status = status or "OK"
+        self._message = message
         self._logger = logger
 
 
@@ -155,21 +172,21 @@ class Context(object):
         message=None,
     ):
         if level is not None:
-            self.level = level
+            self._level = level
         if emitter is not None:
-            self.emitter = emitter
+            self._emitter = emitter
         if action is not None:
-            self.action = action
+            self._action = action
         if item is not None:
-            self.item = item
+            self._item = item
         if item_id is not None:
-            self.item_id = item_id
+            self._item_id = item_id
         if when is not None:
-            self.when = when
+            self._when = when
         if status is not None:
-            self.status = status
+            self._status = status
         if message is not None:
-            self.message = message
+            self._message = message
 
     def updated(
         self,
@@ -195,33 +212,35 @@ class Context(object):
         return self
 
     def as_record(self):
-        assert(self.message is not None)
-        assert(self.emitter is not None)
-        assert(self.action is not None)
-        timestr = datetime.now().strftime("%Y-%m-%dT%H:%M:%s.%f")
+        assert(self._message is not None)
+        assert(self._emitter is not None)
+        assert(self._action is not None)
+        timestr = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
         return {
             "header": {
                 "time": timestr,
                 "application": CLI_APP,
-                "level": self.level,
+                "level": self._level.upper(),
             },
             "contents": {
                 "context": {
-                    "emitter": self.emitter,
-                    "action": self.action,
-                    "item": self.item,
-                    "item_id": self.item_id,
+                    "emitter": self._emitter,
+                    "action": self._action,
+                    "item": self._item,
+                    "item_id": self._item_id,
                 },
                 "message_type": {
-                    "when": self.when,
-                    "status": self.status,
+                    "when": self._when,
+                    "status": self._status,
                 },
-                "message": self.message,
+                "message": self._message,
             },
         }
 
-    def log(self):
+    def log(self, message=None):
         assert(self._logger is not None)
+        if message is not None:
+            self._message = str(message)
         self._logger.log(self.as_record())
 
 

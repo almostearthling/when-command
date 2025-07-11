@@ -309,7 +309,7 @@ def main_start(args):
     AppConfig.delete("APPDATA")
     AppConfig.set("APPDATA", args.dir_appdata)
     AppConfig.delete("LOGLEVEL")
-    AppConfig.set("LOGLEVEL", args.log_level)
+    AppConfig.set("LOGLEVEL", args.log_level.upper())
     AppConfig.delete("WHENEVER")
     AppConfig.set("WHENEVER", args.whenever)
     retrieve_whenever_options()
@@ -319,8 +319,15 @@ def main_start(args):
     # get configuration options
     log_level = AppConfig.get("LOGLEVEL")
     log_file = get_logfile()
-    init_logger(log_file, log_level, _root)
     config_file = get_configfile()
+    init_logger(log_file, log_level, _root)
+    log = get_logger().context().updated(emitter="TRAYAPP")
+    log.updated(
+        level=log.LEVEL_INFO,
+        when=log.WHEN_START,
+        action="initializing",
+        status=log.STATUS_MSG,
+    ).log("starting resident %s, version %s" % (UI_APP, UI_APP_VERSION))
     if DEBUG:
         # setup the scheduler and associate it to the application
         whenever = AppConfig.get("WHENEVER")
@@ -329,14 +336,23 @@ def main_start(args):
             or not os.path.exists(whenever)
             or not os.access(whenever, os.X_OK)
         ):
+            log.updated(level=log.LEVEL_ERROR, status=log.STATUS_ERR).log(
+                "error: `whenever` binary not found"
+            )
             exit_error(CLI_ERR_WHENEVER_NOT_FOUND)
         setup_windows()
         wrapper = Wrapper(config_file, whenever, _root)
         # start the scheduler in a separate thread
         if not wrapper.start():
+            log.updated(level=log.LEVEL_ERROR, status=log.STATUS_ERR).log(
+                "error: `whenever` not started"
+            )
             raise Exception(CLI_ERR_STARTING_SCHEDULER)
         # check that everything is fine after start
         if not wrapper.running():
+            log.updated(level=log.LEVEL_ERROR, status=log.STATUS_ERR).log(
+                "error: `whenever` not running"
+            )
             raise Exception(CLI_ERR_STARTING_SCHEDULER)
         # run the tray icon application main loop
         from lib.trayapp import main
@@ -352,14 +368,23 @@ def main_start(args):
                 or not os.path.exists(whenever)
                 or not os.access(whenever, os.X_OK)
             ):
+                log.updated(level=log.LEVEL_ERROR, status=log.STATUS_ERR).log(
+                    "error: `whenever` binary not found"
+                )
                 exit_error(CLI_ERR_WHENEVER_NOT_FOUND)
             setup_windows()
             wrapper = Wrapper(config_file, whenever, _root)
             # start the scheduler in a separate thread
             if not wrapper.start():
+                log.updated(level=log.LEVEL_ERROR, status=log.STATUS_ERR).log(
+                    "error: `whenever` not started"
+                )
                 raise Exception(CLI_ERR_STARTING_SCHEDULER)
             # check that everything is fine after start
             if not wrapper.running():
+                log.updated(level=log.LEVEL_ERROR, status=log.STATUS_ERR).log(
+                    "error: `whenever` not running"
+                )
                 raise Exception(CLI_ERR_STARTING_SCHEDULER)
             # run the tray icon application main loop
             from lib.trayapp import main
@@ -367,6 +392,9 @@ def main_start(args):
             main(_root)
             _root.run()
         except Exception as e:
+            log.updated(level=log.LEVEL_ERROR, status=log.STATUS_ERR).log(
+                "unexpected exception: %s" % e
+            )
             exit_error(CLI_ERR_UNEXPECTED_EXCEPTION % e)
 
 
