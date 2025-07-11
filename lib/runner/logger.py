@@ -26,6 +26,9 @@
 
 
 from threading import Lock
+from datetime import datetime
+
+from ..i18n.strings import CLI_APP
 
 from ..repocfg import AppConfig
 
@@ -109,6 +112,117 @@ class Logger(object):
                     )
                     self._logfile.flush()
             return True
+
+    # return a valid logging context
+    def context(self):
+        return Context(logger=self)
+
+
+class Context(object):
+
+    def __init__(
+        self,
+        level=None,
+        emitter=None,
+        action=None,
+        item=None,
+        item_id=None,
+        when=None,
+        status=None,
+        message=None,
+        logger=None,
+    ):
+        self.level = level or "INFO"
+        self.emitter = emitter
+        self.action = action
+        self.item = item or None
+        self.item_id = item_id or None
+        self.when = when or "PROC"
+        self.status = status or "OK"
+        self.message = message
+        self._logger = logger
+
+
+    def update(
+        self,
+        level=None,
+        emitter=None,
+        action=None,
+        item=None,
+        item_id=None,
+        when=None,
+        status=None,
+        message=None,
+    ):
+        if level is not None:
+            self.level = level
+        if emitter is not None:
+            self.emitter = emitter
+        if action is not None:
+            self.action = action
+        if item is not None:
+            self.item = item
+        if item_id is not None:
+            self.item_id = item_id
+        if when is not None:
+            self.when = when
+        if status is not None:
+            self.status = status
+        if message is not None:
+            self.message = message
+
+    def updated(
+        self,
+        level=None,
+        emitter=None,
+        action=None,
+        item=None,
+        item_id=None,
+        when=None,
+        status=None,
+        message=None,
+    ):
+        self.update(
+            level,
+            emitter,
+            action,
+            item,
+            item_id,
+            when,
+            status,
+            message,
+        )
+        return self
+
+    def as_record(self):
+        assert(self.message is not None)
+        assert(self.emitter is not None)
+        assert(self.action is not None)
+        timestr = datetime.now().strftime("%Y-%m-%dT%H:%M:%s.%f")
+        return {
+            "header": {
+                "time": timestr,
+                "application": CLI_APP,
+                "level": self.level,
+            },
+            "contents": {
+                "context": {
+                    "emitter": self.emitter,
+                    "action": self.action,
+                    "item": self.item,
+                    "item_id": self.item_id,
+                },
+                "message_type": {
+                    "when": self.when,
+                    "status": self.status,
+                },
+                "message": self.message,
+            },
+        }
+
+    def log(self):
+        assert(self._logger is not None)
+        self._logger.log(self.as_record())
 
 
 # end.
