@@ -117,7 +117,7 @@ class form_TimeCondition(form_Condition):
         l_sep2 = ttk.Label(area_tspec, text="/")
         cb_tsDay = ttk.Combobox(area_tspec, width=3, values=_DAYS, state="readonly")
         l_tsOr = ttk.Label(area_tspec, text=UI_FORM_OR)
-        l_tsDayOfWeek = ttk.Label(area_tspec, text=UI_FORM_DOW_SC)
+        l_tsDayOfWeek = ttk.Label(area_tspec, text=UI_TIME_DOW_SC)
         cb_tsDayOfWeek = ttk.Combobox(
             area_tspec, width=12, values=_WEEKDAYS, state="readonly"
         )

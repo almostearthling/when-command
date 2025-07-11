@@ -33,7 +33,7 @@ import sys
 
 
 # resource strings (not internationalized for the moment)
-ITEM_COND_LOWBATT = "Low Battery Condition"
+ITEM_HR_NAME = "Low Battery Condition"
 
 UI_FORM_TITLE = f"{UI_APP}: Low Battery Condition Editor"
 UI_FORM_THRESHOLD_SC = "Battery charge is below:"
@@ -71,7 +71,7 @@ class LowBatteryCondition(WMICondition):
     # availability at class level: these variables *MUST* be set for all items
     item_type = "wmi"
     item_subtype = "battery_low"
-    item_hrtype = ITEM_COND_LOWBATT
+    item_hrtype = ITEM_HR_NAME
     available = _available()
 
     def __init__(self, t: items.Table = None) -> None:
