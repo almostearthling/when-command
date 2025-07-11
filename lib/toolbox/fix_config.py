@@ -14,6 +14,8 @@ from ..utility import (
 )
 
 from ..configurator.defaults import *
+from ..configurator.reader import whenever_config_from_doc
+from ..configurator.writer import write_whenever_config
 from ..repocfg import AppConfig
 
 from tomlkit import items, document, parse, item, aot
@@ -280,6 +282,7 @@ def fix_config_file(filename, verbose=True, backup=True):
         console = None
     try:
         doc = fix_config(filename, console)
+        tasks, conditions, events, globals = whenever_config_from_doc(doc)
         if backup:
             new_name = "%s~" % filename
             if verbose:
@@ -287,8 +290,7 @@ def fix_config_file(filename, verbose=True, backup=True):
             shutil.move(filename, new_name)
         if verbose:
             console.print(CLI_MSG_WRITE_NEW_CONFIG % filename)
-        with open(filename, "w") as f:
-            f.write(doc.as_string())
+        write_whenever_config(filename, tasks, conditions, events, globals)
     except Exception as e:
         write_warning(CLI_ERR_CANNOT_FIX_CONFIG % filename)
 

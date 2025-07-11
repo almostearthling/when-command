@@ -8,7 +8,8 @@ import threading
 
 import json
 
-from .logger import Logger
+from ..utility import get_logger
+
 from .history import History
 
 from ..repocfg import AppConfig
@@ -38,23 +39,15 @@ def _logreader(wrapper):
 # wrapper around the scheduler process
 class Wrapper(object):
 
-    def __init__(self, configpath, exepath, logfile, loglevel, root=None):
+    def __init__(self, configpath, exepath, app=None):
         self._exepath = exepath
-        self._logfile = logfile
         self._config = configpath
         self._history = History(_HISTORY_LENGTH)
-        self._logger = Logger(logfile, loglevel, root)
+        self._logger = get_logger()
         self._thread = None
         self._pipe = None
         self._running = False
-        root.set_wrapper(self)
-
-    # utilities to read inner values
-    # def thread(self):
-    #     return self._thread
-
-    # def logfile(self):
-    #     return self._logfile
+        app.set_wrapper(self)
 
     # used by the log reader
     def pipe(self):

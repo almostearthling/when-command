@@ -115,7 +115,7 @@ class SessionLockedCondition(WMICondition):
         # whose executable is 'LogonUI.exe'; maybe a better solution is here:
         # https://stackoverflow.com/a/48785428/5138770
         self.query = (
-            "SELECT CreationClassName FROM Win32_Process WHERE Name='LogonUI.exe'"
+            'SELECT CreationClassName FROM Win32_Process WHERE Name="LogonUI.exe"'
         )
         self.check_after = CHECK_EXTRA_DELAY[check_frequency]
         self.recur_after_failed_check = True

@@ -76,7 +76,11 @@ class DBusCondition(Condition):
         t.append("object_path", self.object_path)
         t.append("interface", self.interface)
         t.append("method", self.method)
-        t = append_not_none(t, "parameter_call", self.parameter_call)
+        if isinstance(self.parameter_call, str):
+            pc = json.loads(self.parameter_call)
+            t.append("parameter_call", toml_list_of_tables(pc))
+        else:
+            t = append_not_none(t, "parameter_call", self.parameter_call)
         t = append_not_none(t, "parameter_check_all", self.parameter_check_all)
         # JSON check strings should still be supported, but will eventually go away
         if isinstance(self.parameter_check, str):
