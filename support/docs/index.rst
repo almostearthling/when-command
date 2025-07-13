@@ -32,3 +32,4 @@ This document describes the new version of **When**, a Python-based automation t
    i18n
    appdata
    configfile
+   license
