@@ -39,7 +39,7 @@ def _logreader(wrapper) -> None:
 # wrapper around the scheduler process
 class Wrapper(object):
 
-    def __init__(self, configpath, exepath, app=None) -> None:
+    def __init__(self, configpath: str, exepath: str, app=None) -> None:
         self._exepath = exepath
         self._config = configpath
         self._history = History(_HISTORY_LENGTH)
@@ -63,7 +63,7 @@ class Wrapper(object):
         return self._history.get_copy()
 
     # use the logger to determine whether a line is pertinent to history
-    def process_output(self, line):
+    def process_output(self, line: str | None) -> None:
         if line:
             log_record = json.loads(line)
             if not self._logger.log(log_record):
