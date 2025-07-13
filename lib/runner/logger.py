@@ -83,12 +83,44 @@ class Logger(object):
                     self._logfile.flush()
                 return False
             elif when == "BUSY":
+                if AppConfig.get("DEBUG"):
+                    self._logfile.write(
+                        "%s\n"
+                        % _LOGFMT.format(
+                            time=time,
+                            application=application,
+                            level=level,
+                            emitter=emitter,
+                            action=action,
+                            itemstr=itemstr,
+                            when=when,
+                            status=status,
+                            message=message,
+                        )
+                    )
+                    self._logfile.flush()
                 if self._app:
                     if status == "YES":
                         self._app.send_event("<<SchedSetBusy>>")
                     else:
                         self._app.send_event("<<SchedSetNotBusy>>")
             elif when == "PAUSE":
+                if AppConfig.get("DEBUG"):
+                    self._logfile.write(
+                        "%s\n"
+                        % _LOGFMT.format(
+                            time=time,
+                            application=application,
+                            level=level,
+                            emitter=emitter,
+                            action=action,
+                            itemstr=itemstr,
+                            when=when,
+                            status=status,
+                            message=message,
+                        )
+                    )
+                    self._logfile.flush()
                 if self._app:
                     if status == "YES":
                         self._app.send_event("<<SchedSetPaused>>")
@@ -159,7 +191,6 @@ class Context(object):
         self._message = message
         self._logger = logger
 
-
     def update(
         self,
         level=None,
@@ -212,9 +243,9 @@ class Context(object):
         return self
 
     def as_record(self):
-        assert(self._message is not None)
-        assert(self._emitter is not None)
-        assert(self._action is not None)
+        assert self._message is not None
+        assert self._emitter is not None
+        assert self._action is not None
         timestr = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
         return {
             "header": {
@@ -238,7 +269,7 @@ class Context(object):
         }
 
     def log(self, message=None):
-        assert(self._logger is not None)
+        assert self._logger is not None
         if message is not None:
             self._message = str(message)
         self._logger.log(self.as_record())

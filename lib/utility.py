@@ -59,7 +59,7 @@ def get_rich_console():
 def get_logger():
     # TODO: instead of asserting, create an abort() function that aborts
     #       with a meaningful error message or reporting an exception
-    assert(_logger is not None)
+    assert _logger is not None
     return _logger
 
 

@@ -316,6 +316,8 @@ def main_start(args):
     prepare_environment()
     if is_whenever_running():
         exit_error(CLI_ERR_ALREADY_RUNNING)
+    # prepare application so that the logger can be initialized
+    setup_windows()
     # get configuration options
     log_level = AppConfig.get("LOGLEVEL")
     log_file = get_logfile()
@@ -340,7 +342,6 @@ def main_start(args):
                 "error: `whenever` binary not found"
             )
             exit_error(CLI_ERR_WHENEVER_NOT_FOUND)
-        setup_windows()
         wrapper = Wrapper(config_file, whenever, _root)
         # start the scheduler in a separate thread
         if not wrapper.start():
@@ -372,7 +373,6 @@ def main_start(args):
                     "error: `whenever` binary not found"
                 )
                 exit_error(CLI_ERR_WHENEVER_NOT_FOUND)
-            setup_windows()
             wrapper = Wrapper(config_file, whenever, _root)
             # start the scheduler in a separate thread
             if not wrapper.start():
