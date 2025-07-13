@@ -21,7 +21,7 @@ from ..repocfg import AppConfig
 _MSECS_BETWEEN_READS: float = AppConfig.get("MSECS_BETWEEN_READS", 100.0)   # type: ignore
 
 # max length of task execution history
-_HISTORY_LENGTH = AppConfig.get("HISTORY_LENGTH")
+_HISTORY_LENGTH: int = AppConfig.get("HISTORY_LENGTH")  # type: ignore
 
 
 # the following function will be used to start a thread that actually
