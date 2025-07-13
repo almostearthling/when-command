@@ -333,7 +333,7 @@ def main_start(args) -> None:
     ).log("starting resident %s, version %s" % (UI_APP, UI_APP_VERSION))
     if DEBUG:
         # setup the scheduler and associate it to the application
-        whenever = AppConfig.get("WHENEVER")
+        whenever: str = AppConfig.get("WHENEVER")   # type: ignore
         if (
             whenever is None
             or not os.path.exists(whenever)
@@ -365,7 +365,7 @@ def main_start(args) -> None:
     else:
         try:
             # setup the scheduler and associate it to the application
-            whenever = AppConfig.get("WHENEVER")
+            whenever: str = AppConfig.get("WHENEVER")   # type: ignore
             if (
                 whenever is None
                 or not os.path.exists(whenever)

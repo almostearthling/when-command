@@ -205,7 +205,7 @@ class Wrapper(object):
             ).log("no active scheduler, failed to resume")
             return False
 
-    def whenever_reset_conditions(self, names=[]) -> bool:
+    def whenever_reset_conditions(self, names: list[str]=[]) -> bool:
         if self._pipe is None:
             self._log.use(
                 action="reset",
@@ -236,7 +236,7 @@ class Wrapper(object):
             ).log("no active scheduler, failed to reset conditions")
             return False
 
-    def whenever_suspend_condition(self, name) -> bool:
+    def whenever_suspend_condition(self, name: str) -> bool:
         if self._pipe is None:
             self._log.use(
                 action="suspend",
@@ -264,7 +264,7 @@ class Wrapper(object):
             ).log("no active scheduler, failed to suspend condition")
             return False
 
-    def whenever_resume_condition(self, name) -> bool:
+    def whenever_resume_condition(self, name: str) -> bool:
         if self._pipe is None:
             self._log.use(
                 action="unsuspend",
@@ -320,7 +320,7 @@ class Wrapper(object):
             ).log("no active scheduler, failed to reload configuration")
             return False
 
-    def whenever_trigger(self, name) -> bool:
+    def whenever_trigger(self, name: str) -> bool:
         if self._pipe is None:
             self._log.use(
                 action="reload",
