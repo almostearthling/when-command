@@ -188,7 +188,7 @@ class Context(object):
         if message is not None:
             self._message = message
 
-    def updated(
+    def use(
         self,
         level=None,
         emitter=None,

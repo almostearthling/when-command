@@ -47,6 +47,7 @@ class Wrapper(object):
         self._thread = None
         self._pipe = None
         self._running = False
+        self._log = self._logger.context().use(emitter="wrapper")
         app.set_wrapper(self)
 
     # used by the log reader
@@ -72,6 +73,12 @@ class Wrapper(object):
     def whenever_exit(self):
         if self._pipe.poll() is None and self._thread:
             sleep_seconds = _MSECS_BETWEEN_READS / 1000.0
+            self._log.use(
+                action="shutdown",
+                level=self._log.LEVEL_INFO,
+                when=self._log.WHEN_END,
+                status=self._log.STATUS_MSG,
+            ).log("shutdown the scheduler, waiting for activity to finish")
             self._pipe.stdin.write("exit\n")
             self._pipe.stdin.flush()
             self._running = False
@@ -79,60 +86,153 @@ class Wrapper(object):
             self._thread.join()
             for line in iter(self._pipe.stdout.readline, ""):
                 self.process_output(line.strip())
+            self._log.use(
+                action="shutdown",
+                level=self._log.LEVEL_INFO,
+                when=self._log.WHEN_END,
+                status=self._log.STATUS_OK,
+            ).log("scheduler successfully exited")
             return True
         else:
+            self._log.use(
+                action="shutdown",
+                level=self._log.LEVEL_ERROR,
+                when=self._log.WHEN_END,
+                status=self._log.STATUS_FAIL,
+            ).log("no active scheduler, failed to shut down")
             return False
 
     def whenever_kill(self):
         if self._pipe.poll() is None and self._thread:
             sleep_seconds = _MSECS_BETWEEN_READS / 1000.0
+            self._log.use(
+                action="shutdown",
+                level=self._log.LEVEL_INFO,
+                when=self._log.WHEN_END,
+                status=self._log.STATUS_MSG,
+            ).log("shutdown the scheduler, forcing end of all activity")
             self._pipe.stdin.write("kill\n")
             self._pipe.stdin.flush()
             self._running = False
             time.sleep(sleep_seconds)
             self._thread.join()
+            self._log.use(
+                action="shutdown",
+                level=self._log.LEVEL_INFO,
+                when=self._log.WHEN_END,
+                status=self._log.STATUS_OK,
+            ).log("scheduler successfully exited")
             return True
         else:
+            self._log.use(
+                action="shutdown",
+                level=self._log.LEVEL_ERROR,
+                when=self._log.WHEN_END,
+                status=self._log.STATUS_FAIL,
+            ).log("no active scheduler, failed to shut down")
             return False
 
     def whenever_pause(self):
+        self._log.use(
+            action="pause",
+            level=self._log.LEVEL_DEBUG,
+            when=self._log.WHEN_PROC,
+            status=self._log.STATUS_MSG,
+        ).log("attempting to pause the scheduler")
         if self._pipe.poll() is None and self._thread:
             self._pipe.stdin.write("pause\n")
             self._pipe.stdin.flush()
             return True
         else:
+            self._log.use(
+                action="pause",
+                level=self._log.LEVEL_ERROR,
+                when=self._log.WHEN_PROC,
+                status=self._log.STATUS_FAIL,
+            ).log("no active scheduler, failed to pause")
             return False
 
     def whenever_resume(self):
+        self._log.use(
+            action="resume",
+            level=self._log.LEVEL_DEBUG,
+            when=self._log.WHEN_PROC,
+            status=self._log.STATUS_MSG,
+        ).log("attempting to resume the scheduler")
         if self._pipe.poll() is None and self._thread:
             self._pipe.stdin.write("resume\n")
             self._pipe.stdin.flush()
             return True
         else:
+            self._log.use(
+                action="resume",
+                level=self._log.LEVEL_ERROR,
+                when=self._log.WHEN_PROC,
+                status=self._log.STATUS_FAIL,
+            ).log("no active scheduler, failed to resume")
             return False
 
     def whenever_reset_conditions(self, names=[]):
+        self._log.use(
+            action="reset",
+            level=self._log.LEVEL_DEBUG,
+            when=self._log.WHEN_PROC,
+            status=self._log.STATUS_MSG,
+        ).log("attempting to resume conditions: %s" % (
+            "ALL" if len(names) == 0 else
+            ", ".join(list("`%s`" % x for x in names))
+        ))
         if self._pipe.poll() is None and self._thread:
             self._pipe.stdin.write("reset_conditions %s\n" % " ".join(names))
             self._pipe.stdin.flush()
             return True
         else:
+            self._log.use(
+                action="reset",
+                level=self._log.LEVEL_ERROR,
+                when=self._log.WHEN_PROC,
+                status=self._log.STATUS_FAIL,
+            ).log("no active scheduler, failed to reset conditions")
             return False
 
     def whenever_suspend_condition(self, name):
+        self._log.use(
+            action="suspend",
+            level=self._log.LEVEL_DEBUG,
+            when=self._log.WHEN_PROC,
+            status=self._log.STATUS_MSG,
+        ).log("attempting to suspend condition `%s`" % name)
         if self._pipe.poll() is None and self._thread:
             self._pipe.stdin.write("suspend_condition %s\n" % name)
             self._pipe.stdin.flush()
             return True
         else:
+            self._log.use(
+                action="suspend",
+                level=self._log.LEVEL_ERROR,
+                when=self._log.WHEN_PROC,
+                status=self._log.STATUS_FAIL,
+            ).log("no active scheduler, failed to suspend condition")
             return False
 
     def whenever_resume_condition(self, name):
+        self._log.use(
+            action="unsuspend",
+            level=self._log.LEVEL_DEBUG,
+            when=self._log.WHEN_PROC,
+            status=self._log.STATUS_MSG,
+        ).log("attempting to resume condition `%s`" % name)
         if self._pipe.poll() is None and self._thread:
             self._pipe.stdin.write("resume_condition %s\n" % name)
             self._pipe.stdin.flush()
             return True
         else:
+            self._log.use(
+                action="unsuspend",
+                level=self._log.LEVEL_ERROR,
+                when=self._log.WHEN_PROC,
+                status=self._log.STATUS_FAIL,
+            ).log("no active scheduler, failed to resume condition")
             return False
 
     def whenever_reload_configuration(self):
@@ -144,15 +244,33 @@ class Wrapper(object):
             return False
 
     def whenever_trigger(self, name):
+        self._log.use(
+            action="trigger",
+            level=self._log.LEVEL_DEBUG,
+            when=self._log.WHEN_PROC,
+            status=self._log.STATUS_MSG,
+        ).log("attempting to trigger event `%s`" % name)
         if self._pipe.poll() is None and self._thread:
             self._pipe.stdin.write("trigger %s\n" % name)
             self._pipe.stdin.flush()
             return True
         else:
+            self._log.use(
+                action="trigger",
+                level=self._log.LEVEL_ERROR,
+                when=self._log.WHEN_PROC,
+                status=self._log.STATUS_FAIL,
+            ).log("no active scheduler, failed to reload configuration")
             return False
 
     # start the wrapper and spawn both **whenever** and the reader
     def start(self):
+        self._log.use(
+            action="startup",
+            level=self._log.LEVEL_INFO,
+            when=self._log.WHEN_START,
+            status=self._log.STATUS_MSG,
+        ).log("starting the scheduler")
         self._pipe = subprocess.Popen(
             [self._exepath, "--log-level", "trace", "--log-json", self._config],
             stdin=subprocess.PIPE,
@@ -160,7 +278,9 @@ class Wrapper(object):
             stderr=subprocess.PIPE,
             universal_newlines=True,
             text=True,
-            creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0,
+            creationflags=(
+                subprocess.CREATE_NO_WINDOW if sys.platform.startswith("win") else 0
+            ),
         )
         self._thread = threading.Thread(target=_logreader, args=[self])
         self._running = True
@@ -169,11 +289,23 @@ class Wrapper(object):
         time.sleep(sleep_seconds)
         if self._pipe.poll() is not None:
             if self._thread.is_alive():
+                self._log.use(
+                    action="startup",
+                    level=self._log.LEVEL_ERROR,
+                    when=self._log.WHEN_START,
+                    status=self._log.STATUS_ERR,
+                ).log("scheduler exited unexpectedly")
                 self._thread.join()
             for line in iter(self._pipe.stdout.readline, ""):
                 self.process_output(line.strip())
             self._running = False
             return False
+        self._log.use(
+            action="startup",
+            level=self._log.LEVEL_INFO,
+            when=self._log.WHEN_END,
+            status=self._log.STATUS_OK,
+        ).log("scheduler successfully started")
         return True
 
 
