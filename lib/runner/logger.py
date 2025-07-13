@@ -40,14 +40,14 @@ _LOGFMT = "{time} ({application}) {level} {emitter} {action}{itemstr}: [{when}/{
 # for now a very basic logger: improvements will be rotation and persistence
 class Logger(object):
 
-    def __init__(self, filename, level, app=None):
+    def __init__(self, filename, level, app=None) -> None:
         self._logfile = open(filename, "w")
         self._level = level
         self._level_num = _LOGLEVELS.index(self._level)
         self._app = app
         self._mutex = Lock()
 
-    def log(self, record):
+    def log(self, record) -> bool:
         with self._mutex:
             time = record["header"]["time"]
             application = record["header"]["application"]
@@ -180,7 +180,7 @@ class Context(object):
         status=None,
         message=None,
         logger=None,
-    ):
+    ) -> None:
         self._level = level or self.LEVEL_INFO
         self._emitter = emitter
         self._action = action
@@ -201,7 +201,7 @@ class Context(object):
         when=None,
         status=None,
         message=None,
-    ):
+    ) -> None:
         if level is not None:
             self._level = level
         if emitter is not None:
@@ -268,7 +268,7 @@ class Context(object):
             },
         }
 
-    def log(self, message=None):
+    def log(self, message=None) -> None:
         assert self._logger is not None
         if message is not None:
             self._message = str(message)

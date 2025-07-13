@@ -7,7 +7,15 @@ import subprocess
 from base64 import b64decode
 import re
 
-from tomlkit import table, array, inline_table, string, exceptions
+from PIL.ImageFile import ImageFile
+from tomlkit import (
+    table,
+    inline_table,
+    array,
+    string,
+    items,
+    exceptions,
+    )
 from hashlib import blake2s
 from base64 import decodebytes as b64_decodeb
 from io import BytesIO
@@ -46,17 +54,17 @@ _logger = None
 
 
 # return the current Tk root: create one if not already present
-def get_tkroot():
+def get_tkroot() -> tk.Tk:
     return _tkroot
 
 
 # return the terminal console handled by the "rich" module
-def get_rich_console():
+def get_rich_console() -> Console:
     return _console
 
 
 # return the current logger
-def get_logger():
+def get_logger() -> Logger:
     # TODO: instead of asserting, create an abort() function that aborts
     #       with a meaningful error message or reporting an exception
     assert _logger is not None
@@ -69,12 +77,12 @@ def get_private_item_name_prefix():
 
 
 # check whether a name indicates that an item is private
-def is_private_item_name(s: str):
+def is_private_item_name(s: str) -> bool:
     return s.startswith(_PRIVATE_ITEM_PREFIX)
 
 
 # check whether an user-provided name is valid
-def is_valid_item_name(s: str):
+def is_valid_item_name(s: str) -> bool:
     return bool(_RE_VALID_ITEM_NAME.match(s)) and not is_private_item_name(s)
 
 
@@ -87,14 +95,14 @@ def check_not_none(*l) -> bool:
 
 
 # append an item to a TOML table if it is not none
-def append_not_none(table: table, key: str, value) -> table:
+def append_not_none(table: items.Table, key: str, value) -> items.Table:
     if value is not None:
         table.append(key, value)
     return table
 
 
 # try to guess the type of a string from the text that it contains
-def guess_typed_value(s: str):
+def guess_typed_value(s: str) -> bool | int | float | str:
     t = s.lower()
     if t in ("true", "false"):
         return t == "true"
@@ -109,7 +117,7 @@ def guess_typed_value(s: str):
 
 
 # find an unique-ish name for an item
-def generate_item_name(o=None):
+def generate_item_name(o=None) -> str:
     if o is None:
         base = "Item"
     else:
@@ -120,37 +128,38 @@ def generate_item_name(o=None):
 
 
 # get an image from a stored icon
-def get_image(data: bytes):
+def get_image(data: bytes) -> ImageFile:
     bio = BytesIO(b64_decodeb(data))
     bio.seek(0)
     return Image.open(bio)
 
 
 # get an UI suitable image
-def get_ui_image(data: bytes):
+def get_ui_image(data: bytes) -> ImageTk.PhotoImage:
     return ImageTk.PhotoImage(get_image(data))
 
 
 # convert an image in string format to a resized tkinter-compatible PhotoImage:
 # this must be used **after** a Tk root has been created
-def get_icon(image: bytes):
+def get_icon(image: bytes) -> ImageTk.PhotoImage:
     return ImageTk.PhotoImage(Image.open(BytesIO(b64decode(image))).resize((24, 24)))
 
 
-def get_appicon(image: bytes):
+def get_appicon(image: bytes) -> ImageTk.PhotoImage:
     return ImageTk.PhotoImage(Image.open(BytesIO(b64decode(image))).resize((32, 32)))
 
 
 # determine where configuration is stored by default
-def get_default_configdir():
+def get_default_configdir() -> str:
     if sys.platform.startswith("win"):
         appdata = os.environ["APPDATA"]
-        cfgname = AppConfig.get("CFGNAME")
+        cfgname: str = AppConfig.get("CFGNAME") # type: ignore
         if AppConfig.get("DEBUG"):
             cfgname += "_DEBUG"
         return os.path.join(appdata, cfgname)
     else:
-        cfgname = "." + AppConfig.get("CFGNAME").lower()
+        s: str = AppConfig.get("CFGNAME")   # type: ignore
+        cfgname = "." + s.lower()
         if AppConfig.get("DEBUG"):
             cfgname += "_DEBUG"
         home = os.path.expanduser("~")
@@ -163,7 +172,7 @@ def get_default_configdir():
 
 
 # find the default whenever executable (might not be in PATH)
-def get_default_whenever():
+def get_default_whenever() -> str | None:
     default_whenever = shutil.which("whenever")
     if default_whenever is None:
         if sys.platform.startswith("win"):
@@ -182,8 +191,8 @@ def get_default_whenever():
 
 
 # determine appdata directory and ensure it exists
-def get_appdata():
-    appdata = AppConfig.get("APPDATA")
+def get_appdata() -> str:
+    appdata: str = AppConfig.get("APPDATA") # type: ignore
     if not os.path.isdir(appdata):
         try:
             os.makedirs(appdata)
@@ -193,8 +202,8 @@ def get_appdata():
 
 
 # determine scripts directory and ensure that it exists
-def get_scriptsdir():
-    configdir = AppConfig.get("APPDATA")
+def get_scriptsdir() -> str:
+    configdir: str = AppConfig.get("APPDATA") # type: ignore
     if sys.platform.startswith("win"):
         subdir = "Scripts"
     else:
@@ -211,7 +220,7 @@ def get_scriptsdir():
 # save a script to the scripts directory and make it executable: possible
 # existing files are overwritten without confirmation as the scripts folder
 # should be completely managed by When
-def save_script(fname, text):
+def save_script(fname, text) -> None:
     dest = os.path.join(get_scriptsdir(), fname)
     with open(dest, "w") as f:
         f.write(text)
@@ -220,8 +229,8 @@ def save_script(fname, text):
 
 
 # return the output of `whenever --version`
-def get_whenever_version():
-    whenever_path = AppConfig.get("WHENEVER")
+def get_whenever_version() -> None | str:
+    whenever_path: str = AppConfig.get("WHENEVER")  # type: ignore
     try:
         result = subprocess.run(
             [whenever_path, "--version"],
@@ -242,8 +251,8 @@ def get_whenever_version():
 
 
 # return the output of `whenever --version`
-def retrieve_whenever_options():
-    whenever_path = AppConfig.get("WHENEVER")
+def retrieve_whenever_options() -> None:
+    whenever_path: str = AppConfig.get("WHENEVER")  # type: ignore
     try:
         result = subprocess.run(
             [whenever_path, "--options"],
@@ -289,8 +298,8 @@ def retrieve_whenever_options():
 
 
 # check whether the scheduler is running
-def is_whenever_running():
-    whenever_path = AppConfig.get("WHENEVER")
+def is_whenever_running() -> None | bool:
+    whenever_path: str = AppConfig.get("WHENEVER")  # type: ignore
     try:
         result = subprocess.run(
             [whenever_path, "--check-running", "--quiet"],
@@ -312,26 +321,30 @@ def is_whenever_running():
 
 
 # a couple of shortcuts for whenever options
-def whenever_has_dbus():
-    res = AppConfig.get("WHENEVER_HAS_DBUS")
+def whenever_has_dbus() -> bool:
+    res = bool(AppConfig.get("WHENEVER_HAS_DBUS"))
     return res
 
 
-def whenever_has_wmi():
-    res = AppConfig.get("WHENEVER_HAS_WMI")
+def whenever_has_wmi() -> bool:
+    res = bool(AppConfig.get("WHENEVER_HAS_WMI"))
     return res
 
 
 # return the configuration file path
-def get_configfile():
-    basename = "%s.toml" % AppConfig.get("CFGNAME").lower()
-    return os.path.join(AppConfig.get("APPDATA"), basename)
+def get_configfile() -> str:
+    s: str = AppConfig.get("CFGNAME")   # type: ignore
+    d: str = AppConfig.get("APPDATA")   # type: ignore
+    basename = "%s.toml" % s.lower()
+    return os.path.join(d, basename)
 
 
 # return the log file path
-def get_logfile():
-    basename = "%s.log" % AppConfig.get("CFGNAME").lower()
-    return os.path.join(AppConfig.get("APPDATA"), basename)
+def get_logfile() -> str:
+    s: str = AppConfig.get("CFGNAME")   # type: ignore
+    d: str = AppConfig.get("APPDATA")   # type: ignore
+    basename = "%s.log" % s.lower()
+    return os.path.join(d, basename)
 
 
 # get the GUI theme according to system theme or DEBUG mode
@@ -357,12 +370,12 @@ def get_editor_theme():
 
 
 # write a warning to stderr
-def write_warning(s):
+def write_warning(s) -> None:
     _err_console.print(f"[bold yellow]{UI_APP} - warning:[/] {s}", highlight=False)
 
 
 # write an error to stderr
-def write_error(s):
+def write_error(s) -> None:
     _err_console.print(f"[bold red]{UI_APP} - ERROR:[/] {s}", highlight=False)
 
 
@@ -373,7 +386,7 @@ def exit_error(s, code=2):
 
 
 # get extensions of executable files on Windows
-def get_executable_extensions():
+def get_executable_extensions() -> list[str] | None:
     if sys.platform.startswith("win"):
         return os.environ["PATHEXT"].split(";")
     else:
@@ -381,7 +394,7 @@ def get_executable_extensions():
 
 
 # TOML: try to render a string as literal
-def toml_try_literal(s):
+def toml_try_literal(s) -> items.String:
     try:
         return string(s, literal=True)
     except (exceptions.InvalidStringError, exceptions.InvalidCharInStringError):
@@ -389,7 +402,7 @@ def toml_try_literal(s):
 
 
 # TOML: try to render a string as multiline literal
-def toml_try_ml_literal(s):
+def toml_try_ml_literal(s) -> items.String:
     try:
         return string(s, multiline=True, literal=True)
     except (exceptions.InvalidStringError, exceptions.InvalidCharInStringError):
@@ -397,7 +410,7 @@ def toml_try_ml_literal(s):
 
 
 # TOML: create an array of inline tables from a list of dicts
-def toml_list_of_tables(lot):
+def toml_list_of_tables(lot) -> items.Array | None:
     if lot is not None:
         r = array()
         for x in lot:
@@ -410,13 +423,13 @@ def toml_list_of_tables(lot):
 
 
 # TOML: convert to a script (multiline literal) string
-def toml_script_string(s):
+def toml_script_string(s) -> items.String | None:
     if s is not None:
         return toml_try_ml_literal(s)
 
 
 # TOML: create an array of literal strings
-def toml_list_of_literals(los):
+def toml_list_of_literals(los) -> items.Array | None:
     if los is not None:
         r = array()
         for s in los:
@@ -429,7 +442,7 @@ def toml_list_of_literals(los):
 # TOML: list of literals specific for command arguments: tries to put arguments
 # beginning with a dash, a double dash, or a slash (on Windows) on a new line
 # in the array, possibly followed by the first non-dashed argument
-def toml_list_of_command_args(los):
+def toml_list_of_command_args(los) -> items.Array | None:
     if los is not None:
         switch_start = ['-', '--']
         if sys.platform.startswith("win"):
@@ -456,14 +469,14 @@ def toml_list_of_command_args(los):
 
 
 # TOML: quickly convert a string to literal (preserving None)
-def toml_literal(s):
+def toml_literal(s) -> items.String | None:
     if s is not None:
         return toml_try_literal(s)
 
 
 
 # clean a caption from non-alphanumeric characters at the end
-def clean_caption(s):
+def clean_caption(s) -> str:
     s = " ".join(s.split())
     alnum = "abcdefghijklmnopqrstuvwxyz0123456789"
     while len(s) > 0 and s[-1].lower() not in alnum:
@@ -472,7 +485,7 @@ def clean_caption(s):
 
 
 # initialize the logger
-def init_logger(filename, level, app=None):
+def init_logger(filename, level, app=None) -> None:
     global _logger
     _logger = Logger(filename, level, app)
 

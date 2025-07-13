@@ -60,7 +60,7 @@ class App(object):
     # an invisible root window is created, the other ones are all toplevels:
     # the icon is created **after** creating the root window, because a root
     # is needed to be active for this purpose
-    def __init__(self):
+    def __init__(self) -> None:
         # the following lines solve the wrong icon problem on Windows
         if sys.platform.startswith("win"):
             import ctypes
@@ -71,7 +71,7 @@ class App(object):
         self._window.withdraw()
         self._icon = ImageTk.PhotoImage(get_image(APP_ICON))
         self._paused = False
-        self._window.iconphoto(True, self._icon)
+        self._window.iconphoto(True, self._icon)    # type: ignore
 
         # load forms and application related functions *after* initialization,
         # and take property of member functions: this is done here so that all
@@ -116,31 +116,32 @@ class App(object):
         self._busy = False
 
     # the main loop is mandatory to react to events
-    def run(self):
-        self._window.mainloop()
+    def run(self) -> None:
+        if self._window is not None:
+            self._window.mainloop()
 
     # the scheduler wrapper is needed as it provides access to task history
-    def set_wrapper(self, wrapper):
+    def set_wrapper(self, wrapper) -> None:
         self._wrapper = wrapper
 
     # the tray icon if any
-    def set_trayicon(self, icon):
+    def set_trayicon(self, icon) -> None:
         self._trayicon = icon
 
     # send an event to the main loop asynchronously
-    def send_event(self, event: str):
+    def send_event(self, event: str) -> None:
         if self._window:
             self._window.update()
             self._window.event_generate(event)
 
     # shortcut to send an EXIT event
-    def send_exit(self):
+    def send_exit(self) -> None:
         if self._window:
             self._window.update()
             self._window.event_generate("<<ExitApplication>>")
 
     # destroy the window, stop whenever, and cleanup internals
-    def destroy(self):
+    def destroy(self) -> None:
         if self._wrapper:
             self._wrapper.whenever_exit()
             self._wrapper = None
@@ -158,29 +159,29 @@ class App(object):
 
     # event reactions: these are called by the systray app that runs in a
     # separate, detached thread so that it does not slow down the main loop
-    def open_history(self, _):
+    def open_history(self, _) -> None:
         if self._window and self._wrapper:
             form = self.form_History(self._wrapper)
             form.run()
             del form
 
-    def sched_pause(self, _):
+    def sched_pause(self, _) -> None:
         if not self._paused and self._window and self._wrapper:
             self._wrapper.whenever_pause()
 
-    def sched_resume(self, _):
+    def sched_resume(self, _) -> None:
         if self._paused and self._window and self._wrapper:
             self._wrapper.whenever_resume()
 
-    def sched_reset_conditions(self, _):
+    def sched_reset_conditions(self, _) -> None:
         if self._window and self._wrapper:
             self._wrapper.whenever_reset_conditions()
 
-    def sched_reload_configuration(self, _):
+    def sched_reload_configuration(self, _) -> None:
         if self._window and self._wrapper:
             self._wrapper.whenever_reload_configuration()
 
-    def sched_icon_busy(self, _):
+    def sched_icon_busy(self, _) -> None:
         if self._icon:
             # check current status to avoid useless icon swaps
             if not self._busy:
@@ -188,7 +189,7 @@ class App(object):
                 if not self._paused:
                     self.set_tray_icon_busy(self._trayicon)
 
-    def sched_icon_not_busy(self, _):
+    def sched_icon_not_busy(self, _) -> None:
         if self._icon:
             # check current status to avoid useless icon swaps
             if self._busy:
@@ -198,14 +199,14 @@ class App(object):
                 else:
                     self.set_tray_icon_normal(self._trayicon)
 
-    def sched_icon_paused(self, _):
+    def sched_icon_paused(self, _) -> None:
         if self._icon:
             # check current status to avoid useless icon swaps
             if not self._paused:
                 self._paused = True
                 self.set_tray_icon_gray(self._trayicon)
 
-    def sched_icon_not_paused(self, _):
+    def sched_icon_not_paused(self, _) -> None:
         if self._icon:
             # check current status to avoid useless icon swaps
             if self._paused:
@@ -215,23 +216,23 @@ class App(object):
                 else:
                     self.set_tray_icon_normal(self._trayicon)
 
-    def open_cfgapp(self, _):
+    def open_cfgapp(self, _) -> None:
         if self._window:
             form = self.form_Config(self)
             form.run()
             del form
 
-    def open_menubox(self, _):
+    def open_menubox(self, _) -> None:
         if self._window and self._wrapper:
             form = self.form_MenuBox(self)
             form.run()
             del form
 
-    def open_aboutbox(self, _):
+    def open_aboutbox(self, _) -> None:
         if self._window:
-            self.show_about_box(None)
+            self.show_about_box(False)
 
-    def exit_app(self, _):
+    def exit_app(self, _) -> None:
         self.destroy()
 
 
@@ -240,13 +241,13 @@ class App(object):
 # displays a window, because all other forms are just non-root toplevels;
 # NOTE: every windowed subprogram *must* receive a reference to the root
 # window and take care of sending a `send_exit()` event when finishing
-def setup_windows():
+def setup_windows() -> None:
     global _root
     _root = App()
 
 
 # prepare expected environment, such as configuration directory
-def prepare_environment():
+def prepare_environment() -> None:
     # create the application data directory if it does not exist
     try:
         _ = get_appdata()
@@ -262,13 +263,13 @@ def prepare_environment():
 
 
 # version: display the application version and exit
-def main_version(_):
+def main_version(_) -> None:
     # print plain text: could be programatically used to determine version
     print("%s: v%s" % (UI_APP, UI_APP_VERSION))
 
 
 # config: enter the configuration utility and exit (no scheduler launched)
-def main_config(args):
+def main_config(args) -> None:
     # set some global configuration values according to CLI options
     AppConfig.delete("APPDATA")
     AppConfig.set("APPDATA", args.dir_appdata)
@@ -304,7 +305,7 @@ def main_config(args):
 
 
 # start: start the scheduler in the background and display the tray icon
-def main_start(args):
+def main_start(args) -> None:
     # set some global configuration values according to CLI options
     AppConfig.delete("APPDATA")
     AppConfig.set("APPDATA", args.dir_appdata)
@@ -359,7 +360,8 @@ def main_start(args):
         from lib.trayapp import main
 
         main(_root)
-        _root.run()
+        if _root is not None:
+            _root.run()
     else:
         try:
             # setup the scheduler and associate it to the application
@@ -390,7 +392,8 @@ def main_start(args):
             from lib.trayapp import main
 
             main(_root)
-            _root.run()
+            if _root is not None:
+                _root.run()
         except Exception as e:
             log.use(level=log.LEVEL_ERROR, status=log.STATUS_ERR).log(
                 "unexpected exception: %s" % e
@@ -399,7 +402,7 @@ def main_start(args):
 
 
 # toolbox: various utilities that can help build a proper setup
-def main_toolbox(args):
+def main_toolbox(args) -> None:
     AppConfig.delete("APPDATA")
     AppConfig.set("APPDATA", args.dir_appdata)
     prepare_environment()
@@ -458,7 +461,7 @@ def main_toolbox(args):
 
 
 # main program: perform CLI parsing and run the appropriate subcommand
-def main():
+def main() -> None:
     global _root
 
     default_appdata = get_default_configdir()
