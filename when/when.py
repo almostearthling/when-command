@@ -321,7 +321,7 @@ def main_start(args):
     log_file = get_logfile()
     config_file = get_configfile()
     init_logger(log_file, log_level, _root)
-    log = get_logger().context().use(emitter="TRAYAPP")
+    log = get_logger().context().use(emitter="FRONTEND")
     log.use(
         level=log.LEVEL_INFO,
         when=log.WHEN_START,

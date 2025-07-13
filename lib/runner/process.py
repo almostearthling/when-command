@@ -47,7 +47,7 @@ class Wrapper(object):
         self._thread = None
         self._pipe = None
         self._running = False
-        self._log = self._logger.context().use(emitter="wrapper")
+        self._log = self._logger.context().use(emitter="FRONTEND")
         app.set_wrapper(self)
 
     # used by the log reader
