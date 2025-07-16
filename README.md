@@ -65,4 +65,4 @@ If there is a bug in the **When** application, please use the project [issue tra
 
 ## :balance_scale: License
 
-**whenever** is released under the terms of the [BSD 3-Clause "New" or "Revised" License](LICENSE).
+**When** is released under the terms of the [BSD 3-Clause "New" or "Revised" License](LICENSE).
