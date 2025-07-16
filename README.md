@@ -2,80 +2,67 @@
 
 ![HeaderImage](support/docs/graphics/rafi-clock-256.png)
 
-This document describes the new version of **When**, a Python-based automation tool for the desktop. This version, instead of incorporating the scheduler, relies on the [**whenever**](https://github.com/almostearthling/whenever) core, which focuses on reliability and lightweightness, while trying to achieve a good performance even when running at low priority. In this sense, **When** acts as a _wrapper_ for **whenever**, both providing a simple interface for configuration and an easy way to control the scheduler via an icon sitting in the tray area of your desktop. This version of **When** aims at being cross-platform, dynamically providing access to the features of **whenever** that are supported on the host environment.
-
-The application is under active development: although not all of the desired features have been implemented yet, it is capable of running **whenever** in the background and to control it via an icon in the system tray, create and edit the configuration file, capture the log and display a history window. All of this trying to mimic the behavior of the old **When** tool, which was only available on Ubuntu distributions and restricted to the 16.XX and 18.XX editions, entirely written in Python, and now abandoned because of the difficulty of adapting all needed DBus signals and checks to the ever-changing interface of the various Linux distributions.
+This document describes the new version of **When**, a Python-based frontend for the [**whenever**](https://github.com/almostearthling/whenever) automation tool, capable of executing _tasks_ when specific _conditions_ are verified.
 
 ![MainWindow](support/docs/graphics/when-application.png)
 
-Most of the interface of this release of **When** tries to be similar to the old version, although the need for cross-platform components pushes towards the adoption of the most widespread GUI library for Python, that is [_tkinter_](https://docs.python.org/3/library/tkinter.html). Also, some of the extra features that are built into **whenever** call for a somewhat less-streamlined interface especially in terms of form layout.
-
-The [documentation](https://almostearthling.github.io/when-command/) almost covers all aspects of **When** .
-
-> **Warning:** as of version 1.10 the configuration file format has changed; while it is safe to use an old configuration file with the resident [tray application](https://almostearthling.github.io/when-command/tray.html), some of the items will not be recognized or edited by the configuration utility. Please use the `--fix-config` [tool](https://almostearthling.github.io/when-command/cli.html#toolbox) to safely convert an old configuration file to the new format, which by the way implements specific items in a more efficient way.
+It aims at providing a simple interface for configuration and an easy way to control the scheduler via an icon sitting in the _tray area_ of your desktop. This utility is works on both Linux and Windows, and provides access to the features of **whenever** that are supported on the host environment.
 
 
-## Usage
+## :sparkles: Purpose
 
-Please refer to the documentation for a simplified [installation procedure](https://almostearthling.github.io/when-command/install.html) based on [pipx](https://pipx.pypa.io/), and for the [commands](https://almostearthling.github.io/when-command/cli.html) available to configure and launch **When**. Also, [poetry](https://python-poetry.org/) can be used to run the application, which is particularly useful to start **When** from a source repository.
+The **When** application can be used to install, configure, and run **whenever** in a desktop environment:
 
-A simple [tutorial](https://almostearthling.github.io/when-command/tutorial.html) is available to see some quick examples of common use cases.
+* the installation procedure takes care of downloading the latest available version of **whenever**, installing it to a suitable location, creating the program icons in the host environment, and setting it up to start automatically when the user session begins;
+* the configuration utility is a GUI application that allows to define
+  * the _tasks_ that the automation tool should activate
+  * the _conditions_ that should be verified to activate the _tasks_
+  * the _events_ that, in some cases, will trigger _conditions_
+  * the global scheduler parameters;
+* the resident application takes care of starting **whenever** in a separate process with the current configuration, and provides a basic interface to interact with it through a menu that can be reached from the icon sitting in the desktop _tray area_.
 
+**When** offers a selection of common configuration items (_conditions_, _events_, and _tasks_) which would be difficult to define manually in the scheduler configuration file. Such items include (but are not limited to):
 
-## Compatibility
+* session related _tasks_ such as shutdown and sleep;
+* _conditions_ based on
+  * time intervals or instants, and
+  * duration of an idle session
+  * system load or battery status
+  * session being locked or unlocked;
+* _events_ triggered by the system or by changes in files and directories.
 
-**When** has been successfully tested on Windows (10 and 11) and some Debian based Linux distributions: Debian, Ubuntu, and Mint. Some packages are required to run on these Linux distros, that are not installed by default, and probably it is just the same for distributions that derive from other bases: probably it will not be difficult to find equivalent packages to those specified for a successful installation in the tested environments.
-
-In some cases (that is, in _Wayland_ based environments that still do not support the _X.org_ protocol completely) the _X.org_ backend may have to be used in order to successfully run **When**. Generally, following the hereby provided [installation instructions](https://almostearthling.github.io/when-command/install.html#linux), a fully working instance of **When** will be available.
-
-> **Note**: If **poetry** is used to launch the application on Linux (e.g. Debian 12), then the following option needs to be set in order to let the Python virtual environment access all the needed system modules: `poetry config virtualenvs.options.system-site-packages false` (possibly before the `poetry install` step). Otherwise Python can not reach the modules needed to display the system tray icon and menu.
-
-
-## History
-
-I started developing **When** years ago, because it was a kind of tool that I needed to automate _things_ during my desktop sessions. Most of the _things_ I needed to automate were related to organization of documents -- that is, moving them to the directories they belonged to, backing up stuff, cleaning up, and so on. At the time I used to stick to Linux (specifically, Ubuntu) desktops for my work, and one thing I noticed is that it lacked a tool as flexible as the _Task Scheduler_ in Windows: this scheduler, which is part of Windows itself, and is used by the OS to perform certain actions either on a time schedule or at the occurrence of a plethora of events, has a relatively modern user interface which is not too user-unfriendly and is highly configurable. All we had on Linux was _cron_, which has been around for some years now: it is a very powerful tool, yet it has some disadvantages over something like the above mentioned _Task Scheduler_. The most evident of these disadvantages is that it is exclusively time based. Of course, playing with time schedules and scripting can lead to every possible kind of tuning in order to decide what had to be met for certain actions to be performed. However, not everyone likes to build a complex script to automate routine actions that could have been kept simple. The second disadvantage is that there was no suitable desktop interface for cron of course there were GUI cron editors, but most of the ones I have tried were actually mere substitutes of _vi_ (or _nano_ for the ones who prefer it) in the sense that they possibly used a form to let you enter what you would have typed in your _crontab_ file: nevertheless you had to know how the _crontab_ file works in order to enter something correct in the input fields.
-
-Thus, I started working on **When**: it was a Python application, with a not-that-terrible UI, which allowed to define tasks that could be triggered by specific _conditions_: these were something that resembled the _events_ and time schedules found in the _Task Scheduler_ on Windows, but sported maybe some more flexibility in the sense that **When** could also be active in looking for verified conditions, by running commands and scripts but also _checking_ directly (for instance via DBus queries) the session or system status. It has been useful to me, thus I kept updating it and it has supported mainly Ubuntu based distributions, from version 14.04 to version 18.10. After that I started using Windows too (especially on laptops). On the other hand, the services offered by DBus evolved a lot and many times their interfaces changed: it became difficult to keep the pace and redesign the hardwired event listeners in order to be available on the latest Ubuntu desktop and possibly at least the LTS editions which still had support. The only possibility was to redesign **When** to be more generic, remove these hardwired listeners and some of the specialized tasks and conditions and rebuild a more general (and flexible) scheduler that could support the features that were available at the time via some extra configuration and modules. This would have been easy with Python: the plan was to separate the main scheduler from the GUI, and let it run in the background as a smaller application which could be controlled by a GUI application (for example via DBus) and configured or reconfigured dynamically. This would have reduced the complexity of the scheduler at the expense of handling more complexity in the GUI, and would have reduced the memory footprint of the scheduelr itself when running alone -- with no GUI around.
-
-However this remained a plan, mostly because I was gradually abandoning Linux (also driven by some of the choices that were made by the developers of desktop environments) in favor of Windows, and **When** remained quiescent for a while. Until I realized that I found it more flexible for my way of automating stuff, compared to the Windows _Task Scheduler_.
-
-I started looking at **When** again, trying to imagine a way to port it to Windows (and maybe other Linux distributions), and one more time the only solution seemed to separate the scheduler logic from the configuration and controlling utilities. Almost at the same time I started developing an interest in [Rust](https://www.rust-lang.org/) as a development tool and stack. I rebooted **When** from scratch, although the concepts (mainly: _tasks_, _conditions_, and _events_) are the same as previously: the scheduler (it is called [whenever](https://github.com/almostearthling/whenever) now) had to be written in Rust, while the controlling GUI could be anything -- for instance, a Python application. And so it is now: **whenever** is generic and flexible, it compiles and runs on Linux and Windows, and is extremely lightweight. **When** too has been rewritten from scratch, especially because the Gnome API is not supported so well on Windows, but also because a prominent part of the aplication was the scheduler implementation. So **When** now is nothing more than a GUI shell around **whenever**: being possible to concentrate on this aspect, this shell can be more composite and focus on cross-compatibility, ease of use, and (last but not least) definition of specialized _items_ that can be implemented in **whenever**.
-
-I use **When** and **whenever** on a daily basis, on several PCs, for the same types of actions that I used it for when I first started developing it.
+The documentation is more exhaustive than the above list, and describes in detail all the currently supported items.
 
 
-## Credits
+## :book: Documentation
 
-The clock [icon](http://www.graphicsfuel.com/2012/08/alarm-clock-icon-psd/) used for the application logo has been created by Rafi and is available at [GraphicsFuel](http://www.graphicsfuel.com/). All other icons have been found on [Icons8](https://icons8.com/):
+The [documentation](https://almostearthling.github.io/when-command/) almost covers all aspects of **When**, and a simple [tutorial](https://almostearthling.github.io/when-command/tutorial.html) is available to see some quick examples of common use cases.
 
-* [Alarm Clock](https://icons8.com/icon/13026/alarm-clock)
-* [Exclamation Mark](https://icons8.com/icon/j1rPetruM5Fl/exclamation-mark)
-* [Question Mark](https://icons8.com/icon/cjUb4tRvBCNt/question-mark)
-* [Settings Gear](https://icons8.com/icon/12784/settings)
-* [OK (Check Mark) Button](https://icons8.com/icon/70yRC8npwT3d/check-mark)
-* [Cancel Button](https://icons8.com/icon/fYgQxDaH069W/cancel)
-* [Close Window](https://icons8.com/icon/rmf1Fvj5nBib/close-window)
-* [Save](https://icons8.com/icon/yFBJCjFJpLXw/save)
-* [Enter](https://icons8.com/icon/U5AcCk9kUWMk/enter)
-* [Add](https://icons8.com/icon/IA4hgI5aWiHD/add)
-* [Remove](https://icons8.com/icon/9lB4p3bBjCNX/remove)
-* [Error](https://icons8.com/icon/hP6pCUyT8QGk/error)
-* [New Document](https://icons8.com/icon/8tcDgihugAYf/new-document)
-* [Pencil Drawing](https://icons8.com/icon/FnCPHMRRKpyL/pencil-drawing)
-* [Delete](https://icons8.com/icon/pre7LivdxKxJ/delete)
-* [File](https://icons8.com/icon/XWoSyGbnshH2/file)
-* [Folder](https://icons8.com/icon/dINnkNb1FBl4/folder)
-* [Task](https://icons8.com/icon/H0V90i8PgpQQ/task)
-* [Medium Priority](https://icons8.com/icon/5339/medium-priority)
-* [Switch](https://icons8.com/icon/IGjtJ2OuZ66s/switch)
-* [Help](https://icons8.com/icon/0lWYxV5cUrMu/help)
-* [Circle](https://icons8.com/icon/60362/filled-circle)
-* [Square](https://icons8.com/icon/6RfZ-eZQz0ee/rounded-square)
-* [Kite Shape](https://icons8.com/icon/122963/kite-shape)
-* [Index](https://icons8.com/icon/18724/index)
-* [Circled Play](https://icons8.com/icon/63671/circled-play)
-* [Pause Squared](https://icons8.com/icon/110292/pause-squared)
-* [Reset](https://icons8.com/icon/63693/restart)
-* [Exit](https://icons8.com/icon/uVA8I3rgWfOs/logout)
 
-This utility uses the beautiful [ttkbootstrap](https://github.com/israel-dryer/ttkbootstrap) theme extension for _tkinter_, which provides a modern look consistent on all supported platform (and which is probably more clean and clear than it used to be in the GTK days). Also, [chlorophyll](https://github.com/rdbende/chlorophyll) is used to display and edit code and structured text, providing a more pleasant and up to date UI, and [pystray](https://github.com/moses-palmer/pystray) to implement the system tray interface.
+## :floppy_disk: Installation
+
+**When** has requirements that vary according to the platform that should host it, and that on Linux may also depend on the distribution: the standard [installation procedure](https://almostearthling.github.io/when-command/install.html) attempts at describing these requirements, and providing a streamlined way to install, configure, and launch both **When** and **whenever**.
+
+> **Note**: neither **When** nor **whenever** require administrativer rights to be installed: the instructions lead to an installation that is limited to the user that performs it. Following these instructions, both the scheduler and the application will be executed in the user environment, inheriting the user specific permissions: considering that they run as a background application, this type of setup can be considered safer than a system wide one.
+
+
+## :hammer_and_wrench: Compatibility
+
+**When** is usually tested on Windows (10 and 11) and some Debian based Linux distributions: Debian, Ubuntu, and Mint. Some packages are required to run on these Linux distros, that are not installed by default. The same yields for distributions that derive from other bases: probably it will not be difficult to find equivalent packages to those specified for a successful installation in the tested environments. The [installation procedure](https://almostearthling.github.io/when-command/install.html), for instance, lists the packages needed to install **When** on Fedora.
+
+In some cases (that is, in _Wayland_ based environments that do not fully support the _X.org_ protocol) the _X.org_ backend may have to be used in order to successfully run **When**.
+
+
+## :radioactive: Issues and Breaking Changes
+
+As of version 1.10 the configuration file format specific to **When** has changed; while it is safe to use an old configuration file with the resident [tray application](https://almostearthling.github.io/when-command/tray.html), some of the items will not be recognized or edited by the configuration utility. Please use the `--fix-config` [tool](https://almostearthling.github.io/when-command/cli.html#toolbox) to safely convert an old configuration file to the new format, which by the way implements specific items in a more efficient way. The `--fix-config` tool also removes JSON strings from the configuration, which are not supported anymore in recent versions of **whenever**.
+
+
+## :beetle: Bug Reporting
+
+If there is a bug in the **When** application, please use the project [issue tracker](https://github.com/almostearthling/when-command/issues) to report it.
+
+
+## :balance_scale: License
+
+**whenever** is released under the terms of the [BSD 3-Clause "New" or "Revised" License](LICENSE).
