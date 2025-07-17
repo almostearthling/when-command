@@ -1,8 +1,8 @@
 # When
 
-![HeaderImage](support/docs/graphics/rafi-clock-256.png)
+![HeaderImage](support/docs/graphics/when_banner.png)
 
-This document describes the new version of **When**, a Python-based frontend for the [**whenever**](https://github.com/almostearthling/whenever) automation tool, capable of executing _tasks_ when specific _conditions_ are verified.
+This document describes the new version of **When**, a Python-based frontend for the [**whenever**](https://github.com/almostearthling/whenever) automation tool, capable of executing _tasks_ when specific _conditions_ are met.
 
 ![MainWindow](support/docs/graphics/when-application.png)
 
