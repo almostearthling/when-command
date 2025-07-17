@@ -21,7 +21,7 @@ The examples assume that **When** has been installed using the [suggested method
 
 ## Simple Trace
 
-It's sometimes useful to have the ability to trace the configuration of one or more conditions for debug puropses: configuring a condition can sometimes be awful, especially when it is one of the most complex ones (such as a [command](cond_actionrelated.md#command) or a [Lua](cond_actionrelated.md#lua-script) based condition), and you might just want to test your condition with no side effects other than dropping a line to the log. For this I use a simple _trace_ task, consisting in a minimal Lua script:
+It's sometimes useful to have the ability to trace the configuration of one or more conditions for debug purposes: configuring a condition can sometimes be awful, especially when it is one of the most complex ones (such as a [command](cond_actionrelated.md#command) or a [Lua](cond_actionrelated.md#lua-script) based condition), and you might just want to test your condition with no side effects other than dropping a line to the log. For this I use a simple _trace_ task, consisting in a minimal Lua script:
 
 ```lua
 log.warn("Trace: *** VERIFIED CONDITION *** `" .. whenever_condition .. "`");

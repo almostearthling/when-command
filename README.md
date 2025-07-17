@@ -43,7 +43,7 @@ The [documentation](https://almostearthling.github.io/when-command/) almost cove
 
 **When** has requirements that vary according to the platform that should host it, and that on Linux may also depend on the distribution: the standard [installation procedure](https://almostearthling.github.io/when-command/install.html) attempts at describing these requirements, and providing a streamlined way to install, configure, and launch both **When** and **whenever**.
 
-> **Note**: neither **When** nor **whenever** require administrative rights to be installed: the instructions lead to an installation that is limited to the user that performs it. Following these instructions, both the scheduler and the application will be executed in the user environment, inheriting the user specific permissions: considering that they run as a background application, this type of setup can be considered safer than a system wide one.
+> **Note**: neither **When** nor **whenever** require administrative rights for the suggested setup: the instructions lead to an installation that is limited to the user that performs it. Following these instructions, both the scheduler and the application will be executed in the user environment, inheriting the user specific permissions: considering that they run as a background application, this type of setup can be considered safer than a system wide one.
 
 
 ## :hammer_and_wrench: Compatibility
@@ -58,7 +58,7 @@ In some cases (that is, in _Wayland_ based environments that do not fully suppor
 As of version 1.10 the configuration file format specific to **When** has changed; while it is safe to use an old configuration file with the resident [tray application](https://almostearthling.github.io/when-command/tray.html), some of the items will not be recognized or edited by the configuration utility. Please use the `--fix-config` [tool](https://almostearthling.github.io/when-command/cli.html#toolbox) to safely convert an old configuration file to the new format, which by the way implements specific items in a more efficient way. The `--fix-config` tool also removes JSON strings from the configuration, which are not supported anymore in recent versions of **whenever**.
 
 
-## :beetle: Bug Reporting
+## :lady_beetle: Bug Reporting
 
 If there is a bug in the **When** application, please use the project [issue tracker](https://github.com/almostearthling/when-command/issues) to report it.
 
