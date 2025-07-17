@@ -2,11 +2,11 @@
 
 ![HeaderImage](support/docs/graphics/when_banner.png)
 
-This document describes the new version of **When**, a Python-based frontend for the [**whenever**](https://github.com/almostearthling/whenever) automation tool, capable of executing _tasks_ when specific _conditions_ are met.
+This repository hosts the development of **When**, a Python based graphical frontend for the [**whenever**](https://github.com/almostearthling/whenever): although sometimes referred to as a scheduler, **whenever** is actually an automation tool, capable of executing _tasks_ when specific _conditions_ are met.
 
 ![MainWindow](support/docs/graphics/when-application.png)
 
-It aims at providing a simple interface for configuration and an easy way to control the scheduler via an icon sitting in the _tray area_ of your desktop. This utility is works on both Linux and Windows, and provides access to the features of **whenever** that are supported on the host environment.
+**When** aims at providing a simple interface to configure **whenever**, and an easy way to monitor and control the scheduler through an icon sitting in the _tray area_ of your desktop. This utility works on both Linux and Windows, and gives access to the features of **whenever** that are supported on the host environment.
 
 
 ## :sparkles: Purpose
