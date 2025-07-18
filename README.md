@@ -2,7 +2,7 @@
 
 ![HeaderImage](support/docs/graphics/when_banner.png)
 
-This repository hosts the development of **When**, a Python based graphical frontend for the [**whenever**](https://github.com/almostearthling/whenever): although sometimes referred to as a scheduler, **whenever** is actually an automation tool, capable of executing _tasks_ when specific _conditions_ are met.
+This repository hosts the development of **When**, a Python based graphical frontend for [**whenever**](https://github.com/almostearthling/whenever): although sometimes referred to as a scheduler, **whenever** is actually an automation tool, capable of executing _tasks_ when specific _conditions_ are met.
 
 ![MainWindow](support/docs/graphics/when-application.png)
 
