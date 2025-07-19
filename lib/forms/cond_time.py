@@ -89,6 +89,7 @@ class form_TimeCondition(form_Condition):
         else:
             item = TimeCondition()
         super().__init__(UI_TITLE_TIMECOND, tasks_available, item)
+        assert isinstance(self._item, TimeCondition)
 
         # form data
         self._timespecs = []
@@ -222,7 +223,7 @@ class form_TimeCondition(form_Condition):
         # update the form
         self._updateform()
 
-    def clear_timespec(self):
+    def clear_timespec(self) -> None:
         self.data_set("ts_year")
         self.data_set("ts_month")
         self.data_set("ts_day")
@@ -231,7 +232,7 @@ class form_TimeCondition(form_Condition):
         self.data_set("ts_min")
         self.data_set("ts_sec")
 
-    def add_timespec(self):
+    def add_timespec(self) -> None:
         if m := self.data_get("ts_month"):
             try:
                 month = _MONTHS_MAP[m]
@@ -270,16 +271,20 @@ class form_TimeCondition(form_Condition):
             self._updatedata()
             self._updateform()
 
-    def del_timespec(self):
-        idx = self.data_get("timespec_selection")[0]
-        del self._timespecs[idx]
-        self._updatedata()
-        self._updateform()
-
-    def recall_timespec(self):
+    def del_timespec(self) -> None:
         sel = self.data_get("timespec_selection")
         if sel:
-            spec = self._timespecs[self.data_get("timespec_selection")[0]]
+            assert isinstance(sel, list)
+            idx = sel[0]
+            del self._timespecs[idx]
+            self._updatedata()
+            self._updateform()
+
+    def recall_timespec(self) -> None:
+        sel = self.data_get("timespec_selection")
+        if sel:
+            assert isinstance(sel, list)
+            spec = self._timespecs[sel[0]]
             self.data_set("ts_year", spec.year)
             self.data_set(
                 "ts_month", _MONTHS[spec.month] if spec.month is not None else None
@@ -292,20 +297,22 @@ class form_TimeCondition(form_Condition):
             self.data_set("ts_min", spec.minute)
             self.data_set("ts_sec", spec.second)
 
-    def clear_alltimespecs(self):
-        # TODO: ask for confirmation
-        self._timespecs = []
-        self._updatedata()
-        self._updateform()
+    def clear_alltimespecs(self) -> None:
+        # this functionality is never implemented
+        if messagebox.askyesno(UI_POPUP_T_CONFIRM, UI_POPUP_DELETEALLENTRIES_Q):
+            self._timespecs = []
+            self._updatedata()
+            self._updateform()
 
-    def _updatedata(self):
+    def _updatedata(self) -> None:
+        assert isinstance(self._item, TimeCondition)
         e = []
         for timespec in self._timespecs:
             e.append(timespec.as_dict())
         self._item.time_specifications = e or None
         return super()._updatedata()
 
-    def _updateform(self):
+    def _updateform(self) -> None:
         self._tv_timeSpecs.delete(*self._tv_timeSpecs.get_children())
         idx = 0
         for ts in self._timespecs:

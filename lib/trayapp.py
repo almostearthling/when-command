@@ -23,56 +23,56 @@ _tray_icon_busy = get_image(CLOCK_ICON_BUSY)
 
 # menu reactions: all events are managed by the main application, and
 # therefore they are implemented as messages passed to the root window
-def on_configure(root):
+def on_configure(root) -> None:
     root.send_event("<<OpenCfgApp>>")
 
 
-def on_about(root):
+def on_about(root) -> None:
     root.send_event("<<OpenAboutBox>>")
 
 
-def on_menu_box(root):
+def on_menu_box(root) -> None:
     root.send_event("<<OpenMenuBox>>")
 
 
-def on_pause_scheduler(root):
+def on_pause_scheduler(root) -> None:
     root.send_event("<<SchedPause>>")
 
 
-def on_resume_scheduler(root):
+def on_resume_scheduler(root) -> None:
     root.send_event("<<SchedResume>>")
 
 
-def on_reset_conditions(root):
+def on_reset_conditions(root) -> None:
     root.send_event("<<SchedResetConditions>>")
 
 
-def on_history(root):
+def on_history(root) -> None:
     root.send_event("<<OpenHistory>>")
 
 
 # this sends an EXIT event to the main loop, so that the invisible
 # main window is destroyed and all the cleanup is performed
-def on_exit(root):
+def on_exit(root) -> None:
     root.send_exit()
 
 
 # set icon color to gray/color: these functions are called by the main
 # application to change the icon status when pausing/resuming the scheduler
-def set_tray_icon_gray(icon):
+def set_tray_icon_gray(icon) -> None:
     icon.icon = _tray_icon_gray
 
 
-def set_tray_icon_normal(icon):
+def set_tray_icon_normal(icon) -> None:
     icon.icon = _tray_icon
 
 
-def set_tray_icon_busy(icon):
+def set_tray_icon_busy(icon) -> None:
     icon.icon = _tray_icon_busy
 
 
 # entry point for the tray resident application
-def main(root):
+def main(root) -> None:
     # create the menu: this menu is OK for Windows and for Linux environments
     # that implement the `AppIndicator` protocol; unfortunately this protocol
     # seems to be deprecated by teh folks at Gnome, together with almost

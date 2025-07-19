@@ -24,6 +24,7 @@ class form_Condition(ApplicationForm):
 
     def __init__(self, title, tasks_available, item=None):
         size = AppConfig.get("SIZE_EDITOR_FORM")
+        assert isinstance(size, tuple)
         bbox = (BBOX_OK, BBOX_CANCEL)
         super().__init__(title, size, None, bbox)
 
@@ -184,14 +185,14 @@ class form_Condition(ApplicationForm):
         # self._max_retries.config(state=tk.NORMAL)
         self.changed = False
 
-    def add_task(self):
+    def add_task(self) -> None:
         task = self.data_get("@choose_task")
         if task:
             self._tasks.append(task)
         self._updatedata()
         self._updateform()
 
-    def del_task(self):
+    def del_task(self) -> None:
         elem = self.data_get("@tasks_selection")
         if elem:
             idx = int(elem[0])
@@ -199,7 +200,7 @@ class form_Condition(ApplicationForm):
             self._updatedata()
             self._updateform()
 
-    def add_check_caption(self, dataname, caption):
+    def add_check_caption(self, dataname, caption) -> None:
         assert self.data_exists(dataname)
         self._captions[dataname] = clean_caption(caption)
 
@@ -213,13 +214,13 @@ class form_Condition(ApplicationForm):
         else:
             return res
 
-    def _popup_invalid_data(self, captions):
+    def _popup_invalid_data(self, captions) -> None:
         captions.sort()
         capts = "- " + "\n- ".join(captions)
         msg = UI_POPUP_INVALIDPARAMETERS_T % capts
         messagebox.showerror(UI_POPUP_T_ERR, msg)
 
-    def _check_recurring(self):
+    def _check_recurring(self) -> None:
         # we use the opposite of the value because of <ButtonPress-1>: anyway
         # the <ButtonRelease-1> counterpart does not work so well (same thing
         # for <KeyPress-space>, while <KeyRelease-space> does better)
@@ -231,12 +232,13 @@ class form_Condition(ApplicationForm):
 
     # contents is the root for slave widgets
     @property
-    def contents(self):
+    def contents(self) -> ttk.Frame:
         return self._area_specific
 
-    def _updateform(self):
+    def _updateform(self) -> None:
         self._tv_tasks.delete(*self._tv_tasks.get_children())
         if self._item:
+            assert isinstance(self._item, Condition)
             if not self._item.recurring:
                 self._max_retries.config(state=tk.NORMAL)
             else:
@@ -275,7 +277,8 @@ class form_Condition(ApplicationForm):
         self.data_set("@choose_task", "")
 
     # the data update utility loads data into the item
-    def _updatedata(self):
+    def _updatedata(self) -> None:
+        assert isinstance(self._item, Condition)
         name = self.data_get("@name")
         if name is not None:
             self._item.name = name
@@ -301,7 +304,7 @@ class form_Condition(ApplicationForm):
         self._item.tasks = self._tasks.copy()
 
     # set and remove the associated item
-    def set_item(self, item):
+    def set_item(self, item: Condition) -> None:
         assert isinstance(item, Condition)
         try:
             self._item = item.__class__(
@@ -309,20 +312,21 @@ class form_Condition(ApplicationForm):
             )  # get an exact copy to mess with
         except ValueError:
             self._item = item  # item was newly created: use it
+        assert isinstance(self._item.tasks, list)
         self._tasks = self._item.tasks.copy()
 
-    def reset_item(self):
+    def reset_item(self) -> None:
         self._item = None
         self._tasks = []
 
     # command button reactions: cancel deletes the current item so that None
     # is returned upon dialog close, while ok finalizes item initialization
     # and lets the run() function return a configured item
-    def exit_cancel(self):
+    def exit_cancel(self) -> None:
         self._item = None
         return super().exit_cancel()
 
-    def exit_ok(self):
+    def exit_ok(self) -> None:
         errs = self._invalid_data_captions()
         if errs is None:
             self._updatedata()
@@ -331,7 +335,7 @@ class form_Condition(ApplicationForm):
             self._popup_invalid_data(errs)
 
     # main loop: returns the current item if any
-    def run(self):
+    def run(self) -> Condition | None:
         super().run()
         return self._item
 

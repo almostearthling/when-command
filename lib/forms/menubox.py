@@ -19,7 +19,7 @@ from ..icons import (
     QUESTION_MARK_B_ICON32,
     EXIT_B_ICON32,
 )
-from .ui import *
+from .ui import *   # type: ignore
 
 from ..repocfg import AppConfig
 from ..utility import get_image, get_icon
@@ -138,9 +138,11 @@ class form_MenuBox(ApplicationForm):
 
         style = ttk.Style()
         style.configure(style="menubutton.TButton", anchor=tk.W)
+        size = AppConfig.get("SIZE_MENU_BOX")
+        assert isinstance(size, tuple)
 
         super().__init__(
-            UI_TITLE_MENU, AppConfig.get("SIZE_MENU_BOX"), None, (BBOX_CANCEL,), main
+            UI_TITLE_MENU, size, None, (BBOX_CANCEL,), main
         )
         self._image = ImageTk.PhotoImage(get_image(APP_BITMAP))
         self._app = app

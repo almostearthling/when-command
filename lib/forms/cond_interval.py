@@ -23,6 +23,7 @@ class form_IntervalCondition(form_Condition):
         else:
             item = IntervalCondition()
         super().__init__(UI_TITLE_INTERVALCOND, tasks_available, item)
+        assert isinstance(self._item, IntervalCondition)
 
         # build the UI: build widgets, arrange them in the box, bind data
 
@@ -65,31 +66,28 @@ class form_IntervalCondition(form_Condition):
         self._updateform()
 
     def _updateform(self):
-        if self._item:
-            if (
-                self._item.interval_seconds is not None
-                and self._item.interval_seconds % 3600 == 0
-            ):
-                intv = int(self._item.interval_seconds / 3600)
-                intvu = UI_TIME_HOURS
-            elif (
-                self._item.interval_seconds is not None
-                and self._item.interval_seconds % 60 == 0
-            ):
-                intv = int(self._item.interval_seconds / 60)
-                intvu = UI_TIME_MINUTES
-            else:
-                intv = self._item.interval_seconds
-                intvu = UI_TIME_SECONDS
-            self.data_set("interval_time", intv)
-            self.data_set("time_unit", intvu)
+        assert isinstance(self._item, IntervalCondition)
+        if (
+            self._item.interval_seconds is not None
+            and self._item.interval_seconds % 3600 == 0
+        ):
+            intv = int(self._item.interval_seconds / 3600)
+            intvu = UI_TIME_HOURS
+        elif (
+            self._item.interval_seconds is not None
+            and self._item.interval_seconds % 60 == 0
+        ):
+            intv = int(self._item.interval_seconds / 60)
+            intvu = UI_TIME_MINUTES
         else:
-            self.data_set("interval_time", DEFAULT_INTERVAL_TIME)
-            self.data_set("time_unit", DEFAULT_INTERVAL_UNIT)
+            intv = self._item.interval_seconds
+            intvu = UI_TIME_SECONDS
+        self.data_set("interval_time", intv)
+        self.data_set("time_unit", intvu)
         super()._updateform()
 
     def _updatedata(self):
-        super()._updatedata()
+        assert isinstance(self._item, IntervalCondition)
         intv = self.data_get("interval_time")
         intvu = self.data_get("time_unit")
         if intv is not None:
@@ -99,6 +97,7 @@ class form_IntervalCondition(form_Condition):
                 self._item.interval_seconds = intv * 60
             else:
                 self._item.interval_seconds = intv
+        return super()._updatedata()
 
 
 # end.

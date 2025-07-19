@@ -23,12 +23,12 @@ class _AppConfiguration(object):
             for k in initial_table:
                 self._table[k] = initial_table[k]
 
-    def set(self, key: str, value):
+    def set(self, key: str, value) -> None:
         if key in self._table:
             raise ValueError("value already set for '%s': delete it first" % key)
         self._table[key] = value
 
-    def delete(self, key: str):
+    def delete(self, key: str) -> None:
         if key in self._table:
             del self._table[key]
 
@@ -41,10 +41,10 @@ class _AppConfiguration(object):
     def __getitem__(self, key: str):
         return self.get(key)
 
-    def __setitem__(self, key: str, value):
+    def __setitem__(self, key: str, value) -> None:
         self.set(key, value)
 
-    def __delitem__(self, key: str):
+    def __delitem__(self, key: str) -> None:
         self.delete(key)
 
     def __str__(self) -> str:

@@ -59,6 +59,7 @@ class form_InternalCommandTask(form_Task):
         else:
             item = InternalCommandTask()
         super().__init__(UI_TITLE_INTERNALTASK, item)
+        assert isinstance(self._item, InternalCommandTask)
 
         # build the UI: build widgets, arrange them in the box, bind data
 
@@ -87,11 +88,15 @@ class form_InternalCommandTask(form_Task):
         # update the form
         self._updateform()
 
-    def _updatedata(self):
-        self._item.command = self.data_get("command").strip() or ""
+    def _updatedata(self) -> None:
+        assert isinstance(self._item, InternalCommandTask)
+        command = self.data_get("command")
+        assert isinstance(command, str)
+        self._item.command = command.strip() or ""
         return super()._updatedata()
 
-    def _updateform(self):
+    def _updateform(self) -> None:
+        assert isinstance(self._item, InternalCommandTask)
         self.data_set("command", self._item.command)
         return super()._updateform()
 

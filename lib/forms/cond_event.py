@@ -19,6 +19,7 @@ class form_EventCondition(form_Condition):
         else:
             item = EventCondition()
         super().__init__(UI_TITLE_EVENTCOND, tasks_available, item)
+        assert isinstance(self._item, EventCondition)
 
         # build the UI: build widgets, arrange them in the box, bind data
 

@@ -15,6 +15,7 @@ class form_NewItem(ApplicationForm):
 
     def __init__(self):
         size = AppConfig.get("SIZE_NEWITEM_FORM")
+        assert isinstance(size, tuple)
         bbox = (BBOX_OK, BBOX_CANCEL)
         super().__init__(UI_TITLE_NEWITEM, size, None, bbox)
 

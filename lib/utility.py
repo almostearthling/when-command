@@ -65,8 +65,6 @@ def get_rich_console() -> Console:
 
 # return the current logger
 def get_logger() -> Logger:
-    # TODO: instead of asserting, create an abort() function that aborts
-    #       with a meaningful error message or reporting an exception
     assert _logger is not None
     return _logger
 

@@ -27,7 +27,7 @@ def retrieve_asset(URL, verbose=False):
 
 
 # retrieve text from an URL
-def retrieve_text_asset(URL, verbose=False):
+def retrieve_text_asset(URL, verbose=False) -> str | None:
     try:
         r = requests.get(URL)
         return r.text
@@ -39,8 +39,8 @@ def retrieve_text_asset(URL, verbose=False):
 
 # download an asset identified by an URL to a provided directory or to
 # the TEMP directory if none is specified
-def download_asset(URL, local=None, verbose=False):
-    sr = urllib.parse.urlsplit(URL)
+def download_asset(URL, local=None, verbose=False) -> None | str:
+    sr = urllib.parse.urlsplit(URL)     # type: ignore
     fname = os.path.basename(sr.path)
     if local is None:
         try:
@@ -66,11 +66,11 @@ def download_asset(URL, local=None, verbose=False):
 
 
 # some URL entries
-def get_repo_base_url(repo):
+def get_repo_base_url(repo) -> str:
     return f"{GITHUB_PROTOCOL}://{GITHUB_BASE}/{repo}"
 
 
-def get_repo_latest_releases(repo):
+def get_repo_latest_releases(repo) -> str:
     base = get_repo_base_url(repo)
     return f"{base}/releases/latest/download"
 

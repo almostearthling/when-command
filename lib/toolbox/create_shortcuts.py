@@ -35,7 +35,7 @@ Categories=System
 
 
 # create the icon in the APPDATA directory
-def create_icon(verbose=False):
+def create_icon(verbose=False) -> None | str:
     if sys.platform.startswith("win"):
         icon_filename = "When.ico"
         icon = ICON_ICO

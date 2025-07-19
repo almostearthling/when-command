@@ -23,6 +23,7 @@ class form_IdleCondition(form_Condition):
         else:
             item = IdleCondition()
         super().__init__(UI_TITLE_IDLECOND, tasks_available, item)
+        assert isinstance(self._item, IdleCondition)
 
         # build the UI: build widgets, arrange them in the box, bind data
 
@@ -65,31 +66,28 @@ class form_IdleCondition(form_Condition):
         self._updateform()
 
     def _updateform(self):
-        if self._item:
-            if (
-                self._item.idle_seconds is not None
-                and self._item.idle_seconds % 3600 == 0
-            ):
-                intv = int(self._item.idle_seconds / 3600)
-                intvu = UI_TIME_HOURS
-            elif (
-                self._item.idle_seconds is not None
-                and self._item.idle_seconds % 60 == 0
-            ):
-                intv = int(self._item.idle_seconds / 60)
-                intvu = UI_TIME_MINUTES
-            else:
-                intv = self._item.idle_seconds
-                intvu = UI_TIME_SECONDS
-            self.data_set("idle_time", intv)
-            self.data_set("time_unit", intvu)
+        assert isinstance(self._item, IdleCondition)
+        if (
+            self._item.idle_seconds is not None
+            and self._item.idle_seconds % 3600 == 0
+        ):
+            intv = int(self._item.idle_seconds / 3600)
+            intvu = UI_TIME_HOURS
+        elif (
+            self._item.idle_seconds is not None
+            and self._item.idle_seconds % 60 == 0
+        ):
+            intv = int(self._item.idle_seconds / 60)
+            intvu = UI_TIME_MINUTES
         else:
-            self.data_set("idle_time", DEFAULT_INTERVAL_TIME)
-            self.data_set("time_unit", DEFAULT_INTERVAL_UNIT)
+            intv = self._item.idle_seconds
+            intvu = UI_TIME_SECONDS
+        self.data_set("idle_time", intv)
+        self.data_set("time_unit", intvu)
         return super()._updateform()
 
     def _updatedata(self):
-        super()._updatedata()
+        assert isinstance(self._item, IdleCondition)
         intv = self.data_get("idle_time")
         intvu = self.data_get("time_unit")
         if intv is not None:
@@ -99,6 +97,7 @@ class form_IdleCondition(form_Condition):
                 self._item.idle_seconds = intv * 60
             else:
                 self._item.idle_seconds = intv
+        return super()._updatedata()
 
 
 # end.

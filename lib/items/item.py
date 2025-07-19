@@ -107,8 +107,8 @@ for m in extra.factories:
     else:
         prefix = None
     if prefix:
-        signature = '%s:%s:%s' % (prefix, item_class.item_type, item_class.item_subtype)
-        ALL_AVAILABLE_ITEMS.append((signature, item_class.item_hrtype, item_form, item_class))
+        signature = '%s:%s:%s' % (prefix, item_class.item_type, item_class.item_subtype)        # type: ignore
+        ALL_AVAILABLE_ITEMS.append((signature, item_class.item_hrtype, item_form, item_class))  # type: ignore
 
 
 # a dictionary version of the above list

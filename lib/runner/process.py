@@ -39,7 +39,7 @@ def _logreader(wrapper) -> None:
 # wrapper around the scheduler process
 class Wrapper(object):
 
-    def __init__(self, configpath: str, exepath: str, app=None) -> None:
+    def __init__(self, configpath: str, exepath: str, app=None):
         self._exepath = exepath
         self._config = configpath
         self._history = History(_HISTORY_LENGTH)

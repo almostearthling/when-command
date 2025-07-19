@@ -22,7 +22,7 @@ class Event(object):
     # availability at class level
     available = False
 
-    def __init__(self, t: items.Table = None) -> None:
+    def __init__(self, t: items.Table | None = None):
         self.type = None
         self.hrtype = None
         if t:
@@ -45,11 +45,13 @@ class Event(object):
     def signature(self):
         s = "event:%s" % self.type
         if 'subtype' in self.__dict__:
-            s += ":%s" % self.subtype
+            assert isinstance(self.subtype, str)    # type: ignore
+            s += ":%s" % self.subtype               # type: ignore
         return s
 
     @property
     def private(self):
+        assert isinstance(self.name, str)
         return is_private_item_name(self.name)
 
     def as_table(self):

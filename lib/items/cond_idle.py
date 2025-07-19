@@ -18,7 +18,7 @@ class IdleCondition(Condition):
     # availability at class level
     available = True
 
-    def __init__(self, t: items.Table = None) -> None:
+    def __init__(self, t: items.Table | None = None):
         Condition.__init__(self, t)
         self.type = "idle"
         self.hrtype = ITEM_COND_IDLE

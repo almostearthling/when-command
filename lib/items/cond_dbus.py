@@ -29,7 +29,7 @@ class DBusCondition(Condition):
     # availability at class level
     available = False
 
-    def __init__(self, t: items.Table = None) -> None:
+    def __init__(self, t: items.Table | None = None):
         Condition.__init__(self, t)
         self.type = "dbus"
         self.hrtype = ITEM_COND_DBUS

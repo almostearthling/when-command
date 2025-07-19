@@ -56,7 +56,7 @@ if m is not None:
 
 # check for availability: include all needed checks in this function, may
 # or may not include actually checking the hosting platform
-def _available():
+def _available() -> bool:
     if shutil.which("ls"):
         return True
     return False
@@ -71,7 +71,7 @@ class TemplateCondition(CommandCondition):
     item_hrtype = ITEM_HR_NAME
     available = _available()
 
-    def __init__(self, t: items.Table = None) -> None:
+    def __init__(self, t: items.Table | None = None):
         # first initialize the base class (mandatory)
         super().__init__(t)
 
@@ -96,7 +96,7 @@ class TemplateCondition(CommandCondition):
 
         self.updateitem()
 
-    def updateitem(self):
+    def updateitem(self) -> None:
         # set base item properties according to specific parameters in `tags`
         self.command = "ls"
         self.command_arguments = [
@@ -141,12 +141,12 @@ class form_TemplateCondition(form_Condition):
         self._updateform()
 
     # update the form with the specific parameters (usually in the `tags`)
-    def _updateform(self):
+    def _updateform(self) -> None:
         self.data_set("parameter1", self._item.tags.get("parameter1"))
         return super()._updateform()
 
     # update the item from the form elements (usually update `tags`)
-    def _updatedata(self):
+    def _updatedata(self) -> None:
         self._item.tags["parameter1"] = self.data_get("parameter1")
         self._item.updateitem()
         return super()._updatedata()

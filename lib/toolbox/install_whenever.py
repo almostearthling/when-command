@@ -72,7 +72,12 @@ def get_whenever_download_metadata(verbose=False):
     if verbose:
         console.print(CLI_MSG_DOWNLOADING_ASSET % CHECKSUM_FILE, highlight=False)
     checksums = retrieve_text_asset(checksums_url, verbose)
-    pattern_matcher = re.compile(get_whenever_release_pattern(verbose))
+    pattern = get_whenever_release_pattern(verbose)
+    if pattern is not None:
+        pattern_matcher = re.compile(pattern)
+    else:
+        # the error has already been reported
+        return None
     if checksums is None:
         if verbose:
             write_error(CLI_ERR_DOWNLOADING_ASSET % CHECKSUM_FILE)

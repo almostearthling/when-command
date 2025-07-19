@@ -30,6 +30,7 @@ class form_DBusEvent(form_Event):
         else:
             item = DBusEvent()
         super().__init__(UI_TITLE_DBUSEVENT, conditions_available, item)
+        assert isinstance(self._item, DBusEvent)
 
         # build the UI: build widgets, arrange them in the box, bind data
 
@@ -106,19 +107,21 @@ class form_DBusEvent(form_Event):
         # update the form
         self._updateform()
 
-    def _updateform(self):
+    def _updateform(self) -> None:
+        assert isinstance(self._item, DBusEvent)
         self.data_set("bus", self._item.bus)
         self.data_set("rule", self._item.rule)
         self.data_set("parameter_check", json.dumps(self._item.parameter_check) or None)
         self.data_set("parameter_check_all", self._item.parameter_check_all or False)
         return super()._updateform()
 
-    def _updatedata(self):
+    def _updatedata(self) -> None:
+        assert isinstance(self._item, DBusEvent)
+        parameter_check = self.data_get("parameter_check")
+        assert isinstance(parameter_check, str)
         self._item.bus = self.data_get("bus")
         self._item.rule = self.data_get("rule")
-        self._item.parameter_check = (
-            json.loads(self.data_get("parameter_check")) or None
-        )
+        self._item.parameter_check = json.loads(parameter_check) or None
         self._item.parameter_check_all = self.data_get("parameter_check_all") or False
         return super()._updatedata()
 

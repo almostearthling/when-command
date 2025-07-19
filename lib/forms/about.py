@@ -30,6 +30,8 @@ class AboutBox(ApplicationForm):
     def __init__(self, main=False):
         version = get_whenever_version()
         appversion = UI_APP_VERSION
+        size = AppConfig.get("SIZE_ABOUT_BOX")
+        assert isinstance(size, tuple)
         if version:
             text = _htmlabout.format(
                 title=UI_APP,
@@ -44,7 +46,7 @@ class AboutBox(ApplicationForm):
             text = UI_ABOUT_TEXT
         super().__init__(
             UI_ABOUT_TITLE,
-            AppConfig.get("SIZE_ABOUT_BOX"),
+            size,
             None,
             (BBOX_CLOSE,),
             main
@@ -71,7 +73,7 @@ class AboutBox(ApplicationForm):
 
 
 # display a simple about box
-def show_about_box(main=False):
+def show_about_box(main=False) -> None:
     box = AboutBox(main)
     box.run()
     del box

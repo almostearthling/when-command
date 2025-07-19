@@ -14,7 +14,7 @@ class CommandEvent(Event):
     # availability at class level
     available = False
 
-    def __init__(self, t: items.Table = None) -> None:
+    def __init__(self, t: items.Table | None = None):
         Event.__init__(self, t)
         self.type = "cli"
         self.hrtype = ITEM_EVENT_CLI

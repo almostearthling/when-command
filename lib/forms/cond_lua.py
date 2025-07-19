@@ -29,6 +29,7 @@ class form_LuaScriptCondition(form_Condition):
         else:
             item = LuaScriptCondition()
         super().__init__(UI_TITLE_LUACOND, tasks_available, item)
+        assert isinstance(self._item, LuaScriptCondition)
 
         # form data
         self._results = []
@@ -134,7 +135,7 @@ class form_LuaScriptCondition(form_Condition):
             "varname",
             e_varName,
             TYPE_STRING,
-            lambda x: x == "" or _RE_VALIDNAME.match(x),
+            lambda x: x == "" or bool(_RE_VALIDNAME.match(x)),
         )
         self.data_bind("newvalue", e_varValue, TYPE_STRING)
         self.data_bind("expect_all", ck_expectAll)
@@ -151,8 +152,10 @@ class form_LuaScriptCondition(form_Condition):
         self._updateform()
 
     def add_var(self):
+        assert isinstance(self._item, LuaScriptCondition)
         name = self.data_get("varname")
         value = self.data_get("newvalue")
+        assert isinstance(name, str)
         if _RE_VALIDNAME.match(name):
             if not value:
                 messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_EMPTYVARVALUE)
@@ -171,8 +174,10 @@ class form_LuaScriptCondition(form_Condition):
         else:
             messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDVARNAME)
 
-    def del_var(self):
+    def del_var(self) -> None:
+        assert isinstance(self._item, LuaScriptCondition)
         entry = self.data_get("luavar_selection")
+        assert isinstance(entry, list)
         name = entry[0]
         value = entry[1]
         self._results = list(entry for entry in self._results if entry[0] != name)
@@ -187,15 +192,19 @@ class form_LuaScriptCondition(form_Condition):
         self.data_set("varname", name)
         self.data_set("newvalue", value)
 
-    def recall_var(self):
+    def recall_var(self) -> None:
         entry = self.data_get("luavar_selection")
+        assert isinstance(entry, list)
         name = entry[0]
         value = entry[1]
         self.data_set("varname", name)
         self.data_set("newvalue", value)
 
-    def _updatedata(self):
-        self._item.script = self.data_get("script").strip() or ""
+    def _updatedata(self) -> None:
+        assert isinstance(self._item, LuaScriptCondition)
+        script = self.data_get("script")
+        assert isinstance(script, str)
+        self._item.script = script.strip() or ""
         self._item.expect_all = self.data_get("expect_all") or None
         self._item.check_after = self.data_get("check_after") or None
         self._item.recur_after_failed_check = (
@@ -207,7 +216,8 @@ class form_LuaScriptCondition(form_Condition):
         self._item.expected_results = e or None
         return super()._updatedata()
 
-    def _updateform(self):
+    def _updateform(self) -> None:
+        assert isinstance(self._item, LuaScriptCondition)
         self.data_set("script", self._item.script)
         self.data_set("expect_all", self._item.expect_all or False)
         self.data_set("check_after", self._item.check_after or 0)

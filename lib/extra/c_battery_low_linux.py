@@ -76,7 +76,7 @@ class LowBatteryCondition(DBusCondition):
     item_hrtype = ITEM_HR_NAME
     available = _available()
 
-    def __init__(self, t: items.Table = None) -> None:
+    def __init__(self, t: items.Table | None = None):
         # first initialize the base class (mandatory)
         DBusCondition.__init__(self, t)
 

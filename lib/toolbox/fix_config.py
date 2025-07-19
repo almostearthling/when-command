@@ -18,7 +18,7 @@ from ..configurator.reader import whenever_config_from_doc
 from ..configurator.writer import write_whenever_config
 from ..repocfg import AppConfig
 
-from tomlkit import items, document, parse, item, aot
+from tomlkit import items, document, parse, item, aot, TOMLDocument
 
 # specific imports for handled types of item
 from ..extra.c_sysload_win32 import SystemLoadCondition
@@ -59,13 +59,14 @@ def table_signature(item: str, t: items.Table) -> str:
 def item_change_subtype(t: items.Table, new_subtype: str) -> items.Table:
     t1 = t.copy()
     tags = t1.get("tags")
-    tags["subtype"] = new_subtype
-    t1["tags"] = tags
+    if tags is not None:
+        tags["subtype"] = new_subtype
+        t1["tags"] = tags
     return t1
 
 
 # generic command-to-wmi converter for conditions
-def cond_wmi_from_command(t: items.Table, target: Condition) -> items.Table:
+def cond_wmi_from_command(t: items.Table, target: type[Condition]) -> items.Table:
     t1 = t.copy()
     command_params = [
         "startup_path",
@@ -90,13 +91,16 @@ def cond_wmi_from_command(t: items.Table, target: Condition) -> items.Table:
             t1.remove(k)
     t1.remove("type")
     t1.append("type", "wmi")
+    # since the items to convert will always be non-native ones, that have
+    # the `updateitem` method, the check should actually be unnecessary
     cond = target(t1)
-    cond.updateitem()
+    if 'updateitem' in cond.__dict__:
+        cond.updateitem()   # type: ignore
     return cond.as_table()
 
 
 # generic command-to-dbus converter for conditions
-def cond_dbus_from_command(t: items.Table, target: Condition) -> items.Table:
+def cond_dbus_from_command(t: items.Table, target: type[Condition]) -> items.Table:
     t1 = t.copy()
     command_params = [
         "startup_path",
@@ -121,8 +125,11 @@ def cond_dbus_from_command(t: items.Table, target: Condition) -> items.Table:
             t1.remove(k)
     t1.remove("type")
     t1.append("type", "dbus")
+    # since the items to convert will always be non-native ones, that have
+    # the `updateitem` method, the check should actually be unnecessary
     cond = target(t1)
-    cond.updateitem()
+    if 'updateitem' in cond.__dict__:
+        cond.updateitem()   # type: ignore
     return cond.as_table()
 
 
@@ -181,12 +188,12 @@ CONVERSIONS = {
 CONVERSIONS_DBUS = {
     "cond:dbus:battery_charging": (
         lambda t: cond_dbus_from_command(
-            item_change_subtype(t, "battery_charging"), ChargingBatteryCondition_L
+            item_change_subtype(t, "battery_charging"), ChargingBatteryCondition_L  # type: ignore
         )
     ),
     "cond:dbus:battery_low": (
         lambda t: cond_dbus_from_command(
-            item_change_subtype(t, "battery_low"), LowBatteryCondition_L
+            item_change_subtype(t, "battery_low"), LowBatteryCondition_L    # type: ignore
         )
     ),
     "cond:dbus:removable_drive": (lambda t: item_change_subtype(t, "removable_drive")),
@@ -196,26 +203,26 @@ CONVERSIONS_DBUS = {
 }
 
 CONVERSIONS_WMI = {
-    "cond:wmi:sysload": (lambda t: cond_wmi_from_command(t, SystemLoadCondition)),
+    "cond:wmi:sysload": (lambda t: cond_wmi_from_command(t, SystemLoadCondition)),  # type: ignore
     "cond:wmi:battery_charging": (
-        lambda t: cond_wmi_from_command(t, ChargingBatteryCondition_W)
+        lambda t: cond_wmi_from_command(t, ChargingBatteryCondition_W)  # type: ignore
     ),
-    "cond:wmi:battery_low": (lambda t: cond_wmi_from_command(t, LowBatteryCondition_W)),
+    "cond:wmi:battery_low": (lambda t: cond_wmi_from_command(t, LowBatteryCondition_W)),    # type: ignore
     "cond:wmi:session_locked": (
         lambda t: cond_wmi_from_command(
-            item_change_subtype(t, "session_locked"), SessionLockedCondition
+            item_change_subtype(t, "session_locked"), SessionLockedCondition    # type: ignore
         )
     ),
     "cond:wmi:removable_drive": (
         lambda t: cond_wmi_from_command(
-            item_change_subtype(t, "removable_drive"), RemovableDrivePresent
+            item_change_subtype(t, "removable_drive"), RemovableDrivePresent    # type: ignore
         )
     ),
     # ...
 }
 
 
-def update_conversions():
+def update_conversions() -> None:
     if whenever_has_dbus():
         for k in CONVERSIONS_DBUS:
             CONVERSIONS[k] = CONVERSIONS_DBUS[k]
@@ -225,7 +232,7 @@ def update_conversions():
 
 
 # the main fix function
-def fix_config(filename: str, console=None) -> items.Table:
+def fix_config(filename: str, console=None) -> TOMLDocument:
     with open(filename) as f:
         toml = f.read()
     doc = parse(toml)
@@ -253,7 +260,7 @@ def fix_config(filename: str, console=None) -> items.Table:
     for elem in ["condition", "event", "task"]:
         if elem in doc:
             lot = aot()
-            for t in doc[elem]:
+            for t in doc[elem]:     # type: ignore
                 sig = table_signature(elem, t)
                 if sig in legacy_sigs:
                     new_sig = LEGACY_ITEMS[sig]
@@ -273,7 +280,7 @@ def fix_config(filename: str, console=None) -> items.Table:
 
 
 # fix config file at once, save a backup copy
-def fix_config_file(filename, verbose=True, backup=True):
+def fix_config_file(filename, verbose=True, backup=True) -> None:
     update_legacy_items()
     update_conversions()
     if verbose:
@@ -286,10 +293,10 @@ def fix_config_file(filename, verbose=True, backup=True):
         if backup:
             new_name = "%s~" % filename
             if verbose:
-                console.print(CLI_MSG_BACKUP_CONFIG % new_name)
+                console.print(CLI_MSG_BACKUP_CONFIG % new_name)     # type: ignore
             shutil.move(filename, new_name)
         if verbose:
-            console.print(CLI_MSG_WRITE_NEW_CONFIG % filename)
+            console.print(CLI_MSG_WRITE_NEW_CONFIG % filename)      # type: ignore
         write_whenever_config(filename, tasks, conditions, events, globals)
     except Exception as e:
         write_warning(CLI_ERR_CANNOT_FIX_CONFIG % filename)

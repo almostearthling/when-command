@@ -40,7 +40,7 @@ _LOGFMT = "{time} ({application}) {level} {emitter} {action}{itemstr}: [{when}/{
 # for now a very basic logger: improvements will be rotation and persistence
 class Logger(object):
 
-    def __init__(self, filename, level, app=None) -> None:
+    def __init__(self, filename, level, app=None):
         self._logfile = open(filename, "w")
         self._level = level
         self._level_num = _LOGLEVELS.index(self._level)

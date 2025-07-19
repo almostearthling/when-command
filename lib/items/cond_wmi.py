@@ -23,7 +23,7 @@ class WMICondition(Condition):
     # availability at class level
     available = False
 
-    def __init__(self, t: items.Table = None) -> None:
+    def __init__(self, t: items.Table | None = None):
         Condition.__init__(self, t)
         self.type = "wmi"
         self.hrtype = ITEM_COND_WMI

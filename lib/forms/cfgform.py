@@ -41,6 +41,8 @@ class form_Config(ApplicationForm):
         style.configure("Items.Treeview", rowheight=30)
 
         size = AppConfig.get("SIZE_MAIN_FORM")
+        assert isinstance(size, tuple)
+
         if self._app:
             bbox = (
                 BBOX_NEW,
@@ -121,7 +123,7 @@ class form_Config(ApplicationForm):
         # globals pane
         # configuration file section
         l_cfgFile = ttk.Label(area_globals, text=UI_FORM_FILELOCATION_SC)
-        e_cfgFile = ttk.Entry(area_globals, state=["disabled"])
+        e_cfgFile = ttk.Entry(area_globals, state="disabled")
         # sep1 = ttk.Separator(area)
 
         # global flags and parameters
@@ -209,7 +211,7 @@ class form_Config(ApplicationForm):
         self._updateform()
 
     # update the associated data according to what is in the form
-    def _updatedata(self):
+    def _updatedata(self) -> None:
         self._itemlistentries = []
         # encode the invisible list field with the same signature that is used in
         # the _item_ module, so that the corresponding form and item factories can
@@ -244,7 +246,7 @@ class form_Config(ApplicationForm):
         )
 
     # update the form fields according to the associated actual data
-    def _updateform(self):
+    def _updateform(self) -> None:
         self._tv_items.delete(*self._tv_items.get_children())
         for entry in self._itemlistentries:
             t = entry[2].split(":", 1)[0]
@@ -293,7 +295,7 @@ class form_Config(ApplicationForm):
         self._changed = False
 
     # load the configuration from a TOML file, only display non-private items
-    def _load_config(self, fn):
+    def _load_config(self, fn) -> None:
         self._resetdata()
         default_globals = self._globals.copy()
         tasks, conditions, events, self._globals = read_whenever_config(fn)
@@ -333,7 +335,7 @@ class form_Config(ApplicationForm):
         self._changed = False
 
     # save the configuration to a TOML file: add private items when required
-    def _save_config(self, fn):
+    def _save_config(self, fn) -> None:
         # 0. set configuration globals as retrieved from the form
         AppConfig.delete("RESET_CONDS_ON_RESUME")
         AppConfig.set(
@@ -379,11 +381,11 @@ class form_Config(ApplicationForm):
         )
 
     # to be called when one of the global parameters has been changed
-    def _set_changed(self, changed=True):
+    def _set_changed(self, changed=True) -> None:
         self._changed = changed
 
     # check currently loaded items for signature coherence
-    def _check_items(self):
+    def _check_items(self) -> bool:
         signatures = ALL_AVAILABLE_ITEMS_D.keys()
         for k in self._tasks:
             if self._tasks[k].signature not in signatures:
@@ -397,8 +399,9 @@ class form_Config(ApplicationForm):
         return True
 
     # command button reactions
-    def delete(self):
-        item_name, _, item_signature = self.data_get("item_selection")
+    def delete(self) -> None:
+        # TODO: do not ignore type error
+        item_name, _, item_signature = self.data_get("item_selection")  # type: ignore
         item_type = item_signature.split(":", 1)[0]
         if messagebox.askyesno(UI_POPUP_T_CONFIRM, UI_POPUP_DELETEITEM_Q):
             if item_type == "task":
@@ -411,7 +414,7 @@ class form_Config(ApplicationForm):
             self._updateform()
             self._changed = True
 
-    def save(self):
+    def save(self) -> None:
         self._updatedata()
         fn = self.data_get("config_file")
         if fn and self._changed:
@@ -425,13 +428,16 @@ class form_Config(ApplicationForm):
 
     # edit a specific item: to be complete, this is also bound
     # to the double click event for an element of the list
-    def edit(self):
-        item_name, _, item_signature = self.data_get("item_selection")
+    def edit(self) -> None:
+        # TODO: do not ignore type error
+        item_name, _, item_signature = self.data_get("item_selection")  # type: ignore
         item_type = item_signature.split(":", 1)[0]
 
         # task items
         if item_type == "task":
-            _, fform, fitem = ALL_AVAILABLE_ITEMS_D.get(item_signature)
+            available_item = ALL_AVAILABLE_ITEMS_D.get(item_signature)
+            assert available_item is not None
+            _, fform, fitem = available_item
             if fform and fitem.available:
                 e = fform(self._tasks[item_name])
                 if e is not None:
@@ -458,7 +464,9 @@ class form_Config(ApplicationForm):
 
         # condition items
         elif item_type == "cond":
-            _, fform, fitem = ALL_AVAILABLE_ITEMS_D.get(item_signature)
+            available_item = ALL_AVAILABLE_ITEMS_D.get(item_signature)
+            assert available_item is not None
+            _, fform, fitem = available_item
             if fform and fitem.available:
                 available_tasks = list(
                     x for x in self._tasks.keys() if not is_private_item_name(x)
@@ -489,7 +497,9 @@ class form_Config(ApplicationForm):
                 if self._conditions[x].type == "event"
                 and not is_private_item_name(x)
             )
-            _, fform, fitem = ALL_AVAILABLE_ITEMS_D.get(item_signature)
+            available_item = ALL_AVAILABLE_ITEMS_D.get(item_signature)
+            assert available_item is not None
+            _, fform, fitem = available_item
             if fform and fitem.available:
                 e = fform(event_conds, self._events[item_name])
                 if e is not None:
@@ -507,7 +517,7 @@ class form_Config(ApplicationForm):
 
     # create a new item: open the item type selection dialog and, if an
     # item type is chosen, open the appropriate form with default values
-    def new(self):
+    def new(self) -> None:
         e = form_NewItem()
         if e is not None:
             r = e.run()
@@ -562,7 +572,7 @@ class form_Config(ApplicationForm):
 
     # reload the configuration by sending the appropriate message to the
     # main (hidden) application form
-    def reload(self):
+    def reload(self) -> None:
         if messagebox.askyesno(UI_POPUP_T_CONFIRM, UI_POPUP_RELOADCONFIG_Q):
             if self._app:
                 self._app.send_event("<<SchedReloadConfig>>")
@@ -570,7 +580,7 @@ class form_Config(ApplicationForm):
 
     # modify the reaction to the quit button so that if the configuration
     # has changed the user is asked whether or not he wants to discard it
-    def exit_close(self):
+    def exit_close(self) -> None:
         if self._changed:
             if messagebox.askokcancel(UI_POPUP_T_CONFIRM, UI_POPUP_DISCARDCONFIG_Q):
                 return super().exit_close()

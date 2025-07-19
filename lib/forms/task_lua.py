@@ -30,6 +30,7 @@ class form_LuaScriptTask(form_Task):
         else:
             item = LuaScriptTask()
         super().__init__(UI_TITLE_LUATASK, item)
+        assert isinstance(self._item, LuaScriptTask)
 
         # form data
         self._results = []
@@ -113,7 +114,7 @@ class form_LuaScriptTask(form_Task):
             "varname",
             e_varName,
             TYPE_STRING,
-            lambda x: x == "" or _RE_VALIDNAME.match(x),
+            lambda x: x == "" or bool(_RE_VALIDNAME.match(x)),
         )
         self.data_bind("newvalue", e_varValue, TYPE_STRING)
         self.data_bind("expect_all", ck_expectAll)
@@ -127,9 +128,12 @@ class form_LuaScriptTask(form_Task):
         # update the form
         self._updateform()
 
-    def add_var(self):
+    def add_var(self) -> None:
+        assert isinstance(self._item, LuaScriptTask)
         name = self.data_get("varname")
         value = self.data_get("newvalue")
+        assert isinstance(name, str)
+        assert isinstance(value, str)
         if _RE_VALIDNAME.match(name):
             if not value:
                 messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_EMPTYVARVALUE)
@@ -148,8 +152,10 @@ class form_LuaScriptTask(form_Task):
         else:
             messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDVARNAME)
 
-    def del_var(self):
+    def del_var(self) -> None:
+        assert isinstance(self._item, LuaScriptTask)
         entry = self.data_get("luavar_selection")
+        assert isinstance(entry, list)
         name = entry[0]
         value = entry[1]
         self._results = list(entry for entry in self._results if entry[0] != name)
@@ -164,23 +170,28 @@ class form_LuaScriptTask(form_Task):
         self.data_set("varname", name)
         self.data_set("newvalue", value)
 
-    def recall_var(self):
+    def recall_var(self) -> None:
         entry = self.data_get("luavar_selection")
+        assert isinstance(entry, list)
         name = entry[0]
         value = entry[1]
         self.data_set("varname", name)
         self.data_set("newvalue", value)
 
-    def _updatedata(self):
-        self._item.script = self.data_get("script").strip() or ""
-        self._item.expect_all = self.data_get("expect_all") or None
+    def _updatedata(self) -> None:
+        assert isinstance(self._item, LuaScriptTask)
+        script = self.data_get("script")
+        assert isinstance(script, str)
+        self._item.script = script.strip() or ""
+        self._item.expect_all = bool(self.data_get("expect_all")) or None
         e = {}
         for l in self._results:
             e[l[0]] = guess_typed_value(str(l[1]))
         self._item.expected_results = e or None
         return super()._updatedata()
 
-    def _updateform(self):
+    def _updateform(self) -> None:
+        assert isinstance(self._item, LuaScriptTask)
         self.data_set("script", self._item.script)
         self.data_set("expect_all", self._item.expect_all or False)
         self.data_set("varname")

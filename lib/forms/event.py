@@ -23,6 +23,7 @@ class form_Event(ApplicationForm):
 
     def __init__(self, title, conditions_available, item=None):
         size = AppConfig.get("SIZE_EDITOR_FORM")
+        assert isinstance(size, tuple)
         bbox = (BBOX_OK, BBOX_CANCEL)
         super().__init__(title, size, None, bbox)
 
@@ -84,7 +85,7 @@ class form_Event(ApplicationForm):
             self.reset_item()
         self.changed = False
 
-    def add_check_caption(self, dataname, caption):
+    def add_check_caption(self, dataname, caption) -> None:
         assert self.data_exists(dataname)
         self._captions[dataname] = clean_caption(caption)
 
@@ -98,7 +99,7 @@ class form_Event(ApplicationForm):
         else:
             return res
 
-    def _popup_invalid_data(self, captions):
+    def _popup_invalid_data(self, captions) -> None:
         captions.sort()
         capts = "- " + "\n- ".join(captions)
         msg = UI_POPUP_INVALIDPARAMETERS_T % capts
@@ -106,11 +107,12 @@ class form_Event(ApplicationForm):
 
     # contents is the root for slave widgets
     @property
-    def contents(self):
+    def contents(self) -> ttk.Frame:
         return self._sub_contents
 
-    def _updateform(self):
+    def _updateform(self) -> None:
         if self._item:
+            assert isinstance(self._item, Event)
             self.data_set("@name", self._item.name)
             self.data_set("@condition", self._item.condition or "")
         else:
@@ -118,14 +120,15 @@ class form_Event(ApplicationForm):
             self.data_set("@condition", "")
 
     # the data update utility loads data into the item
-    def _updatedata(self):
+    def _updatedata(self) -> None:
+        assert isinstance(self._item, Event)
         name = self.data_get("@name")
         if name is not None:
             self._item.name = name
             self._item.condition = self.data_get("@condition")
 
     # set and remove the associated item
-    def set_item(self, item):
+    def set_item(self, item) -> None:
         assert isinstance(item, Event)
         try:
             self._item = item.__class__(
@@ -134,17 +137,17 @@ class form_Event(ApplicationForm):
         except ValueError:
             self._item = item  # item was newly created: use it
 
-    def reset_item(self):
+    def reset_item(self) -> None:
         self._item = None
 
     # command button reactions: cancel deletes the current item so that None
     # is returned upon dialog close, while ok finalizes item initialization
     # and lets the run() function return a configured item
-    def exit_cancel(self):
+    def exit_cancel(self) -> None:
         self._item = None
         return super().exit_cancel()
 
-    def exit_ok(self):
+    def exit_ok(self) -> None:
         errs = self._invalid_data_captions()
         if errs is None:
             self._updatedata()
@@ -153,7 +156,7 @@ class form_Event(ApplicationForm):
             self._popup_invalid_data(errs)
 
     # main loop: returns the current item if any
-    def run(self):
+    def run(self) -> Event | None:
         super().run()
         return self._item
 

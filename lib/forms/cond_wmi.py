@@ -46,6 +46,7 @@ class form_WMICondition(form_Condition):
         else:
             item = WMICondition()
         super().__init__(UI_TITLE_LUACOND, tasks_available, item)
+        assert isinstance(self._item, WMICondition)
 
         # form data
         self._results = []
@@ -166,7 +167,7 @@ class form_WMICondition(form_Condition):
             "index", e_resultIndex, TYPE_STRING, lambda x: x == "" or int(x) >= 0
         )
         self.data_bind(
-            "field", e_resultField, TYPE_STRING, lambda x: _RE_VALIDNAME.match(x)
+            "field", e_resultField, TYPE_STRING, lambda x: bool(_RE_VALIDNAME.match(x))
         )
         self.data_bind(
             "operator", e_resultOperator, TYPE_STRING, lambda x: x in _ALLOWED_OPERATORS
@@ -186,19 +187,24 @@ class form_WMICondition(form_Condition):
         # update the form
         self._updateform()
 
-    def add_check(self):
+    def add_check(self) -> None:
+        assert isinstance(self._item, WMICondition)
         if self.data_get("index") == "":
             index = None
         else:
             try:
-                index = int(self.data_get("index"))
+                index = int(self.data_get("index")) # type: ignore
                 if index < 0:
                     raise ValueError
             except ValueError:
                 index = -1
         field = self.data_get("field")
-        operator = _XLATE_OPERATORS.get(self.data_get("operator"), None)
-        value = guess_typed_value(self.data_get("value"))
+        op = self.data_get("operator")
+        v = self.data_get("value")
+        assert isinstance(field, str)
+        assert isinstance(op, str)
+        operator = _XLATE_OPERATORS.get(op, None)
+        value = guess_typed_value(str(self.data_get("value")))
         if index is not None and index < 0:
             messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDINDEX)
             return
@@ -233,8 +239,10 @@ class form_WMICondition(form_Condition):
         self._updatedata()
         self._updateform()
 
-    def del_check(self):
+    def del_check(self) -> None:
+        assert isinstance(self._item, WMICondition)
         entry = self.data_get("result_selection")
+        assert isinstance(entry, list)
         index = entry[0]
         field = entry[1]
         operator = entry[2]
@@ -264,8 +272,9 @@ class form_WMICondition(form_Condition):
         self._updatedata()
         self._updateform()
 
-    def recall_check(self):
+    def recall_check(self) -> None:
         entry = self.data_get("result_selection")
+        assert isinstance(entry, list)
         index = entry[0]
         field = entry[1]
         operator = entry[2]
@@ -275,8 +284,11 @@ class form_WMICondition(form_Condition):
         self.data_set("operator", operator)
         self.data_set("value", value)
 
-    def _updatedata(self):
-        self._item.query = self.data_get("query").strip() or ""
+    def _updatedata(self) -> None:
+        assert isinstance(self._item, WMICondition)
+        query = self.data_get("query")
+        assert isinstance(query, str)
+        self._item.query = query.strip() or ""
         self._item.result_check_all = self.data_get("check_all") or None
         self._item.check_after = self.data_get("check_after") or None
         self._item.recur_after_failed_check = (
@@ -299,7 +311,8 @@ class form_WMICondition(form_Condition):
         self._item.result_check = e or None
         return super()._updatedata()
 
-    def _updateform(self):
+    def _updateform(self) -> None:
+        assert isinstance(self._item, WMICondition)
         self.data_set("query", self._item.query)
         self.data_set("check_all", self._item.result_check_all or False)
         self.data_set("check_after", self._item.check_after or 0)

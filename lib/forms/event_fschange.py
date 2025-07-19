@@ -23,6 +23,7 @@ class form_FilesystemChangeEvent(form_Event):
         else:
             item = FilesystemChangeEvent()
         super().__init__(UI_TITLE_FSCHANGEEVENT, conditions_available, item)
+        assert isinstance(self._item, FilesystemChangeEvent)
 
         # form data
         self._watch = self._item.watch.copy() if self._item.watch else []
@@ -102,6 +103,7 @@ class form_FilesystemChangeEvent(form_Event):
         self._updateform()
 
     def _updateform(self):
+        assert isinstance(self._item, FilesystemChangeEvent)
         self.data_set("recursive", self._item.recursive or False)
         self._tv_monitored.delete(*self._tv_monitored.get_children())
         idx = 0
@@ -110,7 +112,8 @@ class form_FilesystemChangeEvent(form_Event):
             idx += 1
         return super()._updateform()
 
-    def _updatedata(self):
+    def _updatedata(self) -> None:
+        assert isinstance(self._item, FilesystemChangeEvent)
         self._item.recursive = self.data_get("recursive") or None
         e = []
         for entry in self._watch:
@@ -118,7 +121,7 @@ class form_FilesystemChangeEvent(form_Event):
         self._item.watch = e or None
         return super()._updatedata()
 
-    def recall_fsitem(self):
+    def recall_fsitem(self) -> None:
         e = self.data_get("item_selection")
         if e:
             entry = e[1]
@@ -128,7 +131,7 @@ class form_FilesystemChangeEvent(form_Event):
                 # in this case a non-existing item is selected
                 self.data_set("item_monitor")
 
-    def browse_fsitem(self):
+    def browse_fsitem(self) -> None:
         if self.data_get("select_dir"):
             entry = filedialog.askdirectory(parent=self.dialog)
         else:
@@ -136,14 +139,16 @@ class form_FilesystemChangeEvent(form_Event):
         if entry:
             self.data_set("item_monitor", entry)
 
-    def add_fsitem(self):
+    def add_fsitem(self) -> None:
         self._updatedata()
-        item = normpath(self.data_get("item_monitor"))
+        i = self.data_get("item_monitor")
+        assert isinstance(i, str)
+        item = normpath(i)
         if item and item not in self._watch:
             self._watch.append(item)
             self._updateform()
 
-    def del_fsitem(self):
+    def del_fsitem(self) -> None:
         self._updatedata()
         e = self.data_get("item_monitor")
         if e:

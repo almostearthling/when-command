@@ -53,6 +53,7 @@ class form_CommandTask(form_Task):
         else:
             item = CommandTask()
         super().__init__(UI_TITLE_COMMANDTASK, item)
+        assert isinstance(self._item, CommandTask)
 
         # form data
         self._envvars = []
@@ -216,7 +217,7 @@ class form_CommandTask(form_Task):
             "varname",
             e_varName,
             TYPE_STRING,
-            lambda x: x == "" or _RE_VALIDNAME.match(x),
+            lambda x: x == "" or bool(_RE_VALIDNAME.match(x)),
         )
         self.data_bind("newvalue", e_varValue, TYPE_STRING)
         self.data_bind("check_for", cb_checkFor, TYPE_STRING)
@@ -239,13 +240,20 @@ class form_CommandTask(form_Task):
         self._updateform()
 
     # the data update utility loads data into the item
-    def _updatedata(self):
-        self._item.command = self.data_get("command")
-        self._item.command_arguments = arg_split(self.data_get("command_arguments"))
-        self._item.startup_path = normpath(self.data_get("startup_path"))
-        v = self.data_get("include_environment")
+    def _updatedata(self) -> None:
+        assert isinstance(self._item, CommandTask)
+        command = self.data_get("command")
+        args = self.data_get("command_arguments")
+        startup_path = self.data_get("startup_path")
+        assert isinstance(command, str)
+        assert isinstance(args, str)
+        assert isinstance(startup_path, str)
+        self._item.command = command
+        self._item.command_arguments = arg_split(args)
+        self._item.startup_path = normpath(startup_path )
+        v = bool(self.data_get("include_environment"))
         self._item.include_environment = False if not v else None
-        v = self.data_get("set_environment_variables")
+        v = bool(self.data_get("set_environment_variables"))
         self._item.set_environment_variables = False if not v else None
         e = {}
         for l in self._envvars:
@@ -260,13 +268,18 @@ class form_CommandTask(form_Task):
         self._item.match_exact = None
         self._item.match_regular_expression = None
         self._item.case_sensitive = None
-        self._item.timeout_seconds = self.data_get("timeout_seconds") or None
+        v = self.data_get("timeout_seconds")
+        assert isinstance(v, (str, int))
+        self._item.timeout_seconds = int(v) or None
+        match_exact = bool(self.data_get("match_exact"))
+        case_sensitive = bool(self.data_get("case_sensitive"))
+        match_regular_expression = bool(self.data_get("match_regular_expression"))
         check_for = self.data_get("check_for")
+        assert isinstance(check_for, str)
         check_what = self.data_get("check_what")
+        assert isinstance(check_what, str)
         check_value = self.data_get("check_value")
-        match_exact = self.data_get("match_exact")
-        case_sensitive = self.data_get("case_sensitive")
-        match_regular_expression = self.data_get("match_regular_expression")
+        assert isinstance(check_value, str)
         if check_for != UI_OUTCOME_NONE:
             if check_for == UI_OUTCOME_SUCCESS:
                 if check_what == UI_EXIT_CODE:
@@ -308,7 +321,8 @@ class form_CommandTask(form_Task):
                     self._item.case_sensitive = False if not case_sensitive else None
         return super()._updatedata()
 
-    def _updateform(self):
+    def _updateform(self) -> None:
+        assert isinstance(self._item, CommandTask)
         self.data_set("varname", "")
         self.data_set("newvalue", "")
         self.data_set("command", self._item.command)
@@ -377,9 +391,12 @@ class form_CommandTask(form_Task):
             )
         return super()._updateform()
 
-    def add_var(self):
+    def add_var(self) -> None:
+        assert isinstance(self._item, CommandTask)
         name = self.data_get("varname")
         value = self.data_get("newvalue")
+        assert isinstance(name, str)
+        assert isinstance(value, str)
         if name:
             if not value:
                 messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_EMPTYVARVALUE)
@@ -396,8 +413,10 @@ class form_CommandTask(form_Task):
                 self._updatedata()
                 self._updateform()
 
-    def del_var(self):
+    def del_var(self) -> None:
+        assert isinstance(self._item, CommandTask)
         entry = self.data_get("envvar_selection")
+        assert isinstance(entry, list)
         name = entry[0]
         value = entry[1]
         self._envvars = list(entry for entry in self._envvars if entry[0] != name)
@@ -414,12 +433,13 @@ class form_CommandTask(form_Task):
 
     def recall_var(self):
         entry = self.data_get("envvar_selection")
+        assert isinstance(entry, list)
         name = entry[0]
         value = entry[1]
         self.data_set("varname", name)
         self.data_set("newvalue", value)
 
-    def browse_command(self):
+    def browse_command(self) -> None:
         filetypes = [(UI_FILETYPE_ALL, ".*")]
         if sys.platform.startswith("win"):
             exts = get_executable_extensions()
@@ -430,7 +450,7 @@ class form_CommandTask(form_Task):
         if entry:
             self.data_set("command", entry)
 
-    def browse_startup_path(self):
+    def browse_startup_path(self) -> None:
         entry = filedialog.askdirectory(parent=self.dialog)
         if entry:
             self.data_set("startup_path", entry)

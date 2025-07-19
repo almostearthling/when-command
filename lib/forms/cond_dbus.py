@@ -30,6 +30,7 @@ class form_DBusCondition(form_Condition):
         else:
             item = DBusCondition()
         super().__init__(UI_TITLE_DBUSCOND, tasks_available, item)
+        assert isinstance(self._item, DBusCondition)
 
         # build the UI: build widgets, arrange them in the box, bind data
 
@@ -167,7 +168,8 @@ class form_DBusCondition(form_Condition):
         # update the form
         self._updateform()
 
-    def _updateform(self):
+    def _updateform(self) -> None:
+        assert isinstance(self._item, DBusCondition)
         self.data_set("bus", self._item.bus)
         self.data_set("service", self._item.service)
         self.data_set("object_path", self._item.object_path)
@@ -183,16 +185,19 @@ class form_DBusCondition(form_Condition):
         )
         return super()._updateform()
 
-    def _updatedata(self):
+    def _updatedata(self) -> None:
+        assert isinstance(self._item, DBusCondition)
+        parameter_call = self.data_get("parameter_call")
+        parameter_check = self.data_get("parameter_check")
+        assert isinstance(parameter_call, str)
+        assert isinstance(parameter_check, str)
         self._item.bus = self.data_get("bus")
         self._item.service = self.data_get("service")
         self._item.object_path = self.data_get("object_path")
         self._item.interface = self.data_get("interface")
         self._item.method = self.data_get("method")
-        self._item.parameter_call = json.loads(self.data_get("parameter_call")) or None
-        self._item.parameter_check = (
-            json.loads(self.data_get("parameter_check")) or None
-        )
+        self._item.parameter_call = json.loads(parameter_call) or None
+        self._item.parameter_check = json.loads(parameter_check) or None
         self._item.parameter_check_all = self.data_get("parameter_check_all") or None
         self._item.check_after = self.data_get("check_after") or None
         self._item.recur_after_failed_check = (

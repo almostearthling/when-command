@@ -25,6 +25,7 @@ class form_WMIEvent(form_Event):
         else:
             item = WMIEvent()
         super().__init__(UI_TITLE_WMIEVENT, conditions_available, item)
+        assert isinstance(self._item, WMIEvent)
 
         # build the UI: build widgets, arrange them in the box, bind data
 
@@ -60,10 +61,12 @@ class form_WMIEvent(form_Event):
         self._updateform()
 
     def _updateform(self):
+        assert isinstance(self._item, WMIEvent)
         self.data_set("query", self._item.query)
         return super()._updateform()
 
     def _updatedata(self):
+        assert isinstance(self._item, WMIEvent)
         self._item.query = self.data_get("query")
         return super()._updatedata()
 

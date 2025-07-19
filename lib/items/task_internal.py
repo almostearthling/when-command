@@ -16,7 +16,7 @@ class InternalCommandTask(Task):
 
     available = False
 
-    def __init__(self, t: items.Table = None):
+    def __init__(self, t: items.Table | None = None):
         Task.__init__(self, t)
         self.type = "internal"
         self.hrtype = ITEM_TASK_INTERNAL

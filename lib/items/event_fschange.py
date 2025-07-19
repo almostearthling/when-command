@@ -20,7 +20,7 @@ class FilesystemChangeEvent(Event):
     # availability at class level
     available = True
 
-    def __init__(self, t: items.Table = None) -> None:
+    def __init__(self, t: items.Table | None = None):
         Event.__init__(self, t)
         self.type = "fschange"
         self.hrtype = ITEM_EVENT_FSCHANGE

@@ -24,10 +24,8 @@ class form_History(ApplicationForm):
         style.configure("History.Treeview", rowheight=24)
 
         size = AppConfig.get("SIZE_HISTORY_FORM")
-        bbox = (
-            BBOX_RELOAD,
-            BBOX_CLOSE,
-        )
+        assert isinstance(size, tuple)
+        bbox = (BBOX_RELOAD, BBOX_CLOSE)
         super().__init__(UI_TITLE_HISTORY, size, None, bbox, main)
 
         # list box icons
@@ -54,7 +52,7 @@ class form_History(ApplicationForm):
         tv_history = ttk.Treeview(
             sftv_history,
             columns=("time", "task", "trigger", "duration", "success", "message"),
-            show="headings tree",
+            show="tree headings",
             style="History.Treeview",
             height=5,
         )
@@ -100,7 +98,7 @@ class form_History(ApplicationForm):
 
         self._updateform()
 
-    def set_history(self, history):
+    def set_history(self, history) -> None:
         h = list(
             (
                 [
@@ -122,7 +120,7 @@ class form_History(ApplicationForm):
         h.reverse()
         self._history = h
 
-    def _updateform(self):
+    def _updateform(self) -> None:
         self._tv_history.delete(*self._tv_history.get_children())
         for entry, outcome in self._history:
             icon = (
@@ -133,7 +131,7 @@ class form_History(ApplicationForm):
             self._tv_history.insert("", values=entry, index=ttk.END, image=icon)
 
     # reload history data when the `reload` button is clicked
-    def reload(self):
+    def reload(self) -> None:
         self.set_history(self._wrapper.get_history())
         self._updateform()
         return super().reload()

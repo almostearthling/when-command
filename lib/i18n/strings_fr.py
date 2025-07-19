@@ -279,7 +279,7 @@ UI_POPUP_T_ASK = "Question"
 UI_POPUP_DISCARDCONFIG_Q = "Jeter la configuration actuelle?"
 UI_POPUP_OVERWRITEFILE_Q = "Voulez-vous écraser le fichier spécifié?"
 UI_POPUP_DELETEITEM_Q = "Voulez-vous supprimer l'élément sélectionné?"
-UI_POPUP_DELETETSPECS_Q = "Voulez-vous supprimer toutes les spécifications de temps?"
+UI_POPUP_DELETEALLENTRIES_Q = "Voulez-vous supprimer toutes les les entrées?"
 UI_POPUP_RELOADCONFIG_Q = "Voulez-vous recharger la configuration?"
 
 UI_POPUP_FILENOTFOUND_ERR = "Le fichier spécifié n'a pas été trouvé"

@@ -1,7 +1,7 @@
 # reader
 # read and parse a configuration file
 
-from tomlkit import parse, items
+from tomlkit import parse, items, TOMLDocument
 
 # import item definitions
 from ..items.item import ALL_AVAILABLE_ITEMS_D
@@ -21,7 +21,7 @@ def read_whenever_config(filename):
 
 
 # this can be used to read the configuration from a document in memory
-def whenever_config_from_doc(doc: items.Table):
+def whenever_config_from_doc(doc: TOMLDocument):
     res_tasks = []
     res_conditions = []
     res_events = []
@@ -31,7 +31,9 @@ def whenever_config_from_doc(doc: items.Table):
         'tags': doc.get('tags', {}),
     }
     if 'task' in doc:
-        for item_table in doc['task']:
+        elems = doc.get('task')
+        assert elems is not None
+        for item_table in elems:
             try:
                 signature = 'task:%s' % item_table['type']
                 tags = item_table.get('tags')
@@ -47,7 +49,9 @@ def whenever_config_from_doc(doc: items.Table):
             except KeyError:
                 write_warning("skipping malformed task `%s`" % item_table.get('name', '<unnamed>'))
     if 'condition' in doc:
-        for item_table in doc['condition']:
+        elems = doc.get('condition')
+        assert elems is not None
+        for item_table in elems:
             try:
                 signature = 'cond:%s' % item_table['type']
                 tags = item_table.get('tags')
@@ -63,7 +67,9 @@ def whenever_config_from_doc(doc: items.Table):
             except KeyError:
                 write_warning("skipping malformed condition `%s`" % item_table.get('name', '<unnamed>'))
     if 'event' in doc:
-        for item_table in doc['event']:
+        elems = doc.get('event')
+        assert elems is not None
+        for item_table in elems:
             try:
                 signature = 'event:%s' % item_table['type']
                 tags = item_table.get('tags')

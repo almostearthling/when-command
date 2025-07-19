@@ -60,7 +60,7 @@ class App(object):
     # an invisible root window is created, the other ones are all toplevels:
     # the icon is created **after** creating the root window, because a root
     # is needed to be active for this purpose
-    def __init__(self) -> None:
+    def __init__(self):
         # the following lines solve the wrong icon problem on Windows
         if sys.platform.startswith("win"):
             import ctypes

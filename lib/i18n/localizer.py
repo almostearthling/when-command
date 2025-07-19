@@ -457,7 +457,8 @@ def get_locale(force_locale=None):
         try:
             if force_locale is None:
                 setlocale(LC_ALL)
-                cur_locale = getlocale()[0].lower()
+                # ignore the type check, as the case is handled by `except:`
+                cur_locale = getlocale()[0].lower()     # type: ignore
             else:
                 cur_locale = force_locale.lower()
             if cur_locale in locale_map.keys():

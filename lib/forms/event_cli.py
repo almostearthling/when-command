@@ -20,6 +20,7 @@ class form_CommandEvent(form_Event):
         else:
             item = CommandEvent()
         form_Event.__init__(self, UI_TITLE_CLIEVENT, conditions_available, item)
+        assert isinstance(self._item, CommandEvent)
 
         # build the UI: build widgets, arrange them in the box, bind data
 

@@ -331,7 +331,7 @@ class ApplicationForm(object):
         self._icon = None
         if icon is not None:
             self._icon = get_appicon(icon)
-            self._dialog.iconphoto(main, self._icon)
+            self._dialog.iconphoto(main, self._icon)    # type: ignore
 
         # position the form at the center of the screen
         sw = self._dialog.winfo_screenwidth()
@@ -347,22 +347,22 @@ class ApplicationForm(object):
         self._dialog.geometry(geometry)
         self._dialog.resizable(False, False)
         self._area = ttk.Frame(self._dialog, padding=DIALOG_PADDING_MAIN)
-        self._area.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.S, tk.E))
+        self._area.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.S, tk.E))   # type: ignore
         self._contents = ttk.Frame(self._area, padding=DIALOG_PADDING_INNER)
-        self._contents.grid(row=0, sticky=(tk.N, tk.W, tk.S, tk.E))
+        self._contents.grid(row=0, sticky=(tk.N, tk.W, tk.S, tk.E)) # type: ignore
         self._contents.columnconfigure(0, weight=1)
         self._contents.rowconfigure(0, weight=1)
         sep = ttk.Separator(self._area)
-        sep.grid(row=1, sticky=(tk.N, tk.W, tk.S, tk.E))
+        sep.grid(row=1, sticky=(tk.N, tk.W, tk.S, tk.E))    # type: ignore
         sep.rowconfigure(0, weight=1)
         bbox = ttk.Frame(self._area, padding=DIALOG_PADDING_INNER)
         pos = 0
         fill_idx = 0
         self._std_buttons = {}
-        buttons = list(buttons)
-        if "*" not in buttons:
-            buttons.insert(0, "*")
-        for btn_name in buttons:
+        form_buttons = list(buttons)
+        if "*" not in form_buttons:
+            form_buttons.insert(0, "*")
+        for btn_name in form_buttons:
             btn = None
             match btn_name:
                 case "*":
@@ -403,8 +403,8 @@ class ApplicationForm(object):
                 self._std_buttons[btn_name] = btn
                 pos += 1
         fill = ttk.Frame(bbox)
-        fill.grid(row=0, column=fill_idx, sticky=(tk.W, tk.E))
-        bbox.grid(row=2, sticky=(tk.N, tk.W, tk.S, tk.E))
+        fill.grid(row=0, column=fill_idx, sticky=(tk.W, tk.E))  # type: ignore
+        bbox.grid(row=2, sticky=(tk.N, tk.W, tk.S, tk.E))       # type: ignore
         bbox.columnconfigure(fill_idx, weight=1)
         bbox.rowconfigure(0, weight=1)
         self._area.rowconfigure(0, weight=1)
@@ -423,22 +423,22 @@ class ApplicationForm(object):
     def __enter__(self):
         return self
 
-    def __exit__(self, _exc_type, _exc_value, _traceback):
+    def __exit__(self, _exc_type, _exc_value, _traceback) -> None:
         del self._dialog
 
     # contents is the root for slave widgets
     @property
-    def contents(self):
+    def contents(self) -> ttk.Frame:
         return self._contents
 
     # form to use as parent when needed
     @property
-    def dialog(self):
+    def dialog(self) -> tk.Tk | tk.Toplevel:
         return self._dialog
 
     # internals
     # force a variable value (and mimic ttk *Var retrieval method used below)
-    def _force_set_data(self, name: str, value: Any):
+    def _force_set_data(self, name: str, value: Any) -> None:
         class _Elem(object):
             def __init__(self, v):
                 self._v = v
@@ -451,7 +451,7 @@ class ApplicationForm(object):
 
     # bind a ttk.Treeview to a variable: it involves defining a new
     # function and reacting to a (virtual) event
-    def _bind_ttk_treeview(self, name: str, treeview: ttk.Treeview):
+    def _bind_ttk_treeview(self, name: str, treeview: ttk.Treeview) -> None:
         def _store_data(event):
             iid = treeview.focus()
             data = treeview.item(iid)["values"]
@@ -461,19 +461,19 @@ class ApplicationForm(object):
         treeview.bind("<<TreeviewSelect>>", _store_data)
 
     # bind an event to this form
-    def event_bind(self, event, reaction):
+    def event_bind(self, event, reaction) -> None:
         self._dialog.bind(event, reaction)
 
     # bind <Return> and <Escape> when gaining focus and unbind when n is lost
-    def _key_exit_close(self, event):
+    def _key_exit_close(self, event) -> None:
         if event.widget == self._dialog:
             self.exit_close()
 
-    def _key_exit_ok(self, event):
+    def _key_exit_ok(self, event) -> None:
         if event.widget == self._dialog:
             self.exit_ok()
 
-    def focus_in(self):
+    def focus_in(self) -> None:
         self.event_bind("<Escape>", self._key_exit_close)
         self.event_bind("<Return>", self._key_exit_ok)
 
@@ -494,7 +494,7 @@ class ApplicationForm(object):
         widget: tk.Widget | tuple[ttk.Radiobutton, ...],
         dtype: str | None = None,
         check: Callable[..., bool] | None = None,
-    ):
+    ) -> None:
         # as per documentation, the configure() method is not the preferred
         # method to configure a widget in tkinter, and direct access to the
         # widget keys (as if it were a dict) is used in the examples
@@ -579,11 +579,9 @@ class ApplicationForm(object):
             widget["variable"] = var
             self._data[name] = var
         else:
-            # TODO: remove the following debug statement
-            # print(widget.widgetName, opts)
             pass
         # if validation is allowed use the provided validator (if any)
-        if check is not None and "validatecommand" in opts:
+        if check is not None and "validatecommand" in opts and isinstance(widget, tk.Widget):
             widget["validatecommand"] = check
         # final check is always set, possibly to an always pass test
         self._checks[name] = check or (lambda _: True)
@@ -607,7 +605,7 @@ class ApplicationForm(object):
             return default
 
     # set the value of a widget: None is used to clear the widget
-    def data_set(self, dataname: str, value: Any | None = None):
+    def data_set(self, dataname: str, value: Any | None = None) -> None:
         if dataname in self._data:
             try:
                 if value is None:
@@ -631,21 +629,21 @@ class ApplicationForm(object):
             raise IndexError("entry `%s` not found" % dataname)
 
     # verify that a data item exists and that it passes the provided checks
-    def data_exists(self, dataname: str):
+    def data_exists(self, dataname: str) -> bool:
         return dataname in self._data
 
-    def data_valid(self, dataname: str):
+    def data_valid(self, dataname: str) -> bool:
         if dataname in self._data:
             try:
                 rv = self._data[dataname].get()
-                return self._checks[dataname](rv)
+                return bool(self._checks[dataname](rv))
             except (ValueError, TypeError, tk.TclError):
                 return False
         else:
             return False
 
     # set autocheck feature on or off
-    def set_autocheck(self, c: bool):
+    def set_autocheck(self, c: bool) -> None:
         self._autocheck = bool(c)
 
     # return a list of the widget-bound variables
@@ -656,65 +654,65 @@ class ApplicationForm(object):
     # exit functions are predefined and may be overridden or not: the
     # default implementation destroys the window and: if OK leave form
     # data accessible, otherwise clear form data
-    def exit_ok(self):
+    def exit_ok(self) -> None:
         self._dialog.destroy()
 
-    def exit_cancel(self):
+    def exit_cancel(self) -> None:
         self._data = {}
         self._dialog.destroy()
 
-    def exit_close(self):
+    def exit_close(self) -> None:
         self._dialog.destroy()
 
-    def exit_quit(self):
+    def exit_quit(self) -> None:
         self._dialog.destroy()
 
     # other button reactions have to be overridden because the default
     # implementation just does nothing
-    def load(self):
+    def load(self) -> None:
         pass
 
-    def save(self):
+    def save(self) -> None:
         pass
 
-    def new(self):
+    def new(self) -> None:
         pass
 
-    def add(self):
+    def add(self) -> None:
         pass
 
-    def delete(self):
+    def delete(self) -> None:
         pass
 
-    def edit(self):
+    def edit(self) -> None:
         pass
 
-    def modify(self):
+    def modify(self) -> None:
         pass
 
-    def reset(self):
+    def reset(self) -> None:
         pass
 
-    def reload(self):
+    def reload(self) -> None:
         pass
 
-    def remove(self):
+    def remove(self) -> None:
         pass
 
     # the following utilities allow to enable or disable the default buttons
-    def enable_buttons(self, *names: str):
+    def enable_buttons(self, *names: str) -> None:
         for name in map(str.lower, names):
             if name in self._std_buttons:
                 self._std_buttons[name].enable(True)
 
-    def disable_buttons(self, *names: str):
+    def disable_buttons(self, *names: str) -> None:
         for name in map(str.lower, names):
             if name in self._std_buttons:
                 self._std_buttons[name].enable(False)
 
     # main dialog loop: the initial dialog will actually have a main loop
     # while the following ones will just be spawned and then waited for
-    def run(self):
+    def run(self) -> None:
         if self._main:
             self._dialog.mainloop()
         else:
