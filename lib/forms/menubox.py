@@ -5,7 +5,7 @@
 
 import tkinter as tk
 import ttkbootstrap as ttk
-from PIL import Image, ImageTk
+from PIL import ImageTk
 
 from ..i18n.strings import *
 from ..icons import APP_ICON64 as APP_BITMAP

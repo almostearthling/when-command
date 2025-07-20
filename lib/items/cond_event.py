@@ -2,8 +2,8 @@
 
 from lib.i18n.strings import *
 
-from tomlkit import table, items
-from ..utility import check_not_none, append_not_none
+from tomlkit import items
+from ..utility import check_not_none
 
 from .cond import Condition
 

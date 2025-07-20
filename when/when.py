@@ -5,9 +5,8 @@ import sys
 import os
 import os.path
 import argparse
-import shutil
+import gc
 
-import tkinter as tk
 import ttkbootstrap as ttk
 from PIL import ImageTk
 
@@ -33,7 +32,6 @@ from lib.utility import (
     get_tkroot,
     get_rich_console,
     exit_error,
-    write_error,
     write_warning,
     init_logger,
     get_logger,
@@ -164,6 +162,7 @@ class App(object):
             form = self.form_History(self._wrapper)
             form.run()
             del form
+            gc.collect()
 
     def sched_pause(self, _) -> None:
         if not self._paused and self._window and self._wrapper:
@@ -221,16 +220,19 @@ class App(object):
             form = self.form_Config(self)
             form.run()
             del form
+            gc.collect()
 
     def open_menubox(self, _) -> None:
         if self._window and self._wrapper:
             form = self.form_MenuBox(self)
             form.run()
             del form
+            gc.collect()
 
     def open_aboutbox(self, _) -> None:
         if self._window:
             self.show_about_box(False)
+            gc.collect()
 
     def exit_app(self, _) -> None:
         self.destroy()

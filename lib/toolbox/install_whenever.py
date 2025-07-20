@@ -8,7 +8,6 @@
 
 import sys
 import platform
-import os.path
 import re
 import hashlib
 from zipfile import ZipFile

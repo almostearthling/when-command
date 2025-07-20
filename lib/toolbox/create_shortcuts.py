@@ -8,7 +8,6 @@
 
 import sys
 import os
-import os.path
 import base64
 
 

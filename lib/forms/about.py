@@ -10,7 +10,7 @@ from ..icons import APP_ICON64 as APP_BITMAP
 from .ui import *
 
 from ..repocfg import AppConfig
-from ..utility import get_whenever_version, get_UI_theme, get_image
+from ..utility import get_whenever_version, get_image
 
 
 # the last paragraphs are to fiull the background in gray

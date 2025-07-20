@@ -4,12 +4,11 @@ from lib.i18n.strings import *
 
 import json
 
-from tomlkit import table, items
+from tomlkit import items
 from ..utility import (
     check_not_none,
     append_not_none,
     toml_list_of_tables,
-    toml_script_string,
 )
 
 from .event import Event

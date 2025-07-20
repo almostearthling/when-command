@@ -1,6 +1,5 @@
 # base condition form
 
-import re
 import tkinter as tk
 import ttkbootstrap as ttk
 from tkinter import messagebox

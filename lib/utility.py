@@ -9,7 +9,6 @@ import re
 
 from PIL.ImageFile import ImageFile
 from tomlkit import (
-    table,
     inline_table,
     array,
     string,
@@ -23,7 +22,6 @@ from PIL import Image, ImageTk
 from time import time
 
 import tkinter as tk
-import ttkbootstrap as ttk
 
 from rich.console import Console
 

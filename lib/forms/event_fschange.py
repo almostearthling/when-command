@@ -1,12 +1,12 @@
 # filesystem monitor event form
 
-from os.path import normpath, exists
+from os.path import normpath
 
 from ..i18n.strings import *
 
 import tkinter as tk
 import ttkbootstrap as ttk
-from tkinter import messagebox, filedialog
+from tkinter import filedialog
 
 from .ui import *
 

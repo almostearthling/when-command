@@ -1,7 +1,7 @@
 # reader
 # read and parse a configuration file
 
-from tomlkit import parse, items, TOMLDocument
+from tomlkit import parse, TOMLDocument
 
 # import item definitions
 from ..items.item import ALL_AVAILABLE_ITEMS_D

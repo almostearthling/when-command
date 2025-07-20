@@ -2,13 +2,12 @@
 
 from lib.i18n.strings import *
 
-from tomlkit import table, items
+from tomlkit import items
 from ..utility import (
     check_not_none,
     append_not_none,
     toml_list_of_command_args,
     toml_literal,
-    toml_list_of_tables,
 )
 
 from .cond import Condition
