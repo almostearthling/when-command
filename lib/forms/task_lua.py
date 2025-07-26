@@ -1,6 +1,7 @@
 # Lua task form
 
 import re
+import os
 import tkinter as tk
 import ttkbootstrap as ttk
 from tkinter import messagebox
@@ -11,7 +12,7 @@ from chlorophyll import CodeView
 from ..i18n.strings import *
 from .ui import *
 
-from ..utility import guess_typed_value, get_editor_theme
+from ..utility import guess_typed_value, get_editor_theme, get_luadir
 
 from .task import form_Task
 from ..items.task_lua import LuaScriptTask
@@ -34,6 +35,23 @@ class form_LuaScriptTask(form_Task):
 
         # form data
         self._results = []
+
+        # update the LUA_PATH for user scripts: this version is very basic and
+        # only supports manually added packages, by allowing to `require` a
+        # single Lua file or a package in a subdirectory; future versions may
+        # optionally support luarocks (to be manually installed) and add more
+        # folders such as {LUA_PATH}/lib
+        luabase = get_luadir()
+        ps = os.path.sep
+        lua_path = ";".join([
+            "?",
+            "?.lua",
+            f"{luabase}{ps}?",
+            f"{luabase}{ps}?.lua",
+            f"{luabase}{ps}?{ps}?",
+            f"{luabase}{ps}?{ps}?.lua",
+        ])
+        self._item.variables_to_set = { "LUA_PATH": lua_path }
 
         # build the UI: build widgets, arrange them in the box, bind data
 

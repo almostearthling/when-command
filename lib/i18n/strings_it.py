@@ -376,7 +376,7 @@ CLI_ARG_HELP_CREATE_SHORTCUTS = f"Crea icone per l'utilità di configurazione `{
 
 CLI_ERR_WHENEVER_NOT_FOUND = f"Eseguibile per [bold]`{CLI_WHENEVER}`[/] non trovato o non valido"
 CLI_ERR_DATADIR_UNACCESSIBLE = "La directory dei dati non è stata trovata né creata"
-CLI_ERR_SCRIPTSDIR_UNACCESSIBLE = "La directory degli script non è stata né trovata né creata"
+CLI_ERR_SPECIFICDIR_UNACCESSIBLE = "La directory [bold]`%s`[/] non è stata né trovata né creata"
 CLI_ERR_CONFIG_UNACCESSIBLE = f"Il file di configurazione [bold]`{CLI_WHENEVER}`[/] non è stato trovato né creato"
 CLI_ERR_ALREADY_RUNNING = f"Un'altra istanza di [bold]`{CLI_WHENEVER}`[/] è in esecuzione: non può essere avviato"
 CLI_ERR_UNKNOWN_COMMAND = "Comando sconosciuto: [bold]%s[/]"

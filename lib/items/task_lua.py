@@ -26,6 +26,11 @@ class LuaScriptTask(Task):
             assert t.get("type") == self.type
             self.script = t.get("script")
             self.expect_all = t.get("expect_all", False)
+            variables_to_set = t.get("variables_to_set")
+            if variables_to_set:
+                self.variables_to_set = dict(variables_to_set)
+            else:
+                self.variables_to_set = None
             expected_results = t.get("expected_results")
             if expected_results:
                 self.expected_results = dict(expected_results)
@@ -44,6 +49,7 @@ class LuaScriptTask(Task):
         t = Task.as_table(self)
         t.append("script", toml_script_string(self.script))
         t = append_not_none(t, "expect_all", self.expect_all)
+        t = append_not_none(t, "variables_to_set", self.variables_to_set)
         t = append_not_none(t, "expected_results", self.expected_results)
         return t
 

@@ -376,7 +376,7 @@ CLI_ARG_HELP_CREATE_SHORTCUTS = f"Symbole für das Dienstprogramm für Konfigura
 
 CLI_ERR_WHENEVER_NOT_FOUND = f"Ausführbare Datei für [bold]`{CLI_WHENEVER}`[/] nicht gefunden oder ungültig"
 CLI_ERR_DATADIR_UNACCESSIBLE = "Das Datenverzeichnis konnte weder gefunden noch erstellt werden"
-CLI_ERR_SCRIPTSDIR_UNACCESSIBLE = "Das Skriptverzeichnis konnte weder gefunden noch erstellt werden"
+CLI_ERR_SPECIFICDIR_UNACCESSIBLE = "Das [bold]`%s`[/] Verzeichnis konnte weder gefunden noch erstellt werden"
 CLI_ERR_CONFIG_UNACCESSIBLE = f"Die Konfigurationsdatei [bold]`{CLI_WHENEVER}`[/] konnte weder gefunden noch erstellt werden"
 CLI_ERR_ALREADY_RUNNING = f"Eine weitere Instanz von [bold]`{CLI_WHENEVER}`[/] ist ausgeführt: Kann nicht starten"
 CLI_ERR_UNKNOWN_COMMAND = "Unbekannter Befehl: [bold]%s[/]"

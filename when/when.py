@@ -22,6 +22,7 @@ from lib.utility import (
     retrieve_whenever_options,
     get_default_configdir,
     get_default_whenever,
+    get_luadir,
     get_scriptsdir,
     get_appdata,
     get_logfile,
@@ -257,6 +258,10 @@ def prepare_environment() -> None:
         exit_error(e)
     try:
         _ = get_scriptsdir()
+    except Exception as e:
+        exit_error(e)
+    try:
+        _ = get_luadir()
     except Exception as e:
         exit_error(e)
 

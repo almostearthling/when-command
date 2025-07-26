@@ -192,7 +192,7 @@ def get_appdata() -> str:
     if not os.path.isdir(appdata):
         try:
             os.makedirs(appdata)
-        except Exception as e:
+        except Exception:
             raise OSError(CLI_ERR_DATADIR_UNACCESSIBLE)
     return appdata
 
@@ -208,9 +208,25 @@ def get_scriptsdir() -> str:
     if not os.path.isdir(scriptdir):
         try:
             os.makedirs(scriptdir)
-        except Exception as e:
-            raise OSError(CLI_ERR_SCRIPTSDIR_UNACCESSIBLE)
+        except Exception:
+            raise OSError(CLI_ERR_SPECIFICDIR_UNACCESSIBLE % scriptdir)
     return scriptdir
+
+
+# determine lua library directory and ensure that it exists
+def get_luadir() -> str:
+    configdir: str = AppConfig.get("APPDATA") # type: ignore
+    if sys.platform.startswith("win"):
+        subdir = "Lua"
+    else:
+        subdir = "lua"
+    luadir = os.path.join(configdir, subdir)
+    if not os.path.isdir(luadir):
+        try:
+            os.makedirs(luadir)
+        except Exception:
+            raise OSError(CLI_ERR_SPECIFICDIR_UNACCESSIBLE % luadir)
+    return luadir
 
 
 # save a script to the scripts directory and make it executable: possible

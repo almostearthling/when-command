@@ -384,7 +384,7 @@ CLI_ARG_HELP_CREATE_SHORTCUTS = f"Create icons for the `{UI_APP}` configuration 
 
 CLI_ERR_WHENEVER_NOT_FOUND = f"Executable for [bold]`{CLI_WHENEVER}`[/] not found or invalid"
 CLI_ERR_DATADIR_UNACCESSIBLE = "The data directory could neither be found nor created"
-CLI_ERR_SCRIPTSDIR_UNACCESSIBLE = "The scripts directory could neither be found nor created"
+CLI_ERR_SPECIFICDIR_UNACCESSIBLE = "The [bold]`%s`[/] directory could neither be found nor created"
 CLI_ERR_CONFIG_UNACCESSIBLE = f"The [bold]`{CLI_WHENEVER}`[/] configuration file could neither be found nor created"
 CLI_ERR_ALREADY_RUNNING = f"Another instance of [bold]`{CLI_WHENEVER}`[/] is running: cannot start"
 CLI_ERR_UNKNOWN_COMMAND = "Unknown command: [bold]%s[/]"
