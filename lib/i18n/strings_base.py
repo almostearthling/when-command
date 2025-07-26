@@ -383,6 +383,7 @@ CLI_ARG_HELP_INSTALL_WHENEVER = f"Install the latest release of `{CLI_WHENEVER}`
 CLI_ARG_HELP_CREATE_SHORTCUTS = f"Create icons for the `{UI_APP}` configuration utility and resident application"
 
 CLI_ERR_WHENEVER_NOT_FOUND = f"Executable for [bold]`{CLI_WHENEVER}`[/] not found or invalid"
+CLI_ERR_WHENEVER_WRONG_VERSION = f"Version of [bold]`{CLI_WHENEVER}`[/] not supported"
 CLI_ERR_DATADIR_UNACCESSIBLE = "The data directory could neither be found nor created"
 CLI_ERR_SPECIFICDIR_UNACCESSIBLE = "The [bold]`%s`[/] directory could neither be found nor created"
 CLI_ERR_CONFIG_UNACCESSIBLE = f"The [bold]`{CLI_WHENEVER}`[/] configuration file could neither be found nor created"

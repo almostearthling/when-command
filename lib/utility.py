@@ -26,10 +26,15 @@ import tkinter as tk
 from rich.console import Console
 
 import darkdetect
+from semver import Version
 
 from .i18n.strings import *
 from .repocfg import AppConfig
 from .runner.logger import Logger
+
+
+# lowest whenever version supported
+_MIN_WHENEVER_SUPPORTED = Version.parse("0.4.5")
 
 
 # a regular expression to check whether an user-given name is valid
@@ -57,6 +62,9 @@ _err_console = Console(force_terminal=True, stderr=True)
 
 # the common logger
 _logger = None
+
+# the current whenever version
+_current_whenever_version = None
 
 
 # return the current Tk root: create one if not already present
@@ -267,27 +275,38 @@ def save_script(fname, text) -> None:
 
 # return the output of `whenever --version`
 def get_whenever_version() -> None | str:
+    global _current_whenever_version
     whenever_path: str = AppConfig.get("WHENEVER")  # type: ignore
-    try:
-        result = subprocess.run(
-            [whenever_path, "--version"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            universal_newlines=True,
-            text=True,
-            creationflags=(
-                subprocess.CREATE_NO_WINDOW if sys.platform.startswith("win") else 0
-            ),
-        )
-    except Exception:
-        return None
-    if result:
-        return result.stdout.strip()
+    if _current_whenever_version is None:
+        try:
+            result = subprocess.run(
+                [whenever_path, "--version"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                universal_newlines=True,
+                text=True,
+                creationflags=(
+                    subprocess.CREATE_NO_WINDOW if sys.platform.startswith("win") else 0
+                ),
+            )
+        except Exception:
+            _current_whenever_version = None
+        if result:
+            _current_whenever_version = result.stdout.strip()
+        else:
+            _current_whenever_version = None
+    return _current_whenever_version
+
+
+def check_whenever_version() -> bool:
+    ver = get_whenever_version()
+    if ver is None:
+        return False
     else:
-        return None
+        return _MIN_WHENEVER_SUPPORTED <= Version.parse(ver.split()[1])
 
 
-# return the output of `whenever --version`
+# return the output of `whenever --options`
 def retrieve_whenever_options() -> None:
     whenever_path: str = AppConfig.get("WHENEVER")  # type: ignore
     try:

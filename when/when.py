@@ -22,6 +22,8 @@ from lib.utility import (
     retrieve_whenever_options,
     get_default_configdir,
     get_default_whenever,
+    get_whenever_version,
+    check_whenever_version,
     get_luadir,
     get_scriptsdir,
     get_appdata,
@@ -322,10 +324,10 @@ def main_start(args) -> None:
     AppConfig.set("WHENEVER", args.whenever)
     retrieve_whenever_options()
     prepare_environment()
-    if is_whenever_running():
-        exit_error(CLI_ERR_ALREADY_RUNNING)
     # prepare application so that the logger can be initialized
     setup_windows()
+    if is_whenever_running():
+        exit_error(CLI_ERR_ALREADY_RUNNING)
     # get configuration options
     log_level = AppConfig.get("LOGLEVEL")
     log_file = get_logfile()
@@ -338,6 +340,15 @@ def main_start(args) -> None:
         action="initializing",
         status=log.STATUS_MSG,
     ).log("starting resident %s, version %s" % (UI_APP, UI_APP_VERSION))
+    if not check_whenever_version():
+        v = get_whenever_version()
+        log.use(
+            level=log.LEVEL_INFO,
+            when=log.WHEN_START,
+            action="initializing",
+            status=log.STATUS_MSG,
+        ).log(f"found `whenever` version {v}: please upgrade")
+        exit_error(CLI_ERR_WHENEVER_WRONG_VERSION)
     if DEBUG:
         # setup the scheduler and associate it to the application
         whenever: str = AppConfig.get("WHENEVER")   # type: ignore

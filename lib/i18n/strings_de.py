@@ -375,6 +375,7 @@ CLI_ARG_HELP_INSTALL_WHENEVER = f"Die neueste Version von `{CLI_WHENEVER}` insta
 CLI_ARG_HELP_CREATE_SHORTCUTS = f"Symbole für das Dienstprogramm für Konfiguration von `{UI_APP}` und die ansässigen App erstellen"
 
 CLI_ERR_WHENEVER_NOT_FOUND = f"Ausführbare Datei für [bold]`{CLI_WHENEVER}`[/] nicht gefunden oder ungültig"
+CLI_ERR_WHENEVER_WRONG_VERSION = f"Die Version von [bold]`{CLI_WHENEVER}`[/] ist nicht unterstützt"
 CLI_ERR_DATADIR_UNACCESSIBLE = "Das Datenverzeichnis konnte weder gefunden noch erstellt werden"
 CLI_ERR_SPECIFICDIR_UNACCESSIBLE = "Das [bold]`%s`[/] Verzeichnis konnte weder gefunden noch erstellt werden"
 CLI_ERR_CONFIG_UNACCESSIBLE = f"Die Konfigurationsdatei [bold]`{CLI_WHENEVER}`[/] konnte weder gefunden noch erstellt werden"
