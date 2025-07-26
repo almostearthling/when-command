@@ -28,6 +28,7 @@ class LuaScriptCondition(Condition):
             self.recur_after_failed_check = t.get("recur_after_failed_check")
             self.script = t.get("script")
             self.expect_all = t.get("expect_all")
+            self.init_script_path = t.get("init_script_path")
             variables_to_set = t.get("variables_to_set")
             if variables_to_set:
                 self.variables_to_set = dict(variables_to_set)
@@ -44,6 +45,8 @@ class LuaScriptCondition(Condition):
             self.recur_after_failed_check = None
             self.expect_all = None
             self.expected_results = None
+            self.variables_to_set = None
+            self.init_script_path = None
 
     def as_table(self):
         if not check_not_none(
@@ -59,6 +62,7 @@ class LuaScriptCondition(Condition):
         t = append_not_none(t, "expect_all", self.expect_all)
         t = append_not_none(t, "variables_to_set", self.variables_to_set)
         t = append_not_none(t, "expected_results", self.expected_results)
+        t = append_not_none(t, "init_script_path", self.init_script_path)
         return t
 
 

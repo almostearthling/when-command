@@ -12,7 +12,13 @@ from chlorophyll import CodeView
 from ..i18n.strings import *
 from .ui import *
 
-from ..utility import guess_typed_value, get_editor_theme, get_luadir
+from ..utility import (
+    guess_typed_value,
+    get_editor_theme,
+    get_luadir,
+    get_luabinlibext,
+    get_lua_initscript,
+)
 
 from .task import form_Task
 from ..items.task_lua import LuaScriptTask
@@ -42,6 +48,7 @@ class form_LuaScriptTask(form_Task):
         # optionally support luarocks (to be manually installed) and add more
         # folders such as {LUA_PATH}/lib
         luabase = get_luadir()
+        binext = get_luabinlibext()
         ps = os.path.sep
         lua_path = ";".join([
             "?",
@@ -50,8 +57,17 @@ class form_LuaScriptTask(form_Task):
             f"{luabase}{ps}?.lua",
             f"{luabase}{ps}?{ps}?",
             f"{luabase}{ps}?{ps}?.lua",
-        ])
-        self._item.variables_to_set = { "LUA_PATH": lua_path }
+        ]) + ";;"
+        lua_cpath = ";".join([
+            f"?.{binext}",
+            f"{luabase}{ps}?.{binext}",
+            f"{luabase}{ps}?{ps}?.{binext}",
+        ]) + ";;"
+        self._item.variables_to_set = {
+            "LUA_PATH": lua_path,
+            "LUA_CPATH": lua_cpath,
+        }
+        self._item.init_script_path = get_lua_initscript()
 
         # build the UI: build widgets, arrange them in the box, bind data
 

@@ -40,6 +40,14 @@ _RE_VALID_ITEM_NAME = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*$")
 _PRIVATE_ITEM_PREFIX = "__When__private__"
 
 
+# Lua initialization script
+_LUA_INIT_SCRIPT = """\
+-- lua initialization script
+package.path = LUA_PATH
+package.cpath = LUA_CPATH
+"""
+_LUA_INIT_NAME = "init.lua"
+
 # the common Tk root
 _tkroot = tk.Tk()
 
@@ -227,6 +235,23 @@ def get_luadir() -> str:
         except Exception:
             raise OSError(CLI_ERR_SPECIFICDIR_UNACCESSIBLE % luadir)
     return luadir
+
+
+# determine binary lib extension depending on operating system
+def get_luabinlibext() -> str:
+    if sys.platform.startswith("win"):
+        return "dll"
+    else:
+        return "so"
+
+
+# get the Lua initialization script file name, create it if not present
+def get_lua_initscript() -> str:
+    init = os.path.join(get_scriptsdir(), _LUA_INIT_NAME)
+    if not os.path.exists(init):
+        with open(init, 'w') as f:
+            f.write(_LUA_INIT_SCRIPT)
+    return init
 
 
 # save a script to the scripts directory and make it executable: possible
