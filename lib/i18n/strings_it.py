@@ -409,7 +409,7 @@ CLI_STATUS_INSTALLING_WHENEVER = f"Installazione dell'ultima versione di [bold]`
 CLI_STATUS_CREATING_ICONS = "Installazione delle icone richieste per il programma..."
 
 CLI_MSG_DOWNLOADING_ASSET = "Download di [bold]`%s`[/]..."
-CLI_MSG_EXTRACTING_BINARIES = "Estrazione dei fil binari nella cartella [bold]`%s`[/]..."
+CLI_MSG_EXTRACTING_BINARIES = "Estrazione dei file binari nella cartella [bold]`%s`[/]..."
 CLI_MSG_VERIFYING_CHECKSUM = "Verifica del checksum dell'archivio scaricato..."
 
 CLI_MSG_CREATING_ICON = "Creazione dell'icona del programma..."
