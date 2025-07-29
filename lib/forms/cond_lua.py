@@ -38,11 +38,12 @@ class form_LuaScriptCondition(form_Condition):
         super().__init__(UI_TITLE_LUACOND, tasks_available, item)
         assert isinstance(self._item, LuaScriptCondition)
 
-        # update the LUA_PATH for user scripts: this version is very basic and
-        # only supports manually added packages, by allowing to `require` a
-        # single Lua file or a package in a subdirectory; future versions may
-        # optionally support luarocks (to be manually installed) and add more
-        # folders such as {LUA_PATH}/lib
+        # update the LUA_PATH for user scripts: try to support luarocks
+        # installation path, by adding `{base}/lua` and `{base}/lib` to the
+        # module search path (luarocks must be installed separately); note
+        # that it seems that LUA_PATH as a global variable to search modules
+        # seems to have been replaced by the `package.path` and `package.cpath`
+        # table elements, therefore the need to use the initialization script
         luabase = get_luadir()
         binext = get_luabinlibext()
         ps = os.path.sep
@@ -53,11 +54,14 @@ class form_LuaScriptCondition(form_Condition):
             f"{luabase}{ps}?.lua",
             f"{luabase}{ps}?{ps}?",
             f"{luabase}{ps}?{ps}?.lua",
+            f"{luabase}{ps}lua{ps}?{ps}?",
+            f"{luabase}{ps}lua{ps}?{ps}?.lua",
         ]) + ";;"
         lua_cpath = ";".join([
             f"?.{binext}",
             f"{luabase}{ps}?.{binext}",
             f"{luabase}{ps}?{ps}?.{binext}",
+            f"{luabase}{ps}lib{ps}?{ps}?.{binext}",
         ]) + ";;"
         self._item.variables_to_set = {
             "LUA_PATH": lua_path,
