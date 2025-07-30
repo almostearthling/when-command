@@ -58,14 +58,11 @@ class form_LuaScriptTask(form_Task):
             f"{luabase}{ps}?.lua",
             f"{luabase}{ps}?{ps}?",
             f"{luabase}{ps}?{ps}?.lua",
-            f"{luabase}{ps}lua{ps}?{ps}?",
-            f"{luabase}{ps}lua{ps}?{ps}?.lua",
         ]) + ";;"
         lua_cpath = ";".join([
             f"?.{binext}",
             f"{luabase}{ps}?.{binext}",
             f"{luabase}{ps}?{ps}?.{binext}",
-            f"{luabase}{ps}lib{ps}?{ps}?.{binext}",
         ]) + ";;"
         self._item.variables_to_set = {
             "LUA_PATH": lua_path,

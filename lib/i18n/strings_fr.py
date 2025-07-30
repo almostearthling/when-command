@@ -372,6 +372,7 @@ CLI_ARG_HELP_CMD_TOOLBOX = f"Exécuter un des différents utilitaires disponible
 CLI_ARG_HELP_CMD_VERSION = f"Montrer la version et sortir `{UI_APP}`"
 
 CLI_ARG_HELP_INSTALL_WHENEVER = f"Installer la dernière version de `{CLI_WHENEVER}`"
+CLI_ARG_HELP_INSTALL_LUA = f"Installer une bibliothèque Lua pour les scripts utilisés par `{CLI_WHENEVER}`"
 CLI_ARG_HELP_CREATE_SHORTCUTS = f"Créer des icônes pour l'utilitaire de configuration `{UI_APP}` et l'application résidente"
 
 CLI_ERR_WHENEVER_NOT_FOUND = f"Exécutable pour [bold]`{CLI_WHENEVER}`[/] non trouvé ou invalide"

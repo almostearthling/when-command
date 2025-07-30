@@ -54,18 +54,19 @@ package.cpath = LUA_CPATH
 _LUA_INIT_NAME = "init.lua"
 
 
-# luarocks initialization script: the unusual brackets and their replacement
-# are there in order to allow for a further application of str.format(...)
-_LUAROCKS_INIT_SCRIPT_TEMPL = """\
--- luarocks initialization script
-rocks_trees = [
-    root = "{base}",
-    bin_dir = "{base}{sep}bin",
-    lib_dir = "{base}{sep}lib",
-    lua_dir = "{base}{sep}lua",
-]
-""".format(sep=os.path.sep, base="{base}").replace("[", "{{").replace("]", "}}")
-_LUAROCKS_INIT_NAME = "rocks.lua"
+# WARNING: this is hard to support, at least on Windows: phase out for now
+# # luarocks initialization script: the unusual brackets and their replacement
+# # are there in order to allow for a further application of str.format(...)
+# _LUAROCKS_INIT_SCRIPT_TEMPL = """\
+# -- luarocks initialization script
+# rocks_trees = [
+#     root = "{base}",
+#     bin_dir = "{base}{sep}bin",
+#     lib_dir = "{base}{sep}lib",
+#     lua_dir = "{base}{sep}lua",
+# ]
+# """.format(sep=os.path.sep, base="{base}").replace("[", "{{").replace("]", "}}")
+# _LUAROCKS_INIT_NAME = "rocks.lua"
 
 
 # the common Tk root
@@ -277,18 +278,19 @@ def get_lua_initscript() -> str:
     return init
 
 
-# get the luarocks initialization script file name, and ensure that it exists
-def get_luarocks_initscript() -> str:
-    init = os.path.join(get_scriptsdir(), _LUAROCKS_INIT_NAME)
-    if not os.path.exists(init):
-        base = get_luadir()
-        with open(init, 'w') as f:
-            f.write(
-                _LUAROCKS_INIT_SCRIPT_TEMPL
-                    .format(base=base)
-                    .replace("\\", "\\\\")
-                )
-    return init
+# WARNING: this is hard to support, at least on Windows: phase out for now
+# # get the luarocks initialization script file name, and ensure that it exists
+# def get_luarocks_initscript() -> str:
+#     init = os.path.join(get_scriptsdir(), _LUAROCKS_INIT_NAME)
+#     if not os.path.exists(init):
+#         base = get_luadir()
+#         with open(init, 'w') as f:
+#             f.write(
+#                 _LUAROCKS_INIT_SCRIPT_TEMPL
+#                     .format(base=base)
+#                     .replace("\\", "\\\\")
+#                 )
+#     return init
 
 
 # save a script to the scripts directory and make it executable: possible

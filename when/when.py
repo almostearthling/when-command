@@ -438,6 +438,8 @@ def main_toolbox(args) -> None:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--create-icons")
         if args.fix_config and verbose:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--fix-config")
+        if args.install_lua is not None and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--install-lua")
         from lib.toolbox.install_whenever import install
 
         install(verbose=verbose)
@@ -451,6 +453,8 @@ def main_toolbox(args) -> None:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--install-whenever")
         if args.fix_config and verbose:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--fix-config")
+        if args.install_lua is not None and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--install-lua")
         from lib.toolbox.create_shortcuts import create_shortcuts
 
         my_path = os.path.normpath(os.path.realpath(__file__))
@@ -460,18 +464,38 @@ def main_toolbox(args) -> None:
 
     # fix configuration
     elif args.fix_config:
+        if args.install_whenever and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--install-whenever")
         if args.desktop and verbose:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--desktop")
         if args.autostart and verbose:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--autostart")
         if args.create_icons and verbose:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--create-icons")
-        if args.install_whenever and verbose:
-            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--install-whenever")
+        if args.install_lua is not None and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--install-lua")
         retrieve_whenever_options()
         from lib.toolbox.fix_config import fix_config_file
 
         fix_config_file(get_configfile(), verbose=verbose)
+        if verbose:
+            console.print(CLI_MSG_OPERATION_FINISHED, highlight=False)
+
+    # install a Lua library
+    elif args.install_lua is not None:
+        if args.desktop and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--desktop")
+        if args.autostart and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--autostart")
+        if args.create_icons and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--create-icons")
+        if args.fix_config and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--fix-config")
+        if args.install_whenever and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--install-whenever")
+        from lib.toolbox.install_lua import install_lua
+
+        install_lua(args.install_lua)
         if verbose:
             console.print(CLI_MSG_OPERATION_FINISHED, highlight=False)
 
@@ -553,6 +577,11 @@ def main() -> None:
         "--install-whenever",
         help=CLI_ARG_HELP_INSTALL_WHENEVER,
         action="store_true",
+    )
+    parser_toolbox.add_argument(
+        "--install-lua",
+        help=CLI_ARG_HELP_INSTALL_LUA,
+        type=str,
     )
     parser_toolbox.add_argument(
         "--create-icons",
