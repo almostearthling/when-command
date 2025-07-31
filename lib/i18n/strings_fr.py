@@ -428,6 +428,7 @@ CLI_MSG_CREATING_SHORTCUT = "Création du raccourci du programme ou du fichier s
 CLI_MSG_CONVERTING_ITEM = "Conversion de l'élément [bold]`%s`[/]:% s ->% s"
 CLI_MSG_BACKUP_CONFIG = "Sauvegarde de la configuration à [bold]`%s`[/]"
 CLI_MSG_WRITE_NEW_CONFIG = "Écriture d'une nouvelle configuration à [bold]`%s`[/]"
+CLI_MSG_INSTALL_TO_FOLDER = "Écriture de [bold]`%s`[/] dans le dossier [bold]`%s`[/]..."
 
 CLI_MSG_INSTALLATION_FINISHED = "Installation terminée."
 CLI_MSG_OPERATION_FINISHED = "Opération terminée."

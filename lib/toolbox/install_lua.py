@@ -11,7 +11,7 @@ import shutil
 from zipfile import ZipFile, BadZipFile
 
 from ..i18n.strings import *
-from ..utility import write_error, get_luabinlibext, get_luadir
+from ..utility import write_error, get_rich_console, get_luabinlibext, get_luadir
 
 
 # at the moment only these cases are handled
@@ -23,8 +23,10 @@ LUA_ZIPEXT = ".zip"
 # the actual installation utility, there is no uninstall utility for the moment
 def install_lua(fname: str, verbose: bool = True) -> bool:
     dest_base = get_luadir()
+    console = get_rich_console()
+    fname_base = os.path.basename(fname)
     if fname.endswith(LUA_EXT) or fname.endswith(LUA_BINEXT):
-        dest_file = os.path.join(dest_base, os.path.basename(fname))
+        dest_file = os.path.join(dest_base, fname_base)
         # fail if the origin is not accessible
         if not os.path.isfile(fname):
             if verbose:
@@ -36,11 +38,12 @@ def install_lua(fname: str, verbose: bool = True) -> bool:
                 write_error(CLI_ERR_FILE_EXISTS % dest_file)
             return False
         try:
+            console.print(CLI_MSG_INSTALL_TO_FOLDER % (fname_base, dest_base))
             shutil.copy(fname, dest_base)
         # fail on operation native failure
         except shutil.Error:
             if verbose:
-                dest_file = os.path.join(dest_base, os.path.basename(fname))
+                dest_file = os.path.join(dest_base, fname_base)
                 write_error(CLI_ERR_CANNOT_CREATE_FILE % dest_file)
             return False
         # in this case show the exception text, may be useful for debugging
@@ -68,6 +71,7 @@ def install_lua(fname: str, verbose: bool = True) -> bool:
                 write_error(CLI_ERR_DIR_EXISTS % dest_dir)
             return False
         try:
+            console.print(CLI_MSG_INSTALL_TO_FOLDER % (fname_base, dest_dir))
             os.mkdir(dest_dir)
             zip.extractall(dest_dir)
         # fail on operation native failure

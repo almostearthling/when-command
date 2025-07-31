@@ -428,6 +428,7 @@ CLI_MSG_CREATING_SHORTCUT = "Creazione di collegamenti di programma o file deskt
 CLI_MSG_CONVERTING_ITEM = "Conversione dell'elemento [bold]`%s`[/]: %s -> %s"
 CLI_MSG_BACKUP_CONFIG = "Configurazione di backup su [bold]`%s`[/]"
 CLI_MSG_WRITE_NEW_CONFIG = "Scrittura di una nuova configurazione in [bold]`%s`[/]"
+CLI_MSG_INSTALL_TO_FOLDER = "Installazione di [bold]`%s`[/] nella directory [bold]`%s`[/]..."
 
 CLI_MSG_INSTALLATION_FINISHED = "Installazione conclusa."
 CLI_MSG_OPERATION_FINISHED = "Operazione conclusa."

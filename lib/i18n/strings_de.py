@@ -428,6 +428,7 @@ CLI_MSG_CREATING_SHORTCUT = "Erstellung der Programmsymbole auch im Desktopverze
 CLI_MSG_CONVERTING_ITEM = "Konvertierung von Element [bold]`%s`[/]: %s -> %s"
 CLI_MSG_BACKUP_CONFIG = "Sicherung der Konfiguration zu [bold]`%s`[/]"
 CLI_MSG_WRITE_NEW_CONFIG = "Neue Konfiguration als [bold]`%s`[/] schreiben"
+CLI_MSG_INSTALL_TO_FOLDER = "Installieren von [bold]`%s`[/] in Verzeichnis [bold]`%s`[/]..."
 
 CLI_MSG_INSTALLATION_FINISHED = "Installation abgeschlossen."
 CLI_MSG_OPERATION_FINISHED = "Betrieb abgeschlossen."

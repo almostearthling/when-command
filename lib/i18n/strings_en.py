@@ -436,6 +436,7 @@ CLI_MSG_CREATING_SHORTCUT = "Creating program shortcut or desktop file..."
 CLI_MSG_CONVERTING_ITEM = "Converting item [bold]`%s`[/]: %s -> %s"
 CLI_MSG_BACKUP_CONFIG = "Backing up configuration to [bold]`%s`[/]"
 CLI_MSG_WRITE_NEW_CONFIG = "Writing new configuration to [bold]`%s`[/]"
+CLI_MSG_INSTALL_TO_FOLDER = "Installing [bold]`%s`[/] to folder [bold]`%s`[/]..."
 
 CLI_MSG_INSTALLATION_FINISHED = "Installation finished."
 CLI_MSG_OPERATION_FINISHED = "Operation finished."
