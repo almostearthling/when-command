@@ -15,7 +15,7 @@ The current version of **When** supports a [_tool_](cli.md#toolbox) to install a
 
 At the moment no real _package management_ is available, mainly because the most popular _Lua_ package managers rely on development tools which are not always expected to be available on the host platform.
 
-> **Note**: the _Lua_ library installation tool is in its very early development stage, and for the moment does not support either removal or upgrade for installed modules. To remove a module, it has to be manually deleted from the _Lua_ subdirectory in _APPDATA_; this is also needed for upgrades, because the `--install-lua` command will refuse, at least for now, to overwrite something that already exists.
+> **Note**: the _Lua_ library installation tool is in its very early development stage, and for the moment does not support either removal or upgrade for installed modules. To remove a module, it has to be manually deleted from the _Lua_ subdirectory in _APPDATA_; this is also needed for upgrades, because the `--install-lua` command will refuse, at least for now, to overwrite something that already exists. The output of the command, however, will show what has to be manually removed in order to perform an upgrade.
 
 
 ## See Also
