@@ -8,7 +8,8 @@
 -- whiich yelds in most scripting languages and in TOML, with the notable
 -- exception of the UNIX shell.
 --
--- This script should be installed in $APPDATA/lua/updatevar to be loaded.
+-- This script should be installed in $APPDATA/lua to be used: the command
+-- `when tool --install-lua updatever.lua` can be used to achieve this.
 
 -- join two path elements
 function os_join(a, b)
