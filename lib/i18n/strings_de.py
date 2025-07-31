@@ -392,13 +392,21 @@ CLI_ERR_NO_SUITABLE_BINARY = "Kein geeignetes Binärarchiv gefunden"
 CLI_ERR_INVALID_CHECKSUM = "Prüfsumme nicht übereingestimmt: Datei [bold]`%s`[/] nicht gültig oder beschädigt"
 CLI_ERR_BINPATH_NOT_FOUND = "Programmzielverzeichnis nicht gefunden"
 CLI_ERR_DIR_NOT_FOUND = "Konnte kein Verzeichnis finden: [bold]`%s`[/]"
+CLI_ERR_FILE_NOT_FOUND = "Konnte keine Datei finden: [bold]`%s`[/]"
 CLI_ERR_CANNOT_CREATE_FILE = "Konnte keine Datei erstellen: [bold]`%s`[/]"
+CLI_ERR_CANNOT_CREATE_DIR = "Konnte kein Verzeichnis erstellen: [bold]`%s`[/]"
+CLI_ERR_CANNOT_EXTRACT_ARCHIVE = "Das Archiv konnte nicht ins Zielverzeichnis extrahiert werden: [bold]`%s`[/]"
 CLI_ERR_UNSUPPORTED_ON_PLATFORM = "Der Betrieb wird auf dieser Plattform nicht unterstützt"
+CLI_ERR_UNSUPPORTED_FILETYPE = "Dieser Dateityp wird nicht unterstützt"
+CLI_ERR_UNSUPPORTED = "Betrieb nicht unterstützt"
+
+CLI_ERR_ERROR_GENERIC = "Ein Fehler ist aufgetreten."
 
 CLI_ERR_CANNOT_CREATE_ICON = "Konnte kein Programmsymbol erstellen"
 CLI_ERR_CANNOT_CREATE_SHORTCUT = "Konnte keine Verknüpfungs- oder Desktopverzeichnis erstellen"
 CLI_ERR_CANNOT_INSTALL_ON_RUNNING = f"Eine Instanz von [bold]`{CLI_WHENEVER}`[/] noch anwesend: halten Sie sie vor der Installation herunter"
 
+CLI_ERR_DIR_EXISTS = "Verzeichnis [bold]`%s`[/] existiert bereits"
 CLI_ERR_FILE_EXISTS = "Datei [bold]`%s`[/] existiert bereits"
 CLI_ERR_FILE_EXISTS_SKIP = "Datei [bold]`%s`[/] existiert bereits: Erstellung übersprungen"
 
@@ -423,6 +431,7 @@ CLI_MSG_WRITE_NEW_CONFIG = "Neue Konfiguration als [bold]`%s`[/] schreiben"
 
 CLI_MSG_INSTALLATION_FINISHED = "Installation abgeschlossen."
 CLI_MSG_OPERATION_FINISHED = "Betrieb abgeschlossen."
+CLI_MSG_OPERATION_FAILED = "Betrieb erfolglos abgeschlossen."
 
 CLI_APPICON_NAME_CONFIG = f"{UI_APP} Konfiguration"
 CLI_APPICON_DESC_CONFIG = f"Standalone Konfigurationsapp für {UI_APP}"

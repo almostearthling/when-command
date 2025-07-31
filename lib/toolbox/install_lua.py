@@ -1,53 +1,96 @@
 # install_lua.py
 #
-# install a Lua library (as a script or a binary) in APPDATA/Lua
+# install a Lua library (as a script or a binary) in APPDATA/Lua: for now a
+# very simple version is provided, that only installs a Lua file, a shared
+# library, or extracts a ZIP file in the above mentioned folder; in the future
+# more useful cases could be handled, in case a suitable package manager can
+# be found
 
-import sys
 import os
 import shutil
-import platform
-from zipfile import ZipFile
+from zipfile import ZipFile, BadZipFile
 
 from ..i18n.strings import *
-from ..utility import write_error, get_rich_console, get_luabinlibext, get_luadir
+from ..utility import write_error, get_luabinlibext, get_luadir
 
+
+# at the moment only these cases are handled
 LUA_EXT = ".lua"
 LUA_BINEXT = get_luabinlibext()
 LUA_ZIPEXT = ".zip"
 
 
-def install_lua(fname: str) -> bool:
+# the actual installation utility, there is no uninstall utility for the moment
+def install_lua(fname: str, verbose: bool = True) -> bool:
     dest_base = get_luadir()
-    if fname.endswith(LUA_EXT):
+    if fname.endswith(LUA_EXT) or fname.endswith(LUA_BINEXT):
+        dest_file = os.path.join(dest_base, os.path.basename(fname))
+        # fail if the origin is not accessible
         if not os.path.isfile(fname):
+            if verbose:
+                write_error(CLI_ERR_FILE_NOT_FOUND % fname)
+            return False
+        # fail if the destination is already present
+        if os.path.exists(dest_file):
+            if verbose:
+                write_error(CLI_ERR_FILE_EXISTS % dest_file)
             return False
         try:
             shutil.copy(fname, dest_base)
+        # fail on operation native failure
+        except shutil.Error:
+            if verbose:
+                dest_file = os.path.join(dest_base, os.path.basename(fname))
+                write_error(CLI_ERR_CANNOT_CREATE_FILE % dest_file)
+            return False
+        # in this case show the exception text, may be useful for debugging
         except Exception as e:
+            if verbose:
+                write_error(CLI_ERR_UNEXPECTED_EXCEPTION % e)
             return False
         return True
-    elif fname.endswith(LUA_BINEXT):
-        if not os.path.isfile(fname):
-            return False
-        try:
-            shutil.copy(fname, dest_base)
-        except Exception as e:
-            return False
-        return True
+    # the tests differ a little, because the destination here is a directory
+    # that has the same base name as the ZIP archive: in this case too, the
+    # installation tool will fail when the library exists, that is, a directory
+    # with the expected name is alreadi there
     elif fname.endswith(LUA_ZIPEXT):
         if not os.path.isfile(fname):
+            if verbose:
+                write_error(CLI_ERR_FILE_NOT_FOUND % fname)
             return False
         zip = ZipFile(fname)
+        dest_dir = os.path.join(
+            dest_base, os.path.basename(fname[: -len(LUA_ZIPEXT)])
+        )
+        # fail if the destination is already present
+        if os.path.exists(dest_dir):
+            if verbose:
+                write_error(CLI_ERR_DIR_EXISTS % dest_dir)
+            return False
         try:
-            dest_dir = os.path.join(
-                dest_base, os.path.basename(fname[: -len(LUA_ZIPEXT)])
-            )
             os.mkdir(dest_dir)
             zip.extractall(dest_dir)
+        # fail on operation native failure
+        except OSError:
+            if verbose:
+                write_error(CLI_ERR_CANNOT_CREATE_DIR % dest_dir)
+            return False
+        # fail on ZIP extraction failure
+        except (ValueError, RuntimeError, BadZipFile):
+            if verbose:
+                write_error(CLI_ERR_CANNOT_EXTRACT_ARCHIVE % fname)
+            return False
+        # in this case show the exception text, may be useful for debugging
         except Exception as e:
+            if verbose:
+                write_error(CLI_ERR_UNEXPECTED_EXCEPTION % e)
             return False
         return True
-    return False
+    # only support: .lua, .so/.dll, .zip; anything else is rejected
+    else:
+        if verbose:
+            write_error(CLI_ERR_UNSUPPORTED_FILETYPE)
+        return False
 
 
 __all__ = [

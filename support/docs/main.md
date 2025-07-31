@@ -1,4 +1,4 @@
-# The **When** documentation
+# The **When** Documentation
 
 ## What is When?
 

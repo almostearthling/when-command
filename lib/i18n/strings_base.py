@@ -400,13 +400,21 @@ CLI_ERR_NO_SUITABLE_BINARY = "No suitable binary archive found"
 CLI_ERR_INVALID_CHECKSUM = "Checksum not matching: file [bold]`%s`[/] invalid or corrupt"
 CLI_ERR_BINPATH_NOT_FOUND = "Binaries destination folder not found"
 CLI_ERR_DIR_NOT_FOUND = "Could not find directory: [bold]`%s`[/]"
+CLI_ERR_FILE_NOT_FOUND = "Could not find file: [bold]`%s`[/]"
 CLI_ERR_CANNOT_CREATE_FILE = "Could not create file: [bold]`%s`[/]"
+CLI_ERR_CANNOT_CREATE_DIR = "Could not create directory: [bold]`%s`[/]"
+CLI_ERR_CANNOT_EXTRACT_ARCHIVE = "Could not extract archive to destination: [bold]`%s`[/]"
 CLI_ERR_UNSUPPORTED_ON_PLATFORM = "The operation is not supported on this platform"
+CLI_ERR_UNSUPPORTED_FILETYPE = "This type of file is not supported"
+CLI_ERR_UNSUPPORTED = "Operation not supported"
+
+CLI_ERR_ERROR_GENERIC = "An error occurred."
 
 CLI_ERR_CANNOT_CREATE_ICON = "Could not create program icon"
 CLI_ERR_CANNOT_CREATE_SHORTCUT = "Could not create shortcut or desktop file"
 CLI_ERR_CANNOT_INSTALL_ON_RUNNING = f"An instance of [bold]`{CLI_WHENEVER}`[/] is running: shut it down before installation"
 
+CLI_ERR_DIR_EXISTS = "Directory [bold]`%s`[/] already exists"
 CLI_ERR_FILE_EXISTS = "File [bold]`%s`[/] already exists"
 CLI_ERR_FILE_EXISTS_SKIP = "File [bold]`%s`[/] already exists: creation skipped"
 
@@ -431,6 +439,7 @@ CLI_MSG_WRITE_NEW_CONFIG = "Writing new configuration to [bold]`%s`[/]"
 
 CLI_MSG_INSTALLATION_FINISHED = "Installation finished."
 CLI_MSG_OPERATION_FINISHED = "Operation finished."
+CLI_MSG_OPERATION_FAILED = "Operation failed."
 
 CLI_APPICON_NAME_CONFIG = f"Configure {UI_APP}"
 CLI_APPICON_DESC_CONFIG = f"Standalone configuration utility for {UI_APP}"

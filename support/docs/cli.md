@@ -36,6 +36,7 @@ The `tool` command provides various utilities that can help in the setup of **Wh
   * `--autostart`: (option) creates a shortcut that launches the resident version of **When** when the user logs in
   * `--desktop`: (option) also creates icons on the desktop[^1]
 * `--fix-config`: fix legacy configuration files converting [old item definitions](configfile.md#legacy-configuration-files) to new ones
+* `--install-lua`: install a _Lua_ script or library in the _Lua_ specific subtree within the [_APPDATA_](appdata.md) directory
 * ...
 * `--quiet`: (option) applies to all the operations described above, and inhibits printing messages to the console.
 

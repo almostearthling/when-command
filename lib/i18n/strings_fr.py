@@ -392,13 +392,21 @@ CLI_ERR_NO_SUITABLE_BINARY = "Aucune archive binaire appropriée trouvée"
 CLI_ERR_INVALID_CHECKSUM = "La somme de contrôle ne correspond pas: fichier [bold]`%s`[/] non valide ou corrompu"
 CLI_ERR_BINPATH_NOT_FOUND = "Dossier de destination des fichiers binaires introuvable"
 CLI_ERR_DIR_NOT_FOUND = "Impossible de trouver le répertoire: [bold]`%s`[/]"
+CLI_ERR_FILE_NOT_FOUND = "Impossible de trouver le fichier: [bold]`%s`[/]"
 CLI_ERR_CANNOT_CREATE_FILE = "Impossible de créer un fichier: [bold]`%s`[/]"
+CLI_ERR_CANNOT_CREATE_DIR = "Impossible de créer un répertoire: [bold]`%s`[/]"
+CLI_ERR_CANNOT_EXTRACT_ARCHIVE = "Impossible d'extraire l'archive vers sa destination: [bold]`%s`[/]"
 CLI_ERR_UNSUPPORTED_ON_PLATFORM = "L'opération n'est pas supportée sur ce système"
+CLI_ERR_UNSUPPORTED_FILETYPE = "Ce type de fichier n'est pas supporté"
+CLI_ERR_UNSUPPORTED = "L'opération n'est pas supportée"
+
+CLI_ERR_ERROR_GENERIC = "Un erreur s'est verifié."
 
 CLI_ERR_CANNOT_CREATE_ICON = "Impossible de créer l'icône du programme"
 CLI_ERR_CANNOT_CREATE_SHORTCUT = "Impossible de créer un raccourci ou un fichier de bureau"
 CLI_ERR_CANNOT_INSTALL_ON_RUNNING = f"Une instance de [bold]`{CLI_WHENEVER}`[/] est en cours d'exécution: Arrêtez-la avant l'installation"
 
+CLI_ERR_DIR_EXISTS = "Le dossier [bold]`%s`[/] existe déjà"
 CLI_ERR_FILE_EXISTS = "Le fichier [bold]`%s`[/] existe déjà"
 CLI_ERR_FILE_EXISTS_SKIP = "Le fichier [bold]`%s`[/] existe déjà: la création est ignorée"
 
@@ -423,6 +431,7 @@ CLI_MSG_WRITE_NEW_CONFIG = "Écriture d'une nouvelle configuration à [bold]`%s`
 
 CLI_MSG_INSTALLATION_FINISHED = "Installation terminée."
 CLI_MSG_OPERATION_FINISHED = "Opération terminée."
+CLI_MSG_OPERATION_FAILED = "Opération terminée sans succès."
 
 CLI_APPICON_NAME_CONFIG = f"Configurer {UI_APP}"
 CLI_APPICON_DESC_CONFIG = f"Utilitaire de configuration autonome pour {UI_APP}"
