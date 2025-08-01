@@ -65,9 +65,8 @@ def install_lua(fname: str, verbose: bool = True) -> bool:
             if verbose:
                 write_error(CLI_ERR_FILE_NOT_FOUND % fname)
             return False
-        dest_dir = os.path.join(
-            dest_base, os.path.basename(fname[: -len(LUA_ZIPEXT)])
-        )
+        dest_dir_base = os.path.basename(fname[: -len(LUA_ZIPEXT)])
+        dest_dir = os.path.join(dest_base, dest_dir_base)
         # fail if the destination is already present
         if os.path.exists(dest_dir):
             if verbose:
@@ -80,7 +79,7 @@ def install_lua(fname: str, verbose: bool = True) -> bool:
                 # handle the special case of a zipped directory: this will
                 # probably be the most common case for ZIP files
                 singledir = True
-                zipdir = fname_base + '/'
+                zipdir = dest_dir_base + '/'
                 for x in nl:
                     if not x.startswith(zipdir):
                         singledir = False
