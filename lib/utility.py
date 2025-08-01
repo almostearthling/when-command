@@ -26,10 +26,15 @@ import tkinter as tk
 from rich.console import Console
 
 import darkdetect
+from semver import Version
 
 from .i18n.strings import *
 from .repocfg import AppConfig
 from .runner.logger import Logger
+
+
+# lowest whenever version supported
+_MIN_WHENEVER_SUPPORTED = Version.parse("0.4.5")
 
 
 # a regular expression to check whether an user-given name is valid
@@ -38,6 +43,29 @@ _RE_VALID_ITEM_NAME = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*$")
 
 # private item name prefix
 _PRIVATE_ITEM_PREFIX = "__When__private__"
+
+
+# Lua initialization script
+_LUA_INIT_SCRIPT = """\
+-- lua initialization script
+package.path = LUA_PATH
+"""
+_LUA_INIT_NAME = "init.lua"
+
+
+# WARNING: this is hard to support, at least on Windows: phase out for now
+# # luarocks initialization script: the unusual brackets and their replacement
+# # are there in order to allow for a further application of str.format(...)
+# _LUAROCKS_INIT_SCRIPT_TEMPL = """\
+# -- luarocks initialization script
+# rocks_trees = [
+#     root = "{base}",
+#     bin_dir = "{base}{sep}bin",
+#     lib_dir = "{base}{sep}lib",
+#     lua_dir = "{base}{sep}lua",
+# ]
+# """.format(sep=os.path.sep, base="{base}").replace("[", "{{").replace("]", "}}")
+# _LUAROCKS_INIT_NAME = "rocks.lua"
 
 
 # the common Tk root
@@ -49,6 +77,9 @@ _err_console = Console(force_terminal=True, stderr=True)
 
 # the common logger
 _logger = None
+
+# the current whenever version
+_current_whenever_version = None
 
 
 # return the current Tk root: create one if not already present
@@ -192,7 +223,7 @@ def get_appdata() -> str:
     if not os.path.isdir(appdata):
         try:
             os.makedirs(appdata)
-        except Exception as e:
+        except Exception:
             raise OSError(CLI_ERR_DATADIR_UNACCESSIBLE)
     return appdata
 
@@ -208,9 +239,44 @@ def get_scriptsdir() -> str:
     if not os.path.isdir(scriptdir):
         try:
             os.makedirs(scriptdir)
-        except Exception as e:
-            raise OSError(CLI_ERR_SCRIPTSDIR_UNACCESSIBLE)
+        except Exception:
+            raise OSError(CLI_ERR_SPECIFICDIR_UNACCESSIBLE % scriptdir)
     return scriptdir
+
+
+# determine lua library directory and ensure that it exists
+def get_luadir() -> str:
+    configdir: str = AppConfig.get("APPDATA") # type: ignore
+    if sys.platform.startswith("win"):
+        subdir = "Lua"
+    else:
+        subdir = "lua"
+    luadir = os.path.join(configdir, subdir)
+    if not os.path.isdir(luadir):
+        try:
+            os.makedirs(luadir)
+        except Exception:
+            raise OSError(CLI_ERR_SPECIFICDIR_UNACCESSIBLE % luadir)
+    return luadir
+
+
+# the following cannot be used, because the embedded Lua interpreter cannot
+# load Lua binary modules due to its safe setup, which disallows it
+# # determine binary lib extension depending on operating system
+# def get_luabinlibext() -> str:
+#     if sys.platform.startswith("win"):
+#         return "dll"
+#     else:
+#         return "so"
+
+
+# get the Lua initialization script file name, and ensure that it exists
+def get_lua_initscript() -> str:
+    init = os.path.join(get_scriptsdir(), _LUA_INIT_NAME)
+    if not os.path.exists(init):
+        with open(init, 'w') as f:
+            f.write(_LUA_INIT_SCRIPT)
+    return init
 
 
 # save a script to the scripts directory and make it executable: possible
@@ -226,27 +292,38 @@ def save_script(fname, text) -> None:
 
 # return the output of `whenever --version`
 def get_whenever_version() -> None | str:
+    global _current_whenever_version
     whenever_path: str = AppConfig.get("WHENEVER")  # type: ignore
-    try:
-        result = subprocess.run(
-            [whenever_path, "--version"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            universal_newlines=True,
-            text=True,
-            creationflags=(
-                subprocess.CREATE_NO_WINDOW if sys.platform.startswith("win") else 0
-            ),
-        )
-    except Exception:
-        return None
-    if result:
-        return result.stdout.strip()
+    if _current_whenever_version is None:
+        try:
+            result = subprocess.run(
+                [whenever_path, "--version"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                universal_newlines=True,
+                text=True,
+                creationflags=(
+                    subprocess.CREATE_NO_WINDOW if sys.platform.startswith("win") else 0
+                ),
+            )
+        except Exception:
+            _current_whenever_version = None
+        if result:
+            _current_whenever_version = result.stdout.strip()
+        else:
+            _current_whenever_version = None
+    return _current_whenever_version
+
+
+def check_whenever_version() -> bool:
+    ver = get_whenever_version()
+    if ver is None:
+        return False
     else:
-        return None
+        return _MIN_WHENEVER_SUPPORTED <= Version.parse(ver.split()[1])
 
 
-# return the output of `whenever --version`
+# return the output of `whenever --options`
 def retrieve_whenever_options() -> None:
     whenever_path: str = AppConfig.get("WHENEVER")  # type: ignore
     try:

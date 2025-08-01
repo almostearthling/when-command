@@ -372,11 +372,14 @@ CLI_ARG_HELP_CMD_TOOLBOX = f"Eines der verschiedenen verfügbaren Versorgungsunt
 CLI_ARG_HELP_CMD_VERSION = f"Die Version von `{UI_APP}` anzeigen und abschliessen"
 
 CLI_ARG_HELP_INSTALL_WHENEVER = f"Die neueste Version von `{CLI_WHENEVER}` installieren"
+CLI_ARG_HELP_INSTALL_LUA = f"Eine Lua-Bibliothek installieren für Skripte, die von `{CLI_WHENEVER}` verwendet werden"
+CLI_ARG_HELP_UPGRADE_LUA = f"Eine Lua-Bibliothek aktualisieren für Skripte, die von `{CLI_WHENEVER}` verwendet werden"
 CLI_ARG_HELP_CREATE_SHORTCUTS = f"Symbole für das Dienstprogramm für Konfiguration von `{UI_APP}` und die ansässigen App erstellen"
 
 CLI_ERR_WHENEVER_NOT_FOUND = f"Ausführbare Datei für [bold]`{CLI_WHENEVER}`[/] nicht gefunden oder ungültig"
+CLI_ERR_WHENEVER_WRONG_VERSION = f"Die Version von [bold]`{CLI_WHENEVER}`[/] ist nicht unterstützt"
 CLI_ERR_DATADIR_UNACCESSIBLE = "Das Datenverzeichnis konnte weder gefunden noch erstellt werden"
-CLI_ERR_SCRIPTSDIR_UNACCESSIBLE = "Das Skriptverzeichnis konnte weder gefunden noch erstellt werden"
+CLI_ERR_SPECIFICDIR_UNACCESSIBLE = "Das [bold]`%s`[/] Verzeichnis konnte weder gefunden noch erstellt werden"
 CLI_ERR_CONFIG_UNACCESSIBLE = f"Die Konfigurationsdatei [bold]`{CLI_WHENEVER}`[/] konnte weder gefunden noch erstellt werden"
 CLI_ERR_ALREADY_RUNNING = f"Eine weitere Instanz von [bold]`{CLI_WHENEVER}`[/] ist ausgeführt: Kann nicht starten"
 CLI_ERR_UNKNOWN_COMMAND = "Unbekannter Befehl: [bold]%s[/]"
@@ -390,13 +393,22 @@ CLI_ERR_NO_SUITABLE_BINARY = "Kein geeignetes Binärarchiv gefunden"
 CLI_ERR_INVALID_CHECKSUM = "Prüfsumme nicht übereingestimmt: Datei [bold]`%s`[/] nicht gültig oder beschädigt"
 CLI_ERR_BINPATH_NOT_FOUND = "Programmzielverzeichnis nicht gefunden"
 CLI_ERR_DIR_NOT_FOUND = "Konnte kein Verzeichnis finden: [bold]`%s`[/]"
+CLI_ERR_FILE_NOT_FOUND = "Konnte keine Datei finden: [bold]`%s`[/]"
 CLI_ERR_CANNOT_CREATE_FILE = "Konnte keine Datei erstellen: [bold]`%s`[/]"
+CLI_ERR_CANNOT_CREATE_DIR = "Konnte kein Verzeichnis erstellen: [bold]`%s`[/]"
+CLI_ERR_CANNOT_EXTRACT_ARCHIVE = "Das Archiv konnte nicht ins Zielverzeichnis extrahiert werden: [bold]`%s`[/]"
 CLI_ERR_UNSUPPORTED_ON_PLATFORM = "Der Betrieb wird auf dieser Plattform nicht unterstützt"
+CLI_ERR_UNSUPPORTED_FILETYPE = "Dieser Dateityp wird nicht unterstützt"
+CLI_ERR_UNSUPPORTED = "Betrieb nicht unterstützt"
+CLI_ERR_NOT_PERMITTED = "Betrieb nicht erlaubt"
+
+CLI_ERR_ERROR_GENERIC = "Ein Fehler ist aufgetreten."
 
 CLI_ERR_CANNOT_CREATE_ICON = "Konnte kein Programmsymbol erstellen"
 CLI_ERR_CANNOT_CREATE_SHORTCUT = "Konnte keine Verknüpfungs- oder Desktopverzeichnis erstellen"
 CLI_ERR_CANNOT_INSTALL_ON_RUNNING = f"Eine Instanz von [bold]`{CLI_WHENEVER}`[/] noch anwesend: halten Sie sie vor der Installation herunter"
 
+CLI_ERR_DIR_EXISTS = "Verzeichnis [bold]`%s`[/] existiert bereits"
 CLI_ERR_FILE_EXISTS = "Datei [bold]`%s`[/] existiert bereits"
 CLI_ERR_FILE_EXISTS_SKIP = "Datei [bold]`%s`[/] existiert bereits: Erstellung übersprungen"
 
@@ -418,9 +430,11 @@ CLI_MSG_CREATING_SHORTCUT = "Erstellung der Programmsymbole auch im Desktopverze
 CLI_MSG_CONVERTING_ITEM = "Konvertierung von Element [bold]`%s`[/]: %s -> %s"
 CLI_MSG_BACKUP_CONFIG = "Sicherung der Konfiguration zu [bold]`%s`[/]"
 CLI_MSG_WRITE_NEW_CONFIG = "Neue Konfiguration als [bold]`%s`[/] schreiben"
+CLI_MSG_INSTALL_TO_FOLDER = "Installieren von [bold]`%s`[/] in Verzeichnis [bold]`%s`[/]..."
 
 CLI_MSG_INSTALLATION_FINISHED = "Installation abgeschlossen."
 CLI_MSG_OPERATION_FINISHED = "Betrieb abgeschlossen."
+CLI_MSG_OPERATION_FAILED = "Betrieb erfolglos abgeschlossen."
 
 CLI_APPICON_NAME_CONFIG = f"{UI_APP} Konfiguration"
 CLI_APPICON_DESC_CONFIG = f"Standalone Konfigurationsapp für {UI_APP}"

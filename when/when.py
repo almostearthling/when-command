@@ -22,6 +22,9 @@ from lib.utility import (
     retrieve_whenever_options,
     get_default_configdir,
     get_default_whenever,
+    get_whenever_version,
+    check_whenever_version,
+    get_luadir,
     get_scriptsdir,
     get_appdata,
     get_logfile,
@@ -259,6 +262,10 @@ def prepare_environment() -> None:
         _ = get_scriptsdir()
     except Exception as e:
         exit_error(e)
+    try:
+        _ = get_luadir()
+    except Exception as e:
+        exit_error(e)
 
 
 # subcommand main functions
@@ -317,10 +324,10 @@ def main_start(args) -> None:
     AppConfig.set("WHENEVER", args.whenever)
     retrieve_whenever_options()
     prepare_environment()
-    if is_whenever_running():
-        exit_error(CLI_ERR_ALREADY_RUNNING)
     # prepare application so that the logger can be initialized
     setup_windows()
+    if is_whenever_running():
+        exit_error(CLI_ERR_ALREADY_RUNNING)
     # get configuration options
     log_level = AppConfig.get("LOGLEVEL")
     log_file = get_logfile()
@@ -333,6 +340,15 @@ def main_start(args) -> None:
         action="initializing",
         status=log.STATUS_MSG,
     ).log("starting resident %s, version %s" % (UI_APP, UI_APP_VERSION))
+    if not check_whenever_version():
+        v = get_whenever_version()
+        log.use(
+            level=log.LEVEL_INFO,
+            when=log.WHEN_START,
+            action="initializing",
+            status=log.STATUS_MSG,
+        ).log(f"found `whenever` version {v}: please upgrade")
+        exit_error(CLI_ERR_WHENEVER_WRONG_VERSION)
     if DEBUG:
         # setup the scheduler and associate it to the application
         whenever: str = AppConfig.get("WHENEVER")   # type: ignore
@@ -422,6 +438,10 @@ def main_toolbox(args) -> None:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--create-icons")
         if args.fix_config and verbose:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--fix-config")
+        if bool(args.install_lua) and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--install-lua")
+        if bool(args.upgrade_lua) and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--upgrade-lua")
         from lib.toolbox.install_whenever import install
 
         install(verbose=verbose)
@@ -435,6 +455,10 @@ def main_toolbox(args) -> None:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--install-whenever")
         if args.fix_config and verbose:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--fix-config")
+        if bool(args.install_lua) and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--install-lua")
+        if bool(args.upgrade_lua) and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--upgrade-lua")
         from lib.toolbox.create_shortcuts import create_shortcuts
 
         my_path = os.path.normpath(os.path.realpath(__file__))
@@ -444,20 +468,70 @@ def main_toolbox(args) -> None:
 
     # fix configuration
     elif args.fix_config:
+        if args.install_whenever and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--install-whenever")
         if args.desktop and verbose:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--desktop")
         if args.autostart and verbose:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--autostart")
         if args.create_icons and verbose:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--create-icons")
-        if args.install_whenever and verbose:
-            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--install-whenever")
+        if bool(args.install_lua) and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--install-lua")
+        if bool(args.upgrade_lua) and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--upgrade-lua")
         retrieve_whenever_options()
         from lib.toolbox.fix_config import fix_config_file
 
-        fix_config_file(get_configfile(), verbose=verbose)
+        fix_config_file(get_configfile(), verbose)
         if verbose:
             console.print(CLI_MSG_OPERATION_FINISHED, highlight=False)
+
+    # install a Lua library:
+    elif bool(args.install_lua):
+        if args.install_whenever and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--install-whenever")
+        if args.desktop and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--desktop")
+        if args.autostart and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--autostart")
+        if args.create_icons and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--create-icons")
+        if args.fix_config and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--fix-config")
+        if bool(args.upgrade_lua) and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--upgrade-lua")
+        from lib.toolbox.install_lua import install_lua
+
+        res = install_lua(args.install_lua, verbose)
+        if verbose:
+            if res:
+                console.print(CLI_MSG_OPERATION_FINISHED, highlight=False)
+            else:
+                console.print(CLI_MSG_OPERATION_FAILED, highlight=False)
+
+    # upgrade a Lua library:
+    elif bool(args.upgrade_lua):
+        if args.install_whenever and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--install-whenever")
+        if args.desktop and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--desktop")
+        if args.autostart and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--autostart")
+        if args.create_icons and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--create-icons")
+        if args.fix_config and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--fix-config")
+        if bool(args.install_lua) and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--install-lua")
+        from lib.toolbox.install_lua import upgrade_lua
+
+        res = upgrade_lua(args.upgrade_lua, verbose)
+        if verbose:
+            if res:
+                console.print(CLI_MSG_OPERATION_FINISHED, highlight=False)
+            else:
+                console.print(CLI_MSG_OPERATION_FAILED, highlight=False)
 
     # ...
 
@@ -486,6 +560,7 @@ def main() -> None:
         "-D",
         "--dir-appdata",
         help=CLI_ARG_HELP_DIR_APPDATA,
+        metavar="DIR",
         type=str,
         default=default_appdata,
     )
@@ -512,6 +587,7 @@ def main() -> None:
         "-D",
         "--dir-appdata",
         help=CLI_ARG_HELP_DIR_APPDATA,
+        metavar="DIR",
         type=str,
         default=default_appdata,
     )
@@ -530,6 +606,7 @@ def main() -> None:
         "-D",
         "--dir-appdata",
         help=CLI_ARG_HELP_DIR_APPDATA,
+        metavar="DIR",
         type=str,
         default=default_appdata,
     )
@@ -537,6 +614,18 @@ def main() -> None:
         "--install-whenever",
         help=CLI_ARG_HELP_INSTALL_WHENEVER,
         action="store_true",
+    )
+    parser_toolbox.add_argument(
+        "--install-lua",
+        help=CLI_ARG_HELP_INSTALL_LUA,
+        metavar="FILE",
+        type=str,
+    )
+    parser_toolbox.add_argument(
+        "--upgrade-lua",
+        help=CLI_ARG_HELP_UPGRADE_LUA,
+        metavar="FILE",
+        type=str,
     )
     parser_toolbox.add_argument(
         "--create-icons",

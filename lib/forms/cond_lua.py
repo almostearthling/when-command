@@ -1,6 +1,7 @@
 # Lua condition form
 
 import re
+import os
 import tkinter as tk
 import ttkbootstrap as ttk
 from tkinter import messagebox
@@ -11,7 +12,12 @@ from chlorophyll import CodeView
 from ..i18n.strings import *
 from .ui import *
 
-from ..utility import guess_typed_value, get_editor_theme
+from ..utility import (
+    guess_typed_value,
+    get_editor_theme,
+    get_luadir,
+    get_lua_initscript,
+)
 
 from .cond import form_Condition
 from ..items.cond_lua import LuaScriptCondition
@@ -30,6 +36,27 @@ class form_LuaScriptCondition(form_Condition):
             item = LuaScriptCondition()
         super().__init__(UI_TITLE_LUACOND, tasks_available, item)
         assert isinstance(self._item, LuaScriptCondition)
+
+        # update the LUA_PATH for user scripts: note that it seems that
+        # LUA_PATH as a global variable to search modulesseems to have been
+        # replaced by the `package.path` table element,thus the need to use
+        # the initialization script; also, the default Lua search path is
+        # not added to the embedded Lua path, in order to avoid to search
+        # for unsupported or possibly binary modules
+        luabase = get_luadir()
+        ps = os.path.sep
+        lua_path = ";".join([
+            "?",
+            "?.lua",
+            f"{luabase}{ps}?",
+            f"{luabase}{ps}?.lua",
+            f"{luabase}{ps}?{ps}?",
+            f"{luabase}{ps}?{ps}?.lua",
+        ]) + ";;"
+        self._item.variables_to_set = {
+            "LUA_PATH": lua_path,
+        }
+        self._item.init_script_path = get_lua_initscript()
 
         # form data
         self._results = []

@@ -372,11 +372,14 @@ CLI_ARG_HELP_CMD_TOOLBOX = f"Esegui una delle varie utility disponibili per `{UI
 CLI_ARG_HELP_CMD_VERSION = f"Visualizza la versione di `{UI_APP}` ed esci"
 
 CLI_ARG_HELP_INSTALL_WHENEVER = f"Installa l'ultima versione di `{CLI_WHENEVER}`"
+CLI_ARG_HELP_INSTALL_LUA = f"Installa una libreria Lua per gli script usati da `{CLI_WHENEVER}`"
+CLI_ARG_HELP_UPGRADE_LUA = f"Aggiorna una libreria Lua per gli script usati da `{CLI_WHENEVER}`"
 CLI_ARG_HELP_CREATE_SHORTCUTS = f"Crea icone per l'utilità di configurazione `{UI_APP}` e l'applicazione residente"
 
 CLI_ERR_WHENEVER_NOT_FOUND = f"Eseguibile per [bold]`{CLI_WHENEVER}`[/] non trovato o non valido"
+CLI_ERR_WHENEVER_WRONG_VERSION = f"La versione di [bold]`{CLI_WHENEVER}`[/] non è supportata"
 CLI_ERR_DATADIR_UNACCESSIBLE = "La directory dei dati non è stata trovata né creata"
-CLI_ERR_SCRIPTSDIR_UNACCESSIBLE = "La directory degli script non è stata né trovata né creata"
+CLI_ERR_SPECIFICDIR_UNACCESSIBLE = "La directory [bold]`%s`[/] non è stata né trovata né creata"
 CLI_ERR_CONFIG_UNACCESSIBLE = f"Il file di configurazione [bold]`{CLI_WHENEVER}`[/] non è stato trovato né creato"
 CLI_ERR_ALREADY_RUNNING = f"Un'altra istanza di [bold]`{CLI_WHENEVER}`[/] è in esecuzione: non può essere avviato"
 CLI_ERR_UNKNOWN_COMMAND = "Comando sconosciuto: [bold]%s[/]"
@@ -390,13 +393,22 @@ CLI_ERR_NO_SUITABLE_BINARY = "Nessun archivio binario idoneo trovato"
 CLI_ERR_INVALID_CHECKSUM = "Checksum non corrispondente: file [bold]`%s`[/] non valido o corrotto"
 CLI_ERR_BINPATH_NOT_FOUND = "Cartella di destinazione dei file binari non trovata"
 CLI_ERR_DIR_NOT_FOUND = "Impossibile trovare la directory: [bold]`%s`[/]"
+CLI_ERR_FILE_NOT_FOUND = "Impossibile trovare il file: [bold]`%s`[/]"
 CLI_ERR_CANNOT_CREATE_FILE = "Impossibile creare un file: [bold]`%s`[/]"
+CLI_ERR_CANNOT_CREATE_DIR = "Impossibile creare una directory: [bold]`%s`[/]"
+CLI_ERR_CANNOT_EXTRACT_ARCHIVE = "Impossibile estrarre l'archivio nella destinazione: [bold]`%s`[/]"
 CLI_ERR_UNSUPPORTED_ON_PLATFORM = "L'operazione non è supportata su questa piattaforma"
+CLI_ERR_UNSUPPORTED_FILETYPE = "Questo tipo di file non è supportato"
+CLI_ERR_UNSUPPORTED = "Operazione non supportata"
+CLI_ERR_NOT_PERMITTED = "Operazione non consentita"
+
+CLI_ERR_ERROR_GENERIC = "Si è verificato un errore."
 
 CLI_ERR_CANNOT_CREATE_ICON = "Impossibile creare l'icona del programma"
 CLI_ERR_CANNOT_CREATE_SHORTCUT = "Impossibile creare un file di scelta rapida o desktop"
 CLI_ERR_CANNOT_INSTALL_ON_RUNNING = f"Un'istanza di [bold]`{CLI_WHENEVER}`[/] è in esecuzione: spegnerlo prima dell'installazione"
 
+CLI_ERR_DIR_EXISTS = "La directory [bold]`%s`[/] esiste già"
 CLI_ERR_FILE_EXISTS = "Il file [bold]`%s`[/] esiste già"
 CLI_ERR_FILE_EXISTS_SKIP = "Il file [bold]`%s`[/] esiste già: creazione non effettuata"
 
@@ -418,9 +430,11 @@ CLI_MSG_CREATING_SHORTCUT = "Creazione di collegamenti di programma o file deskt
 CLI_MSG_CONVERTING_ITEM = "Conversione dell'elemento [bold]`%s`[/]: %s -> %s"
 CLI_MSG_BACKUP_CONFIG = "Configurazione di backup su [bold]`%s`[/]"
 CLI_MSG_WRITE_NEW_CONFIG = "Scrittura di una nuova configurazione in [bold]`%s`[/]"
+CLI_MSG_INSTALL_TO_FOLDER = "Installazione di [bold]`%s`[/] nella directory [bold]`%s`[/]..."
 
 CLI_MSG_INSTALLATION_FINISHED = "Installazione conclusa."
 CLI_MSG_OPERATION_FINISHED = "Operazione conclusa."
+CLI_MSG_OPERATION_FAILED = "Operazione fallita."
 
 CLI_APPICON_NAME_CONFIG = f"Configura {UI_APP}"
 CLI_APPICON_DESC_CONFIG = f"Utilità di configurazione autonoma per {UI_APP}"
