@@ -75,7 +75,6 @@ def install_lua(fname: str, verbose: bool = True) -> bool:
             return False
         console.print(CLI_MSG_INSTALL_TO_FOLDER % (fname_base, dest_dir))
         try:
-            os.mkdir(dest_dir)
             with ZipFile(fname) as zip:
                 nl = zip.namelist()
                 # handle the special case of a zipped directory: this will
@@ -89,6 +88,7 @@ def install_lua(fname: str, verbose: bool = True) -> bool:
                 if singledir:
                     zip.extractall(dest_base)
                 else:
+                    os.mkdir(dest_dir)
                     zip.extractall(dest_dir)
         # fail on operation native failure
         except OSError:
