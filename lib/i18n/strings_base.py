@@ -381,6 +381,7 @@ CLI_ARG_HELP_CMD_VERSION = f"Display `{UI_APP}` version and exit"
 
 CLI_ARG_HELP_INSTALL_WHENEVER = f"Install the latest release of `{CLI_WHENEVER}`"
 CLI_ARG_HELP_INSTALL_LUA = f"Install a Lua library for use in scripts used by `{CLI_WHENEVER}`"
+CLI_ARG_HELP_UPGRADE_LUA = f"Upgrade a Lua library for use in scripts used by `{CLI_WHENEVER}`"
 CLI_ARG_HELP_CREATE_SHORTCUTS = f"Create icons for the `{UI_APP}` configuration utility and resident application"
 
 CLI_ERR_WHENEVER_NOT_FOUND = f"Executable for [bold]`{CLI_WHENEVER}`[/] not found or invalid"
@@ -407,6 +408,7 @@ CLI_ERR_CANNOT_EXTRACT_ARCHIVE = "Could not extract archive to destination: [bol
 CLI_ERR_UNSUPPORTED_ON_PLATFORM = "The operation is not supported on this platform"
 CLI_ERR_UNSUPPORTED_FILETYPE = "This type of file is not supported"
 CLI_ERR_UNSUPPORTED = "Operation not supported"
+CLI_ERR_NOT_PERMITTED = "Operation not permitted"
 
 CLI_ERR_ERROR_GENERIC = "An error occurred."
 

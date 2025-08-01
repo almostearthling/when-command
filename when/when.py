@@ -440,6 +440,8 @@ def main_toolbox(args) -> None:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--fix-config")
         if bool(args.install_lua) and verbose:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--install-lua")
+        if bool(args.upgrade_lua) and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--upgrade-lua")
         from lib.toolbox.install_whenever import install
 
         install(verbose=verbose)
@@ -455,6 +457,8 @@ def main_toolbox(args) -> None:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--fix-config")
         if bool(args.install_lua) and verbose:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--install-lua")
+        if bool(args.upgrade_lua) and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--upgrade-lua")
         from lib.toolbox.create_shortcuts import create_shortcuts
 
         my_path = os.path.normpath(os.path.realpath(__file__))
@@ -474,6 +478,8 @@ def main_toolbox(args) -> None:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--create-icons")
         if bool(args.install_lua) and verbose:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--install-lua")
+        if bool(args.upgrade_lua) and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--upgrade-lua")
         retrieve_whenever_options()
         from lib.toolbox.fix_config import fix_config_file
 
@@ -481,7 +487,7 @@ def main_toolbox(args) -> None:
         if verbose:
             console.print(CLI_MSG_OPERATION_FINISHED, highlight=False)
 
-    # install a Lua library: 
+    # install a Lua library:
     elif bool(args.install_lua):
         if args.install_whenever and verbose:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--install-whenever")
@@ -493,9 +499,34 @@ def main_toolbox(args) -> None:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--create-icons")
         if args.fix_config and verbose:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--fix-config")
+        if bool(args.upgrade_lua) and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--upgrade-lua")
         from lib.toolbox.install_lua import install_lua
 
         res = install_lua(args.install_lua, verbose)
+        if verbose:
+            if res:
+                console.print(CLI_MSG_OPERATION_FINISHED, highlight=False)
+            else:
+                console.print(CLI_MSG_OPERATION_FAILED, highlight=False)
+
+    # upgrade a Lua library:
+    elif bool(args.upgrade_lua):
+        if args.install_whenever and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--install-whenever")
+        if args.desktop and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--desktop")
+        if args.autostart and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--autostart")
+        if args.create_icons and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--create-icons")
+        if args.fix_config and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--fix-config")
+        if bool(args.install_lua) and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--install-lua")
+        from lib.toolbox.install_lua import upgrade_lua
+
+        res = upgrade_lua(args.upgrade_lua, verbose)
         if verbose:
             if res:
                 console.print(CLI_MSG_OPERATION_FINISHED, highlight=False)
@@ -529,6 +560,7 @@ def main() -> None:
         "-D",
         "--dir-appdata",
         help=CLI_ARG_HELP_DIR_APPDATA,
+        metavar="DIR",
         type=str,
         default=default_appdata,
     )
@@ -555,6 +587,7 @@ def main() -> None:
         "-D",
         "--dir-appdata",
         help=CLI_ARG_HELP_DIR_APPDATA,
+        metavar="DIR",
         type=str,
         default=default_appdata,
     )
@@ -573,6 +606,7 @@ def main() -> None:
         "-D",
         "--dir-appdata",
         help=CLI_ARG_HELP_DIR_APPDATA,
+        metavar="DIR",
         type=str,
         default=default_appdata,
     )
@@ -584,6 +618,13 @@ def main() -> None:
     parser_toolbox.add_argument(
         "--install-lua",
         help=CLI_ARG_HELP_INSTALL_LUA,
+        metavar="FILE",
+        type=str,
+    )
+    parser_toolbox.add_argument(
+        "--upgrade-lua",
+        help=CLI_ARG_HELP_UPGRADE_LUA,
+        metavar="FILE",
         type=str,
     )
     parser_toolbox.add_argument(

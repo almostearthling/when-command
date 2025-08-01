@@ -37,6 +37,7 @@ The `tool` command provides various utilities that can help in the setup of **Wh
   * `--desktop`: (option) also creates icons on the desktop[^1]
 * `--fix-config`: fix legacy configuration files converting [old item definitions](configfile.md#legacy-configuration-files) to new ones
 * `--install-lua`: install a _Lua_ script or library in the _Lua_ specific subtree within the [_APPDATA_](appdata.md) directory
+* `--upgrade-lua`: upgrade a _Lua_ script or library in the _Lua_ specific subtree within the [_APPDATA_](appdata.md) directory: similar to `--install-lua`, but only works when a module _already exists_
 * ...
 * `--quiet`: (option) applies to all the operations described above, and inhibits printing messages to the console.
 

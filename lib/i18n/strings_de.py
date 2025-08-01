@@ -373,6 +373,7 @@ CLI_ARG_HELP_CMD_VERSION = f"Die Version von `{UI_APP}` anzeigen und abschliesse
 
 CLI_ARG_HELP_INSTALL_WHENEVER = f"Die neueste Version von `{CLI_WHENEVER}` installieren"
 CLI_ARG_HELP_INSTALL_LUA = f"Eine Lua-Bibliothek installieren für Skripte, die von `{CLI_WHENEVER}` verwendet werden"
+CLI_ARG_HELP_UPGRADE_LUA = f"Eine Lua-Bibliothek aktualisieren für Skripte, die von `{CLI_WHENEVER}` verwendet werden"
 CLI_ARG_HELP_CREATE_SHORTCUTS = f"Symbole für das Dienstprogramm für Konfiguration von `{UI_APP}` und die ansässigen App erstellen"
 
 CLI_ERR_WHENEVER_NOT_FOUND = f"Ausführbare Datei für [bold]`{CLI_WHENEVER}`[/] nicht gefunden oder ungültig"
@@ -399,6 +400,7 @@ CLI_ERR_CANNOT_EXTRACT_ARCHIVE = "Das Archiv konnte nicht ins Zielverzeichnis ex
 CLI_ERR_UNSUPPORTED_ON_PLATFORM = "Der Betrieb wird auf dieser Plattform nicht unterstützt"
 CLI_ERR_UNSUPPORTED_FILETYPE = "Dieser Dateityp wird nicht unterstützt"
 CLI_ERR_UNSUPPORTED = "Betrieb nicht unterstützt"
+CLI_ERR_NOT_PERMITTED = "Betrieb nicht erlaubt"
 
 CLI_ERR_ERROR_GENERIC = "Ein Fehler ist aufgetreten."
 
