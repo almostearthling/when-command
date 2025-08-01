@@ -8,24 +8,28 @@
 
 import os
 import shutil
-from zipfile import ZipFile, BadZipFile
+from zipfile import ZipFile, BadZipFile, LargeZipFile
 
 from ..i18n.strings import *
-from ..utility import write_error, get_rich_console, get_luabinlibext, get_luadir
+from ..utility import write_error, get_rich_console, get_luadir
 
 
 # at the moment only these cases are handled
 LUA_EXT = ".lua"
-LUA_BINEXT = get_luabinlibext()
 LUA_ZIPEXT = ".zip"
 
 
-# the actual installation utility, there is no uninstall utility for the moment
+# the actual installation utility, there is no uninstall utility for the
+# moment; this will install simple scripts or unpack ZIP files: it may happen
+# that a ZIP file contains a binary module, but the Lua interpreter provided
+# by whenever will just refuse to load it due to safety problems
 def install_lua(fname: str, verbose: bool = True) -> bool:
     dest_base = get_luadir()
     console = get_rich_console()
     fname_base = os.path.basename(fname)
-    if fname.endswith(LUA_EXT) or fname.endswith(LUA_BINEXT):
+    # single Lua files are installed directly in the main folder: if the
+    # module already exists, installation is skipped and an error is shown
+    if fname.endswith(LUA_EXT):
         dest_file = os.path.join(dest_base, fname_base)
         # fail if the origin is not accessible
         if not os.path.isfile(fname):
@@ -55,13 +59,12 @@ def install_lua(fname: str, verbose: bool = True) -> bool:
     # the tests differ a little, because the destination here is a directory
     # that has the same base name as the ZIP archive: in this case too, the
     # installation tool will fail when the library exists, that is, a directory
-    # with the expected name is alreadi there
+    # with the expected name is already there
     elif fname.endswith(LUA_ZIPEXT):
         if not os.path.isfile(fname):
             if verbose:
                 write_error(CLI_ERR_FILE_NOT_FOUND % fname)
             return False
-        zip = ZipFile(fname)
         dest_dir = os.path.join(
             dest_base, os.path.basename(fname[: -len(LUA_ZIPEXT)])
         )
@@ -70,17 +73,30 @@ def install_lua(fname: str, verbose: bool = True) -> bool:
             if verbose:
                 write_error(CLI_ERR_DIR_EXISTS % dest_dir)
             return False
+        console.print(CLI_MSG_INSTALL_TO_FOLDER % (fname_base, dest_dir))
         try:
-            console.print(CLI_MSG_INSTALL_TO_FOLDER % (fname_base, dest_dir))
             os.mkdir(dest_dir)
-            zip.extractall(dest_dir)
+            with ZipFile(fname) as zip:
+                nl = zip.namelist()
+                # handle the special case of a zipped directory: this will
+                # probably be the most common case for ZIP files
+                singledir = True
+                zipdir = fname_base + '/'
+                for x in nl:
+                    if not x.startswith(zipdir):
+                        singledir = False
+                        break
+                if singledir:
+                    zip.extractall(dest_base)
+                else:
+                    zip.extractall(dest_dir)
         # fail on operation native failure
         except OSError:
             if verbose:
                 write_error(CLI_ERR_CANNOT_CREATE_DIR % dest_dir)
             return False
         # fail on ZIP extraction failure
-        except (ValueError, RuntimeError, BadZipFile):
+        except (ValueError, RuntimeError, BadZipFile, LargeZipFile):
             if verbose:
                 write_error(CLI_ERR_CANNOT_EXTRACT_ARCHIVE % fname)
             return False

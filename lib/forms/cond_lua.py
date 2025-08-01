@@ -16,7 +16,6 @@ from ..utility import (
     guess_typed_value,
     get_editor_theme,
     get_luadir,
-    get_luabinlibext,
     get_lua_initscript,
 )
 
@@ -38,14 +37,13 @@ class form_LuaScriptCondition(form_Condition):
         super().__init__(UI_TITLE_LUACOND, tasks_available, item)
         assert isinstance(self._item, LuaScriptCondition)
 
-        # update the LUA_PATH for user scripts: try to support luarocks
-        # installation path, by adding `{base}/lua` and `{base}/lib` to the
-        # module search path (luarocks must be installed separately); note
-        # that it seems that LUA_PATH as a global variable to search modules
-        # seems to have been replaced by the `package.path` and `package.cpath`
-        # table elements, therefore the need to use the initialization script
+        # update the LUA_PATH for user scripts: note that it seems that
+        # LUA_PATH as a global variable to search modulesseems to have been
+        # replaced by the `package.path` table element,thus the need to use
+        # the initialization script; also, the default Lua search path is
+        # not added to the embedded Lua path, in order to avoid to search
+        # for unsupported or possibly binary modules
         luabase = get_luadir()
-        binext = get_luabinlibext()
         ps = os.path.sep
         lua_path = ";".join([
             "?",
@@ -55,14 +53,8 @@ class form_LuaScriptCondition(form_Condition):
             f"{luabase}{ps}?{ps}?",
             f"{luabase}{ps}?{ps}?.lua",
         ]) + ";;"
-        lua_cpath = ";".join([
-            f"?.{binext}",
-            f"{luabase}{ps}?.{binext}",
-            f"{luabase}{ps}?{ps}?.{binext}",
-        ]) + ";;"
         self._item.variables_to_set = {
             "LUA_PATH": lua_path,
-            "LUA_CPATH": lua_cpath,
         }
         self._item.init_script_path = get_lua_initscript()
 

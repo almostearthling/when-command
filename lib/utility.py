@@ -49,7 +49,6 @@ _PRIVATE_ITEM_PREFIX = "__When__private__"
 _LUA_INIT_SCRIPT = """\
 -- lua initialization script
 package.path = LUA_PATH
-package.cpath = LUA_CPATH
 """
 _LUA_INIT_NAME = "init.lua"
 
@@ -261,12 +260,14 @@ def get_luadir() -> str:
     return luadir
 
 
-# determine binary lib extension depending on operating system
-def get_luabinlibext() -> str:
-    if sys.platform.startswith("win"):
-        return "dll"
-    else:
-        return "so"
+# the following cannot be used, because the embedded Lua interpreter cannot
+# load Lua binary modules due to its safe setup, which disallows it
+# # determine binary lib extension depending on operating system
+# def get_luabinlibext() -> str:
+#     if sys.platform.startswith("win"):
+#         return "dll"
+#     else:
+#         return "so"
 
 
 # get the Lua initialization script file name, and ensure that it exists
@@ -276,21 +277,6 @@ def get_lua_initscript() -> str:
         with open(init, 'w') as f:
             f.write(_LUA_INIT_SCRIPT)
     return init
-
-
-# WARNING: this is hard to support, at least on Windows: phase out for now
-# # get the luarocks initialization script file name, and ensure that it exists
-# def get_luarocks_initscript() -> str:
-#     init = os.path.join(get_scriptsdir(), _LUAROCKS_INIT_NAME)
-#     if not os.path.exists(init):
-#         base = get_luadir()
-#         with open(init, 'w') as f:
-#             f.write(
-#                 _LUAROCKS_INIT_SCRIPT_TEMPL
-#                     .format(base=base)
-#                     .replace("\\", "\\\\")
-#                 )
-#     return init
 
 
 # save a script to the scripts directory and make it executable: possible
