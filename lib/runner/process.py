@@ -154,7 +154,7 @@ class Wrapper(object):
             self._log.use(
                 action="pause",
                 level=self._log.LEVEL_ERROR,
-                when=self._log.WHEN_END,
+                when=self._log.WHEN_PROC,
                 status=self._log.STATUS_ERR,
             ).log("scheduler not started, cannot pause")
             return False
@@ -182,7 +182,7 @@ class Wrapper(object):
             self._log.use(
                 action="resume",
                 level=self._log.LEVEL_ERROR,
-                when=self._log.WHEN_END,
+                when=self._log.WHEN_PROC,
                 status=self._log.STATUS_ERR,
             ).log("scheduler not started, cannot resume")
             return False
@@ -210,7 +210,7 @@ class Wrapper(object):
             self._log.use(
                 action="reset",
                 level=self._log.LEVEL_ERROR,
-                when=self._log.WHEN_END,
+                when=self._log.WHEN_PROC,
                 status=self._log.STATUS_ERR,
             ).log("scheduler not started, cannot reset conditions")
             return False
@@ -241,7 +241,7 @@ class Wrapper(object):
             self._log.use(
                 action="suspend",
                 level=self._log.LEVEL_ERROR,
-                when=self._log.WHEN_END,
+                when=self._log.WHEN_PROC,
                 status=self._log.STATUS_ERR,
             ).log("scheduler not started, cannot suspend condition")
             return False
@@ -269,7 +269,7 @@ class Wrapper(object):
             self._log.use(
                 action="unsuspend",
                 level=self._log.LEVEL_ERROR,
-                when=self._log.WHEN_END,
+                when=self._log.WHEN_PROC,
                 status=self._log.STATUS_ERR,
             ).log("scheduler not started, cannot resume condition")
             return False
@@ -297,7 +297,7 @@ class Wrapper(object):
             self._log.use(
                 action="reload",
                 level=self._log.LEVEL_ERROR,
-                when=self._log.WHEN_END,
+                when=self._log.WHEN_PROC,
                 status=self._log.STATUS_ERR,
             ).log("scheduler not started, cannot reload configiration")
             return False
@@ -325,7 +325,7 @@ class Wrapper(object):
             self._log.use(
                 action="reload",
                 level=self._log.LEVEL_ERROR,
-                when=self._log.WHEN_END,
+                when=self._log.WHEN_PROC,
                 status=self._log.STATUS_ERR,
             ).log("scheduler not started, cannot trigger event")
             return False
@@ -388,7 +388,7 @@ class Wrapper(object):
         self._log.use(
             action="startup",
             level=self._log.LEVEL_INFO,
-            when=self._log.WHEN_END,
+            when=self._log.WHEN_START,
             status=self._log.STATUS_OK,
         ).log("scheduler successfully started")
         return True
