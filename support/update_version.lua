@@ -7,9 +7,13 @@
 -- copy the text in this file to the code box, and update the parameters
 -- according to the current setup.
 --
--- NOTE: the updatever.lua script must be copied to a subdirectory of the
---       application data (APPDATA) directory, that is APPDATA/lua/updatever
---       (APPDATA\Lua\updatever on Windows), which has to be created.
+-- NOTE: the updatever.lua script must be installed as a Lua module: it can be
+--       done using the `--install-lua` tool provided by When from the folder
+--       where it is stored, that is, running the following command:
+--
+--       $ when tool --install-lua updatever.lua
+--
+--       and When will make it available to the embedded Lua interpreter.
 
 require "updatever"
 
