@@ -27,7 +27,7 @@ It's sometimes useful to have the ability to trace the configuration of one or m
 log.warn("Trace: *** VERIFIED CONDITION *** `" .. whenever_condition .. "`");
 ```
 
-that exploits the [abilities](https://github.com/almostearthling/whenever/tree/development?tab=readme-ov-file#lua-script-tasks) of the internal Lua interpreter to
+that exploits the [abilities](lua_considerations.md) of the internal Lua interpreter to
 
 * access the name of the condition that triggered it
 * write log messages at different severity levels.

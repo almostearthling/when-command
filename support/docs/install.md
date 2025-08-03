@@ -149,7 +149,7 @@ and can be used on both Linux and Windows. The rest of the installation process 
 
 ## Installation Scope
 
-Both the installation of **When** using the **pipx** method and the installation of **whenever** using the `--install-whenever` tool are performed at the _user_ level: neither one requires other privileges than write in the home directory. However, this also means that no other user, except the one performing the above defined actions, will be able to access either **When** or **whenever**.
+Both the installation of **When** using the **pipx** method, and the installation of **whenever** using the `--install-whenever` tool, are performed at the _user_ level: neither one requires other privileges than write in the home directory. However, this also means that no other user, except the one performing the above described actions, will be able to access either **When** or **whenever**.
 
 
 ## See Also
