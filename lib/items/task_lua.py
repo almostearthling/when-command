@@ -2,14 +2,20 @@
 
 from lib.i18n.strings import *
 
+import re
+
 from tomlkit import items
 from ..utility import check_not_none, append_not_none, toml_script_string
 
+from .itemhelp import CheckedTable
 from .task import Task
 
 
 # default values for non-optional parameters
 DEFAULT_LUASCRIPT = "-- write your Lua script here"
+
+# regular expressions
+LUA_VAR_PATTERN = re.compile(r"[a-zA-Z_][a-zA-Z0-9_]*")
 
 
 # a Lua script based task
@@ -44,7 +50,25 @@ class LuaScriptTask(Task):
             self.variables_to_set = None
             self.init_script_path = None
 
-    def as_table(self):
+    def __load_checking(self, item: items.Table, item_line: int) -> None:
+        super().__load_checking(item, item_line)
+        self.type = "lua"
+        self.hrtype = ITEM_TASK_LUA
+        tab = CheckedTable(item, item_line)
+        assert tab.get_str("type") == self.type
+        self.script = tab.get_str("script")
+        self.expect_all = tab.get_bool("expect_all")
+        self.init_script_path = tab.get_str_check(
+            "init_script_path", check=os.path.isfile
+        )
+        self.variables_to_set = tab.get_array_of_dict_check_keys_re(
+            "variables_to_set", LUA_VAR_PATTERN
+        )
+        self.expected_results = tab.get_array_of_dict_check_keys_re(
+            "expected_results", LUA_VAR_PATTERN
+        )
+
+    def as_table(self) -> items.Table:
         if not check_not_none(
             self.script,
         ):

@@ -5,6 +5,7 @@ from lib.i18n.strings import *
 from tomlkit import items
 from ..utility import check_not_none
 
+from .itemhelp import CheckedTable
 from .task import Task
 
 
@@ -25,6 +26,15 @@ class InternalCommandTask(Task):
             self.command = t.get("command")
         else:
             self.command = DEFAULT_COMMAND
+
+    def __load_checking(self, item: items.Table, item_line: int) -> None:
+        super().__load_checking(item, item_line)
+        self.type = "internal"
+        self.hrtype = ITEM_TASK_INTERNAL
+        tab = CheckedTable(item, item_line)
+        assert tab.get_str("type") == self.type
+        # TODO: maybe we can actually check that it is a real command
+        self.command = tab.get_str("command")
 
     def as_table(self):
         if not check_not_none(
