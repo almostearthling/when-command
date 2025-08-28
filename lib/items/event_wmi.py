@@ -7,6 +7,8 @@ from ..utility import check_not_none, toml_script_string
 
 from .event import Event
 
+from .itemhelp import CheckedTable
+
 
 DEFAULT_QUERY = """\
 SELECT * FROM __InstanceCreationEvent
@@ -32,6 +34,15 @@ class WMIEvent(Event):
         else:
             self.query = DEFAULT_QUERY
 
+    def __load_checking(self, item: items.Table, item_line: int) -> None:
+        super().__load_checking(item, item_line)
+        self.type = "wmi"
+        self.hrtype = ITEM_EVENT_WMI
+        tab = CheckedTable(item, item_line)
+        assert tab.get_str("type") == self.type
+        # hard to check that it is a real WMI query, so we just get a string
+        self.query = tab.get_str("query")
+
     def as_table(self):
         if not check_not_none(
             self.query,
@@ -40,3 +51,6 @@ class WMIEvent(Event):
         t = Event.as_table(self)
         t.append("query", toml_script_string(self.query))
         return t
+
+
+# end.
