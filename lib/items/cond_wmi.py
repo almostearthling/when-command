@@ -11,6 +11,7 @@ from ..utility import (
 )
 
 from .cond import Condition
+from .itemhelp import CheckedTable
 
 
 # default values for non-optional parameters
@@ -40,6 +41,19 @@ class WMICondition(Condition):
             self.query = DEFAULT_QUERY
             self.result_check_all = None
             self.result_check = None
+
+    def __load_checking(self, item: items.Table, item_line: int) -> None:
+        super().__load_checking(item, item_line)
+        self.type = "wmi"
+        self.hrtype = ITEM_EVENT_WMI
+        tab = CheckedTable(item, item_line)
+        assert tab.get_str("type") == self.type
+        self.check_after = tab.get_int_between("check_after", 1)
+        self.recur_after_failed_check = tab.get_bool("recur_after_failed_check")
+        # hard to check that it is a real WMI query, so we just get a string
+        self.query = tab.get_str("query")
+        self.result_check_all = tab.get_bool("result_check_all")
+        self.result_check = tab.get_array_of_dict("result_check")
 
     def as_table(self):
         if not check_not_none(

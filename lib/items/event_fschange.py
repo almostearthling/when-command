@@ -6,8 +6,9 @@ from tomlkit import items
 from ..utility import check_not_none, append_not_none, toml_list_of_literals
 
 from .event import Event
+from .itemhelp import CheckedTable
 
-from os.path import expanduser
+from os.path import expanduser, exists
 
 
 # default values for non-optional parameters
@@ -33,6 +34,17 @@ class FilesystemChangeEvent(Event):
             self.watch = DEFAULT_WATCH
             self.recursive = None
             # self.poll_seconds = None
+
+    def __load_checking(self, item: items.Table, item_line: int) -> None:
+        super().__load_checking(item, item_line)
+        self.type = "fschange"
+        self.hrtype = ITEM_EVENT_FSCHANGE
+        tab = CheckedTable(item, item_line)
+        assert tab.get_str("type") == self.type
+        # since `whenever` will complain on non-existing paths to watch
+        # `os.path.exists()` is a good checking function for valid paths
+        self.watch = tab.get_list_of_str_check("watch", exists)
+        self.recursive = tab.get_str("recursive")
 
     def as_table(self):
         if not check_not_none(

@@ -12,10 +12,10 @@ from ..utility import (
     toml_literal,
 )
 
-from .itemhelp import CheckedTable
 from .task import Task
+from .itemhelp import CheckedTable
 
-from os.path import expanduser
+from os.path import expanduser, exists
 
 
 # default values for non-optional parameters
@@ -86,7 +86,7 @@ class CommandTask(Task):
         self.hrtype = ITEM_TASK_COMMAND
         tab = CheckedTable(item, item_line)
         assert tab.get_str("type") == self.type
-        self.startup_path = tab.get_str("startup_path")
+        self.startup_path = tab.get_str_check("startup_path", exists)
         self.command = tab.get_str("command")
         self.match_exact = tab.get_bool("match_exact")
         self.match_regular_expression = tab.get_bool("match_regular_expression")

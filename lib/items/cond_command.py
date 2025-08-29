@@ -2,6 +2,8 @@
 
 from lib.i18n.strings import *
 
+import re
+
 from tomlkit import items
 from ..utility import (
     check_not_none,
@@ -11,13 +13,17 @@ from ..utility import (
 )
 
 from .cond import Condition
+from .itemhelp import CheckedTable
 
-from os.path import expanduser
+from os.path import expanduser, exists
 
 
 # default values for non-optional parameters
 DEFAULT_COMMAND = "replace_me"
 DEFAULT_STARTUP_PATH = expanduser("~")
+
+# regular expressions
+ENV_VAR_PATTERN = re.compile(r"[a-zA-Z_][a-zA-Z0-9_]*")
 
 
 # a command based condition
@@ -77,6 +83,35 @@ class CommandCondition(Condition):
             self.include_environment = None
             self.set_environment_variables = None
             self.environment_variables = None
+
+    def __load_checking(self, item: items.Table, item_line: int) -> None:
+        super().__load_checking(item, item_line)
+        self.type = "command"
+        self.hrtype = ITEM_COND_COMMAND
+        tab = CheckedTable(item, item_line)
+        assert tab.get_str("type") == self.type
+        self.check_after = tab.get_int_between("check_after", 1)
+        self.recur_after_failed_check = tab.get_bool("recur_after_failed_check")
+        self.startup_path = tab.get_str_check("startup_path", exists)
+        self.command = tab.get_str("command")
+        self.match_exact = tab.get_bool("match_exact")
+        self.match_regular_expression = tab.get_bool("match_regular_expression")
+        self.success_stdout = tab.get_str("success_stdout")
+        self.success_stderr = tab.get_str("success_stderr")
+        self.success_status = tab.get_int_unsigned("success_status")
+        self.failure_stdout = tab.get_str("failure_stdout")
+        self.failure_stderr = tab.get_str("failure_stderr")
+        self.failure_status = tab.get_int_unsigned("failure_status")
+        self.timeout_seconds = tab.get_int_unsigned("timeout_seconds")
+        self.case_sensitive = tab.get_bool("case_sensitive")
+        self.include_environment = tab.get_bool("include_environment")
+        self.set_environment_variables = tab.get_bool("set_environment_variables")
+        self.command_arguments = tab.get_list_of_str("command_arguments")
+        self.environment_variables = tab.get_dict_check_and_keys_re(
+            "environment_variables",
+            e_check=lambda x: isinstance(x, str),
+            k_re=ENV_VAR_PATTERN,
+        )
 
     def as_table(self):
         if not check_not_none(

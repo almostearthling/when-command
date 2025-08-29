@@ -6,6 +6,7 @@ from tomlkit import items
 from ..utility import check_not_none, append_not_none
 
 from .cond import Condition
+from .itemhelp import CheckedTable
 
 
 # default values for non-optional parameters
@@ -26,6 +27,14 @@ class IntervalCondition(Condition):
             self.interval_seconds = t.get("interval_seconds")
         else:
             self.interval_seconds = DEFAULT_INTERVAL_SECONDS
+
+    def __load_checking(self, item: items.Table, item_line: int) -> None:
+        super().__load_checking(item, item_line)
+        self.type = "interval"
+        self.hrtype = ITEM_COND_INTERVAL
+        tab = CheckedTable(item, item_line)
+        assert tab.get_str("type") == self.type
+        self.interval_seconds = tab.get_int_between("interval_seconds", 1)
 
     def as_table(self):
         if not check_not_none(

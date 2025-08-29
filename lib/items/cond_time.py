@@ -6,6 +6,7 @@ from tomlkit import items
 from ..utility import check_not_none, toml_list_of_tables
 
 from .cond import Condition
+from .itemhelp import CheckedTable
 
 
 # two converters that may also return None, to improve readability
@@ -254,6 +255,15 @@ class TimeCondition(Condition):
             self.time_specifications = t.get("time_specifications")
         else:
             self.time_specifications = DEFAULT_TIME_SPECIFICATIONS
+
+    def __load_checking(self, item: items.Table, item_line: int) -> None:
+        super().__load_checking(item, item_line)
+        self.type = "time"
+        self.hrtype = ITEM_COND_TIME
+        tab = CheckedTable(item, item_line)
+        assert tab.get_str("type") == self.type
+        # TODO: check resulting dicts using get_array_of_dict_check_keys_vs_values
+        self.time_specifications = tab.get_array_of_dict("time_specifications")
 
     def as_table(self):
         if not check_not_none(

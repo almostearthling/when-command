@@ -12,6 +12,7 @@ from ..utility import (
 )
 
 from .event import Event
+from .itemhelp import CheckedTable
 
 
 # default values for non-optional parameters
@@ -34,7 +35,7 @@ class DBusEvent(Event):
         if t:
             assert t.get("type") == self.type
             self.bus = t.get("bus")
-            assert self.bus in (":session", ":system")
+            assert self.bus in [":session", ":system"]
             self.rule = t.get("rule")
             self.parameter_check_all = t.get("parameter_check_all")
             self.parameter_check = t.get("parameter_check")
@@ -43,6 +44,18 @@ class DBusEvent(Event):
             self.rule = DEFAULT_RULE
             self.parameter_check_all = None
             self.parameter_check = None
+
+    def __load_checking(self, item: items.Table, item_line: int) -> None:
+        super().__load_checking(item, item_line)
+        self.type = "dbus"
+        self.hrtype = ITEM_EVENT_DBUS
+        tab = CheckedTable(item, item_line)
+        assert tab.get_str("type") == self.type
+        # hard to check that it is a real DBus rule, so we just get a string
+        self.bus = tab.get_str_check_in("rule", [":session", ":system"])
+        self.rule = tab.get_str("rule")
+        self.parameter_check_all = tab.get_bool("parameter_check_all")
+        self.parameter_check = tab.get_bool("parameter_check")
 
     def as_table(self):
         if not check_not_none(

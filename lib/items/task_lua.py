@@ -3,6 +3,7 @@
 from lib.i18n.strings import *
 
 import re
+import os
 
 from tomlkit import items
 from ..utility import check_not_none, append_not_none, toml_script_string
@@ -56,6 +57,7 @@ class LuaScriptTask(Task):
         self.hrtype = ITEM_TASK_LUA
         tab = CheckedTable(item, item_line)
         assert tab.get_str("type") == self.type
+        # hard to check that it is a real Lua script, so we just get a string
         self.script = tab.get_str("script")
         self.expect_all = tab.get_bool("expect_all")
         self.init_script_path = tab.get_str_check(

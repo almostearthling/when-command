@@ -6,7 +6,6 @@ from tomlkit import items
 from ..utility import check_not_none, toml_script_string
 
 from .event import Event
-
 from .itemhelp import CheckedTable
 
 

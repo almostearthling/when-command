@@ -6,6 +6,7 @@ from tomlkit import items
 from ..utility import check_not_none
 
 from .cond import Condition
+from .itemhelp import CheckedTable
 
 
 # default values for non-optional parameters
@@ -24,6 +25,13 @@ class EventCondition(Condition):
         self.hrtype = ITEM_COND_EVENT
         if t:
             assert t.get("type") == self.type
+
+    def __load_checking(self, item: items.Table, item_line: int) -> None:
+        super().__load_checking(item, item_line)
+        self.type = "event"
+        self.hrtype = ITEM_COND_EVENT
+        tab = CheckedTable(item, item_line)
+        assert tab.get_str("type") == self.type
 
     def as_table(self):
         if not check_not_none(
