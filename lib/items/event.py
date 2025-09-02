@@ -10,6 +10,13 @@
 # not known to the scheduler occur.
 
 from tomlkit import table, items
+from tomlkit_extras import (
+    TOMLDocumentDescriptor,
+    AoTDescriptor,
+    TableDescriptor,
+    Hierarchy,
+)
+
 from ..utility import (
     check_not_none,
     append_not_none,
@@ -18,7 +25,7 @@ from ..utility import (
     is_private_item_name,
 )
 
-from .itemhelp import CheckedTable
+from .itemhelp import CheckedTable, ConfigurationError
 
 
 # base class for event: all event items will have the same interface thus they
@@ -60,6 +67,27 @@ class Event(object):
         # TODO: the following should verify that the condition exists and is event based
         self.condition = tab.get_str_check("condition", check=is_valid_item_name)
         self.tags = tab.get_dict("tags")
+
+    # the checking-only function: either returns True or fails
+    # FIXME: this function cannot be used now, and is committed only
+    # for synchronization reasons
+    @classmethod
+    def check_in_document(cls, name: str, dd: TOMLDocumentDescriptor) -> bool:
+        hi = dd.top_level_hierarchy
+        assert hi is not None
+        li = dd.get_aot(hi)
+        aotd = None
+        for e in li:
+            if e.name == 'event':
+                aotd = e
+                break
+        if aotd is None:
+            raise ConfigurationError(
+                name,
+                message="no events found in the configuration",
+            )
+        # li = aotd.tables [...]
+        return True
 
     @property
     def signature(self) -> str:
