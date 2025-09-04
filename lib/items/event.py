@@ -9,7 +9,7 @@
 # events and trigger dedicated command line reactions when certain events
 # not known to the scheduler occur.
 
-from tomlkit import table, items
+from tomlkit import table, items, TOMLDocument
 from tomlkit_extras import (
     TOMLDocumentDescriptor,
     AoTDescriptor,
@@ -72,21 +72,51 @@ class Event(object):
     # FIXME: this function cannot be used now, and is committed only
     # for synchronization reasons
     @classmethod
-    def check_in_document(cls, name: str, dd: TOMLDocumentDescriptor) -> bool:
-        hi = dd.top_level_hierarchy
-        assert hi is not None
-        li = dd.get_aot(hi)
-        aotd = None
-        for e in li:
-            if e.name == 'event':
-                aotd = e
-                break
-        if aotd is None:
+    def check_in_document(cls, name: str, doc: TOMLDocument) -> bool:
+        dd = TOMLDocumentDescriptor(doc)
+        try:
+            # TODO: check that the following retrieval is actually what we are
+            # looking for, it would seem like this by using the module on a
+            # simple case, but investigate on *why* `get_aot` returns a *list*
+            # of AoT descriptors - maybe if there is more than one AoT with the
+            # same name, we should consider it a configuration error?
+            li = dd.get_aot('event')[0]  
+        # except InvalidArrayOfTablesError, IndexError:
+        except Exception:
             raise ConfigurationError(
                 name,
                 message="no events found in the configuration",
             )
-        # li = aotd.tables [...]
+        # retrieve the desired table and descriptor (which is only used to find
+        # the line number at wich the item starts!!!) and use them to build a
+        # dummy item: the checking constructor will raise a ConfigurationError
+        # on errors, which will also contain useful information about what went
+        # wrong
+        elem = None
+        elemd = None
+        for k in li.tables:
+            for tabd in li.tables[k]:
+                aot = doc.get('event')
+                assert isinstance(aot, items.AoT)
+                # TODO: check that the `container_position` is actually the
+                # index in the array of tables (although 1-based as per docs)
+                tab = aot[tabd.container_position - 1]
+                try:
+                    if tab.get("name") == name:
+                        elem = tab
+                        elemd = tabd
+                        break
+                except Exception:
+                    raise ConfigurationError(
+                        name,
+                        message=f"event not found in the configuration",
+                    )
+        # check that elem and elemd are not None
+        assert elem is not None and elemd is not None
+        # now build a dummy event table using the checking constructor
+        o = cls()
+        o.__load_checking(elem, elemd.line_no)
+        # if no exception has been raised, checking was positive
         return True
 
     @property
