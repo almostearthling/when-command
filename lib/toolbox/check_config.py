@@ -5,23 +5,23 @@
 # ones and the ones in `tags`) for correctness.
 
 
-from tomlkit import table, items, TOMLDocument
-from tomlkit_extras import (
-    TOMLDocumentDescriptor,
-    AoTDescriptor,
-    TableDescriptor,
-    Hierarchy,
-)
+from lib.i18n.strings import *
+
+from tomlkit import parse, TOMLDocument
+from tomlkit.exceptions import ParseError
 
 from ..items.itemhelp import ConfigurationError
 from ..items.item import ALL_AVAILABLE_ITEMS_D
 
+from ..utility import get_rich_console, write_error
 
-def check_globals(doc: TOMLDocument) -> bool:
+
+def check_globals(doc: TOMLDocument) -> list[ConfigurationError]:
+    errors = []
     # TODO: perform actual checks
     if doc is None:
-        raise ConfigurationError(message="invalid configuration file")
-    return True
+        errors.append(ConfigurationError(message="invalid configuration file"))
+    return errors
 
 
 def check_items(doc: TOMLDocument) -> list[ConfigurationError]:
@@ -29,6 +29,7 @@ def check_items(doc: TOMLDocument) -> list[ConfigurationError]:
     event_conds = []
     errors = []
     # first retrieve tasks, and store their names to test concitions
+    print("#################### TASKS ########################")
     if (elems := doc.get("task")) is not None:
         for item_table in elems:
             err = None
@@ -47,8 +48,9 @@ def check_items(doc: TOMLDocument) -> list[ConfigurationError]:
                         except ConfigurationError as e:
                             err = e
                     else:
+                        # TODO: report item line in TOML document
                         err = ConfigurationError(
-                            name,
+                            name if name is not None else "<unnamed>",
                             message=f"unknown signature ({signature}) for task `{name}`",
                         )
                 except KeyError:
@@ -59,6 +61,7 @@ def check_items(doc: TOMLDocument) -> list[ConfigurationError]:
             if err is not None:
                 errors.append(err)
     # retrieve conditions and store names of event based ones
+    print("#################### CONDITIONS ########################")
     if (elems := doc.get("condition")) is not None:
         for item_table in elems:
             err = None
@@ -77,8 +80,9 @@ def check_items(doc: TOMLDocument) -> list[ConfigurationError]:
                         except ConfigurationError as e:
                             err = e
                     else:
+                        # TODO: report item line in TOML document
                         err = ConfigurationError(
-                            name,
+                            name if name is not None else "<unnamed>",
                             message=f"unknown signature ({signature}) for condition `{name}`",
                         )
                 except KeyError:
@@ -93,6 +97,7 @@ def check_items(doc: TOMLDocument) -> list[ConfigurationError]:
             if err is not None:
                 errors.append(err)
     # retrieve events
+    print("#################### EVENTS ########################")
     if (elems := doc.get("event")) is not None:
         for item_table in elems:
             err = None
@@ -110,8 +115,9 @@ def check_items(doc: TOMLDocument) -> list[ConfigurationError]:
                         except ConfigurationError as e:
                             err = e
                     else:
+                        # TODO: report item line in TOML document
                         err = ConfigurationError(
-                            name,
+                            name if name is not None else "<unnamed>",
                             message=f"unknown signature ({signature}) for event `{name}`",
                         )
                 except KeyError:
@@ -122,6 +128,45 @@ def check_items(doc: TOMLDocument) -> list[ConfigurationError]:
             if err is not None:
                 errors.append(err)
     return errors
+
+
+# this is the main tool function
+def check_config_file(filename, verbose=True) -> bool:
+    if verbose:
+        console = get_rich_console()
+    else:
+        console = None
+    try:
+        with open(filename) as f:
+            toml = f.read()
+        doc = parse(toml)
+        errors = []
+        errors += check_globals(doc)
+        errors += check_items(doc)
+        if len(errors) > 0:
+            if verbose:
+                write_error(CLI_ERR_CONFIG_ERRORS_FOUND % f)
+                for e in errors:
+                    write_error("* %s" % str(e))
+        else:
+            # the only case that results in a successful outcome
+            if verbose:
+                console.print(CLI_MSG_NO_ERRORS_FOUND)  # type: ignore
+            return True
+    except FileNotFoundError:
+        if verbose:
+            write_error(CLI_ERR_FILE_NOT_FOUND % f)
+    except ParseError as err:
+        if verbose:
+            write_error(CLI_ERR_CONFIG_INVALID % (f, str(err)))
+    except Exception as err:
+        if verbose:
+            import traceback
+            print(err)
+            print(traceback.format_exc())
+            write_error(CLI_ERR_ERROR_GENERIC)
+    # if we are here the check was not positive
+    return False
 
 
 # end.

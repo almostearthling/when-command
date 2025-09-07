@@ -94,8 +94,8 @@ def cond_wmi_from_command(t: items.Table, target: type[Condition]) -> items.Tabl
     # since the items to convert will always be non-native ones, that have
     # the `updateitem` method, the check should actually be unnecessary
     cond = target(t1)
-    if 'updateitem' in cond.__dict__:
-        cond.updateitem()   # type: ignore
+    if "updateitem" in cond.__dict__:
+        cond.updateitem()  # type: ignore
     return cond.as_table()
 
 
@@ -128,8 +128,8 @@ def cond_dbus_from_command(t: items.Table, target: type[Condition]) -> items.Tab
     # since the items to convert will always be non-native ones, that have
     # the `updateitem` method, the check should actually be unnecessary
     cond = target(t1)
-    if 'updateitem' in cond.__dict__:
-        cond.updateitem()   # type: ignore
+    if "updateitem" in cond.__dict__:
+        cond.updateitem()  # type: ignore
     return cond.as_table()
 
 
@@ -193,7 +193,7 @@ CONVERSIONS_DBUS = {
     ),
     "cond:dbus:battery_low": (
         lambda t: cond_dbus_from_command(
-            item_change_subtype(t, "battery_low"), LowBatteryCondition_L    # type: ignore
+            item_change_subtype(t, "battery_low"), LowBatteryCondition_L  # type: ignore
         )
     ),
     "cond:dbus:removable_drive": (lambda t: item_change_subtype(t, "removable_drive")),
@@ -207,15 +207,15 @@ CONVERSIONS_WMI = {
     "cond:wmi:battery_charging": (
         lambda t: cond_wmi_from_command(t, ChargingBatteryCondition_W)  # type: ignore
     ),
-    "cond:wmi:battery_low": (lambda t: cond_wmi_from_command(t, LowBatteryCondition_W)),    # type: ignore
+    "cond:wmi:battery_low": (lambda t: cond_wmi_from_command(t, LowBatteryCondition_W)),  # type: ignore
     "cond:wmi:session_locked": (
         lambda t: cond_wmi_from_command(
-            item_change_subtype(t, "session_locked"), SessionLockedCondition    # type: ignore
+            item_change_subtype(t, "session_locked"), SessionLockedCondition  # type: ignore
         )
     ),
     "cond:wmi:removable_drive": (
         lambda t: cond_wmi_from_command(
-            item_change_subtype(t, "removable_drive"), RemovableDrivePresent    # type: ignore
+            item_change_subtype(t, "removable_drive"), RemovableDrivePresent  # type: ignore
         )
     ),
     # ...
@@ -260,7 +260,7 @@ def fix_config(filename: str, console=None) -> TOMLDocument:
     for elem in ["condition", "event", "task"]:
         if elem in doc:
             lot = aot()
-            for t in doc[elem]:     # type: ignore
+            for t in doc[elem]:  # type: ignore
                 sig = table_signature(elem, t)
                 if sig in legacy_sigs:
                     new_sig = LEGACY_ITEMS[sig]
@@ -280,7 +280,7 @@ def fix_config(filename: str, console=None) -> TOMLDocument:
 
 
 # fix config file at once, save a backup copy
-def fix_config_file(filename, verbose=True, backup=True) -> None:
+def fix_config_file(filename, verbose=True, backup=True) -> bool:
     update_legacy_items()
     update_conversions()
     if verbose:
@@ -293,13 +293,15 @@ def fix_config_file(filename, verbose=True, backup=True) -> None:
         if backup:
             new_name = "%s~" % filename
             if verbose:
-                console.print(CLI_MSG_BACKUP_CONFIG % new_name)     # type: ignore
+                console.print(CLI_MSG_BACKUP_CONFIG % new_name)  # type: ignore
             shutil.move(filename, new_name)
         if verbose:
-            console.print(CLI_MSG_WRITE_NEW_CONFIG % filename)      # type: ignore
+            console.print(CLI_MSG_WRITE_NEW_CONFIG % filename)  # type: ignore
         write_whenever_config(filename, tasks, conditions, events, globals)
+        return True
     except Exception as e:
         write_warning(CLI_ERR_CANNOT_FIX_CONFIG % filename)
+        return False
 
 
 # end.

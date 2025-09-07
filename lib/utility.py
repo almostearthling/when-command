@@ -453,8 +453,9 @@ def write_error(s) -> None:
 
 
 # utility to bail out with a consistent error message
-def exit_error(s, code=2):
-    write_error(s)
+def exit_error(s, code=2, verbose=True):
+    if verbose:
+        write_error(s)
     sys.exit(code)
 
 

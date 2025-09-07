@@ -123,13 +123,16 @@ class Condition(object):
         # wrong
         elem = None
         elemd = None
+        print ("@@@@@@@@@@@@@@", repr(li.tables))
         for k in li.tables:
             for tabd in li.tables[k]:
                 aot = doc.get("condition")
                 assert isinstance(aot, items.AoT)
                 # TODO: check that the `container_position` is actually the
                 # index in the array of tables (although 1-based as per docs)
-                tab = aot[tabd.container_position - 1]
+                print(">>>>>>>>>>>>>>>>", repr(tabd))
+                # tab = aot[tabd.container_position - 1]
+                tab = aot[0]
                 try:
                     if tab.get("name") == name:
                         elem = tab

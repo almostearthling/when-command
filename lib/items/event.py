@@ -77,7 +77,9 @@ class Event(object):
     # FIXME: this function cannot be used now, and is committed only
     # for synchronization reasons
     @classmethod
-    def check_in_document(cls, name: str, doc: TOMLDocument) -> bool:
+    def check_in_document(
+        cls, name: str, doc: TOMLDocument, event_conds: list[str] | None = None
+    ) -> bool:
         dd = TOMLDocumentDescriptor(doc)
         try:
             # the `get_aot()` method returns a list of AOTs, containing a
@@ -120,7 +122,7 @@ class Event(object):
         assert elem is not None and elemd is not None
         # now build a dummy event table using the checking constructor
         o = cls()
-        o.__load_checking(elem, elemd.line_no)
+        o.__load_checking(elem, elemd.line_no, event_conds)
         # if no exception has been raised, checking was positive
         return True
 

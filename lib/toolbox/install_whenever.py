@@ -134,7 +134,7 @@ def download_and_check_whenever(verbose=False):
 
 
 # unzip the archive in the provided directory
-def unzip_binaries_to_directory(archive, folder=None, verbose=False):
+def unzip_binaries_to_directory(archive, folder=None, verbose=False) -> bool:
     console = get_rich_console()
     with ZipFile(archive, 'r') as z:
         bins = z.namelist()
@@ -154,6 +154,8 @@ def unzip_binaries_to_directory(archive, folder=None, verbose=False):
                         os.chmod(e, 0o750)
             except Exception as e:
                 write_error(CLI_ERR_UNEXPECTED_EXCEPTION % e)
+                return False
+    return True
 
 
 # use the two above-defined utilities to install the binaries

@@ -162,7 +162,7 @@ elif sys.platform == "linux":
 
 
 # use the utilities defined above to create the requested shortcuts
-def create_shortcuts(main_script, desktop=True, autostart=True, verbose=False):
+def create_shortcuts(main_script, desktop=True, autostart=True, verbose=False) -> bool:
     console = get_rich_console()
     if verbose:
         console.print(CLI_MSG_CREATING_ICON, highlight=False)
@@ -214,6 +214,8 @@ def create_shortcuts(main_script, desktop=True, autostart=True, verbose=False):
         if verbose:
             print(e)
             write_warning(CLI_ERR_CANNOT_CREATE_SHORTCUT)
+        return False
+    return True
 
 
 # end.

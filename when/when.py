@@ -438,15 +438,19 @@ def main_toolbox(args) -> None:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--create-icons")
         if args.fix_config and verbose:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--fix-config")
+        if args.check_config and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--check-config")
         if bool(args.install_lua) and verbose:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--install-lua")
         if bool(args.upgrade_lua) and verbose:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--upgrade-lua")
         from lib.toolbox.install_whenever import install
 
-        install(verbose=verbose)
-        if verbose:
-            console.print(CLI_MSG_INSTALLATION_FINISHED, highlight=False)
+        if install(verbose=verbose):
+            if verbose:
+                console.print(CLI_MSG_OPERATION_FINISHED, highlight=False)
+        else:
+            exit_error(CLI_MSG_OPERATION_FAILED, verbose=verbose)
 
     # create shortcuts/desktop files in the appropriate requested locations
     elif args.create_icons:
@@ -455,6 +459,8 @@ def main_toolbox(args) -> None:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--install-whenever")
         if args.fix_config and verbose:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--fix-config")
+        if args.check_config and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--check-config")
         if bool(args.install_lua) and verbose:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--install-lua")
         if bool(args.upgrade_lua) and verbose:
@@ -462,9 +468,11 @@ def main_toolbox(args) -> None:
         from lib.toolbox.create_shortcuts import create_shortcuts
 
         my_path = os.path.normpath(os.path.realpath(__file__))
-        create_shortcuts(my_path, args.desktop, args.autostart, verbose)
-        if verbose:
-            console.print(CLI_MSG_OPERATION_FINISHED, highlight=False)
+        if create_shortcuts(my_path, args.desktop, args.autostart, verbose):
+            if verbose:
+                console.print(CLI_MSG_OPERATION_FINISHED, highlight=False)
+        else:
+            exit_error(CLI_MSG_OPERATION_FAILED, verbose=verbose)
 
     # fix configuration
     elif args.fix_config:
@@ -476,6 +484,8 @@ def main_toolbox(args) -> None:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--autostart")
         if args.create_icons and verbose:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--create-icons")
+        if args.check_config and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--check-config")
         if bool(args.install_lua) and verbose:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--install-lua")
         if bool(args.upgrade_lua) and verbose:
@@ -483,9 +493,36 @@ def main_toolbox(args) -> None:
         retrieve_whenever_options()
         from lib.toolbox.fix_config import fix_config_file
 
-        fix_config_file(get_configfile(), verbose)
-        if verbose:
-            console.print(CLI_MSG_OPERATION_FINISHED, highlight=False)
+        if fix_config_file(get_configfile(), verbose):
+            if verbose:
+                console.print(CLI_MSG_OPERATION_FINISHED, highlight=False)
+        else:
+            exit_error(CLI_MSG_OPERATION_FAILED, verbose=verbose)
+
+    # fix configuration
+    elif args.check_config:
+        if args.install_whenever and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--install-whenever")
+        if args.desktop and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--desktop")
+        if args.autostart and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--autostart")
+        if args.create_icons and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--create-icons")
+        if args.fix_config and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--fix-config")
+        if bool(args.install_lua) and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--install-lua")
+        if bool(args.upgrade_lua) and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--upgrade-lua")
+        retrieve_whenever_options()
+        from lib.toolbox.check_config import check_config_file
+
+        if check_config_file(get_configfile(), verbose):
+            if verbose:
+                console.print(CLI_MSG_OPERATION_FINISHED, highlight=False)
+        else:
+            exit_error(CLI_MSG_OPERATION_FAILED, verbose=verbose)
 
     # install a Lua library:
     elif bool(args.install_lua):
@@ -499,16 +536,17 @@ def main_toolbox(args) -> None:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--create-icons")
         if args.fix_config and verbose:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--fix-config")
+        if args.check_config and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--check-config")
         if bool(args.upgrade_lua) and verbose:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--upgrade-lua")
         from lib.toolbox.install_lua import install_lua
 
-        res = install_lua(args.install_lua, verbose)
-        if verbose:
-            if res:
+        if install_lua(args.install_lua, verbose):
+            if verbose:
                 console.print(CLI_MSG_OPERATION_FINISHED, highlight=False)
-            else:
-                console.print(CLI_MSG_OPERATION_FAILED, highlight=False)
+        else:
+            exit_error(CLI_MSG_OPERATION_FAILED, verbose=verbose)
 
     # upgrade a Lua library:
     elif bool(args.upgrade_lua):
@@ -522,17 +560,17 @@ def main_toolbox(args) -> None:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--create-icons")
         if args.fix_config and verbose:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--fix-config")
+        if args.check_config and verbose:
+            write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--check-config")
         if bool(args.install_lua) and verbose:
             write_warning(CLI_ERR_UNSUPPORTED_SWITCH % "--install-lua")
         from lib.toolbox.install_lua import upgrade_lua
 
-        res = upgrade_lua(args.upgrade_lua, verbose)
-        if verbose:
-            if res:
+        if upgrade_lua(args.upgrade_lua, verbose):
+            if verbose:
                 console.print(CLI_MSG_OPERATION_FINISHED, highlight=False)
-            else:
-                console.print(CLI_MSG_OPERATION_FAILED, highlight=False)
-
+        else:
+            exit_error(CLI_MSG_OPERATION_FAILED, verbose=verbose)
     # ...
 
 
@@ -645,6 +683,11 @@ def main() -> None:
     parser_toolbox.add_argument(
         "--fix-config",
         help=CLI_ARG_HELP_FIXCONFIG,
+        action="store_true",
+    )
+    parser_toolbox.add_argument(
+        "--check-config",
+        help=CLI_ARG_HELP_CHECKCONFIG,
         action="store_true",
     )
     parser_toolbox.add_argument(

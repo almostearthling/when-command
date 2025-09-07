@@ -5,8 +5,6 @@
 
 _singleton_lock = False
 
-from pygments.styles import get_style_by_name
-
 
 class _AppConfiguration(object):
 
