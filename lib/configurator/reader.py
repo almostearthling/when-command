@@ -30,9 +30,7 @@ def whenever_config_from_doc(doc: TOMLDocument):
         'randomize_checks_within_ticks': doc.get('randomize_checks_within_ticks', False),
         'tags': doc.get('tags', {}),
     }
-    if 'task' in doc:
-        elems = doc.get('task')
-        assert elems is not None
+    if (elems := doc.get('task')) is not None:
         for item_table in elems:
             try:
                 signature = 'task:%s' % item_table['type']
@@ -48,9 +46,7 @@ def whenever_config_from_doc(doc: TOMLDocument):
                     write_warning("unknown signature (%s) for task `%s`" % (signature, item_table.get('name', '<unnamed>')))
             except KeyError:
                 write_warning("skipping malformed task `%s`" % item_table.get('name', '<unnamed>'))
-    if 'condition' in doc:
-        elems = doc.get('condition')
-        assert elems is not None
+    if (elems := doc.get('condition')) is not None:
         for item_table in elems:
             try:
                 signature = 'cond:%s' % item_table['type']
@@ -66,9 +62,7 @@ def whenever_config_from_doc(doc: TOMLDocument):
                     write_warning("unknown signature (%s) for condition `%s`" % (signature, item_table.get('name', '<unnamed>')))
             except KeyError:
                 write_warning("skipping malformed condition `%s`" % item_table.get('name', '<unnamed>'))
-    if 'event' in doc:
-        elems = doc.get('event')
-        assert elems is not None
+    if (elems := doc.get('event')) is not None:
         for item_table in elems:
             try:
                 signature = 'event:%s' % item_table['type']

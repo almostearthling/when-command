@@ -5,7 +5,14 @@
 # - Lua script tasks
 # as per whenever documentation.
 
-from tomlkit import table, items
+from tomlkit import table, items, TOMLDocument
+from tomlkit_extras import (
+    TOMLDocumentDescriptor,
+    AoTDescriptor,
+    TableDescriptor,
+    Hierarchy,
+)
+
 from ..utility import (
     check_not_none,
     append_not_none,
@@ -14,7 +21,7 @@ from ..utility import (
     is_private_item_name,
 )
 
-from .itemhelp import CheckedTable
+from .itemhelp import CheckedTable, ConfigurationError
 
 
 # base class for tasks: all task items will have the same interface thus they
@@ -52,6 +59,57 @@ class Task(object):
         tab = CheckedTable(item, item_line)
         self.name = tab.get_str_check("name", check=is_valid_item_name)
         self.tags = tab.get_dict("tags")
+
+    # the checking-only function: either returns True or fails
+    # FIXME: this function cannot be used now, and is committed only
+    # for synchronization reasons
+    @classmethod
+    def check_in_document(cls, name: str, doc: TOMLDocument) -> bool:
+        dd = TOMLDocumentDescriptor(doc)
+        try:
+            # the `get_aot()` method returns a list of AOTs, containing a
+            # single element if there are any items of this type in the
+            # configuration file; if the list is empty, there are no events
+            # defined and an `IndexError` is thrown
+            li = dd.get_aot("task")[0]
+        # the `except` clause should be the following, we don't care though:
+        # except InvalidArrayOfTablesError, IndexError:
+        except Exception:
+            raise ConfigurationError(
+                name,
+                message="no tasks found in the configuration",
+            )
+        # retrieve the desired table and descriptor (which is only used to find
+        # the line number at wich the item starts!!!) and use them to build a
+        # dummy item: the checking constructor will raise a ConfigurationError
+        # on errors, which will also contain useful information about what went
+        # wrong
+        elem = None
+        elemd = None
+        for k in li.tables:
+            for tabd in li.tables[k]:
+                aot = doc.get("condition")
+                assert isinstance(aot, items.AoT)
+                # TODO: check that the `container_position` is actually the
+                # index in the array of tables (although 1-based as per docs)
+                tab = aot[tabd.container_position - 1]
+                try:
+                    if tab.get("name") == name:
+                        elem = tab
+                        elemd = tabd
+                        break
+                except Exception:
+                    raise ConfigurationError(
+                        name,
+                        message=f"condition not found in the configuration",
+                    )
+        # check that elem and elemd are not None
+        assert elem is not None and elemd is not None
+        # now build a dummy event table using the checking constructor
+        o = cls()
+        o.__load_checking(elem, elemd.line_no)
+        # if no exception has been raised, checking was positive
+        return True
 
     @property
     def signature(self):

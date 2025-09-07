@@ -59,13 +59,18 @@ class Event(object):
     # the following too is a constructor, that may generate errors: it can be
     # used in a configuration checking function, or by the constructor itself
     # to check the correctness of the configuration file as a side effect
-    def __load_checking(self, item: items.Table, item_line: int) -> None:
+    def __load_checking(
+        self, item: items.Table, item_line: int, event_conds: list[str] | None = None
+    ) -> None:
         self.type = None
         self.hrtype = None
         tab = CheckedTable(item, item_line)
         self.name = tab.get_str_check("name", check=is_valid_item_name)
-        # TODO: the following should verify that the condition exists and is event based
-        self.condition = tab.get_str_check("condition", check=is_valid_item_name)
+        if event_conds is None:
+            check = is_valid_item_name
+        else:
+            check = lambda x: x in event_conds
+        self.condition = tab.get_str_check("condition", check=check)
         self.tags = tab.get_dict("tags")
 
     # the checking-only function: either returns True or fails
@@ -75,12 +80,12 @@ class Event(object):
     def check_in_document(cls, name: str, doc: TOMLDocument) -> bool:
         dd = TOMLDocumentDescriptor(doc)
         try:
-            # TODO: check that the following retrieval is actually what we are
-            # looking for, it would seem like this by using the module on a
-            # simple case, but investigate on *why* `get_aot` returns a *list*
-            # of AoT descriptors - maybe if there is more than one AoT with the
-            # same name, we should consider it a configuration error?
-            li = dd.get_aot('event')[0]  
+            # the `get_aot()` method returns a list of AOTs, containing a
+            # single element if there are any items of this type in the
+            # configuration file; if the list is empty, there are no events
+            # defined and an `IndexError` is thrown
+            li = dd.get_aot("event")[0]
+        # the `except` clause should be the following, we don't care though:
         # except InvalidArrayOfTablesError, IndexError:
         except Exception:
             raise ConfigurationError(
@@ -96,7 +101,7 @@ class Event(object):
         elemd = None
         for k in li.tables:
             for tabd in li.tables[k]:
-                aot = doc.get('event')
+                aot = doc.get("event")
                 assert isinstance(aot, items.AoT)
                 # TODO: check that the `container_position` is actually the
                 # index in the array of tables (although 1-based as per docs)
