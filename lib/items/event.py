@@ -64,18 +64,17 @@ class Event(object):
     ) -> None:
         self.type = None
         self.hrtype = None
-        tab = CheckedTable(item, item_line)
-        self.name = tab.get_str_check("name", check=is_valid_item_name)
+        name_check = lambda x: is_valid_item_name(x) or is_private_item_name(x)
         if event_conds is None:
-            check = is_valid_item_name
+            check = name_check
         else:
             check = lambda x: x in event_conds
+        tab = CheckedTable(item, item_line)
+        self.name = tab.get_str_check("name", check=name_check)
         self.condition = tab.get_str_check("condition", check=check)
         self.tags = tab.get_dict("tags")
 
     # the checking-only function: either returns True or fails
-    # FIXME: this function cannot be used now, and is committed only
-    # for synchronization reasons
     @classmethod
     def check_in_document(
         cls, name: str, doc: TOMLDocument, event_conds: list[str] | None = None
@@ -103,21 +102,22 @@ class Event(object):
         elemd = None
         for k in li.tables:
             for tabd in li.tables[k]:
-                aot = doc.get("event")
-                assert isinstance(aot, items.AoT)
-                # TODO: check that the `container_position` is actually the
-                # index in the array of tables (although 1-based as per docs)
-                tab = aot[tabd.container_position - 1]
-                try:
-                    if tab.get("name") == name:
-                        elem = tab
-                        elemd = tabd
-                        break
-                except Exception:
-                    raise ConfigurationError(
-                        name,
-                        message=f"event not found in the configuration",
-                    )
+                if tabd.hierarchy == "event":
+                    aot = doc.get("event")
+                    assert isinstance(aot, items.AoT)
+                    # TODO: check that the `container_position` is actually the
+                    # index in the array of tables (although 1-based as per docs)
+                    tab = aot[tabd.container_position - 1]
+                    try:
+                        if tab.get("name") == name:
+                            elem = tab
+                            elemd = tabd
+                            break
+                    except Exception:
+                        raise ConfigurationError(
+                            name,
+                            message=f"event not found in the configuration",
+                        )
         # check that elem and elemd are not None
         assert elem is not None and elemd is not None
         # now build a dummy event table using the checking constructor

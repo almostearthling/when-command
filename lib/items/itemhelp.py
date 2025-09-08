@@ -14,19 +14,22 @@ class ConfigurationError(Exception):
         item_name: str | None = None,
         entry_name: str | None = None,
         item_line: int | None = None,
+        item_type: str | None = None,
         message: str | None = None,
     ):
         self.item_name = item_name
         self.entry_name = entry_name
         self.item_line = item_line
+        self.item_type = item_type
         self.message = message
 
     def __str__(self):
-        iname = f"`{self.item_name}`" if self.item_name is not None else "<unknown>"
+        iname = f"{self.item_name}" if self.item_name is not None else "<unnamed>"
         iline = f"@{self.item_line}" if self.item_line is not None else ""
-        ename = f"[`{self.entry_name}`]" if self.entry_name is not None else ""
+        ename = f"[{self.entry_name}]" if self.entry_name is not None else ""
+        itype = f"/{self.item_type}" if self.item_type is not None else ""
         msg = f"`{self.message}`" if self.message is not None else "<unknown>"
-        return f"{self.__class__.__name__}/item {iname}{ename}{iline}: {msg}"
+        return f"{self.__class__.__name__}{itype} {iname}{ename}{iline}: {msg}"
 
     def __repr__(self):
         return str(self)

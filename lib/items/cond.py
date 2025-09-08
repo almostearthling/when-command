@@ -82,24 +82,23 @@ class Condition(object):
     ) -> None:
         self.type = None
         self.hrtype = None
+        name_check = lambda x: is_valid_item_name(x) or is_private_item_name(x)
+        if tasks is None:
+            check = name_check
+        else:
+            check = lambda x: x in tasks
         tab = CheckedTable(item, item_line)
-        self.name = tab.get_str_check("name", check=is_valid_item_name)
+        self.name = tab.get_str_check("name", check=name_check)
         self.execute_sequence = tab.get_bool("execute_sequence")
         self.break_on_failure = tab.get_bool("break_on_failure")
         self.break_on_success = tab.get_bool("break_on_success")
         self.suspended = tab.get_bool("suspended")
         self.recurring = tab.get_bool("recurring")
         self.max_tasks_retries = tab.get_int_between("max_tasks_retries", -1)
-        if tasks is None:
-            check = is_valid_item_name
-        else:
-            check = lambda x: x in tasks
         self.tasks = tab.get_list_of_str_check("tasks", check=check)
         self.tags = tab.get_dict("tags")
 
     # the checking-only function: either returns True or fails
-    # FIXME: this function cannot be used now, and is committed only
-    # for synchronization reasons
     @classmethod
     def check_in_document(cls, name: str, doc: TOMLDocument, tasks=None) -> bool:
         dd = TOMLDocumentDescriptor(doc)
@@ -123,26 +122,22 @@ class Condition(object):
         # wrong
         elem = None
         elemd = None
-        print ("@@@@@@@@@@@@@@", repr(li.tables))
         for k in li.tables:
             for tabd in li.tables[k]:
-                aot = doc.get("condition")
-                assert isinstance(aot, items.AoT)
-                # TODO: check that the `container_position` is actually the
-                # index in the array of tables (although 1-based as per docs)
-                print(">>>>>>>>>>>>>>>>", repr(tabd))
-                # tab = aot[tabd.container_position - 1]
-                tab = aot[0]
-                try:
-                    if tab.get("name") == name:
-                        elem = tab
-                        elemd = tabd
-                        break
-                except Exception:
-                    raise ConfigurationError(
-                        name,
-                        message=f"condition not found in the configuration",
-                    )
+                if tabd.hierarchy == "condition":
+                    aot = doc.get("condition")
+                    assert isinstance(aot, items.AoT)
+                    tab = aot[tabd.container_position - 1]
+                    try:
+                        if tab.get("name") == name:
+                            elem = tab
+                            elemd = tabd
+                            break
+                    except Exception:
+                        raise ConfigurationError(
+                            name,
+                            message=f"condition not found in the configuration",
+                        )
         # check that elem and elemd are not None
         assert elem is not None and elemd is not None
         # now build a dummy event table using the checking constructor

@@ -29,7 +29,6 @@ def check_items(doc: TOMLDocument) -> list[ConfigurationError]:
     event_conds = []
     errors = []
     # first retrieve tasks, and store their names to test concitions
-    print("#################### TASKS ########################")
     if (elems := doc.get("task")) is not None:
         for item_table in elems:
             err = None
@@ -44,7 +43,8 @@ def check_items(doc: TOMLDocument) -> list[ConfigurationError]:
                     if t and name is not None:
                         factory = t[2]
                         try:
-                            factory.check_in_document(name, doc)
+                            if factory.check_in_document(name, doc):
+                                tasks.append(name)
                         except ConfigurationError as e:
                             err = e
                     else:
@@ -61,7 +61,6 @@ def check_items(doc: TOMLDocument) -> list[ConfigurationError]:
             if err is not None:
                 errors.append(err)
     # retrieve conditions and store names of event based ones
-    print("#################### CONDITIONS ########################")
     if (elems := doc.get("condition")) is not None:
         for item_table in elems:
             err = None
@@ -76,7 +75,9 @@ def check_items(doc: TOMLDocument) -> list[ConfigurationError]:
                     if t and name is not None:
                         factory = t[2]
                         try:
-                            factory.check_in_document(name, doc, tasks)
+                            if factory.check_in_document(name, doc, tasks):
+                                if cond_type in ("event", "bucket"):
+                                    event_conds.append(name)
                         except ConfigurationError as e:
                             err = e
                     else:
@@ -97,7 +98,6 @@ def check_items(doc: TOMLDocument) -> list[ConfigurationError]:
             if err is not None:
                 errors.append(err)
     # retrieve events
-    print("#################### EVENTS ########################")
     if (elems := doc.get("event")) is not None:
         for item_table in elems:
             err = None
@@ -111,7 +111,8 @@ def check_items(doc: TOMLDocument) -> list[ConfigurationError]:
                     if t:
                         factory = t[2]
                         try:
-                            factory.check_in_document(name, doc, event_conds)
+                            if factory.check_in_document(name, doc, event_conds):
+                                pass
                         except ConfigurationError as e:
                             err = e
                     else:
@@ -145,7 +146,7 @@ def check_config_file(filename, verbose=True) -> bool:
         errors += check_items(doc)
         if len(errors) > 0:
             if verbose:
-                write_error(CLI_ERR_CONFIG_ERRORS_FOUND % f)
+                write_error(CLI_ERR_CONFIG_ERRORS_FOUND % filename)
                 for e in errors:
                     write_error("* %s" % str(e))
         else:
@@ -155,15 +156,13 @@ def check_config_file(filename, verbose=True) -> bool:
             return True
     except FileNotFoundError:
         if verbose:
-            write_error(CLI_ERR_FILE_NOT_FOUND % f)
+            write_error(CLI_ERR_FILE_NOT_FOUND % filename)
     except ParseError as err:
         if verbose:
-            write_error(CLI_ERR_CONFIG_INVALID % (f, str(err)))
+            write_error(CLI_ERR_CONFIG_INVALID % (filename, str(err)))
     except Exception as err:
         if verbose:
             import traceback
-            print(err)
-            print(traceback.format_exc())
             write_error(CLI_ERR_ERROR_GENERIC)
     # if we are here the check was not positive
     return False
