@@ -364,7 +364,8 @@ CLI_ARG_HELP_WHENEVER = f"Pfad zu einer bestimmten `{CLI_WHENEVER}` ausführbare
 CLI_ARG_HELP_QUIET = "Keine Nachrichten auf der Konsole zeigen"
 CLI_ARG_HELP_DESKTOP = "Die Programmsymbole auf dem Desktop auch installieren"
 CLI_ARG_HELP_AUTOSTART = f"Setup `{UI_APP}` einrichten, um zu starten, wenn sich der Benutzer anmeldet"
-CLI_ARG_HELP_FIXCONFIG = f"Die Konfigurationsdatei `{CLI_WHENEVER}` über inkompatible Versionen verbessern"
+CLI_ARG_HELP_FIXCONFIG = f"Die `{CLI_WHENEVER}` Konfigurationsdatei über inkompatible Versionen verbessern"
+CLI_ARG_HELP_CHECKCONFIG = f"Die `{CLI_WHENEVER}` Konfigurationsdatei prüfen"
 
 CLI_ARG_HELP_CMD_START = f"Den Scheduler `{CLI_WHENEVER}` starten und das Symbol in der Tray Area zeigen"
 CLI_ARG_HELP_CMD_CONFIG = f"Das Konfigurationsdienstprogramm `{UI_APP}` starten"
@@ -380,7 +381,7 @@ CLI_ERR_WHENEVER_NOT_FOUND = f"Ausführbare Datei für [bold]`{CLI_WHENEVER}`[/]
 CLI_ERR_WHENEVER_WRONG_VERSION = f"Die Version von [bold]`{CLI_WHENEVER}`[/] ist nicht unterstützt"
 CLI_ERR_DATADIR_UNACCESSIBLE = "Das Datenverzeichnis konnte weder gefunden noch erstellt werden"
 CLI_ERR_SPECIFICDIR_UNACCESSIBLE = "Das [bold]`%s`[/] Verzeichnis konnte weder gefunden noch erstellt werden"
-CLI_ERR_CONFIG_UNACCESSIBLE = f"Die Konfigurationsdatei [bold]`{CLI_WHENEVER}`[/] konnte weder gefunden noch erstellt werden"
+CLI_ERR_CONFIG_UNACCESSIBLE = f"Die [bold]`{CLI_WHENEVER}`[/] Konfigurationsdatei konnte weder gefunden noch erstellt werden"
 CLI_ERR_ALREADY_RUNNING = f"Eine weitere Instanz von [bold]`{CLI_WHENEVER}`[/] ist ausgeführt: Kann nicht starten"
 CLI_ERR_UNKNOWN_COMMAND = "Unbekannter Befehl: [bold]%s[/]"
 CLI_ERR_UNSUPPORTED_SWITCH = "Die Option `%s` wird in diesem Kontext nicht unterstützt"
@@ -394,6 +395,7 @@ CLI_ERR_INVALID_CHECKSUM = "Prüfsumme nicht übereingestimmt: Datei [bold]`%s`[
 CLI_ERR_BINPATH_NOT_FOUND = "Programmzielverzeichnis nicht gefunden"
 CLI_ERR_DIR_NOT_FOUND = "Konnte kein Verzeichnis finden: [bold]`%s`[/]"
 CLI_ERR_FILE_NOT_FOUND = "Konnte keine Datei finden: [bold]`%s`[/]"
+CLI_ERR_FILE_NOT_READ = "Konnte keine Datei verwenden: [bold]`%s`[/]"
 CLI_ERR_CANNOT_CREATE_FILE = "Konnte keine Datei erstellen: [bold]`%s`[/]"
 CLI_ERR_CANNOT_CREATE_DIR = "Konnte kein Verzeichnis erstellen: [bold]`%s`[/]"
 CLI_ERR_CANNOT_EXTRACT_ARCHIVE = "Das Archiv konnte nicht ins Zielverzeichnis extrahiert werden: [bold]`%s`[/]"
@@ -416,6 +418,9 @@ CLI_ERR_CANNOT_COPY_SHORTCUT = "Konnte eine Verknüpfung nicht kopieren: [bold]`
 CLI_ERR_CANNOT_SET_STARTUP = f"Konnte `{UI_APP}` nicht einstellen, um beim Start automatisch ausgeführt werden zu sein"
 
 CLI_ERR_CANNOT_FIX_CONFIG = "Die Konfigurationsdatei [bold]`%s`[/] konnte nicht verbessert werden"
+
+CLI_ERR_CONFIG_ERRORS_FOUND = "Die folgende Fehler wurden in der [bold]`%s`[/] Konfigurationsdatei gefunden:"
+CLI_ERR_CONFIG_INVALID = "Die [bold]`%s`[/] Konfigurationsdatei ist missgebildet: %s"
 
 CLI_STATUS_INSTALLING_WHENEVER = f"Installation der neuesten Version von [bold]`{CLI_WHENEVER}`[/]..."
 CLI_STATUS_CREATING_ICONS = "Installieren von angeforderten Programmikonen..."

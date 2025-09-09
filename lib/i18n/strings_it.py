@@ -365,6 +365,7 @@ CLI_ARG_HELP_QUIET = "Non stampare messaggi alla console"
 CLI_ARG_HELP_DESKTOP = "Installa anche sul desktop le icone del programma"
 CLI_ARG_HELP_AUTOSTART = f"Imposta l'avvio di `{UI_APP}` all'accesso dell'utente"
 CLI_ARG_HELP_FIXCONFIG = f"Correggi il file di configurazione di `{CLI_WHENEVER}`"
+CLI_ARG_HELP_CHECKCONFIG = f"Controlla il file di configurazione di `{CLI_WHENEVER}`"
 
 CLI_ARG_HELP_CMD_START = f"Avvia lo scheduler `{CLI_WHENEVER}` e visualizza l'icona nella tray area"
 CLI_ARG_HELP_CMD_CONFIG = f"Avvia l'utilità di configurazione `{UI_APP}`"
@@ -380,7 +381,7 @@ CLI_ERR_WHENEVER_NOT_FOUND = f"Eseguibile per [bold]`{CLI_WHENEVER}`[/] non trov
 CLI_ERR_WHENEVER_WRONG_VERSION = f"La versione di [bold]`{CLI_WHENEVER}`[/] non è supportata"
 CLI_ERR_DATADIR_UNACCESSIBLE = "La directory dei dati non è stata trovata né creata"
 CLI_ERR_SPECIFICDIR_UNACCESSIBLE = "La directory [bold]`%s`[/] non è stata né trovata né creata"
-CLI_ERR_CONFIG_UNACCESSIBLE = f"Il file di configurazione [bold]`{CLI_WHENEVER}`[/] non è stato trovato né creato"
+CLI_ERR_CONFIG_UNACCESSIBLE = f"Il file di configurazione di [bold]`{CLI_WHENEVER}`[/] non è stato trovato né creato"
 CLI_ERR_ALREADY_RUNNING = f"Un'altra istanza di [bold]`{CLI_WHENEVER}`[/] è in esecuzione: non può essere avviato"
 CLI_ERR_UNKNOWN_COMMAND = "Comando sconosciuto: [bold]%s[/]"
 CLI_ERR_UNSUPPORTED_SWITCH = "L'opzione `%s` non è supportata in questo contesto"
@@ -394,6 +395,7 @@ CLI_ERR_INVALID_CHECKSUM = "Checksum non corrispondente: file [bold]`%s`[/] non 
 CLI_ERR_BINPATH_NOT_FOUND = "Cartella di destinazione dei file binari non trovata"
 CLI_ERR_DIR_NOT_FOUND = "Impossibile trovare la directory: [bold]`%s`[/]"
 CLI_ERR_FILE_NOT_FOUND = "Impossibile trovare il file: [bold]`%s`[/]"
+CLI_ERR_FILE_NOT_READ = "Impossibile leggere il file: [bold]`%s`[/]"
 CLI_ERR_CANNOT_CREATE_FILE = "Impossibile creare un file: [bold]`%s`[/]"
 CLI_ERR_CANNOT_CREATE_DIR = "Impossibile creare una directory: [bold]`%s`[/]"
 CLI_ERR_CANNOT_EXTRACT_ARCHIVE = "Impossibile estrarre l'archivio nella destinazione: [bold]`%s`[/]"
@@ -416,6 +418,9 @@ CLI_ERR_CANNOT_COPY_SHORTCUT = "Impossibile copiare un collegamento: [bold]`%s`[
 CLI_ERR_CANNOT_SET_STARTUP = f"Impossibile impostare `{UI_APP}` per l'esecuzione automatica all'avvio"
 
 CLI_ERR_CANNOT_FIX_CONFIG = "Impossibile correggere il file di configurazione [bold]`%s`[/]"
+
+CLI_ERR_CONFIG_ERRORS_FOUND = "I seguenti errori sono stati riscontrati nel file di configurazione [bold]`%s`[/]"
+CLI_ERR_CONFIG_INVALID = "Il file di configurazione [bold]`%s`[/] è in un formato errato: %s"
 
 CLI_STATUS_INSTALLING_WHENEVER = f"Installazione dell'ultima versione di [bold]`{CLI_WHENEVER}`[/]..."
 CLI_STATUS_CREATING_ICONS = "Installazione delle icone richieste per il programma..."

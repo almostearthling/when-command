@@ -364,7 +364,8 @@ CLI_ARG_HELP_WHENEVER = f"Chemin vers un exécutable `{CLI_WHENEVER}` spécifiqu
 CLI_ARG_HELP_QUIET = "Ne pas montrer les messages à la console"
 CLI_ARG_HELP_DESKTOP = "Installer les icônes du programme sur le desktop aussi"
 CLI_ARG_HELP_AUTOSTART = f"Configurer `{UI_APP}` pour démarrer lorsque l'utilisateur se connecte"
-CLI_ARG_HELP_FIXCONFIG = f"Trouver et fixer le fichier de configuration `{CLI_WHENEVER}` sur des versions incompatibles"
+CLI_ARG_HELP_FIXCONFIG = f"Trouver et fixer le fichier de configuration de `{CLI_WHENEVER}` sur des versions incompatibles"
+CLI_ARG_HELP_CHECKCONFIG = f"Verifier le fichier de configuration de `{CLI_WHENEVER}`"
 
 CLI_ARG_HELP_CMD_START = f"Démarrer le planificateur `{CLI_WHENEVER}` et afficher l'icône du plateau"
 CLI_ARG_HELP_CMD_CONFIG = f"Démarrer l'utilitaire de configuration `{UI_APP}`"
@@ -380,7 +381,7 @@ CLI_ERR_WHENEVER_NOT_FOUND = f"Exécutable pour [bold]`{CLI_WHENEVER}`[/] non tr
 CLI_ERR_WHENEVER_WRONG_VERSION = f"La version de [bold]`{CLI_WHENEVER}`[/] ne peut pas être prise en charge"
 CLI_ERR_DATADIR_UNACCESSIBLE = "Le répertoire de données ne peut être trouvé ni créé"
 CLI_ERR_SPECIFICDIR_UNACCESSIBLE = "Le répertoire [bold]`%s`[/] ne peut être trouvé ni créé"
-CLI_ERR_CONFIG_UNACCESSIBLE = f"Le fichier de configuration [bold]`{CLI_WHENEVER}`[/] ne peut ni être trouvé ni créé"
+CLI_ERR_CONFIG_UNACCESSIBLE = f"Le fichier de configuration de [bold]`{CLI_WHENEVER}`[/] ne peut ni être trouvé ni créé"
 CLI_ERR_ALREADY_RUNNING = f"Une autre instance de [bold]`{CLI_WHENEVER}`[/] est en cours d'exécution: Impossible de démarrer"
 CLI_ERR_UNKNOWN_COMMAND = "Commande inconnue: [bold]%s[/]"
 CLI_ERR_UNSUPPORTED_SWITCH = "L'option `%s` n'est pas supportée dans ce contexte"
@@ -394,6 +395,7 @@ CLI_ERR_INVALID_CHECKSUM = "La somme de contrôle ne correspond pas: fichier [bo
 CLI_ERR_BINPATH_NOT_FOUND = "Dossier de destination des fichiers binaires introuvable"
 CLI_ERR_DIR_NOT_FOUND = "Impossible de trouver le répertoire: [bold]`%s`[/]"
 CLI_ERR_FILE_NOT_FOUND = "Impossible de trouver le fichier: [bold]`%s`[/]"
+CLI_ERR_FILE_NOT_READ = "Impossible de lire le fichier: [bold]`%s`[/]"
 CLI_ERR_CANNOT_CREATE_FILE = "Impossible de créer un fichier: [bold]`%s`[/]"
 CLI_ERR_CANNOT_CREATE_DIR = "Impossible de créer un répertoire: [bold]`%s`[/]"
 CLI_ERR_CANNOT_EXTRACT_ARCHIVE = "Impossible d'extraire l'archive vers sa destination: [bold]`%s`[/]"
@@ -416,6 +418,9 @@ CLI_ERR_CANNOT_COPY_SHORTCUT = "Impossible de copier un raccourci: [bold]`%s`[/]
 CLI_ERR_CANNOT_SET_STARTUP = f"Impossible de définir `{UI_APP}` pour s'exécuter automatiquement au démarrage"
 
 CLI_ERR_CANNOT_FIX_CONFIG = "Impossible de corriger le fichier de configuration [bold]`%s`[/]"
+
+CLI_ERR_CONFIG_ERRORS_FOUND = "Le fichier de configuration [bold]`%s`[/] présente les erreurs suivantes"
+CLI_ERR_CONFIG_INVALID = "Le fichier de configuration [bold]`%s`[/] est malformé: %s"
 
 CLI_STATUS_INSTALLING_WHENEVER = f"Installation de la dernière version de [bold]`{CLI_WHENEVER}`[/] ..."
 CLI_STATUS_CREATING_ICONS = "Installation des icônes du programme demandé ..."

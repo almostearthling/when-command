@@ -373,6 +373,7 @@ CLI_ARG_HELP_QUIET = "Don't print messages to the console"
 CLI_ARG_HELP_DESKTOP = "Install program icons on the desktop too"
 CLI_ARG_HELP_AUTOSTART = f"Setup `{UI_APP}` to start when the user logs in"
 CLI_ARG_HELP_FIXCONFIG = f"Find and fix the `{CLI_WHENEVER}` configuration file across incompatible versions"
+CLI_ARG_HELP_CHECKCONFIG = f"Check the `{CLI_WHENEVER}` configuration file for errors"
 
 CLI_ARG_HELP_CMD_START = f"Start the `{CLI_WHENEVER}` scheduler and display the tray icon"
 CLI_ARG_HELP_CMD_CONFIG = f"Start the `{UI_APP}` configuration utility"
@@ -402,6 +403,7 @@ CLI_ERR_INVALID_CHECKSUM = "Checksum not matching: file [bold]`%s`[/] invalid or
 CLI_ERR_BINPATH_NOT_FOUND = "Binaries destination folder not found"
 CLI_ERR_DIR_NOT_FOUND = "Could not find directory: [bold]`%s`[/]"
 CLI_ERR_FILE_NOT_FOUND = "Could not find file: [bold]`%s`[/]"
+CLI_ERR_FILE_NOT_READ = "Could not read file: [bold]`%s`[/]"
 CLI_ERR_CANNOT_CREATE_FILE = "Could not create file: [bold]`%s`[/]"
 CLI_ERR_CANNOT_CREATE_DIR = "Could not create directory: [bold]`%s`[/]"
 CLI_ERR_CANNOT_EXTRACT_ARCHIVE = "Could not extract archive to destination: [bold]`%s`[/]"
@@ -425,6 +427,9 @@ CLI_ERR_CANNOT_SET_STARTUP = f"Could not set `{UI_APP}` to automatically run at 
 
 CLI_ERR_CANNOT_FIX_CONFIG = "Could not fix configuration file [bold]`%s`[/]"
 
+CLI_ERR_CONFIG_ERRORS_FOUND = "The following errors have been found in configuration file [bold]`%s`[/]"
+CLI_ERR_CONFIG_INVALID = "The configuration file [bold]`%s`[/] is malformed: %s"
+
 CLI_STATUS_INSTALLING_WHENEVER = f"Installing latest release of [bold]`{CLI_WHENEVER}`[/]..."
 CLI_STATUS_CREATING_ICONS = "Installing requested program icons..."
 
@@ -440,9 +445,12 @@ CLI_MSG_BACKUP_CONFIG = "Backing up configuration to [bold]`%s`[/]"
 CLI_MSG_WRITE_NEW_CONFIG = "Writing new configuration to [bold]`%s`[/]"
 CLI_MSG_INSTALL_TO_FOLDER = "Installing [bold]`%s`[/] to folder [bold]`%s`[/]..."
 
+CLI_MSG_CHECKING_CONFIG = "Checking configuration..."
+
 CLI_MSG_INSTALLATION_FINISHED = "Installation finished."
 CLI_MSG_OPERATION_FINISHED = "Operation finished."
 CLI_MSG_OPERATION_FAILED = "Operation failed."
+CLI_MSG_NO_ERRORS_FOUND = "No errors have been found."
 
 CLI_APPICON_NAME_CONFIG = f"Configure {UI_APP}"
 CLI_APPICON_DESC_CONFIG = f"Standalone configuration utility for {UI_APP}"
