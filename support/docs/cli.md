@@ -36,10 +36,14 @@ The `tool` command provides various utilities that can help in the setup of **Wh
   * `--autostart`: (option) creates a shortcut that launches the resident version of **When** when the user logs in
   * `--desktop`: (option) also creates icons on the desktop[^1]
 * `--fix-config`: fix legacy configuration files converting [old item definitions](configfile.md#legacy-configuration-files) to new ones
+* `--check-config`: check the configuration file for errors that might have been introduced by manually editing it
 * `--install-lua`: install a _Lua_ script or library in the _Lua_ specific subtree within the [_APPDATA_](appdata.md) directory
 * `--upgrade-lua`: upgrade a _Lua_ script or library in the _Lua_ specific subtree within the [_APPDATA_](appdata.md) directory: similar to `--install-lua`, but only works when a module _already exists_
 * ...
 * `--quiet`: (option) applies to all the operations described above, and inhibits printing messages to the console.
+
+> [!NOTE]
+> **When** will usually _not_ check the configuration file if not requested to, in order to avoid excessive delay on startup: **whenever** itself performs a check for correctness and refuses to start when any error is found. The `--check-config` tool is provided to verify the configuration file in such cases, and to provide at least some clues about the errors, such as the line number at which the misconfigured item is found. The tool will try to report _all_ errors found in the current configuration file. Since **When** normally generates correct configuration files, errors are generally introduced by manually editing the file itself. It is recommended, therefore, that the `--check-config` tool is launched after every manual change in the configuration file.
 
 The subcommands cannot be combined. The **whenever** installation step should be performed first if there is no working copy of the core scheduler on the system.
 
