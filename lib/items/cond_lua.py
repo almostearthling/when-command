@@ -64,7 +64,7 @@ class LuaScriptCondition(Condition):
         self.check_after = tab.get_int_between("check_after", 1)
         self.recur_after_failed_check = tab.get_bool("recur_after_failed_check")
         # hard to check that it is a real Lua script, so we just get a string
-        self.script = tab.get_str("script")
+        self.script = tab.get_str("script", mandatory=True)
         self.expect_all = tab.get_bool("expect_all")
         self.init_script_path = tab.get_str_check(
             "init_script_path", check=os.path.isfile

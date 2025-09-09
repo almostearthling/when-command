@@ -35,7 +35,7 @@ class IdleCondition(Condition):
         self.hrtype = ITEM_COND_INTERVAL
         tab = CheckedTable(item, item_line)
         assert tab.get_str("type") == self.type
-        self.idle_seconds = tab.get_int_between("idle_seconds", 1)
+        self.idle_seconds = tab.get_int_between("idle_seconds", 1, mandatory=True)
 
     def as_table(self):
         if not check_not_none(

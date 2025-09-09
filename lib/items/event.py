@@ -70,8 +70,8 @@ class Event(object):
         else:
             check = lambda x: x in event_conds
         tab = CheckedTable(item, item_line)
-        self.name = tab.get_str_check("name", check=name_check)
-        self.condition = tab.get_str_check("condition", check=check)
+        self.name = tab.get_str_check("name", check=name_check, mandatory=True)
+        self.condition = tab.get_str_check("condition", check=check, mandatory=True)
         self.tags = tab.get_dict("tags")
 
     # the checking-only function: either returns True or fails

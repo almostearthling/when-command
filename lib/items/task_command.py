@@ -86,8 +86,8 @@ class CommandTask(Task):
         self.hrtype = ITEM_TASK_COMMAND
         tab = CheckedTable(item, item_line)
         assert tab.get_str("type") == self.type
-        self.startup_path = tab.get_str_check("startup_path", exists)
-        self.command = tab.get_str("command")
+        self.startup_path = tab.get_str_check("startup_path", exists, mandatory=True)
+        self.command = tab.get_str("command", mandatory=True)
         self.match_exact = tab.get_bool("match_exact")
         self.match_regular_expression = tab.get_bool("match_regular_expression")
         self.success_stdout = tab.get_str("success_stdout")

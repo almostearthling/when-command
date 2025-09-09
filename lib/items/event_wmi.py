@@ -40,7 +40,7 @@ class WMIEvent(Event):
         tab = CheckedTable(item, item_line)
         assert tab.get_str("type") == self.type
         # hard to check that it is a real WMI query, so we just get a string
-        self.query = tab.get_str("query")
+        self.query = tab.get_str("query", mandatory=True)
 
     def as_table(self):
         if not check_not_none(

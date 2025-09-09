@@ -51,7 +51,7 @@ class WMICondition(Condition):
         self.check_after = tab.get_int_between("check_after", 1)
         self.recur_after_failed_check = tab.get_bool("recur_after_failed_check")
         # hard to check that it is a real WMI query, so we just get a string
-        self.query = tab.get_str("query")
+        self.query = tab.get_str("query", mandatory=True)
         self.result_check_all = tab.get_bool("result_check_all")
         self.result_check = tab.get_array_of_dict("result_check")
 

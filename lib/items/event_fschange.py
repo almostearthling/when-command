@@ -43,7 +43,7 @@ class FilesystemChangeEvent(Event):
         assert tab.get_str("type") == self.type
         # since `whenever` will complain on non-existing paths to watch
         # `os.path.exists()` is a good checking function for valid paths
-        self.watch = tab.get_list_of_str_check("watch", exists)
+        self.watch = tab.get_list_of_str_check("watch", exists, mandatory=True)
         self.recursive = tab.get_str("recursive")
 
     def as_table(self):

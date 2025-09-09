@@ -440,6 +440,7 @@ CLI_MSG_INSTALL_TO_FOLDER = "Installazione di [bold]`%s`[/] nella directory [bol
 CLI_MSG_INSTALLATION_FINISHED = "Installazione conclusa."
 CLI_MSG_OPERATION_FINISHED = "Operazione conclusa."
 CLI_MSG_OPERATION_FAILED = "Operazione fallita."
+CLI_MSG_NO_ERRORS_FOUND = "Non è stato trovato alcun errore."
 
 CLI_APPICON_NAME_CONFIG = f"Configura {UI_APP}"
 CLI_APPICON_DESC_CONFIG = f"Utilità di configurazione autonoma per {UI_APP}"

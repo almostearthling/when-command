@@ -88,7 +88,7 @@ class Condition(object):
         else:
             check = lambda x: x in tasks
         tab = CheckedTable(item, item_line)
-        self.name = tab.get_str_check("name", check=name_check)
+        self.name = tab.get_str_check("name", check=name_check, mandatory=True)
         self.execute_sequence = tab.get_bool("execute_sequence")
         self.break_on_failure = tab.get_bool("break_on_failure")
         self.break_on_success = tab.get_bool("break_on_success")

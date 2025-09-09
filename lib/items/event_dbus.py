@@ -52,8 +52,8 @@ class DBusEvent(Event):
         tab = CheckedTable(item, item_line)
         assert tab.get_str("type") == self.type
         # hard to check that it is a real DBus rule, so we just get a string
-        self.bus = tab.get_str_check_in("rule", [":session", ":system"])
-        self.rule = tab.get_str("rule")
+        self.bus = tab.get_str_check_in("rule", [":session", ":system"], mandatory=True)
+        self.rule = tab.get_str("rule", mandatory=True)
         self.parameter_check_all = tab.get_bool("parameter_check_all")
         self.parameter_check = tab.get_bool("parameter_check")
 

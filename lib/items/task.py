@@ -58,7 +58,7 @@ class Task(object):
         self.hrtype = None
         check = lambda x: is_valid_item_name(x) or is_private_item_name(x)
         tab = CheckedTable(item, item_line)
-        self.name = tab.get_str_check("name", check=check)
+        self.name = tab.get_str_check("name", check=check, mandatory=True)
         self.tags = tab.get_dict("tags")
 
     # the checking-only function: either returns True or fails

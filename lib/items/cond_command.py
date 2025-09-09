@@ -92,8 +92,8 @@ class CommandCondition(Condition):
         assert tab.get_str("type") == self.type
         self.check_after = tab.get_int_between("check_after", 1)
         self.recur_after_failed_check = tab.get_bool("recur_after_failed_check")
-        self.startup_path = tab.get_str_check("startup_path", exists)
-        self.command = tab.get_str("command")
+        self.startup_path = tab.get_str_check("startup_path", exists, mandatory=True)
+        self.command = tab.get_str("command", mandatory=True)
         self.match_exact = tab.get_bool("match_exact")
         self.match_regular_expression = tab.get_bool("match_regular_expression")
         self.success_stdout = tab.get_str("success_stdout")

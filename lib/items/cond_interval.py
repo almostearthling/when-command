@@ -34,7 +34,7 @@ class IntervalCondition(Condition):
         self.hrtype = ITEM_COND_INTERVAL
         tab = CheckedTable(item, item_line)
         assert tab.get_str("type") == self.type
-        self.interval_seconds = tab.get_int_between("interval_seconds", 1)
+        self.interval_seconds = tab.get_int_between("interval_seconds", 1, mandatory=True)
 
     def as_table(self):
         if not check_not_none(

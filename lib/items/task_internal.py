@@ -34,7 +34,7 @@ class InternalCommandTask(Task):
         tab = CheckedTable(item, item_line)
         assert tab.get_str("type") == self.type
         # TODO: maybe we can actually check that it is a real command
-        self.command = tab.get_str("command")
+        self.command = tab.get_str("command", mandatory=True)
 
     def as_table(self):
         if not check_not_none(

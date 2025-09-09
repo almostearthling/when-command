@@ -25,11 +25,16 @@ DEFAULT_METHOD = "List"
 
 
 # check regular expressions
-RE_DBUS_SERVICE_NAME = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)+$")
+RE_DBUS_SERVICE_NAME = re.compile(
+    r"^[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)+$"
+)
 RE_DBUS_OBJECT_PATH = re.compile(r"^/([a-zA-Z0-9_]+(/[a-zA-Z0-9_]+)*)?$")
-RE_DBUS_INTERFACE_NAME = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)+$")
+RE_DBUS_INTERFACE_NAME = re.compile(
+    r"^[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)+$"
+)
 RE_DBUS_MEMBER_NAME = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*$")
 RE_DBUS_ERROR_NAME = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)+$")
+
 
 # a DBus inspection based condition
 class DBusCondition(Condition):
@@ -74,11 +79,19 @@ class DBusCondition(Condition):
         assert tab.get_str("type") == self.type
         self.check_after = tab.get_int_between("check_after", 1)
         self.recur_after_failed_check = tab.get_bool("recur_after_failed_check")
-        self.bus = tab.get_str_check_in("rule", [":session", ":system"])
-        self.service = tab.get_str_check_re("service", RE_DBUS_SERVICE_NAME)
-        self.object_path = tab.get_str_check_re("object_path", RE_DBUS_OBJECT_PATH)
-        self.interface = tab.get_str_check_re("interface", RE_DBUS_INTERFACE_NAME)
-        self.method = tab.get_str_check_re("method", RE_DBUS_MEMBER_NAME)
+        self.bus = tab.get_str_check_in("rule", [":session", ":system"], mandatory=True)
+        self.service = tab.get_str_check_re(
+            "service", RE_DBUS_SERVICE_NAME, mandatory=True
+        )
+        self.object_path = tab.get_str_check_re(
+            "object_path", RE_DBUS_OBJECT_PATH, mandatory=True
+        )
+        self.interface = tab.get_str_check_re(
+            "interface", RE_DBUS_INTERFACE_NAME, mandatory=True
+        )
+        self.method = tab.get_str_check_re(
+            "method", RE_DBUS_MEMBER_NAME, mandatory=True
+        )
         # TODO: check the parameter call list using get_array_of_dict_check
         self.parameter_call = tab.get_array_of_dict("parameter_call")
         self.parameter_check_all = tab.get_bool("parameter_check_all")
@@ -104,14 +117,18 @@ class DBusCondition(Condition):
         t.append("object_path", self.object_path)
         t.append("interface", self.interface)
         t.append("method", self.method)
-        if isinstance(self.parameter_call, str):  # this only works with the (unavailable) form
+        if isinstance(
+            self.parameter_call, str
+        ):  # this only works with the (unavailable) form
             pc = json.loads(self.parameter_call)
             t.append("parameter_call", toml_list_of_tables(pc))
         else:
             t = append_not_none(t, "parameter_call", self.parameter_call)
         t = append_not_none(t, "parameter_check_all", self.parameter_check_all)
         # JSON check strings should still be supported, but will eventually go away
-        if isinstance(self.parameter_check, str):  # this only works with the (unavailable) form
+        if isinstance(
+            self.parameter_check, str
+        ):  # this only works with the (unavailable) form
             pc = json.loads(self.parameter_check)
             t.append("parameter_check", toml_list_of_tables(pc))
         else:
