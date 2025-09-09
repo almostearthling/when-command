@@ -90,8 +90,6 @@ class Task(object):
                 if tabd.hierarchy == "task":
                     aot = doc.get("task")
                     assert isinstance(aot, items.AoT)
-                    # TODO: check that the `container_position` is actually the
-                    # index in the array of tables (although 1-based as per docs)
                     tab = aot[tabd.container_position - 1]
                     try:
                         if tab.get("name") == name:

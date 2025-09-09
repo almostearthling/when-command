@@ -92,11 +92,57 @@ class DBusCondition(Condition):
         self.method = tab.get_str_check_re(
             "method", RE_DBUS_MEMBER_NAME, mandatory=True
         )
-        # TODO: check the parameter call list using get_array_of_dict_check
-        self.parameter_call = tab.get_array_of_dict("parameter_call")
+
+        # as per documentation, `parameter_call` is a list, whse members are
+        # either simple values or lists, which can be deeply nested... that
+        # is why we need recursion at this point
+        def _check_param(x) -> bool:
+            if (
+                isinstance(x, bool)
+                or isinstance(x, int)
+                or isinstance(x, float)
+                or isinstance(x, str)
+            ):
+                return True
+            elif isinstance(x, list):
+                for y in x:
+                    if not (
+                        isinstance(y, bool)
+                        or isinstance(y, int)
+                        or isinstance(y, float)
+                        or isinstance(y, str)
+                    ):
+                        return False
+            else:
+                return False
+            return True
+
+        self.parameter_call = tab.get_list_check("parameter_call", _check_param)
         self.parameter_check_all = tab.get_bool("parameter_check_all")
-        # TODO: check the parameter check list using get_array_of_dict_check_keys_vs_values
-        self.parameter_check = tab.get_array_of_dict("parameter_check")
+
+        # these are expressed via a list of inline dictionaries whose
+        # elements are fixed, and *must* exist, and have a specific form; we
+        # use a dictionary based trick
+        def _check_idx(x) -> bool:
+            if isinstance(x, int) and x >= 0:
+                return True
+            elif isinstance(x, list):
+                for y in x:
+                    if not (isinstance(y, int) and y >= 0) and not isinstance(y, str):
+                        return False
+                return True
+            else:
+                return False
+
+        tests = {
+            "index": _check_idx,
+            "operator": lambda x: x
+            in ("eq", "neq", "gt", "ge", "lt", "le", "match", "contains", "ncontains"),
+            "value": lambda x: isinstance(x, (bool, int, float, str)),
+        }
+        self.parameter_check = tab.get_list_of_dict_check_keys_vs_values(
+            "parameter_check", lambda k, v: k in tests and tests[k](v)
+        )
 
     def as_table(self):
         if not check_not_none(

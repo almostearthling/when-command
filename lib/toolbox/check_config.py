@@ -7,7 +7,7 @@
 
 from lib.i18n.strings import *
 
-from tomlkit import parse, TOMLDocument
+from tomlkit import parse, items, TOMLDocument
 from tomlkit.exceptions import ParseError
 
 from ..items.itemhelp import ConfigurationError
@@ -18,9 +18,34 @@ from ..utility import get_rich_console, write_error
 
 def check_globals(doc: TOMLDocument) -> list[ConfigurationError]:
     errors = []
-    # TODO: perform actual checks
-    if doc is None:
-        errors.append(ConfigurationError(message="invalid configuration file"))
+    key = "scheduler_tick_seconds"
+    if (v := doc.get(key)) is not None:
+        if not isinstance(v, int) or v <= 0:
+            errors.append(
+                ConfigurationError("(globals)", key, message=f"invalid value: {v}")
+            )
+    key = "randomize_checks_within_ticks"
+    if (v := doc.get(key)) is not None:
+        if not isinstance(v, bool):
+            errors.append(
+                ConfigurationError("(globals)", key, message=f"invalid value: {v}")
+            )
+    tags = doc.get("tags")
+    if not isinstance(tags, items.Table):
+        errors.append(
+            ConfigurationError("(globals)", key, message=f"`tags` must be a dictionary")
+        )
+    else:
+        key = "reset_conditions_on_resume"
+        if (v := tags.get(key)) is not None:
+            if not isinstance(v, bool):
+                errors.append(
+                    ConfigurationError(
+                        "(globals/tags)", key, message=f"invalid value: {v}"
+                    )
+                )
+        # should other tags be added, tests can be performed here
+        # ...
     return errors
 
 
@@ -163,6 +188,7 @@ def check_config_file(filename, verbose=True) -> bool:
     except Exception as err:
         if verbose:
             import traceback
+
             write_error(CLI_ERR_ERROR_GENERIC)
     # if we are here the check was not positive
     return False

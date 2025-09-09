@@ -263,7 +263,7 @@ class TimeCondition(Condition):
         tab = CheckedTable(item, item_line)
         assert tab.get_str("type") == self.type
         # TODO: check resulting dicts using get_array_of_dict_check_keys_vs_values
-        self.time_specifications = tab.get_array_of_dict("time_specifications", mandatory=True)
+        self.time_specifications = tab.get_list_of_dict("time_specifications", mandatory=True)
 
     def as_table(self):
         if not check_not_none(

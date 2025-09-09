@@ -55,7 +55,30 @@ class DBusEvent(Event):
         self.bus = tab.get_str_check_in("rule", [":session", ":system"], mandatory=True)
         self.rule = tab.get_str("rule", mandatory=True)
         self.parameter_check_all = tab.get_bool("parameter_check_all")
-        self.parameter_check = tab.get_bool("parameter_check")
+
+        # these are expressed via a list of inline dictionaries whose
+        # elements are fixed, and *must* exist, and have a specific form; we
+        # use a dictionary based trick
+        def _check_idx(x):
+            if isinstance(x, int) and x >= 0:
+                return True
+            elif isinstance(x, list):
+                for y in x:
+                    if not (isinstance(y, int) and y >= 0) and not isinstance(y, str):
+                        return False
+                return True
+            else:
+                return False
+
+        tests = {
+            "index": _check_idx,
+            "operator": lambda x: x
+            in ("eq", "neq", "gt", "ge", "lt", "le", "match", "contains", "ncontains"),
+            "value": lambda x: isinstance(x, (bool, int, float, str)),
+        }
+        self.parameter_check = tab.get_list_of_dict_check_keys_vs_values(
+            "parameter_check", lambda k, v: k in tests and tests[k](v)
+        )
 
     def as_table(self):
         if not check_not_none(

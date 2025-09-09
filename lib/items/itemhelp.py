@@ -431,7 +431,7 @@ class CheckedTable(object):
         )
 
     # arrays of dicts: checks applied to each dict
-    def get_array_of_dict_check(
+    def get_list_of_dict_check(
         self,
         entry,
         k_check=lambda _: True,
@@ -476,7 +476,7 @@ class CheckedTable(object):
             i += 1
         return ret
 
-    def get_array_of_dict_check_keys_vs_values(
+    def get_list_of_dict_check_keys_vs_values(
         self, entry, check=lambda _k, _v: True, mandatory=False, default=None
     ) -> items.AoT | None:
         v = self.get_check(
@@ -507,36 +507,36 @@ class CheckedTable(object):
             i += 1
         return ret
 
-    def get_array_of_dict_check_keys(
+    def get_list_of_dict_check_keys(
         self, entry, k_check=lambda _: True, mandatory=False, default=None
     ) -> items.AoT | None:
-        return self.get_array_of_dict_check(
+        return self.get_list_of_dict_check(
             entry, k_check=k_check, mandatory=mandatory, default=default
         )
 
-    def get_array_of_dict(
+    def get_list_of_dict(
         self, entry, mandatory=False, default=None
     ) -> items.AoT | None:
-        return self.get_array_of_dict_check(entry, mandatory=mandatory, default=default)
+        return self.get_list_of_dict_check(entry, mandatory=mandatory, default=default)
 
-    def get_array_of_dict_check_keys_in(
+    def get_list_of_dict_check_keys_in(
         self, entry, k_list: list, mandatory=False, default=None
     ) -> items.AoT | None:
-        return self.get_array_of_dict_check_keys(
+        return self.get_list_of_dict_check_keys(
             entry, k_check=lambda x: x in k_list, mandatory=mandatory, default=default
         )
 
-    def get_array_of_dict_check_keys_re(
+    def get_list_of_dict_check_keys_re(
         self, entry, k_re: re.Pattern, mandatory=False, default=None
     ) -> items.AoT | None:
-        return self.get_array_of_dict_check_keys(
+        return self.get_list_of_dict_check_keys(
             entry,
             k_check=lambda x: bool(k_re.match(x)),
             mandatory=mandatory,
             default=default,
         )
 
-    def get_array_of_dict_check_and_keys_re(
+    def get_list_of_dict_check_and_keys_re(
         self,
         entry,
         k_re: re.Pattern,
@@ -544,7 +544,7 @@ class CheckedTable(object):
         mandatory=False,
         default=None,
     ) -> items.AoT | None:
-        return self.get_array_of_dict_check(
+        return self.get_list_of_dict_check(
             entry,
             k_check=lambda x: bool(k_re.match(x)),
             e_check=e_check,
@@ -552,10 +552,10 @@ class CheckedTable(object):
             default=default,
         )
 
-    def get_array_of_dict_check_and_keys_in(
+    def get_list_of_dict_check_and_keys_in(
         self, entry, k_list: list, e_check=lambda _: True, mandatory=False, default=None
     ) -> items.AoT | None:
-        return self.get_array_of_dict_check(
+        return self.get_list_of_dict_check(
             entry,
             k_check=lambda x: x in k_list,
             e_check=e_check,
