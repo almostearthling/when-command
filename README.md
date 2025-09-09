@@ -43,7 +43,7 @@ The [documentation](https://almostearthling.github.io/when-command/) almost cove
 
 **When** has requirements that vary according to the platform that should host it, and that on Linux may also depend on the distribution: the standard [installation procedure](https://almostearthling.github.io/when-command/install.html) attempts at describing these requirements, and providing a streamlined way to install, configure, and launch both **When** and **whenever**.
 
-> :bell: **Note:**
+> [!NOTE]
 > Neither **When** nor **whenever** require administrative rights for the suggested setup: the instructions lead to an installation that is limited to the user that performs it. Following these instructions, both the scheduler and the application will be executed in the user environment, inheriting the user specific permissions: considering that they run as a background application, this type of setup can be considered safer than a system wide one.
 
 

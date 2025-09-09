@@ -22,7 +22,7 @@ More commands might be supported in the future. `OPTIONS` are the possible optio
 
 In order to know which options can be used for each command, `when COMMAND --help` can be invoked from the command line, where `COMMAND` is one of the commands described above.
 
-> **Note**: In order to simplify the usage of **When**, many values that could have been implemented as parameters are instead left as defaults that cannot be changed, at least for now, if not via direct intervention on the code.
+> [!NOTE] In order to simplify the usage of **When**, many values that could have been implemented as parameters are instead left as defaults that cannot be changed, at least for now, if not via direct intervention on the code.
 
 This version of **When** uses [poetry](https://python-poetry.org/) to manage dependencies and to provide a suitable environment for a source distribution, therefore after running `poetry install` in the project directory to install all necessary Python dependencies, **When** can also be launched as `poetry run when COMMAND [OPTIONS]`.
 

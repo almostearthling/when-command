@@ -52,7 +52,7 @@ We only have to enter _1_ in the input box, and leave the unit of measure drop d
 
 If the configuration utility had been launched through a [running instance](tray.md) of **When**, then a _Reload_ button is available: this can be used to force the new configuration to be reloaded and the new items to be active immediately without the need to restart **When**. If you do not click _Reload_ (or if you don't confirm), the new configuration will be available at the next start of **When** -- usually, after the subsequent login.
 
-> **Note**: This example corresponds to the basic initial configuration that is suggested in the **whenever** installation instructions, that can be found in its [releases](https://github.com/almostearthling/whenever/releases/latest/) pages and in the binary distribution.
+> [!NOTE] This example corresponds to the basic initial configuration that is suggested in the **whenever** installation instructions, that can be found in its [releases](https://github.com/almostearthling/whenever/releases/latest/) pages and in the binary distribution.
 
 
 ## Automated Backups
@@ -82,7 +82,8 @@ As we do not want to pollute the environment, we will set tese variables directl
 
 We want to backup our _Documents_ and our _Pictures_ directories: on Windows they are located respectively in `C:\Users\username\Documents` and `C:\Users\username\Pictures`.
 
-> **Note**: Depending on the amount of data, the first backup can take quite a long time in order to be carried out: consider the option of forcing a full backup by issuing the command `restic backup Documents Pictures` from the command line in your home directory, before automating it using **When**.
+> [!TIP]
+> Depending on the amount of data, the first backup can take quite a long time in order to be carried out: consider the option of forcing a full backup by issuing the command `restic backup Documents Pictures` from the command line in your home directory, before automating it using **When**.
 
 First off, we launch the configuration utility: if the program icons for **When** had been created as described in the installation instructions, then clicking _Configure When_ on the desktop or in the _Start_ menu should be sufficient. Other options are to launch `when config` from the command line or, if there is an instance of **When** running, to right-click the clock-shaped system tray icon, and to select _Configurator_ from the context menu. The result is the same, apart from what we'll see below for the latter, that is the configuration GUI utility is launched, and we will click the _New_ button, which in turn allows us to select a _Command Based Task_:
 

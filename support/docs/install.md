@@ -95,7 +95,8 @@ sudo dnf install dbus-devel
 
 and adding the _Gnome Shell Extension Manager_ using the _Software_ utility, as well as _AppIndicator and KStatusNotifierItem Support_ using the extensions manager. After this, steps 2 to 6 are the same as in Debian based distributions.
 
-> **Note**: in case the appearance of **When** is quirky, for example the text elements in the interface are unreadable, you might need to start the desktop environment in an _X.org_ session instead of _Wayland_ that is the default on many Linux distributions:
+> [!TIP]
+> In case the appearance of **When** is quirky, for example the text elements in the interface are unreadable, you might need to start the desktop environment in an _X.org_ session instead of _Wayland_ that is the default on many Linux distributions:
 >
 > ![GnomeLogin](graphics/install-gnome-login.png)
 >

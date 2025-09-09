@@ -23,7 +23,8 @@ and for `--upgrade-lua` is absolutely identical. _path/to/module.lua_ and _path/
 
 At the moment no real _package management_ is available, mainly because the most popular _Lua_ package managers rely on development tools which are not always expected to be available on the host platform.
 
-> **Note**: the _Lua_ library installation tool is in its very early development stage, and for the moment does not support removal for installed modules. To remove a module, it has to be manually deleted from the _Lua_ subdirectory in _APPDATA_. For updates, the `--upgrade-lua` tool is available, which removes the destination prior to installing the module: this only works if the module to upgrade already exists and fails otherwise. This is intentional, because some modules might be required by tasks or conditions used by **When**, and the upgrade tool will refuse anyways to overwrite them.
+> [!WARNING]
+> The _Lua_ library installation tool is in its very early development stage, and for the moment does not support removal for installed modules. To remove a module, it has to be manually deleted from the _Lua_ subdirectory in _APPDATA_. For updates, the `--upgrade-lua` tool is available, which removes the destination prior to installing the module: this only works if the module to upgrade already exists and fails otherwise. This is intentional, because some modules might be required by tasks or conditions used by **When**, and the upgrade tool will refuse anyways to overwrite them.
 
 If a _pure Lua_ module is available as a directory structure, it is easy to produce a ZIP file that can be used with the `--install-lua` tool: most modern file managers offer a _"Archive/Compress to ZIP"_ option using a mouse click on a folder, which can be used with the folder containing the desired module. The resulting ZIP file is suitable for installation using the tool.
 
