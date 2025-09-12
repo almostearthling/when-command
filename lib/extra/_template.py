@@ -101,11 +101,41 @@ class TemplateCondition(CommandCondition):
         self.command = "ls"
         self.command_arguments = [
             "-l",
-            self.tags.get("parameter1", DEFAULT_PARAM1_VALUE),
+            self.tags.get("parameter1", DEFAULT_PARAM1_VALUE),  # type: ignore
         ]
         self.startup_path = "."
         self.success_status = 0
 
+    # optional tags checker: it can returnone of the following values
+    # - a list of incorrect parameters
+    # - a string containing an error message
+    # - the empty list, or the empty string, or None to indicate no error
+    @classmethod
+    def check_tags(cls, tags: items.Table | None) -> str | list[str] | None:
+        if tags is None:
+            return "required specific parameters (`tags`) not found"
+        else:
+            missing = []
+            errors = []
+            # the `subtype` part must always be present
+            subtype = tags.get("subtype")
+            if subtype is None:
+                missing.append("subtype")
+            elif subtype != cls.item_subtype:
+                errors.append("subtype")
+            # an example that accepts any string as long as it is provided
+            s = tags.get("parameter1")
+            if s is None:
+                missing.append("parameter1")
+            else:
+                if not isinstance(s, str):
+                    errors.append("parameter1")
+            if missing:
+                return "missing specific parameters (`tags`): %s" % ", ".join(missing)
+            elif errors:
+                return errors
+        return None
+            
 
 # dedicated form definition derived directly from one of the base forms
 class form_TemplateCondition(form_Condition):
@@ -142,13 +172,13 @@ class form_TemplateCondition(form_Condition):
 
     # update the form with the specific parameters (usually in the `tags`)
     def _updateform(self) -> None:
-        self.data_set("parameter1", self._item.tags.get("parameter1"))
+        self.data_set("parameter1", self._item.tags.get("parameter1"))  # type: ignore
         return super()._updateform()
 
     # update the item from the form elements (usually update `tags`)
     def _updatedata(self) -> None:
-        self._item.tags["parameter1"] = self.data_get("parameter1")
-        self._item.updateitem()
+        self._item.tags["parameter1"] = self.data_get("parameter1")  # type: ignore
+        self._item.updateitem()  # type: ignore
         return super()._updatedata()
 
 

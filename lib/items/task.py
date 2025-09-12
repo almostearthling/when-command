@@ -106,6 +106,31 @@ class Task(object):
         # now build a dummy event table using the checking constructor
         o = cls()
         o.__load_checking(elem, elemd.line_no)
+        # a `check_tags(elem)` can be provided by specialized items, which
+        # returns a list of parameters in the `tags` table which are incorrect;
+        # the `check_tags()` method should also check that, when no tags are
+        # present (and thus the passed value is None), the absence of tags is
+        # expected, which is an unlikely case
+        if "check_tags" in cls.__dict__:
+            tags = elem.get("tags")
+            err = cls.check_tags(tags)  # type: ignore
+            if err is not None or len(err) > 0:
+                if isinstance(err, str):
+                    raise ConfigurationError(
+                        name,
+                        "tags",
+                        elemd.line_no,
+                        message=err,
+                    )
+                else:
+                    assert isinstance(err, list)
+                    raise ConfigurationError(
+                        name,
+                        "tags",
+                        elemd.line_no,
+                        message="the following entries in `tags` are incorrect: %s"
+                        % ", ".join(err),
+                    )
         # if no exception has been raised, checking was positive
         return True
 
