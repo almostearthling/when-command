@@ -59,7 +59,7 @@ class DBusEvent(Event):
         # these are expressed via a list of inline dictionaries whose
         # elements are fixed, and *must* exist, and have a specific form; we
         # use a dictionary based trick
-        def _check_idx(x):
+        def _check_idx(x) -> bool:
             if isinstance(x, int) and x >= 0:
                 return True
             elif isinstance(x, list):
