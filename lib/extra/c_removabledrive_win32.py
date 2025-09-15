@@ -32,6 +32,10 @@ UI_FORM_SPECIFY_DRIVE_LETTER = "Specify drive letter"
 UI_FORM_EXPECTED_LETTER_SC = "Expected drive letter:"
 
 
+# available drive letters
+AVAILABLE_DRIVE_LETTERS = "DEFGHIJKLMNOPQRSTUVWXYZ"
+
+
 # default values
 DEFAULT_DRIVE_LABEL = "DRIVE"
 DEFAULT_DRIVE_LETTER = ""
@@ -124,6 +128,36 @@ class RemovableDrivePresent(WMICondition):
         self.check_after = CHECK_EXTRA_DELAY
         self.recur_after_failed_check = True
 
+    @classmethod
+    def check_tags(cls, tags):
+        if tags is None:
+            return "required specific parameters (`tags`) not found"
+        else:
+            missing = []
+            errors = []
+            subtype = tags.get("subtype")
+            if subtype is None:
+                missing.append("subtype")
+            elif subtype != cls.item_subtype:
+                errors.append("subtype")
+            drive_letter = tags.get("drive_letter")
+            # drive letter is optional
+            # if drive_letter is None:
+            #     missing.append("drive_letter")
+            if drive_letter is not None:
+                if not isinstance(drive_letter, str) and not drive_letter in AVAILABLE_DRIVE_LETTERS:
+                    errors.append("drive_letter")
+            drive_label = tags.get("drive_label")
+            if drive_label is None:
+                missing.append("drive_label")
+            elif not isinstance(drive_label, str):
+                errors.append("drive_label")
+            if missing:
+                return "missing specific parameters (`tags`): %s" % ", ".join(missing)
+            elif errors:
+                return errors
+        return None
+
 
 # dedicated form definition derived directly from one of the base forms
 class form_RemovableDrivePresent(form_Condition):
@@ -138,7 +172,7 @@ class form_RemovableDrivePresent(form_Condition):
         super().__init__(UI_FORM_TITLE, tasks_available, item)
 
         # list the drive letters to create a combo box
-        drive_letters = list("%s:" % x for x in "DEFGHIJKLMNOPQRSTUVWXYZ")
+        drive_letters = list("%s:" % x for x in AVAILABLE_DRIVE_LETTERS)
 
         # create a specific frame for the contents
         area = ttk.Frame(super().contents)

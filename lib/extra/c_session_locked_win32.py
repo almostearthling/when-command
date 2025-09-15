@@ -120,6 +120,29 @@ class SessionLockedCondition(WMICondition):
         self.check_after = CHECK_EXTRA_DELAY[check_frequency]
         self.recur_after_failed_check = True
 
+    @classmethod
+    def check_tags(cls, tags):
+        if tags is None:
+            return "required specific parameters (`tags`) not found"
+        else:
+            missing = []
+            errors = []
+            subtype = tags.get("subtype")
+            if subtype is None:
+                missing.append("subtype")
+            elif subtype != cls.item_subtype:
+                errors.append("subtype")
+            check_frequency = tags.get("check_frequency")
+            if check_frequency is None:
+                missing.append("check_frequency")
+            elif not isinstance(check_frequency, str) and not check_frequency in CHECK_EXTRA_DELAY.keys():
+                errors.append("check_frequency")
+            if missing:
+                return "missing specific parameters (`tags`): %s" % ", ".join(missing)
+            elif errors:
+                return errors
+        return None
+
 
 # dedicated form definition derived directly from one of the base forms
 class form_SessionLockedCondition(form_Condition):

@@ -106,6 +106,29 @@ class SystemLoadCondition(WMICondition):
         self.check_after = CHECK_EXTRA_DELAY  # for now keep it fixed to one minute
         self.recur_after_failed_check = True
 
+    @classmethod
+    def check_tags(cls, tags):
+        if tags is None:
+            return "required specific parameters (`tags`) not found"
+        else:
+            missing = []
+            errors = []
+            subtype = tags.get("subtype")
+            if subtype is None:
+                missing.append("subtype")
+            elif subtype != cls.item_subtype:
+                errors.append("subtype")
+            threshold = tags.get("threshold")
+            if threshold is None:
+                missing.append("threshold")
+            elif not isinstance(threshold, int) and not (0 < threshold < 100):
+                errors.append("threshold")
+            if missing:
+                return "missing specific parameters (`tags`): %s" % ", ".join(missing)
+            elif errors:
+                return errors
+        return None
+
 
 # dedicated form definition derived directly from one of the base forms
 class form_SystemLoadCondition(form_Condition):

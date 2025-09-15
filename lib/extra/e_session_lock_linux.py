@@ -116,6 +116,24 @@ class SessionLockEvent(DBusEvent):
         self.rule = _DBUS_FILTER_EXPRESSION
         self.parameter_check = _DBUS_PARAMETER_CHECK
 
+    @classmethod
+    def check_tags(cls, tags):
+        if tags is None:
+            return "required specific parameters (`tags`) not found"
+        else:
+            missing = []
+            errors = []
+            subtype = tags.get("subtype")
+            if subtype is None:
+                missing.append("subtype")
+            elif subtype != cls.item_subtype:
+                errors.append("subtype")
+            if missing:
+                return "missing specific parameters (`tags`): %s" % ", ".join(missing)
+            elif errors:
+                return errors
+        return None
+
 
 # dedicated form definition derived directly from one of the base forms
 class form_SessionLockEvent(form_Event):
