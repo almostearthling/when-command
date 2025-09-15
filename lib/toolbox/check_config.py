@@ -14,6 +14,7 @@ from ..items.itemhelp import ConfigurationError
 from ..items.item import ALL_AVAILABLE_ITEMS_D
 
 from ..utility import get_rich_console, write_error
+from ..repocfg import AppConfig
 
 
 def check_globals(doc: TOMLDocument) -> list[ConfigurationError]:
@@ -187,8 +188,9 @@ def check_config_file(filename, verbose=True) -> bool:
             write_error(CLI_ERR_CONFIG_INVALID % (filename, str(err)))
     except Exception as err:
         if verbose:
-            import traceback
-
+            # if AppConfig.get("DEBUG"):
+            #     import traceback
+            #     traceback.print_exception(err)
             write_error(CLI_ERR_ERROR_GENERIC)
     # if we are here the check was not positive
     return False

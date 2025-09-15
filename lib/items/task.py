@@ -114,7 +114,7 @@ class Task(object):
         if "check_tags" in cls.__dict__:
             tags = elem.get("tags")
             err = cls.check_tags(tags)  # type: ignore
-            if err is not None or len(err) > 0:
+            if err is not None and len(err) > 0:
                 if isinstance(err, str):
                     raise ConfigurationError(
                         name,
