@@ -115,10 +115,8 @@ class HibernateTask(CommandTask):
                 missing.append("subtype")
             elif subtype != cls.item_subtype:
                 errors.append("subtype")
-            if missing:
-                return "missing specific parameters (`tags`): %s" % ", ".join(missing)
-            elif errors:
-                return errors
+            if errors or missing:
+                return (errors, missing)
         return None
 
 

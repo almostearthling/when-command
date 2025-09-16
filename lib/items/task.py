@@ -123,13 +123,15 @@ class Task(object):
                         message=err,
                     )
                 else:
-                    assert isinstance(err, list)
+                    assert isinstance(err, tuple)
+                    error, missing = err
+                    error.append("(missing: %s)" % ", ".join(missing))
                     raise ConfigurationError(
                         name,
                         "tags",
                         elemd.line_no,
                         message="the following entries in `tags` are incorrect: %s"
-                        % ", ".join(err),
+                        % ", ".join(error),
                     )
         # if no exception has been raised, checking was positive
         return True

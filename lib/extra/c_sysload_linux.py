@@ -128,10 +128,8 @@ class SystemLoadCondition(CommandCondition):
                 missing.append("threshold")
             elif not isinstance(threshold, int) and not (0 < threshold < 100):
                 errors.append("threshold")
-            if missing:
-                return "missing specific parameters (`tags`): %s" % ", ".join(missing)
-            elif errors:
-                return errors
+            if errors or missing:
+                return (errors, missing)
         return None
 
 

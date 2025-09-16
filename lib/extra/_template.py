@@ -16,6 +16,8 @@ import tkinter as tk
 import ttkbootstrap as ttk
 from tkinter import messagebox
 
+from typing import List, Tuple
+
 from ..i18n.strings import *
 from ..utility import check_not_none, append_not_none
 
@@ -107,11 +109,13 @@ class TemplateCondition(CommandCondition):
         self.success_status = 0
 
     # optional tags checker: it can returnone of the following values
-    # - a list of incorrect parameters
+    # - a pair of lists, in which:
+    #   - the first one contains the parameters that are incorrect
+    #   - the second one contains the missing parameters which were expected
     # - a string containing an error message
     # - the empty list, or the empty string, or None to indicate no error
     @classmethod
-    def check_tags(cls, tags: items.Table | None) -> str | list[str] | None:
+    def check_tags(cls, tags: items.Table | None) -> str | Tuple[List[str], List[str]] | None:
         if tags is None:
             return "required specific parameters (`tags`) not found"
         else:
@@ -130,10 +134,8 @@ class TemplateCondition(CommandCondition):
             else:
                 if not isinstance(s, str):
                     errors.append("parameter1")
-            if missing:
-                return "missing specific parameters (`tags`): %s" % ", ".join(missing)
-            elif errors:
-                return errors
+            if errors or missing:
+                return (errors, missing)
         return None
             
 

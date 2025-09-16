@@ -152,10 +152,8 @@ class RemovableDrivePresent(WMICondition):
                 missing.append("drive_label")
             elif not isinstance(drive_label, str):
                 errors.append("drive_label")
-            if missing:
-                return "missing specific parameters (`tags`): %s" % ", ".join(missing)
-            elif errors:
-                return errors
+            if errors or missing:
+                return (errors, missing)
         return None
 
 

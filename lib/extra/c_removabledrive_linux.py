@@ -123,10 +123,8 @@ class RemovableDrivePresent(DBusCondition):
                 missing.append("drive_name")
             elif not isinstance(drive_name, str):
                 errors.append("drive_name")
-            if missing:
-                return "missing specific parameters (`tags`): %s" % ", ".join(missing)
-            elif errors:
-                return errors
+            if errors or missing:
+                return (errors, missing)
         return None
 
 

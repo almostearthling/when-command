@@ -137,10 +137,8 @@ class SessionLockedCondition(WMICondition):
                 missing.append("check_frequency")
             elif not isinstance(check_frequency, str) and not check_frequency in CHECK_EXTRA_DELAY.keys():
                 errors.append("check_frequency")
-            if missing:
-                return "missing specific parameters (`tags`): %s" % ", ".join(missing)
-            elif errors:
-                return errors
+            if errors or missing:
+                return (errors, missing)
         return None
 
 
