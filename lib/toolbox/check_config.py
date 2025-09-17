@@ -77,10 +77,10 @@ def check_items(doc: TOMLDocument) -> list[ConfigurationError]:
                         # TODO: report item line in TOML document
                         err = ConfigurationError(
                             name if name is not None else "<unnamed>",
-                            message=f"unknown signature ({signature}) for task `{name}`",
+                            message=f"unknown signature ({signature}) for task {name}",
                         )
                 except KeyError:
-                    err = ConfigurationError(name, message=f"malformed task `{name}`")
+                    err = ConfigurationError(name, message=f"malformed task {name}")
             else:
                 # TODO: report item line in TOML document
                 err = ConfigurationError("<unnamed>", message=f"unnamed task found")
@@ -110,11 +110,11 @@ def check_items(doc: TOMLDocument) -> list[ConfigurationError]:
                         # TODO: report item line in TOML document
                         err = ConfigurationError(
                             name if name is not None else "<unnamed>",
-                            message=f"unknown signature ({signature}) for condition `{name}`",
+                            message=f"unknown signature ({signature}) for condition {name}",
                         )
                 except KeyError:
                     err = ConfigurationError(
-                        name, message=f"malformed condition `{name}`"
+                        name, message=f"malformed condition {name}"
                     )
             else:
                 # TODO: report item line in TOML document
@@ -145,10 +145,10 @@ def check_items(doc: TOMLDocument) -> list[ConfigurationError]:
                         # TODO: report item line in TOML document
                         err = ConfigurationError(
                             name if name is not None else "<unnamed>",
-                            message=f"unknown signature ({signature}) for event `{name}`",
+                            message=f"unknown signature ({signature}) for event {name}",
                         )
                 except KeyError:
-                    err = ConfigurationError(name, message=f"malformed event `{name}`")
+                    err = ConfigurationError(name, message=f"malformed event {name}")
             else:
                 # TODO: report item line in TOML document
                 err = ConfigurationError("<unnamed>", message=f"unnamed event found")

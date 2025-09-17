@@ -118,7 +118,7 @@ class SystemLoadCondition(CommandCondition):
         threshold = tags.get("threshold")
         if threshold is None:
             missing.append("threshold")
-        elif not isinstance(threshold, int) and not (0 < threshold < 100):
+        elif not isinstance(threshold, int) or not (0 < threshold < 100):
             errors.append("threshold")
         if errors or missing:
             return (errors, missing)

@@ -125,7 +125,9 @@ class Task(object):
                     message=f"required specific parameters {tags_err}",
                 )
             # the `subtype` entry is mandatory for specialized items, therefore
-            # it is more appropriate to handle it at the base class level
+            # it is more appropriate to handle it at the base class level; note
+            # that, although here for completeness, the subtype case is already
+            # handled in the `check_config` tool when verifying the signature
             subtype = tags.get("subtype")
             error_subtype = False
             missing_subtype = False
@@ -151,13 +153,17 @@ class Task(object):
                         error.insert(0, "subtype")
                     elif missing_subtype:
                         missing.insert(0, "subtype")
-                    error.append("(missing: %s)" % ", ".join(missing))
+                    msgs = []
+                    if len(missing) > 0:
+                        msgs.append("missing: %s" % ", ".join(missing))
+                    if len(error) > 0:
+                        msgs.append("incorrect: %s" % ", ".join(error))
                     raise ConfigurationError(
                         name,
                         "tags",
                         elemd.line_no,
-                        message="the following entries in `tags` are incorrect: %s"
-                        % ", ".join(error),
+                        message="the following entries in `tags` are %s"
+                        % " / ".join(msgs),
                     )
             elif error_subtype:
                 raise ConfigurationError(
