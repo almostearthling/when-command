@@ -26,8 +26,10 @@ class EventCondition(Condition):
         if t:
             assert t.get("type") == self.type
 
-    def __load_checking(self, item: items.Table, item_line: int) -> None:
-        super().__load_checking(item, item_line)
+    def load_checking(
+        self, item: items.Table, item_line: int, tasks: list[str] | None = None
+    ) -> None:
+        super().load_checking(item, item_line, tasks)
         self.type = "event"
         self.hrtype = ITEM_COND_EVENT
         tab = CheckedTable(item, item_line)

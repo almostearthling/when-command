@@ -55,8 +55,10 @@ class LuaScriptCondition(Condition):
             self.variables_to_set = None
             self.init_script_path = None
 
-    def __load_checking(self, item: items.Table, item_line: int) -> None:
-        super().__load_checking(item, item_line)
+    def load_checking(
+        self, item: items.Table, item_line: int, tasks: list[str] | None = None
+    ) -> None:
+        super().load_checking(item, item_line, tasks)
         self.type = "lua"
         self.hrtype = ITEM_COND_LUA
         tab = CheckedTable(item, item_line)

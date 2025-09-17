@@ -22,8 +22,8 @@ class CommandEvent(Event):
         if t:
             assert t.get("type") == self.type
 
-    def __load_checking(self, item: items.Table, item_line: int) -> None:
-        super().__load_checking(item, item_line)
+    def load_checking(self, item: items.Table, item_line: int, event_conds: list[str] | None = None) -> None:
+        super().load_checking(item, item_line, event_conds)
         self.type = "cli"
         self.hrtype = ITEM_EVENT_CLI
         tab = CheckedTable(item, item_line)

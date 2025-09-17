@@ -26,10 +26,10 @@ class ConfigurationError(Exception):
     def __str__(self):
         iname = f"{self.item_name}" if self.item_name is not None else "<unnamed>"
         iline = f"@{self.item_line}" if self.item_line is not None else ""
-        ename = f"[{self.entry_name}]" if self.entry_name is not None else ""
+        ename = f" ({self.entry_name})" if self.entry_name is not None else ""
         itype = f"/{self.item_type}" if self.item_type is not None else ""
         msg = f"`{self.message}`" if self.message is not None else "<unknown>"
-        return f"{self.__class__.__name__}{itype} {iname}{ename}{iline}: {msg}"
+        return f"{self.__class__.__name__}{itype} {iname}{iline}{ename}: {msg}"
 
     def __repr__(self):
         return str(self)
@@ -162,7 +162,7 @@ class CheckedTable(object):
     ) -> str | None:
         return self.get_check(
             entry,
-            check=lambda x: (isinstance(x, str) or x is None) and check(x),
+            check=lambda x: x is None or (isinstance(x, str) and check(x)),
             mandatory=mandatory,
             default=default,
         )

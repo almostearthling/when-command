@@ -256,14 +256,18 @@ class TimeCondition(Condition):
         else:
             self.time_specifications = DEFAULT_TIME_SPECIFICATIONS
 
-    def __load_checking(self, item: items.Table, item_line: int) -> None:
-        super().__load_checking(item, item_line)
+    def load_checking(
+        self, item: items.Table, item_line: int, tasks: list[str] | None = None
+    ) -> None:
+        super().load_checking(item, item_line, tasks)
         self.type = "time"
         self.hrtype = ITEM_COND_TIME
         tab = CheckedTable(item, item_line)
         assert tab.get_str("type") == self.type
         # TODO: check resulting dicts using get_array_of_dict_check_keys_vs_values
-        self.time_specifications = tab.get_list_of_dict("time_specifications", mandatory=True)
+        self.time_specifications = tab.get_list_of_dict(
+            "time_specifications", mandatory=True
+        )
 
     def as_table(self):
         if not check_not_none(

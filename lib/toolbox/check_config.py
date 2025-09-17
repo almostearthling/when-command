@@ -174,7 +174,7 @@ def check_config_file(filename, verbose=True) -> bool:
             if verbose:
                 write_error(CLI_ERR_CONFIG_ERRORS_FOUND % filename)
                 for e in errors:
-                    write_error("* %s" % str(e))
+                    write_error("* %s" % e)
         else:
             # the only case that results in a successful outcome
             if verbose:
@@ -188,9 +188,9 @@ def check_config_file(filename, verbose=True) -> bool:
             write_error(CLI_ERR_CONFIG_INVALID % (filename, str(err)))
     except Exception as err:
         if verbose:
-            # if AppConfig.get("DEBUG"):
-            #     import traceback
-            #     traceback.print_exception(err)
+            if AppConfig.get("DEBUG"):
+                import traceback
+                traceback.print_exception(err)
             write_error(CLI_ERR_ERROR_GENERIC)
     # if we are here the check was not positive
     return False

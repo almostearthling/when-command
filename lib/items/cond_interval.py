@@ -28,13 +28,17 @@ class IntervalCondition(Condition):
         else:
             self.interval_seconds = DEFAULT_INTERVAL_SECONDS
 
-    def __load_checking(self, item: items.Table, item_line: int) -> None:
-        super().__load_checking(item, item_line)
+    def load_checking(
+        self, item: items.Table, item_line: int, tasks: list[str] | None = None
+    ) -> None:
+        super().load_checking(item, item_line, tasks)
         self.type = "interval"
         self.hrtype = ITEM_COND_INTERVAL
         tab = CheckedTable(item, item_line)
         assert tab.get_str("type") == self.type
-        self.interval_seconds = tab.get_int_between("interval_seconds", 1, mandatory=True)
+        self.interval_seconds = tab.get_int_between(
+            "interval_seconds", 1, mandatory=True
+        )
 
     def as_table(self):
         if not check_not_none(

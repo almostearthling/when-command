@@ -77,7 +77,7 @@ class Condition(object):
     # the following too is a constructor, that may generate errors: it can be
     # used in a configuration checking function, or by the constructor itself
     # to check the correctness of the configuration file as a side effect
-    def __load_checking(
+    def load_checking(
         self, item: items.Table, item_line: int, tasks: list[str] | None = None
     ) -> None:
         self.type = None
@@ -142,7 +142,7 @@ class Condition(object):
         assert elem is not None and elemd is not None
         # now build a dummy event table using the checking constructor
         o = cls()
-        o.__load_checking(elem, elemd.line_no, tasks)
+        o.load_checking(elem, elemd.line_no, tasks)
         # a `check_tags(elem)` can be provided by specialized items, which
         # returns a list of parameters in the `tags` table which are incorrect;
         # the `check_tags()` method should also check that, when no tags are
