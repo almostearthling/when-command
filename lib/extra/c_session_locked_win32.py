@@ -127,7 +127,10 @@ class SessionLockedCondition(WMICondition):
         check_frequency = tags.get("check_frequency")
         if check_frequency is None:
             missing.append("check_frequency")
-        elif not isinstance(check_frequency, str) and not check_frequency in CHECK_EXTRA_DELAY.keys():
+        elif (
+            not isinstance(check_frequency, str)
+            and not check_frequency in CHECK_EXTRA_DELAY.keys()
+        ):
             errors.append("check_frequency")
         if errors or missing:
             return (errors, missing)

@@ -128,9 +128,9 @@ class TemplateCondition(CommandCondition):
             if not isinstance(s, str):
                 errors.append("parameter1")
         if errors or missing:
-                return (errors, missing)
+            return (errors, missing)
         return None
-            
+
 
 # dedicated form definition derived directly from one of the base forms
 class form_TemplateCondition(form_Condition):

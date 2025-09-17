@@ -31,10 +31,13 @@ def check_globals(doc: TOMLDocument) -> list[ConfigurationError]:
             errors.append(
                 ConfigurationError("(globals)", key, message=f"invalid value: {v}")
             )
+    # ...
     tags = doc.get("tags")
     if not isinstance(tags, items.Table):
         errors.append(
-            ConfigurationError("(globals)", key, message=f"`tags` must be a dictionary")
+            ConfigurationError(
+                "(globals)", key, message=f"the tags entry must be a dictionary"
+            )
         )
     else:
         key = "reset_conditions_on_resume"
@@ -64,7 +67,16 @@ def check_items(doc: TOMLDocument) -> list[ConfigurationError]:
                     signature = "task:%s" % item_table["type"]
                     tags = item_table.get("tags")
                     if tags:
-                        signature = "%s:%s" % (signature, tags["subtype"])
+                        if not isinstance(tags, items.Table):
+                            errors.append(
+                                ConfigurationError(
+                                    "(globals)", 
+                                    name, 
+                                    message=f"the tags entry must be a dictionary",
+                                )
+                            )
+                        else:
+                            signature = "%s:%s" % (signature, tags["subtype"])
                     t = ALL_AVAILABLE_ITEMS_D.get(signature)
                     if t and name is not None:
                         factory = t[2]
@@ -96,7 +108,16 @@ def check_items(doc: TOMLDocument) -> list[ConfigurationError]:
                     signature = "cond:%s" % cond_type
                     tags = item_table.get("tags")
                     if tags:
-                        signature = "%s:%s" % (signature, tags["subtype"])
+                        if not isinstance(tags, items.Table):
+                            errors.append(
+                                ConfigurationError(
+                                    "(globals)", 
+                                    name, 
+                                    message=f"the tags entry must be a dictionary",
+                                )
+                            )
+                        else:
+                            signature = "%s:%s" % (signature, tags["subtype"])
                     t = ALL_AVAILABLE_ITEMS_D.get(signature)
                     if t and name is not None:
                         factory = t[2]
@@ -132,7 +153,16 @@ def check_items(doc: TOMLDocument) -> list[ConfigurationError]:
                     signature = "event:%s" % item_table["type"]
                     tags = item_table.get("tags")
                     if tags:
-                        signature = "%s:%s" % (signature, tags["subtype"])
+                        if not isinstance(tags, items.Table):
+                            errors.append(
+                                ConfigurationError(
+                                    "(globals)", 
+                                    name, 
+                                    message=f"the tags entry must be a dictionary",
+                                )
+                            )
+                        else:
+                            signature = "%s:%s" % (signature, tags["subtype"])
                     t = ALL_AVAILABLE_ITEMS_D.get(signature)
                     if t:
                         factory = t[2]
@@ -188,9 +218,10 @@ def check_config_file(filename, verbose=True) -> bool:
             write_error(CLI_ERR_CONFIG_INVALID % (filename, str(err)))
     except Exception as err:
         if verbose:
-            if AppConfig.get("DEBUG"):
-                import traceback
-                traceback.print_exception(err)
+            # uncomment the following to have the exception reported
+            # if AppConfig.get("DEBUG"):
+            #     import traceback
+            #     traceback.print_exception(err)
             write_error(CLI_ERR_ERROR_GENERIC)
     # if we are here the check was not positive
     return False
