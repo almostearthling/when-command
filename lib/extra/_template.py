@@ -108,33 +108,26 @@ class TemplateCondition(CommandCondition):
         self.startup_path = "."
         self.success_status = 0
 
-    # optional tags checker: it can returnone of the following values
+    # optional tags checker: it can return one of the following values
     # - a pair of lists, in which:
     #   - the first one contains the parameters that are incorrect
     #   - the second one contains the missing parameters which were expected
     # - a string containing an error message
     # - the empty list, or the empty string, or None to indicate no error
+    # it can be even omitted (no check is performed at all) or just return None,
+    # in which case basic tests (at least on the `subtype` entry) are performed
     @classmethod
-    def check_tags(cls, tags: items.Table | None) -> str | Tuple[List[str], List[str]] | None:
-        if tags is None:
-            return "required specific parameters (`tags`) not found"
+    def check_tags(cls, tags: items.Table) -> str | Tuple[List[str], List[str]] | None:
+        missing = []
+        errors = []
+        # an example that accepts any string as long as it is provided
+        s = tags.get("parameter1")
+        if s is None:
+            missing.append("parameter1")
         else:
-            missing = []
-            errors = []
-            # the `subtype` part must always be present
-            subtype = tags.get("subtype")
-            if subtype is None:
-                missing.append("subtype")
-            elif subtype != cls.item_subtype:
-                errors.append("subtype")
-            # an example that accepts any string as long as it is provided
-            s = tags.get("parameter1")
-            if s is None:
-                missing.append("parameter1")
-            else:
-                if not isinstance(s, str):
-                    errors.append("parameter1")
-            if errors or missing:
+            if not isinstance(s, str):
+                errors.append("parameter1")
+        if errors or missing:
                 return (errors, missing)
         return None
             

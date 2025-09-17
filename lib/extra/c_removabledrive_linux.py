@@ -108,23 +108,15 @@ class RemovableDrivePresent(DBusCondition):
 
     @classmethod
     def check_tags(cls, tags):
-        if tags is None:
-            return "required specific parameters (`tags`) not found"
-        else:
-            missing = []
-            errors = []
-            subtype = tags.get("subtype")
-            if subtype is None:
-                missing.append("subtype")
-            elif subtype != cls.item_subtype:
-                errors.append("subtype")
-            drive_name = tags.get("drive_name")
-            if drive_name is None:
-                missing.append("drive_name")
-            elif not isinstance(drive_name, str):
-                errors.append("drive_name")
-            if errors or missing:
-                return (errors, missing)
+        missing = []
+        errors = []
+        drive_name = tags.get("drive_name")
+        if drive_name is None:
+            missing.append("drive_name")
+        elif not isinstance(drive_name, str):
+            errors.append("drive_name")
+        if errors or missing:
+            return (errors, missing)
         return None
 
 

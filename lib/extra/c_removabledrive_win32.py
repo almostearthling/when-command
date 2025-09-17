@@ -130,30 +130,22 @@ class RemovableDrivePresent(WMICondition):
 
     @classmethod
     def check_tags(cls, tags):
-        if tags is None:
-            return "required specific parameters (`tags`) not found"
-        else:
-            missing = []
-            errors = []
-            subtype = tags.get("subtype")
-            if subtype is None:
-                missing.append("subtype")
-            elif subtype != cls.item_subtype:
-                errors.append("subtype")
-            drive_letter = tags.get("drive_letter")
-            # drive letter is optional
-            # if drive_letter is None:
-            #     missing.append("drive_letter")
-            if drive_letter is not None:
-                if not isinstance(drive_letter, str) and not drive_letter in AVAILABLE_DRIVE_LETTERS:
-                    errors.append("drive_letter")
-            drive_label = tags.get("drive_label")
-            if drive_label is None:
-                missing.append("drive_label")
-            elif not isinstance(drive_label, str):
-                errors.append("drive_label")
-            if errors or missing:
-                return (errors, missing)
+        missing = []
+        errors = []
+        drive_letter = tags.get("drive_letter")
+        # drive letter is optional
+        # if drive_letter is None:
+        #     missing.append("drive_letter")
+        if drive_letter is not None:
+            if not isinstance(drive_letter, str) and not drive_letter in AVAILABLE_DRIVE_LETTERS:
+                errors.append("drive_letter")
+        drive_label = tags.get("drive_label")
+        if drive_label is None:
+            missing.append("drive_label")
+        elif not isinstance(drive_label, str):
+            errors.append("drive_label")
+        if errors or missing:
+            return (errors, missing)
         return None
 
 

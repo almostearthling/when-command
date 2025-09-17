@@ -150,8 +150,29 @@ class Condition(object):
         # expected, which is an unlikely case
         if "check_tags" in cls.__dict__:
             tags = elem.get("tags")
+            if not isinstance(tags, items.Table):
+                if tags is None:
+                    tags_err = "missing"
+                else:
+                    tags_err = "invalid"
+                raise ConfigurationError(
+                    name,
+                    "tags",
+                    elemd.line_no,
+                    message=f"required specific parameters {tags_err}",
+                )
+            # the `subtype` entry is mandatory for specialized items, therefore
+            # it is more appropriate to handle it at the base class level
+            subtype = tags.get("subtype")
+            error_subtype = False
+            missing_subtype = False
+            if subtype is None:
+                missing_subtype = True
+            else:
+                if subtype != cls.item_subtype:  # type: ignore
+                    error_subtype = True
             err = cls.check_tags(tags)  # type: ignore
-            if err is not None and len(err) > 0:
+            if err is not None:
                 if isinstance(err, str):
                     raise ConfigurationError(
                         name,
@@ -162,6 +183,11 @@ class Condition(object):
                 else:
                     assert isinstance(err, tuple)
                     error, missing = err
+                    # insert the `subtype` entry at the beginning if incorrect
+                    if error_subtype:
+                        error.insert(0, "subtype")
+                    elif missing_subtype:
+                        missing.insert(0, "subtype")
                     error.append("(missing: %s)" % ", ".join(missing))
                     raise ConfigurationError(
                         name,
@@ -170,6 +196,20 @@ class Condition(object):
                         message="the following entries in `tags` are incorrect: %s"
                         % ", ".join(error),
                     )
+            elif error_subtype:
+                raise ConfigurationError(
+                    name,
+                    "tags",
+                    elemd.line_no,
+                    message="incorrect value specified for subtype",
+                )
+            elif missing_subtype:
+                raise ConfigurationError(
+                    name,
+                    "tags",
+                    elemd.line_no,
+                    message="mandatory subtype not specified",
+                )
         # if no exception has been raised, checking was positive
         return True
 

@@ -143,23 +143,15 @@ class ChargingBatteryCondition(DBusCondition):
 
     @classmethod
     def check_tags(cls, tags):
-        if tags is None:
-            return "required specific parameters (`tags`) not found"
-        else:
-            missing = []
-            errors = []
-            subtype = tags.get("subtype")
-            if subtype is None:
-                missing.append("subtype")
-            elif subtype != cls.item_subtype:
-                errors.append("subtype")
-            threshold = tags.get("threshold")
-            if threshold is None:
-                missing.append("threshold")
-            elif not isinstance(threshold, int) and not (0 < threshold < 100):
-                errors.append("threshold")
-            if errors or missing:
-                return (errors, missing)
+        missing = []
+        errors = []
+        threshold = tags.get("threshold")
+        if threshold is None:
+            missing.append("threshold")
+        elif not isinstance(threshold, int) and not (0 < threshold < 100):
+            errors.append("threshold")
+        if errors or missing:
+            return (errors, missing)
         return None
 
 

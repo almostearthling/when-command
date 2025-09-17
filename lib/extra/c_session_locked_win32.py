@@ -122,23 +122,15 @@ class SessionLockedCondition(WMICondition):
 
     @classmethod
     def check_tags(cls, tags):
-        if tags is None:
-            return "required specific parameters (`tags`) not found"
-        else:
-            missing = []
-            errors = []
-            subtype = tags.get("subtype")
-            if subtype is None:
-                missing.append("subtype")
-            elif subtype != cls.item_subtype:
-                errors.append("subtype")
-            check_frequency = tags.get("check_frequency")
-            if check_frequency is None:
-                missing.append("check_frequency")
-            elif not isinstance(check_frequency, str) and not check_frequency in CHECK_EXTRA_DELAY.keys():
-                errors.append("check_frequency")
-            if errors or missing:
-                return (errors, missing)
+        missing = []
+        errors = []
+        check_frequency = tags.get("check_frequency")
+        if check_frequency is None:
+            missing.append("check_frequency")
+        elif not isinstance(check_frequency, str) and not check_frequency in CHECK_EXTRA_DELAY.keys():
+            errors.append("check_frequency")
+        if errors or missing:
+            return (errors, missing)
         return None
 
 
