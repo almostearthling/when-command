@@ -10,12 +10,7 @@
 # not known to the scheduler occur.
 
 from tomlkit import table, items, TOMLDocument
-from tomlkit_extras import (
-    TOMLDocumentDescriptor,
-    AoTDescriptor,
-    TableDescriptor,
-    Hierarchy,
-)
+from tomlkit_extras import TOMLDocumentDescriptor
 
 from ..utility import (
     check_not_none,

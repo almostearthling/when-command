@@ -25,6 +25,7 @@ from ..items.task_internal import InternalCommandTask
 
 _ITEM_NAMES = get_private_item_name_prefix() + "ResetConditionsOnResume"
 
+
 def name_ResetConditionsOnResume():
     return _ITEM_NAMES
 
@@ -66,6 +67,7 @@ if sys.platform.startswith("win"):
 # for details
 if sys.platform == "linux":
     from ..items.event_dbus import DBusEvent
+
     _event = DBusEvent()
     _event.name = _ITEM_NAMES
     _event.condition = _ITEM_NAMES
@@ -76,9 +78,7 @@ if sys.platform == "linux":
         "sender='org.freedesktop.login1',"
         "member='PrepareForSleep'"
     )
-    _event.parameter_check = [
-        { 'index': 0, 'operator': "eq", 'value': False }
-    ]
+    _event.parameter_check = [{"index": 0, "operator": "eq", "value": False}]
 
 event_ResetConditionsOnResume = _event
 

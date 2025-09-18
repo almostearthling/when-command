@@ -72,7 +72,7 @@ class App(object):
         self._window.withdraw()
         self._icon = ImageTk.PhotoImage(get_image(APP_ICON))
         self._paused = False
-        self._window.iconphoto(True, self._icon)    # type: ignore
+        self._window.iconphoto(True, self._icon)  # type: ignore
 
         # load forms and application related functions *after* initialization,
         # and take property of member functions: this is done here so that all
@@ -351,7 +351,7 @@ def main_start(args) -> None:
         exit_error(CLI_ERR_WHENEVER_WRONG_VERSION)
     if DEBUG:
         # setup the scheduler and associate it to the application
-        whenever: str = AppConfig.get("WHENEVER")   # type: ignore
+        whenever: str = AppConfig.get("WHENEVER")  # type: ignore
         if (
             whenever is None
             or not os.path.exists(whenever)
@@ -383,7 +383,7 @@ def main_start(args) -> None:
     else:
         try:
             # setup the scheduler and associate it to the application
-            whenever: str = AppConfig.get("WHENEVER")   # type: ignore
+            whenever: str = AppConfig.get("WHENEVER")  # type: ignore
             if (
                 whenever is None
                 or not os.path.exists(whenever)

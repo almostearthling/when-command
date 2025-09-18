@@ -13,7 +13,6 @@ import hashlib
 from zipfile import ZipFile
 
 
-
 # URL definition strings
 REPO_WHENEVER = "whenever"
 REPO_WHEN = "when-command"
@@ -23,7 +22,6 @@ from ..i18n.strings import *
 from ..utility import write_error, get_rich_console
 
 from .dlutils import *
-
 
 
 # installation path
@@ -97,7 +95,7 @@ def get_whenever_download_metadata(verbose=False):
         if verbose:
             write_error(CLI_ERR_NO_SUITABLE_BINARY)
         return None
-    except ValueError as e:     # too many values to unpack
+    except ValueError as e:  # too many values to unpack
         if verbose:
             write_error(f"malformed `{CHECKSUM_FILE}` file")
         return None
@@ -123,7 +121,7 @@ def download_and_check_whenever(verbose=False):
     check = ""
     if verbose:
         console.print(CLI_MSG_VERIFYING_CHECKSUM, highlight=False)
-    with open(dl_path, 'rb') as f:
+    with open(dl_path, "rb") as f:
         check = hashlib.sha1(f.read()).hexdigest().lower()
     if check != sha1_csum:
         if verbose:
@@ -136,7 +134,7 @@ def download_and_check_whenever(verbose=False):
 # unzip the archive in the provided directory
 def unzip_binaries_to_directory(archive, folder=None, verbose=False) -> bool:
     console = get_rich_console()
-    with ZipFile(archive, 'r') as z:
+    with ZipFile(archive, "r") as z:
         bins = z.namelist()
         bins.remove("INSTRUCTIONS.md")
         if folder is None:

@@ -18,7 +18,7 @@ from ..repocfg import AppConfig
 # some constants:
 
 # milliseconds between log reads
-_MSECS_BETWEEN_READS: float = AppConfig.get("MSECS_BETWEEN_READS", 100.0)   # type: ignore
+_MSECS_BETWEEN_READS: float = AppConfig.get("MSECS_BETWEEN_READS", 100.0)  # type: ignore
 
 # max length of task execution history
 _HISTORY_LENGTH: int = AppConfig.get("HISTORY_LENGTH")  # type: ignore
@@ -88,12 +88,12 @@ class Wrapper(object):
                 when=self._log.WHEN_END,
                 status=self._log.STATUS_MSG,
             ).log("shutdown the scheduler, waiting for activity to finish")
-            self._pipe.stdin.write("exit\n")    # type: ignore
-            self._pipe.stdin.flush()            # type: ignore
+            self._pipe.stdin.write("exit\n")  # type: ignore
+            self._pipe.stdin.flush()  # type: ignore
             self._running = False
             time.sleep(sleep_seconds)
             self._thread.join()
-            for line in iter(self._pipe.stdout.readline, ""):   # type: ignore
+            for line in iter(self._pipe.stdout.readline, ""):  # type: ignore
                 self.process_output(line.strip())
             self._log.use(
                 action="shutdown",
@@ -128,8 +128,8 @@ class Wrapper(object):
                 when=self._log.WHEN_END,
                 status=self._log.STATUS_MSG,
             ).log("shutdown the scheduler, forcing end of all activity")
-            self._pipe.stdin.write("kill\n")    # type: ignore
-            self._pipe.stdin.flush()            # type: ignore
+            self._pipe.stdin.write("kill\n")  # type: ignore
+            self._pipe.stdin.flush()  # type: ignore
             self._running = False
             time.sleep(sleep_seconds)
             self._thread.join()
@@ -165,8 +165,8 @@ class Wrapper(object):
             status=self._log.STATUS_MSG,
         ).log("attempting to pause the scheduler")
         if self._pipe.poll() is None and self._thread:
-            self._pipe.stdin.write("pause\n")   # type: ignore
-            self._pipe.stdin.flush()            # type: ignore
+            self._pipe.stdin.write("pause\n")  # type: ignore
+            self._pipe.stdin.flush()  # type: ignore
             return True
         else:
             self._log.use(
@@ -194,7 +194,7 @@ class Wrapper(object):
         ).log("attempting to resume the scheduler")
         if self._pipe.poll() is None and self._thread:
             self._pipe.stdin.write("resume\n")  # type: ignore
-            self._pipe.stdin.flush()            # type: ignore
+            self._pipe.stdin.flush()  # type: ignore
             return True
         else:
             self._log.use(
@@ -205,7 +205,7 @@ class Wrapper(object):
             ).log("no active scheduler, failed to resume")
             return False
 
-    def whenever_reset_conditions(self, names: list[str]=[]) -> bool:
+    def whenever_reset_conditions(self, names: list[str] = []) -> bool:
         if self._pipe is None:
             self._log.use(
                 action="reset",
@@ -219,13 +219,13 @@ class Wrapper(object):
             level=self._log.LEVEL_DEBUG,
             when=self._log.WHEN_PROC,
             status=self._log.STATUS_MSG,
-        ).log("attempting to resume conditions: %s" % (
-            "ALL" if len(names) == 0 else
-            ", ".join(list("`%s`" % x for x in names))
-        ))
+        ).log(
+            "attempting to resume conditions: %s"
+            % ("ALL" if len(names) == 0 else ", ".join(list("`%s`" % x for x in names)))
+        )
         if self._pipe.poll() is None and self._thread:
-            self._pipe.stdin.write("reset_conditions %s\n" % " ".join(names))   # type: ignore
-            self._pipe.stdin.flush()    # type: ignore
+            self._pipe.stdin.write("reset_conditions %s\n" % " ".join(names))  # type: ignore
+            self._pipe.stdin.flush()  # type: ignore
             return True
         else:
             self._log.use(
@@ -252,8 +252,8 @@ class Wrapper(object):
             status=self._log.STATUS_MSG,
         ).log("attempting to suspend condition `%s`" % name)
         if self._pipe.poll() is None and self._thread:
-            self._pipe.stdin.write("suspend_condition %s\n" % name) # type: ignore
-            self._pipe.stdin.flush()    # type: ignore
+            self._pipe.stdin.write("suspend_condition %s\n" % name)  # type: ignore
+            self._pipe.stdin.flush()  # type: ignore
             return True
         else:
             self._log.use(
@@ -281,7 +281,7 @@ class Wrapper(object):
         ).log("attempting to resume condition `%s`" % name)
         if self._pipe.poll() is None and self._thread:
             self._pipe.stdin.write("resume_condition %s\n" % name)  # type: ignore
-            self._pipe.stdin.flush()    # type: ignore
+            self._pipe.stdin.flush()  # type: ignore
             return True
         else:
             self._log.use(
@@ -308,8 +308,8 @@ class Wrapper(object):
             status=self._log.STATUS_MSG,
         ).log("attempting to reload configuration")
         if self._pipe.poll() is None and self._thread:
-            self._pipe.stdin.write("configure %s\n" % self._config) # type: ignore
-            self._pipe.stdin.flush()    # type: ignore
+            self._pipe.stdin.write("configure %s\n" % self._config)  # type: ignore
+            self._pipe.stdin.flush()  # type: ignore
             return True
         else:
             self._log.use(
@@ -336,8 +336,8 @@ class Wrapper(object):
             status=self._log.STATUS_MSG,
         ).log("attempting to trigger event `%s`" % name)
         if self._pipe.poll() is None and self._thread:
-            self._pipe.stdin.write("trigger %s\n" % name)   # type: ignore
-            self._pipe.stdin.flush()    # type: ignore
+            self._pipe.stdin.write("trigger %s\n" % name)  # type: ignore
+            self._pipe.stdin.flush()  # type: ignore
             return True
         else:
             self._log.use(
@@ -381,7 +381,7 @@ class Wrapper(object):
                     status=self._log.STATUS_ERR,
                 ).log("scheduler exited unexpectedly")
                 self._thread.join()
-            for line in iter(self._pipe.stdout.readline, ""):   # type: ignore
+            for line in iter(self._pipe.stdout.readline, ""):  # type: ignore
                 self.process_output(line.strip())
             self._running = False
             return False

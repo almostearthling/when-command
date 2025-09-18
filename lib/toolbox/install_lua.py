@@ -21,8 +21,8 @@ LUA_ZIPEXT = ".zip"
 
 # the following is a list of modules used by When, that cannot be upgraded
 RESERVED = [
-    "_.lua",    # placeholder for files
-    "_",        # placeholder for directories
+    "_.lua",  # placeholder for files
+    "_",  # placeholder for directories
 ]
 
 
@@ -95,7 +95,7 @@ def install_lua(fname: str, verbose: bool = True) -> bool:
                 # handle the special case of a zipped directory: this will
                 # probably be the most common case for ZIP files
                 singledir = True
-                zipdir = dest_dir_base + '/'
+                zipdir = dest_dir_base + "/"
                 for x in nl:
                     if not x.startswith(zipdir):
                         singledir = False

@@ -40,7 +40,7 @@ def retrieve_text_asset(URL, verbose=False) -> str | None:
 # download an asset identified by an URL to a provided directory or to
 # the TEMP directory if none is specified
 def download_asset(URL, local=None, verbose=False) -> None | str:
-    sr = urllib.parse.urlsplit(URL)     # type: ignore
+    sr = urllib.parse.urlsplit(URL)  # type: ignore
     fname = os.path.basename(sr.path)
     if local is None:
         try:
