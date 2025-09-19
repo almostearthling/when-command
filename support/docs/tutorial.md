@@ -77,7 +77,7 @@ We will use the environment variable method to let _restic_ know where the repos
 * `RESTIC_REPOSITORY`: `E:\Backups\bk_username`
 * `RESTIC_PASSWORD`: `s3cr3t1!`
 
-As we do not want to pollute the environment, we will set tese variables directly in the task definitions. We will define two tasks:
+As we do not want to pollute the environment, we will set these variables directly in the task definitions. We will define two tasks:
 
 1. the first task will actually backup some directories,
 2. the second task will perform some backup repository maintenance.
