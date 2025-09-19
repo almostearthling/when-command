@@ -10,6 +10,7 @@ from ..utility import (
     append_not_none,
     toml_list_of_tables,
     toml_script_string,
+    is_wmi_operator,
 )
 
 from .cond import Condition
@@ -74,8 +75,7 @@ class WMICondition(Condition):
         tests = {
             "index": lambda x: x is None or (isinstance(x, int) and x >= 0),
             "field": _is_valid_field_name,
-            "operator": lambda x: x
-            in ("eq", "neq", "gt", "ge", "lt", "le", "match", "contains", "ncontains"),
+            "operator": is_wmi_operator,
             "value": lambda x: isinstance(x, (bool, int, float, str)),
         }
 

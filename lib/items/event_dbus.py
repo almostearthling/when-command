@@ -9,6 +9,7 @@ from ..utility import (
     check_not_none,
     append_not_none,
     toml_list_of_tables,
+    is_dbus_operator,
 )
 
 from .event import Event
@@ -72,8 +73,7 @@ class DBusEvent(Event):
 
         tests = {
             "index": _check_idx,
-            "operator": lambda x: x
-            in ("eq", "neq", "gt", "ge", "lt", "le", "match", "contains", "ncontains"),
+            "operator": is_dbus_operator,
             "value": lambda x: isinstance(x, (bool, int, float, str)),
         }
         self.parameter_check = tab.get_list_of_dict_check_keys_vs_values(

@@ -81,6 +81,18 @@ _logger = None
 # the current whenever version
 _current_whenever_version = None
 
+# operators allowed in WMI and DBus result/parameter checks
+_WMI_RESULT_CHECK_OPERATORS = ("eq", "neq", "gt", "ge", "lt", "le", "match")
+_DBUS_PARAM_CHECK_OPERATORS = ("eq", "neq", "gt", "ge", "lt", "le", "match", "contains", "ncontains")
+
+
+# check that an operator is correct for either DBus or WMI result checks
+def is_wmi_operator(s: str) -> bool:
+    return s in _WMI_RESULT_CHECK_OPERATORS
+
+def is_dbus_operator(s: str) -> bool:
+    return s in _DBUS_PARAM_CHECK_OPERATORS
+
 
 # return the current Tk root: create one if not already present
 def get_tkroot() -> tk.Tk:
@@ -99,7 +111,7 @@ def get_logger() -> Logger:
 
 
 # return the prefix for private item names
-def get_private_item_name_prefix():
+def get_private_item_name_prefix() -> str:
     return _PRIVATE_ITEM_PREFIX
 
 
