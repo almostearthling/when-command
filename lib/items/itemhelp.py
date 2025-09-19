@@ -68,13 +68,12 @@ class CheckedTable(object):
     ):
         v = self.get(entry, mandatory, default)
         name = self.get("name")
-        assert isinstance(name, str)
-        if name is None:
+        if not isinstance(name, str):
             raise ConfigurationError(
                 name,
                 entry_name=entry,
                 item_line=self._table_line,
-                message=f"item has no name",
+                message=f"item name invalid or not provided",
             )
         if not check(v):
             raise ConfigurationError(

@@ -80,7 +80,7 @@ class WMICondition(Condition):
         }
 
         self.result_check = tab.get_list_of_dict_check_keys_vs_values(
-            "parameter_check", lambda k, v: k in tests and tests[k](v)
+            "result_check", lambda k, v: k in tests and tests[k](v)
         )
 
     def as_table(self):
