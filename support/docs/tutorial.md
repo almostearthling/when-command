@@ -10,7 +10,7 @@ The proposed examples are the following:
 * how to easily [automate backups](#automated-backups)
 * [cleanup](#temporary-files-cleanup) some temporary files
 
-and every example start by invoking the main configuration window:
+and every example starts by invoking the main configuration window:
 
 ![Config01](graphics/tutorial_config_main01.png)
 
