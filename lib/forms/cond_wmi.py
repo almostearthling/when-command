@@ -200,7 +200,6 @@ class form_WMICondition(form_Condition):
                 index = -1
         field = self.data_get("field")
         op = self.data_get("operator")
-        v = self.data_get("value")
         assert isinstance(field, str)
         assert isinstance(op, str)
         operator = _XLATE_OPERATORS.get(op, None)
