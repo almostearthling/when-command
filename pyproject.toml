@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "when"
-version = "1.12.1b3"
+version = "1.12.1b4"
 description = "Interface for the **whenever** automation tool"
 authors = ["Francesco Garosi <francesco.garosi@gmail.com>"]
 license = 'BSD 3-Clause "New" or "Revised" License'
