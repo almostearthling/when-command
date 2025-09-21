@@ -88,6 +88,10 @@ The `--check-config` tool, moreover, tries to report as many errors as possible:
 The error lines (the ones that begin with the `When - ERROR: * ConfigurationError` prefix) are _not_ translated to the current locale.
 ```
 
+```{note}
+If an error is detected in an event based condition or in a task, the corresponding item will not be registered: this has the secondary effect that all items that reference it will be invalid, since the name of the incorrect item that will not be considered a valid name. For instance, if a task named `Task01` is incorrectly configured, it will not be loaded as a task: this means, that all conditions that have `Task01` in their execution list, will report `Task01` as an _invalid value_.
+```
+
 
 ## See Also
 
