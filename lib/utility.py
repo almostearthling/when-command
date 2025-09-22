@@ -514,6 +514,17 @@ def toml_script_string(s) -> items.String | None:
         return toml_try_ml_literal(s)
 
 
+# TOML: a list of items
+def toml_list_of_items(loi) -> items.Array | None:
+    if loi is not None:
+        r = array()
+        for x in loi:
+            r.add_line(x)
+        if len(r) > 0:
+            r.add_line()
+        return r
+
+
 # TOML: create an array of literal strings
 def toml_list_of_literals(los) -> items.Array | None:
     if los is not None:

@@ -133,7 +133,7 @@ class LowBatteryCondition(DBusCondition):
         self.object_path = self._batterypath
         self.interface = "org.freedesktop.DBus.Properties"
         self.method = "GetAll"
-        self.parameter_call = '["org.freedesktop.UPower.Device"]'
+        self.parameter_call = ["org.freedesktop.UPower.Device"]
         self.parameter_check = [
             {"index": [0, "State"], "operator": "neq", "value": 2},
             {"index": [0, "Percentage"], "operator": "lt", "value": threshold},

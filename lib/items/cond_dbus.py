@@ -10,6 +10,7 @@ from ..utility import (
     check_not_none,
     append_not_none,
     toml_list_of_tables,
+    toml_list_of_items,
     is_dbus_operator,
 )
 
@@ -169,9 +170,11 @@ class DBusCondition(Condition):
             self.parameter_call, str
         ):  # this only works with the (unavailable) form
             pc = json.loads(self.parameter_call)
-            t.append("parameter_call", toml_list_of_tables(pc))
+            t.append("parameter_call", toml_list_of_items(pc))
         else:
-            t = append_not_none(t, "parameter_call", self.parameter_call)
+            t = append_not_none(
+                t, "parameter_call", toml_list_of_items(self.parameter_call)
+            )
         t = append_not_none(t, "parameter_check_all", self.parameter_check_all)
         # JSON check strings should still be supported, but will eventually go away
         if isinstance(
