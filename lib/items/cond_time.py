@@ -264,7 +264,10 @@ class TimeCondition(Condition):
         self.hrtype = ITEM_COND_TIME
         tab = CheckedTable(item, item_line)
         assert tab.get_str("type") == self.type
-        # TODO: check resulting dicts using get_array_of_dict_check_keys_vs_values
+
+        # these are expressed via a list of inline dictionaries whose
+        # elements are fixed, and *must* exist, and have a specific form; we
+        # use a dictionary based trick
         tests = {
             "weekday": lambda x: x in _WEEKDAYS_TOML,
             "year": lambda y: isinstance(y, int) and 0 < y <= 9999,  # year boundaries
