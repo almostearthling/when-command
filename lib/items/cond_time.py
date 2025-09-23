@@ -265,8 +265,19 @@ class TimeCondition(Condition):
         tab = CheckedTable(item, item_line)
         assert tab.get_str("type") == self.type
         # TODO: check resulting dicts using get_array_of_dict_check_keys_vs_values
-        self.time_specifications = tab.get_list_of_dict(
-            "time_specifications", mandatory=True
+        tests = {
+            "weekday": lambda x: x in _WEEKDAYS_TOML,
+            "year": lambda y: isinstance(y, int) and 0 < y <= 9999,  # year boundaries
+            "month": lambda m: isinstance(m, int) and 1 <= m <= 12,
+            "day": lambda d: isinstance(d, int) and 1 <= d <= 31,
+            "hour": lambda h: isinstance(h, int) and 0 <= h < 24,
+            "minute": lambda m: isinstance(m, int) and 0 <= m < 60,
+            "second": lambda s: isinstance(s, int) and 0 <= s < 60,
+        }
+        self.time_specifications = tab.get_list_of_dict_check_keys_vs_values(
+            "time_specifications",
+            lambda k, v: k in tests and tests[k](v),
+            mandatory=True,
         )
 
     def as_table(self):
