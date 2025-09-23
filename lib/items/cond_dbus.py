@@ -83,7 +83,7 @@ class DBusCondition(Condition):
         assert tab.get_str("type") == self.type
         self.check_after = tab.get_int_between("check_after", 1)
         self.recur_after_failed_check = tab.get_bool("recur_after_failed_check")
-        self.bus = tab.get_str_check_in("rule", [":session", ":system"], mandatory=True)
+        self.bus = tab.get_str_check_in("bus", [":session", ":system"], mandatory=True)
         self.service = tab.get_str_check_re(
             "service", RE_DBUS_SERVICE_NAME, mandatory=True
         )
