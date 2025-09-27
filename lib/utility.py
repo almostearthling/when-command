@@ -34,7 +34,7 @@ from .runner.logger import Logger
 
 
 # lowest whenever version supported
-_MIN_WHENEVER_SUPPORTED = Version.parse("0.4.5")
+_MIN_WHENEVER_SUPPORTED = Version.parse("0.4.7")
 
 
 # a regular expression to check whether an user-given name is valid
