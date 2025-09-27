@@ -157,9 +157,12 @@ def unzip_binaries_to_directory(archive, folder=None, verbose=False) -> bool:
 
 
 # use the two above-defined utilities to install the binaries
-def install(folder=None, verbose=False):
+def install(folder=None, verbose=False) -> bool:
     archive = download_and_check_whenever(verbose)
-    unzip_binaries_to_directory(archive, folder, verbose)
+    if archive is not None:
+        return unzip_binaries_to_directory(archive, folder, verbose)
+    else:
+        return False
 
 
 # end.
