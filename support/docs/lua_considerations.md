@@ -8,7 +8,7 @@ The embedded _Lua_ interpreter in **whenever** is surely a powerful feature, tha
 The current version of **When** supports a [_tool_](cli.md#toolbox) to install a script or a library, so that it can be `require`d from the embedded interpreter in **whenever**: the `--install-lua` (or `--upgrade-lua` for upgrades) command, followed by a file name can be used and, if the file type is supported, it will be copied to an appropriate directory in [_APPDATA_](appdata.md) which is in the searched _paths_. The supported file types are:
 
 * _.lua_ (_Lua_ scripts): obviously _Lua_ source files that can define functions, initialize or update tables, and so on,
-* _.zip_ (ZIP archives): the zip contents, which are expected to be a tree of _Lua_ source files and possibly binary modules, are extracted in a directory with the same name of the ZIP file in the _Lua_ subdirectory of _APPDATA_.
+* _.zip_ (ZIP archives): the zip contents, which are expected to be a tree of _Lua_ source files, are extracted in a directory with the same name of the ZIP file in the _Lua_ subdirectory of _APPDATA_.
 
 There is no support for _Lua C (binary) modules_: the reason is that the interpreter embedded in **whenever** only operates in _safe_ mode, which in turn disables dynamic loading of extenal binary libraries, which in fact _Lua C modules_ are. Attempts to `require` a binary module, even if available in the correct directory, will result in a _module not found_ runtime error for the embedded interpreter.
 
