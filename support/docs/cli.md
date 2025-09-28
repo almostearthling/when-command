@@ -63,7 +63,7 @@ When - ERROR: * ConfigurationError Cond_AFK01@29 (idle_seconds): `invalid value:
 When - ERROR: Operation failed.
 ```
 
-which is the result when the mentioned configuration file containx the following snippet _at line 29_:
+which is the result when the mentioned configuration file contains the following snippet _at line 29_:
 
 ```toml
 [[condition]]
