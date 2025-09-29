@@ -38,7 +38,7 @@ These steps can be followed on recent Linux distributions that derive from Debia
 
    ```shell
    sudo apt install build-essential libdbus-1-dev pkg-config \
-                    libx11-dev libxss-dev libglib2.0-dev libdbus-1-dev \
+                    libx11-dev libxss-dev libglib2.0-dev \
                     libcairo2-dev libgirepository-1.0-dev \
                     gir1.2-ayatanaappindicator3-0.1 \
                     python3-tk python3-pip pipx
@@ -48,7 +48,7 @@ These steps can be followed on recent Linux distributions that derive from Debia
 
    ```shell
    sudo apt install build-essential libdbus-1-dev pkg-config \
-                    libx11-dev libxss-dev libglib2.0-dev libdbus-1-dev \
+                    libx11-dev libxss-dev libglib2.0-dev \
                     libcairo2-dev libgirepository1.0-dev \
                     gir1.2-ayatanaappindicator3-0.1 \
                     gnome-shell-extension-manager \
