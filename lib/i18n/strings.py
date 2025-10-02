@@ -15,7 +15,7 @@ UI_APP = "When"
 CLI_APP = "when"
 UI_APP_LABEL = "When Automation Tool"
 UI_APP_COPYRIGHT = "© 2023-2025 Francesco Garosi"
-UI_APP_VERSION = "1.12.2b3"
+UI_APP_VERSION = "1.12.3b1"
 
 # other strings that should not be translated
 UI_WHENEVER = "Whenever"

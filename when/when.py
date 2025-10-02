@@ -169,18 +169,46 @@ class App(object):
 
     def sched_pause(self, _) -> None:
         if not self._paused and self._window and self._wrapper:
+            log = get_logger().context().use(emitter="FRONTEND")
+            log.use(
+                level=log.LEVEL_INFO,
+                when=log.WHEN_PROC,
+                action="pause",
+                status=log.STATUS_MSG,
+            ).log("pausing the scheduler")
             self._wrapper.whenever_pause()
 
     def sched_resume(self, _) -> None:
         if self._paused and self._window and self._wrapper:
+            log = get_logger().context().use(emitter="FRONTEND")
+            log.use(
+                level=log.LEVEL_INFO,
+                when=log.WHEN_PROC,
+                action="resume",
+                status=log.STATUS_MSG,
+            ).log("resuming scheduler activity")
             self._wrapper.whenever_resume()
 
     def sched_reset_conditions(self, _) -> None:
         if self._window and self._wrapper:
+            log = get_logger().context().use(emitter="FRONTEND")
+            log.use(
+                level=log.LEVEL_INFO,
+                when=log.WHEN_PROC,
+                action="reset",
+                status=log.STATUS_MSG,
+            ).log("resetting all conditions")
             self._wrapper.whenever_reset_conditions()
 
     def sched_reload_configuration(self, _) -> None:
         if self._window and self._wrapper:
+            log = get_logger().context().use(emitter="FRONTEND")
+            log.use(
+                level=log.LEVEL_INFO,
+                when=log.WHEN_PROC,
+                action="reload",
+                status=log.STATUS_MSG,
+            ).log("reloading configuration")
             self._wrapper.whenever_reload_configuration()
 
     def sched_icon_busy(self, _) -> None:
