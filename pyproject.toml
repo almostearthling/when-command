@@ -30,6 +30,8 @@ winshell = { version = "^0.6", markers = "sys_platform == 'win32'" }
 pywin32 = { version = "^308", markers = "sys_platform == 'win32'" }
 semver = "^3.0.4"
 tomlkit-extras = "^0.2.0"
+ttkbootstrap-icons = "^3.2.0"
+ttkbootstrap-icons-mat = "^1.0.0"
 
 [tool.poetry.scripts]
 when = "when.when:main"
