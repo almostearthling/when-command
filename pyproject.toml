@@ -40,3 +40,6 @@ when-bg = "when.when_bg:run_bg"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff.lint]
+ignore = ["E402", "F403", "F405"]
