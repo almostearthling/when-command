@@ -202,6 +202,7 @@ UI_FORM_DBUS_PARAMS_CALL_SC = "Call with the following parameters (use JSON form
 UI_FORM_DBUS_PARAMS_CHECK_SC = "Perform the following checks on return values (use JSON format):"
 UI_FORM_WMI_QUERY_SC = "WMI Query (WQL):"
 UI_FORM_WMI_RESULT_CHECKS_SC = "Result checks:"
+UI_FORM_WMI_NAMESPACE_SC = "WMI Namespace:"
 
 UI_FORM_ITEMTYPE_SC = "Choose item type:"
 UI_FORM_ITEMSUBTYPES_SC = "Available items:"

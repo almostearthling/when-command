@@ -114,7 +114,7 @@ class form_NewItem(ApplicationForm):
         self.data_set("item_type", self._type)
         self._tv_itemtypes.delete(*self._tv_itemtypes.get_children())
         for entry in self._subtypes_display:
-            self._tv_itemtypes.insert("", iid=entry[1], values=entry, index=ttk.END)
+            self._tv_itemtypes.insert("", iid=entry[1], values=entry, index=tk.END)
 
     def exit_ok(self):
         choice = self.data_get("item_selection")

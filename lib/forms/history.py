@@ -128,7 +128,7 @@ class form_History(ApplicationForm):
                 if outcome == "OK"
                 else self._icon_unknown if outcome == "IND" else self._icon_fail
             )
-            self._tv_history.insert("", values=entry, index=ttk.END, image=icon)
+            self._tv_history.insert("", values=entry, index=tk.END, image=icon)
 
     # reload history data when the `reload` button is clicked
     def reload(self) -> None:
