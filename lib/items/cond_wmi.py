@@ -20,6 +20,14 @@ from .itemhelp import CheckedTable
 # a regular expression to check whether an user-given name is valid
 _RE_VALID_FIELD_NAME = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*$")
 
+# a regular expression to check a valid WMI namespace
+_RE_VALID_WMI_NAMESPACE = re.compile(
+    r"^[a-zA-Z_][a-zA-Z0-9_]*(\\[a-zA-Z_][a-zA-Z0-9_]*)+$"
+)
+
+# namespace paths must start with "ROOT\" (case insensitive)
+_WMI_NAMESPACE_PREFIX = "ROOT\\"
+
 
 # default values for non-optional parameters
 DEFAULT_QUERY = "SELECT * from Win32_Processor"
@@ -40,12 +48,14 @@ class WMICondition(Condition):
             self.check_after = t.get("check_after")
             self.recur_after_failed_check = t.get("recur_after_failed_check")
             self.query = t.get("query")
+            self.namespace = t.get("namespace")
             self.result_check_all = t.get("result_check_all")
             self.result_check = t.get("result_check")
         else:
             self.check_after = None
             self.recur_after_failed_check = None
             self.query = DEFAULT_QUERY
+            self.namespace = None
             self.result_check_all = None
             self.result_check = None
 
@@ -62,6 +72,15 @@ class WMICondition(Condition):
         # hard to check that it is a real WMI query, so we just get a string
         self.query = tab.get_str("query", mandatory=True)
         self.result_check_all = tab.get_bool("result_check_all")
+
+        # possibly provided namespace path is checked for correctness
+        def _is_valid_namespace(x: str) -> bool:
+            if isinstance(x, str) and bool(_RE_VALID_WMI_NAMESPACE.match(x)):
+                return x.upper().startswith(_WMI_NAMESPACE_PREFIX)
+            else:
+                return False
+
+        self.namespace = tab.get_str_check("namespace", _is_valid_namespace)
 
         # these are expressed via a list of inline dictionaries whose
         # elements are fixed, and *must* exist, and have a specific form; we
@@ -93,6 +112,7 @@ class WMICondition(Condition):
         t = append_not_none(
             t, "recur_after_failed_check", self.recur_after_failed_check
         )
+        t = append_not_none(t, "namespace", self.namespace)
         t.append("query", toml_script_string(self.query))
         t = append_not_none(t, "result_check_all", self.result_check_all)
         t = append_not_none(t, "result_check", toml_list_of_tables(self.result_check))

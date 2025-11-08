@@ -1,3 +1,6 @@
+# WMI condition form
+# this form is here only for completeness and **must never** be displayed
+
 import re
 import tkinter as tk
 import ttkbootstrap as ttk
@@ -38,6 +41,15 @@ _XLATE_OPERATORS = {
 _ALLOWED_OPERATORS = _XLATE_OPERATORS.keys()
 
 
+# a regular expression to check a valid WMI namespace
+_RE_VALID_WMI_NAMESPACE = re.compile(
+    r"^[a-zA-Z_][a-zA-Z0-9_]*(\\[a-zA-Z_][a-zA-Z0-9_]*)+$"
+)
+
+# namespace paths must start with "ROOT\" (case insensitive)
+_WMI_NAMESPACE_PREFIX = "ROOT\\"
+
+
 class form_WMICondition(form_Condition):
 
     def __init__(self, tasks_available, item=None):
@@ -58,7 +70,9 @@ class form_WMICondition(form_Condition):
         area.grid(row=0, column=0, sticky=tk.NSEW)
         PAD = WIDGET_PADDING_PIXELS
 
-        # script section
+        # query section
+        l_wmiNamespace = ttk.Label(area, text=UI_FORM_WMI_NAMESPACE_SC)
+        e_wmiNamespace = ttk.Entry(area)
         l_wmiQuery = ttk.Label(area, text=UI_FORM_WMI_QUERY_SC)
         cv_wmiQuery = CodeView(
             area,
@@ -129,13 +143,17 @@ class form_WMICondition(form_Condition):
         sep2 = ttk.Separator(area)
 
         # arrange top items in the grid
-        l_wmiQuery.grid(row=0, column=0, columnspan=6, sticky=tk.W, padx=PAD, pady=PAD)
-        cv_wmiQuery.grid(
-            row=1, column=0, columnspan=6, sticky=tk.NSEW, padx=PAD, pady=PAD
+        l_wmiNamespace.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        e_wmiNamespace.grid(
+            row=0, column=1, columnspan=5, sticky=tk.NSEW, padx=PAD, pady=PAD
         )
-        sep1.grid(row=2, column=0, columnspan=6, sticky=tk.EW, pady=PAD)
-        area_commonparams.grid(row=3, column=0, columnspan=6, sticky=tk.EW)
-        sep2.grid(row=4, column=0, columnspan=6, sticky=tk.EW, pady=PAD)
+        l_wmiQuery.grid(row=1, column=0, columnspan=6, sticky=tk.W, padx=PAD, pady=PAD)
+        cv_wmiQuery.grid(
+            row=2, column=0, columnspan=6, sticky=tk.NSEW, padx=PAD, pady=PAD
+        )
+        sep1.grid(row=3, column=0, columnspan=6, sticky=tk.EW, pady=PAD)
+        area_commonparams.grid(row=4, column=0, columnspan=6, sticky=tk.EW)
+        sep2.grid(row=5, column=0, columnspan=6, sticky=tk.EW, pady=PAD)
         l_wmiResults.grid(
             row=10, column=0, columnspan=6, sticky=tk.W, padx=PAD, pady=PAD
         )
@@ -155,7 +173,7 @@ class form_WMICondition(form_Condition):
         ck_checkAll.grid(row=20, column=0, sticky=tk.W, padx=PAD, pady=PAD)
 
         # expand appropriate sections
-        area.rowconfigure(1, weight=1)
+        area.rowconfigure(2, weight=1)
         area.rowconfigure(11, weight=1)
         area.columnconfigure(1, weight=1)
         area.columnconfigure(3, weight=3)
@@ -193,7 +211,7 @@ class form_WMICondition(form_Condition):
             index = None
         else:
             try:
-                index = int(self.data_get("index")) # type: ignore
+                index = int(self.data_get("index"))  # type: ignore
                 if index < 0:
                     raise ValueError
             except ValueError:
