@@ -10,10 +10,10 @@ import gc
 import ttkbootstrap as ttk
 from PIL import ImageTk
 
+from typing import final
 
-BASEDIR = os.path.dirname(os.path.dirname(sys.argv[0]))
-if not BASEDIR:
-    BASEDIR = "."
+
+BASEDIR = os.path.dirname(os.path.dirname(sys.argv[0])) or "."
 sys.path.append(BASEDIR)
 
 from lib.i18n.strings import *
@@ -49,15 +49,15 @@ _root = None
 
 
 # this is used to enable exception handling too
-DEBUG = AppConfig.get("DEBUG")
+DEBUG = AppConfig.get("DEBUG") or False
 
 
 # the following class is used to create an invisible window that actually
 # implements the tkinter main loop, and that reads virtual events to display
 # the application forms: being the main window it also sets the ttk style
 # and reacts to events that cause actions to be performed
+@final
 class App(object):
-
     # an invisible root window is created, the other ones are all toplevels:
     # the icon is created **after** creating the root window, because a root
     # is needed to be active for this purpose
@@ -318,7 +318,7 @@ def main_config(args) -> None:
             try:
                 with open(configfile, "w") as f:
                     f.write("# Created by: %s v%s" % (UI_APP, UI_APP_VERSION))
-            except Exception as e:
+            except Exception:  # as e:
                 exit_error(CLI_ERR_CONFIG_UNACCESSIBLE)
         setup_windows()
         from lib.cfgapp import main
@@ -331,7 +331,7 @@ def main_config(args) -> None:
                 try:
                     with open(configfile, "w") as f:
                         f.write("# Created by: %s v%s" % (UI_APP, UI_APP_VERSION))
-                except Exception as e:
+                except Exception:  # as e:
                     exit_error(CLI_ERR_CONFIG_UNACCESSIBLE)
             setup_windows()
             from lib.cfgapp import main
@@ -379,7 +379,7 @@ def main_start(args) -> None:
         exit_error(CLI_ERR_WHENEVER_WRONG_VERSION)
     if DEBUG:
         # setup the scheduler and associate it to the application
-        whenever: str = AppConfig.get("WHENEVER")  # type: ignore
+        whenever: str = AppConfig.get("WHENEVER")
         if (
             whenever is None
             or not os.path.exists(whenever)
