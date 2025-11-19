@@ -379,7 +379,7 @@ def main_start(args) -> None:
         exit_error(CLI_ERR_WHENEVER_WRONG_VERSION)
     if DEBUG:
         # setup the scheduler and associate it to the application
-        whenever: str = AppConfig.get("WHENEVER")
+        whenever: str = AppConfig.get("WHENEVER")  # type: ignore
         if (
             whenever is None
             or not os.path.exists(whenever)
