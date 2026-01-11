@@ -7,6 +7,7 @@ import ttkbootstrap as ttk
 from ttkbootstrap import dialogs
 from ttkbootstrap import constants as ttkc
 from ttkbootstrap.icons import Icon
+from ttkbootstrap_icons import BootstrapIcon as Icons
 
 from typing import Callable, Any
 
@@ -72,8 +73,11 @@ BUTTON_STANDARD_WIDTH_LARGE = 31
 
 # common settings for all standard buttons
 class _btn_Base(ttk.Button):
-    def __init__(self, master, text, icon_bytes, command, enabled):
-        self._image = get_icon(icon_bytes)
+    def __init__(self, master, text, icon, command, enabled):
+        if isinstance(icon, bytes):
+            self._image = get_icon(icon)
+        else:
+            self._image = icon
         self._style = ttk.Style()
         self._style.configure(
             style="stdbutton.TButton", anchor=tk.EW, width=BUTTON_STANDARD_WIDTH
@@ -99,8 +103,11 @@ class _btn_Base(ttk.Button):
 
 
 class _btn_MenuEntry(ttk.Button):
-    def __init__(self, master, text, icon_bytes, command, enabled):
-        self._image = get_icon(icon_bytes)
+    def __init__(self, master, text, icon, command, enabled):
+        if isinstance(icon, bytes):
+            self._image = get_icon(icon)
+        else:
+            self._image = icon
         self._style = ttk.Style()
         self._style.configure(
             style="stdbutton.TButton", anchor=tk.W, width=BUTTON_STANDARD_WIDTH_LARGE
@@ -131,7 +138,7 @@ class BtnOK(_btn_Base):
         super().__init__(
             master,
             text=text,
-            icon_bytes=CHECK_MARK_B_ICON32,
+            icon=Icons("check-circle").image,
             command=command,
             enabled=enabled,
         )
@@ -142,7 +149,7 @@ class BtnCancel(_btn_Base):
         super().__init__(
             master,
             text=text,
-            icon_bytes=CANCEL_B_ICON32,
+            icon=Icons(name="x-circle").image,
             command=command,
             enabled=enabled,
         )
@@ -153,7 +160,7 @@ class BtnClose(_btn_Base):
         super().__init__(
             master,
             text=text,
-            icon_bytes=CLOSE_WINDOW_B_ICON32,
+            icon=Icons("sign-stop").image,
             command=command,
             enabled=enabled,
         )
@@ -164,7 +171,7 @@ class BtnExit(_btn_Base):
         super().__init__(
             master,
             text=text,
-            icon_bytes=CLOSE_WINDOW_B_ICON32,
+            icon=Icons("door-open").image,
             command=command,
             enabled=enabled,
         )
@@ -175,7 +182,7 @@ class BtnAdd(_btn_Base):
         super().__init__(
             master,
             text=text,
-            icon_bytes=ADD_B_ICON32,
+            icon=Icons("plus-square").image,
             command=command,
             enabled=enabled,
         )
@@ -186,7 +193,7 @@ class BtnRemove(_btn_Base):
         super().__init__(
             master,
             text=text,
-            icon_bytes=REMOVE_B_ICON32,
+            icon=Icons("dash-square").image,
             command=command,
             enabled=enabled,
         )
@@ -197,7 +204,7 @@ class BtnDelete(_btn_Base):
         super().__init__(
             master,
             text=text,
-            icon_bytes=DELETE_B_ICON32,
+            icon=Icons("trash").image,
             command=command,
             enabled=enabled,
         )
@@ -208,7 +215,7 @@ class BtnLoad(_btn_Base):
         super().__init__(
             master,
             text=text,
-            icon_bytes=FOLDER_B_ICON32,
+            icon=Icons("folder").image,
             command=command,
             enabled=enabled,
         )
@@ -219,7 +226,7 @@ class BtnSave(_btn_Base):
         super().__init__(
             master,
             text=text,
-            icon_bytes=SAVE_B_ICON32,
+            icon=Icons("floppy").image,
             command=command,
             enabled=enabled,
         )
@@ -230,7 +237,7 @@ class BtnNew(_btn_Base):
         super().__init__(
             master,
             text=text,
-            icon_bytes=NEW_DOCUMENT_B_ICON32,
+            icon=Icons("file").image,
             command=command,
             enabled=enabled,
         )
@@ -241,7 +248,7 @@ class BtnEdit(_btn_Base):
         super().__init__(
             master,
             text=text,
-            icon_bytes=PENCIL_DRAWING_B_ICON32,
+            icon=Icons("pencil-square").image,
             command=command,
             enabled=enabled,
         )
@@ -252,7 +259,7 @@ class BtnModify(_btn_Base):
         super().__init__(
             master,
             text=text,
-            icon_bytes=PENCIL_DRAWING_B_ICON32,
+            icon=Icons(name="pencil"),
             command=command,
             enabled=enabled,
         )
@@ -263,7 +270,7 @@ class BtnReset(_btn_Base):
         super().__init__(
             master,
             text=text,
-            icon_bytes=RESET_B_ICON32,
+            icon=Icons(name="bootstrap-reboot"),
             command=command,
             enabled=enabled,
         )
@@ -274,7 +281,7 @@ class BtnReload(_btn_Base):
         super().__init__(
             master,
             text=text,
-            icon_bytes=RESET_B_ICON32,
+            icon=Icons(name="repeat"),
             command=command,
             enabled=enabled,
         )
