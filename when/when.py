@@ -49,7 +49,7 @@ _root = None
 
 
 # this is used to enable exception handling too
-DEBUG = AppConfig.get("DEBUG") or False
+DEBUG = AppConfig.get("DEBUG")
 
 
 # the following class is used to create an invisible window that actually

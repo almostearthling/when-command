@@ -3,6 +3,8 @@
 # inserted are _read-only_: the only way to update a configuration item is to
 # delete it and add it back
 
+import os
+
 _singleton_lock = False
 
 
@@ -60,7 +62,7 @@ class _AppConfiguration(object):
 AppConfig = _AppConfiguration(
     {
         # this flag should be set to False on normal operation
-        "DEBUG": False,
+        "DEBUG": bool(os.environ.get("WHEN_APP_DEBUG")),
 
         # the application base name for configuration directory determination
         "CFGNAME": "Whenever",
