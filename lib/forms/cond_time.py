@@ -3,7 +3,6 @@
 from time import localtime
 import tkinter as tk
 import ttkbootstrap as ttk
-from tkinter import messagebox
 
 from ..i18n.strings import *
 from .ui import *
@@ -299,7 +298,7 @@ class form_TimeCondition(form_Condition):
 
     def clear_alltimespecs(self) -> None:
         # this functionality is never implemented
-        if messagebox.askyesno(UI_POPUP_T_CONFIRM, UI_POPUP_DELETEALLENTRIES_Q):
+        if self.messagebox.askyesno(UI_POPUP_T_CONFIRM, UI_POPUP_DELETEALLENTRIES_Q):
             self._timespecs = []
             self._updatedata()
             self._updateform()

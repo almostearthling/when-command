@@ -4,7 +4,6 @@
 import re
 import tkinter as tk
 import ttkbootstrap as ttk
-from tkinter import messagebox
 
 import pygments.lexers
 from chlorophyll import CodeView
@@ -223,16 +222,16 @@ class form_WMICondition(form_Condition):
         operator = _XLATE_OPERATORS.get(op, None)
         value = guess_typed_value(str(self.data_get("value")))
         if index is not None and index < 0:
-            messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDINDEX)
+            self.messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDINDEX)
             return
         if not _RE_VALIDNAME.match(field):
-            messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDFIELD)
+            self.messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDFIELD)
             return
         if operator is None:
-            messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDOPERATOR)
+            self.messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDOPERATOR)
             return
         if not value:
-            messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_EMPTYCHECKVALUE)
+            self.messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_EMPTYCHECKVALUE)
             return
         self._results = list(
             x for x in self._results if x[0] != index and x[1] != field
@@ -250,7 +249,7 @@ class form_WMICondition(form_Condition):
                     index = int(x[0])
                     d["index"] = index
                 except ValueError:
-                    messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDINDEX)
+                    self.messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDINDEX)
             e.append(d)
         self._item.result_check = e or None
         self._updatedata()
@@ -279,7 +278,7 @@ class form_WMICondition(form_Condition):
                     index = int(x[0])
                     d["index"] = index
                 except ValueError:
-                    messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDINDEX)
+                    self.messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDINDEX)
             e.append(d)
         self._item.result_check = e or None
         self.data_set("index", index)
@@ -323,7 +322,7 @@ class form_WMICondition(form_Condition):
                     index = int(l[0])
                     d["index"] = index
                 except ValueError:
-                    messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDINDEX)
+                    self.messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDINDEX)
             e.append(d)
         self._item.result_check = e or None
         return super()._updatedata()

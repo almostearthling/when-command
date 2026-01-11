@@ -2,7 +2,6 @@
 
 import tkinter as tk
 import ttkbootstrap as ttk
-from tkinter import messagebox
 
 from ..i18n.strings import *
 from .ui import *
@@ -217,7 +216,7 @@ class form_Condition(ApplicationForm):
         captions.sort()
         capts = "- " + "\n- ".join(captions)
         msg = UI_POPUP_INVALIDPARAMETERS_T % capts
-        messagebox.showerror(UI_POPUP_T_ERR, msg)
+        self.messagebox.showerror(UI_POPUP_T_ERR, msg)
 
     def _check_recurring(self) -> None:
         # we use the opposite of the value because of <ButtonPress-1>: anyway

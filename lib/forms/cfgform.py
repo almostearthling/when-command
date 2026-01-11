@@ -5,7 +5,6 @@ import os
 
 import tkinter as tk
 import ttkbootstrap as ttk
-from tkinter import messagebox
 
 from ..i18n.strings import *
 from ..icons import APP_ICON32 as APP_ICON
@@ -403,7 +402,7 @@ class form_Config(ApplicationForm):
         # TODO: do not ignore type error
         item_name, _, item_signature = self.data_get("item_selection")  # type: ignore
         item_type = item_signature.split(":", 1)[0]
-        if messagebox.askyesno(UI_POPUP_T_CONFIRM, UI_POPUP_DELETEITEM_Q):
+        if self.messagebox.askyesno(UI_POPUP_T_CONFIRM, UI_POPUP_DELETEITEM_Q):
             if item_type == "task":
                 del self._tasks[item_name]
             elif item_type == "cond":
@@ -419,7 +418,7 @@ class form_Config(ApplicationForm):
         fn = self.data_get("config_file")
         if fn and self._changed:
             if os.path.exists(fn):
-                if messagebox.askyesno(UI_POPUP_T_CONFIRM, UI_POPUP_OVERWRITEFILE_Q):
+                if self.messagebox.askyesno(UI_POPUP_T_CONFIRM, UI_POPUP_OVERWRITEFILE_Q):
                     self._save_config(fn)
                     self._changed = False
             else:
@@ -543,7 +542,7 @@ class form_Config(ApplicationForm):
                     if event_conds:
                         form = form_class(event_conds)
                     else:
-                        messagebox.showerror(
+                        self.messagebox.showerror(
                             UI_POPUP_T_ERR, message=UI_POPUP_NOEVENTCONDITIONS_ERR
                         )
                         form = None
@@ -573,7 +572,7 @@ class form_Config(ApplicationForm):
     # reload the configuration by sending the appropriate message to the
     # main (hidden) application form
     def reload(self) -> None:
-        if messagebox.askyesno(UI_POPUP_T_CONFIRM, UI_POPUP_RELOADCONFIG_Q):
+        if self.messagebox.askyesno(UI_POPUP_T_CONFIRM, UI_POPUP_RELOADCONFIG_Q):
             if self._app:
                 self._app.send_event("<<SchedReloadConfig>>")
         return super().reload()
@@ -582,7 +581,7 @@ class form_Config(ApplicationForm):
     # has changed the user is asked whether or not he wants to discard it
     def exit_close(self) -> None:
         if self._changed:
-            if messagebox.askokcancel(UI_POPUP_T_CONFIRM, UI_POPUP_DISCARDCONFIG_Q):
+            if self.messagebox.askokcancel(UI_POPUP_T_CONFIRM, UI_POPUP_DISCARDCONFIG_Q):
                 return super().exit_close()
         else:
             return super().exit_close()

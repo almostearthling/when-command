@@ -9,7 +9,7 @@ from shlex import split as arg_split, quote
 
 import tkinter as tk
 import ttkbootstrap as ttk
-from tkinter import messagebox, filedialog
+from tkinter import filedialog
 
 from .ui import *
 
@@ -399,7 +399,7 @@ class form_CommandTask(form_Task):
         assert isinstance(value, str)
         if name:
             if not value:
-                messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_EMPTYVARVALUE)
+                self.messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_EMPTYVARVALUE)
             else:
                 self._envvars = list(
                     entry for entry in self._envvars if entry[0] != name

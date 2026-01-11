@@ -14,7 +14,6 @@ from tomlkit import items, table
 
 import tkinter as tk
 import ttkbootstrap as ttk
-from tkinter import messagebox
 
 from typing import List, Tuple
 

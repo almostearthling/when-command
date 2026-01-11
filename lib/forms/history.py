@@ -5,6 +5,7 @@ from ..repocfg import AppConfig
 
 import tkinter as tk
 import ttkbootstrap as ttk
+import ttkbootstrap.constants as ttkc
 
 from ttkbootstrap.widgets import tableview
 from ttkbootstrap.icons import Emoji
@@ -51,27 +52,27 @@ class form_History(ApplicationForm):
             {
                 "text": "",
                 "width": 30,
-                "anchor": "center",
+                "anchor": ttkc.CENTER,
             },
             {
                 "text": UI_FORM_HS_TIME,
                 "width": 130,
-                "anchor": "center",
+                "anchor": ttkc.CENTER,
             },
             {
                 "text": UI_FORM_HS_TASK,
                 "width": 240,
-                "anchor": "w",
+                "anchor": ttkc.W,
             },
             {
                 "text": UI_FORM_HS_TRIGGER,
                 "width": 240,
-                "anchor": "w",
+                "anchor": ttkc.W,
             },
             {
                 "text": UI_FORM_HS_DURATION,
                 "width": 70,
-                "anchor": "center",
+                "anchor": ttkc.CENTER,
             },
             # { "text": UI_FORM_HS_MESSAGE, "width": 20, "anchor": "w", },
         ]
@@ -80,7 +81,7 @@ class form_History(ApplicationForm):
             {
                 "text": UI_FORM_HS_MESSAGE,
                 "width": messsage_width,
-                "anchor": "w",
+                "anchor": ttkc.W,
             }
         )
 

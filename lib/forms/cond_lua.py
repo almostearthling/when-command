@@ -4,7 +4,6 @@ import re
 import os
 import tkinter as tk
 import ttkbootstrap as ttk
-from tkinter import messagebox
 
 import pygments.lexers
 from chlorophyll import CodeView
@@ -185,7 +184,7 @@ class form_LuaScriptCondition(form_Condition):
         assert isinstance(name, str)
         if _RE_VALIDNAME.match(name):
             if not value:
-                messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_EMPTYVARVALUE)
+                self.messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_EMPTYVARVALUE)
             else:
                 self._results = list(
                     entry for entry in self._results if entry[0] != name
@@ -199,7 +198,7 @@ class form_LuaScriptCondition(form_Condition):
                 self._updatedata()
                 self._updateform()
         else:
-            messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDVARNAME)
+            self.messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDVARNAME)
 
     def del_var(self) -> None:
         assert isinstance(self._item, LuaScriptCondition)

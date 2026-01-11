@@ -2,7 +2,6 @@
 
 import tkinter as tk
 import ttkbootstrap as ttk
-from tkinter import messagebox
 
 from ..i18n.strings import *
 from .ui import *
@@ -102,7 +101,7 @@ class form_Event(ApplicationForm):
         captions.sort()
         capts = "- " + "\n- ".join(captions)
         msg = UI_POPUP_INVALIDPARAMETERS_T % capts
-        messagebox.showerror(UI_POPUP_T_ERR, msg)
+        self.messagebox.showerror(UI_POPUP_T_ERR, msg)
 
     # contents is the root for slave widgets
     @property

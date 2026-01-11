@@ -328,6 +328,8 @@ UI_FILETYPE_ALL = "Alle Dateien"
 # default strings for standard buttons
 BTN_OK = "OK"
 BTN_CANCEL = "Stornieren"
+BTN_YES = "Ja"
+BTN_NO = "Nein"
 BTN_CLOSE = "Schließen"
 BTN_EXIT = "Ausfahrt"
 BTN_QUIT = "Aufhören"

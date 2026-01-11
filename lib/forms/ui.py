@@ -4,6 +4,9 @@ import tkinter as tk
 
 # from tkinter import ttk
 import ttkbootstrap as ttk
+from ttkbootstrap import dialogs
+from ttkbootstrap import constants as ttkc
+from ttkbootstrap.icons import Icon
 
 from typing import Callable, Any
 
@@ -13,6 +16,8 @@ from ..utility import get_icon, get_appicon, get_tkroot
 # default strings for UI (overwritten by `i18n.strings`)
 BTN_OK = "OK"
 BTN_CANCEL = "Cancel"
+BTN_YES = "Yes"
+BTN_NO = "No"
 BTN_CLOSE = "Close"
 BTN_EXIT = "Exit"
 BTN_QUIT = "Quit"
@@ -304,6 +309,46 @@ TYPE_FLOAT = "float"
 TYPE_STRING = "str"
 
 
+# Message box derived from ttkbootstrap message dialogs: offers static methods
+# that map the ones provided by Tkinter standard messagebox entity
+class MessageBox(object):
+    def __init__(self, parent=None):
+        self._parent = parent
+
+    def showerror(self, title, message):
+        dialogs.Messagebox.show_error(message, title, parent=self._parent)
+
+    def showinfo(self, title, message):
+        dialogs.Messagebox.show_info(message, title, parent=self._parent)
+
+    def showwarning(self, title, message):
+        dialogs.Messagebox.show_warning(message, title, parent=self._parent)
+
+    def askyesno(self, title, message):
+        buttons = [BTN_YES, BTN_NO]
+        dialog = dialogs.MessageDialog(
+            message,
+            title,
+            buttons=buttons,
+            icon=Icon.question,
+            parent=self._parent,
+        )
+        dialog.show()
+        return True if dialog.result == BTN_YES else False
+
+    def askokcancel(self, title, message):
+        buttons = [BTN_OK, BTN_CANCEL]
+        dialog = dialogs.MessageDialog(
+            message,
+            title,
+            buttons=buttons,
+            icon=Icon.question,
+            parent=self._parent,
+        )
+        dialog.show()
+        return True if dialog.result == BTN_OK else False
+
+
 # base dialog box class: provide a button strip at the bottom and a contents
 # area that can be used to display the needed widgets; also provides utilities
 # to bind widgets to retrievable values
@@ -331,7 +376,7 @@ class ApplicationForm(object):
         self._icon = None
         if icon is not None:
             self._icon = get_appicon(icon)
-            self._dialog.iconphoto(main, self._icon)    # type: ignore
+            self._dialog.iconphoto(main, self._icon)  # type: ignore
 
         # position the form at the center of the screen
         sw = self._dialog.winfo_screenwidth()
@@ -347,13 +392,13 @@ class ApplicationForm(object):
         self._dialog.geometry(geometry)
         self._dialog.resizable(False, False)
         self._area = ttk.Frame(self._dialog, padding=DIALOG_PADDING_MAIN)
-        self._area.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.S, tk.E))   # type: ignore
+        self._area.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.S, tk.E))  # type: ignore
         self._contents = ttk.Frame(self._area, padding=DIALOG_PADDING_INNER)
-        self._contents.grid(row=0, sticky=(tk.N, tk.W, tk.S, tk.E)) # type: ignore
+        self._contents.grid(row=0, sticky=(tk.N, tk.W, tk.S, tk.E))  # type: ignore
         self._contents.columnconfigure(0, weight=1)
         self._contents.rowconfigure(0, weight=1)
         sep = ttk.Separator(self._area)
-        sep.grid(row=1, sticky=(tk.N, tk.W, tk.S, tk.E))    # type: ignore
+        sep.grid(row=1, sticky=(tk.N, tk.W, tk.S, tk.E))  # type: ignore
         sep.rowconfigure(0, weight=1)
         bbox = ttk.Frame(self._area, padding=DIALOG_PADDING_INNER)
         pos = 0
@@ -404,7 +449,7 @@ class ApplicationForm(object):
                 pos += 1
         fill = ttk.Frame(bbox)
         fill.grid(row=0, column=fill_idx, sticky=(tk.W, tk.E))  # type: ignore
-        bbox.grid(row=2, sticky=(tk.N, tk.W, tk.S, tk.E))       # type: ignore
+        bbox.grid(row=2, sticky=(tk.N, tk.W, tk.S, tk.E))  # type: ignore
         bbox.columnconfigure(fill_idx, weight=1)
         bbox.rowconfigure(0, weight=1)
         self._area.rowconfigure(0, weight=1)
@@ -415,6 +460,7 @@ class ApplicationForm(object):
         self._data = {}
         self._checks = {}
         self._autocheck = True
+        self._messagebox = MessageBox(self._dialog)
 
         # bind common shortcut keys
         self._dialog.bind("<FocusIn>", lambda _: self.focus_in())
@@ -435,6 +481,10 @@ class ApplicationForm(object):
     @property
     def dialog(self) -> tk.Tk | tk.Toplevel:
         return self._dialog
+
+    @property
+    def messagebox(self) -> MessageBox:
+        return self._messagebox
 
     # internals
     # force a variable value (and mimic ttk *Var retrieval method used below)
@@ -581,7 +631,11 @@ class ApplicationForm(object):
         else:
             pass
         # if validation is allowed use the provided validator (if any)
-        if check is not None and "validatecommand" in opts and isinstance(widget, tk.Widget):
+        if (
+            check is not None
+            and "validatecommand" in opts
+            and isinstance(widget, tk.Widget)
+        ):
             widget["validatecommand"] = check
         # final check is always set, possibly to an always pass test
         self._checks[name] = check or (lambda _: True)
@@ -722,6 +776,7 @@ class ApplicationForm(object):
 # only export interesting stuff
 __all__ = [
     "ApplicationForm",
+    "MessageBox",
     "BBOX_OK",
     "BBOX_CANCEL",
     "BBOX_ADD",
