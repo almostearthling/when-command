@@ -7,7 +7,7 @@ import ttkbootstrap as ttk
 from ttkbootstrap import dialogs
 from ttkbootstrap import constants as ttkc
 from ttkbootstrap.icons import Icon
-from ttkbootstrap_icons import BootstrapIcon as Icons
+from ttkbootstrap_icons_mat import MatIcon as Icons
 
 from typing import Callable, Any
 
@@ -60,6 +60,28 @@ PENCIL_DRAWING_B_ICON32 = b"iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAIGNI
 SAVE_B_ICON32 = b"iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAAGYktHRAD/AP8A/6C9p5MAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfoBRMQIBu/SApwAAAEQ0lEQVRYw+2Xu28dRRTGf2d2rx+JnQQSOy5SQLAINCBEjYRSIEpIFFpa/gUkSmjSROJPoIwCFKFDEQUSUEWiQCQoD6gSEyV+EF/b9+6cj2JnX/euHaeGK412HrtzvvOd75yZC//1n1Wdt288JoRIjDlgCHi6MWJvJ3JqELl2/jjL8xkOyB2XcHdi9PLpEXenKCLRHY+Ry3ciPwyPMgg5IG59sDwFIK86IUQ2N5dYXFyflzjWBgdgZmCGSWAGEpRTyZOqY4Dan+6NLd8Y+Eivf7vG7x+e7gcQY56M2xfApfYagMuRDBdISi31E1pLMKQKu8zgz4HGny+ubX63tXyMc9885PaFlWkAYCTPLwnOoI4Xie4yNJJwCbkjia3dMV/+fJ/14Yg3Vxa4+NoSLoHAsNOCK5srJwJ7w+vK5/Tq1w/54+JKF4BqTShHEyRKeHSiW9dzlQB2xwXf33nEg3/2cHcunDvVsFTusGrSFQ3mGA2L6zPzeb19aBshoVYLUdWthBXdcS+f0UVMLOTByEMgWGLI1exTAjkr7NOZ+fxErwY01UmgWiEovNwc2jooQZR0N+9W7IAQloDwMjDb1nejgW7Ia0O1SN3xqMqhDgCPztjF2EXhZXp6qVYShuRLtal6APQYVj0HoyIS85Dm1AEwCHD+pROs7xa8sXQkseUUbi0iNeVkNwQTHpfpXm6w7YEbDwreXQ5k1rzfTseP3zqDq2Tp0a5z96n4azRbJWavtvZhoHF/ZjaAwBX46mHg2t+xRY0lJia/LSdGMkbZgBDaITiQgTaKUjohM2aPZLXHQwbdzdQoXRPj9kIn8hNIQtto1TTxYdWxtG5thVQFZOKdKePqp6GVht3E7/Wynauio9LuOz2e9zHNPmnYNu6VrZZndWrRM67rRGKqNT68BhJlmcF7KzO8s5QTqpyXI0/9VAUlIe+ujV389AR+fBIovKutfga61hGwmBufrM6xetRKY16dB56KjeFOabxq8tSPrM7Bzc0BG277UpC3jXaiIciAhUyMo9IZ0G0VC91xYsbFQiaydngPLEQdBupzKW3OlPH9AXh9FkSnLlS2jw76RdhipQ9AfQYcNE4hadLwWSKc6JSbWhPbQ3reHsu7GaGD6sB0DKpTz5u4Hsbz2rjTrj16pgjpy9fmaH0ezysNuFcZla6sPRjqUtygNZ7evsf2rTvl/HN6Xrd0XRewd/c+e3fvoVSx205OhkCYCpMjRVwwisKz59NAxcDYLVVJx+QgxpMc1wC8VMoWztUj51Y/khgMx9IvT5z3l4TpcExUz3EUN7cGDCPMnn3FkMaSXxXa6r2SFUXGqcXNnfXthc8IugzYToRfN5zzJ2HWuregydZkTsnxWPDbds5eXQUloa2Tmt9Zs+1pAFnmPB4eJ7O4Y7AjIAvw4owRrPrr0bBnZr3KruYD8MKgrISxWWXNtslat4D/f/8CReruY87UbFIAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjQtMDUtMTJUMTQ6MTU6MTQrMDA6MDAsRS2BAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDI0LTA1LTA0VDE0OjE5OjMxKzAwOjAwgw7/zgAAACh0RVh0ZGF0ZTp0aW1lc3RhbXAAMjAyNC0wNS0xOVQxNjozMjoyNyswMDowMDVdldIAAAAASUVORK5CYII="
 SETTINGS_B_ICON32 = b"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"
 RESET_B_ICON32 = b"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"
+
+
+# colors for buttons
+BLACK = '#000000'
+DKGRAY = '#444444'
+MDGRAY = '#777777'
+LTGRAY = '#BBBBBB'
+WHITE = '#FFFFFF'
+RED = '#FF0000'
+DKRED = '#990000'
+GREEN = '#00FF00'
+DKGREEN = '#007500'
+BLUE = '#0000FF'
+DKBLUE = '#000099'
+YELLOW = '#FFFF00'
+DKYELLOW = '#997700'
+ORANGE = '#FF5500'
+CYAN = '#00FFFF'
+DKCYAN = '#007799'
+FUCHSIA = '#FF00FF'
+MAGENTA = '#990099'
+PURPLE = '#5500BB'
 
 
 # default UI values
@@ -135,10 +157,11 @@ class _btn_MenuEntry(ttk.Button):
 # standard buttons
 class BtnOK(_btn_Base):
     def __init__(self, master, text=BTN_OK, command=None, enabled=True):
+        icon = Icons("check", color=RED).image
         super().__init__(
             master,
             text=text,
-            icon=Icons("check-circle").image,
+            icon=icon,
             command=command,
             enabled=enabled,
         )
@@ -146,10 +169,11 @@ class BtnOK(_btn_Base):
 
 class BtnCancel(_btn_Base):
     def __init__(self, master, text=BTN_CANCEL, command=None, enabled=True):
+        icon = Icons("cancel", color=RED).image
         super().__init__(
             master,
             text=text,
-            icon=Icons(name="x-circle").image,
+            icon=icon,
             command=command,
             enabled=enabled,
         )
@@ -157,10 +181,11 @@ class BtnCancel(_btn_Base):
 
 class BtnClose(_btn_Base):
     def __init__(self, master, text=BTN_CLOSE, command=None, enabled=True):
+        icon = Icons("stop-circle", color=FUCHSIA).image
         super().__init__(
             master,
             text=text,
-            icon=Icons("sign-stop").image,
+            icon=icon,
             command=command,
             enabled=enabled,
         )
@@ -168,10 +193,11 @@ class BtnClose(_btn_Base):
 
 class BtnExit(_btn_Base):
     def __init__(self, master, text=BTN_EXIT, command=None, enabled=True):
+        icon = Icons("exit-run", color=FUCHSIA).image
         super().__init__(
             master,
             text=text,
-            icon=Icons("door-open").image,
+            icon=icon,
             command=command,
             enabled=enabled,
         )
@@ -179,10 +205,11 @@ class BtnExit(_btn_Base):
 
 class BtnAdd(_btn_Base):
     def __init__(self, master, text=BTN_ADD, command=None, enabled=True):
+        icon = Icons("plus-box", color=YELLOW).image
         super().__init__(
             master,
             text=text,
-            icon=Icons("plus-square").image,
+            icon=icon,
             command=command,
             enabled=enabled,
         )
@@ -190,10 +217,11 @@ class BtnAdd(_btn_Base):
 
 class BtnRemove(_btn_Base):
     def __init__(self, master, text=BTN_REMOVE, command=None, enabled=True):
+        icon = Icons("minus-box", color=RED).image
         super().__init__(
             master,
             text=text,
-            icon=Icons("dash-square").image,
+            icon=icon,
             command=command,
             enabled=enabled,
         )
@@ -201,10 +229,11 @@ class BtnRemove(_btn_Base):
 
 class BtnDelete(_btn_Base):
     def __init__(self, master, text=BTN_DELETE, command=None, enabled=True):
+        icon = Icons("trash-can", color=LTGRAY).image
         super().__init__(
             master,
             text=text,
-            icon=Icons("trash").image,
+            icon=icon,
             command=command,
             enabled=enabled,
         )
@@ -212,10 +241,11 @@ class BtnDelete(_btn_Base):
 
 class BtnLoad(_btn_Base):
     def __init__(self, master, text=BTN_LOAD, command=None, enabled=True):
+        icon = Icons("folder", color=GREEN).image
         super().__init__(
             master,
             text=text,
-            icon=Icons("folder").image,
+            icon=icon,
             command=command,
             enabled=enabled,
         )
@@ -223,10 +253,11 @@ class BtnLoad(_btn_Base):
 
 class BtnSave(_btn_Base):
     def __init__(self, master, text=BTN_SAVE, command=None, enabled=True):
+        icon = Icons("floppy", color=CYAN).image
         super().__init__(
             master,
             text=text,
-            icon=Icons("floppy").image,
+            icon=icon,
             command=command,
             enabled=enabled,
         )
@@ -234,10 +265,11 @@ class BtnSave(_btn_Base):
 
 class BtnNew(_btn_Base):
     def __init__(self, master, text=BTN_NEW, command=None, enabled=True):
+        icon = Icons("file", color=WHITE).image
         super().__init__(
             master,
             text=text,
-            icon=Icons("file").image,
+            icon=icon,
             command=command,
             enabled=enabled,
         )
@@ -245,10 +277,11 @@ class BtnNew(_btn_Base):
 
 class BtnEdit(_btn_Base):
     def __init__(self, master, text=BTN_EDIT, command=None, enabled=True):
+        icon = Icons("file-edit", color=YELLOW).image
         super().__init__(
             master,
             text=text,
-            icon=Icons("pencil-square").image,
+            icon=icon,
             command=command,
             enabled=enabled,
         )
@@ -256,10 +289,11 @@ class BtnEdit(_btn_Base):
 
 class BtnModify(_btn_Base):
     def __init__(self, master, text=BTN_MODIFY, command=None, enabled=True):
+        icon = Icons("pencil", color=YELLOW).image
         super().__init__(
             master,
             text=text,
-            icon=Icons(name="pencil"),
+            icon=icon,
             command=command,
             enabled=enabled,
         )
@@ -267,10 +301,11 @@ class BtnModify(_btn_Base):
 
 class BtnReset(_btn_Base):
     def __init__(self, master, text=BTN_RESET, command=None, enabled=True):
+        icon = Icons("power-cycle", color=RED).image
         super().__init__(
             master,
             text=text,
-            icon=Icons(name="bootstrap-reboot"),
+            icon=icon,
             command=command,
             enabled=enabled,
         )
@@ -278,10 +313,11 @@ class BtnReset(_btn_Base):
 
 class BtnReload(_btn_Base):
     def __init__(self, master, text=BTN_RELOAD, command=None, enabled=True):
+        icon = Icons("reload", color=GREEN).image
         super().__init__(
             master,
             text=text,
-            icon=Icons(name="repeat"),
+            icon=icon,
             command=command,
             enabled=enabled,
         )
