@@ -7,7 +7,7 @@ import tkinter as tk
 import ttkbootstrap as ttk
 import ttkbootstrap.constants as ttkc
 
-from ttkbootstrap.widgets import tableview
+from ttkbootstrap import tableview
 from ttkbootstrap.icons import Emoji
 
 from .ui import *
@@ -90,7 +90,7 @@ class form_History(ApplicationForm):
             coldata=cols,
             paginated=False,
             yscrollbar=True,
-            disable_right_click=True,
+            # disable_right_click=True,
         )
 
         # arrange items in the grid

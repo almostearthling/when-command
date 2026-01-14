@@ -428,8 +428,11 @@ class form_Config(ApplicationForm):
     # edit a specific item: to be complete, this is also bound
     # to the double click event for an element of the list
     def edit(self) -> None:
-        # TODO: do not ignore type error
-        item_name, _, item_signature = self.data_get("item_selection")  # type: ignore
+        selection = self.data_get("item_selection")
+        if selection is None:
+            return
+        
+        item_name, _, item_signature = selection    # type: ignore
         item_type = item_signature.split(":", 1)[0]
 
         # task items
