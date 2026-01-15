@@ -5,24 +5,49 @@
 
 import tkinter as tk
 import ttkbootstrap as ttk
+from ttkbootstrap.icons import Icon
+from ttkbootstrap_icons_mat import MatIcon as Icons
+
 from PIL import ImageTk
 
 from ..i18n.strings import *
 from ..icons import APP_ICON64 as APP_BITMAP
-from ..icons import (
-    PAUSE_SQUARED_B_ICON32,
-    SETTINGS_B_ICON32,
-    CIRCLED_PLAY_B_ICON32,
-    RESET_B_ICON32,
-    INDEX_B_ICON32,
-    PAUSE_SQUARED_B_ICON32,
-    QUESTION_MARK_B_ICON32,
-    EXIT_B_ICON32,
-)
+# from ..icons import (
+#     PAUSE_SQUARED_B_ICON32,
+#     SETTINGS_B_ICON32,
+#     CIRCLED_PLAY_B_ICON32,
+#     RESET_B_ICON32,
+#     INDEX_B_ICON32,
+#     PAUSE_SQUARED_B_ICON32,
+#     QUESTION_MARK_B_ICON32,
+#     EXIT_B_ICON32,
+# )
 from .ui import *   # type: ignore
 
 from ..repocfg import AppConfig
 from ..utility import get_image, get_icon
+
+
+# colors for buttons
+BLACK = '#000000'
+DKGRAY = '#444444'
+MDGRAY = '#777777'
+LTGRAY = '#BBBBBB'
+WHITE = '#FFFFFF'
+RED = '#FF0000'
+DKRED = '#990000'
+GREEN = '#00FF00'
+DKGREEN = '#007500'
+BLUE = '#0000FF'
+DKBLUE = '#000099'
+YELLOW = '#FFFF00'
+DKYELLOW = '#997700'
+ORANGE = '#FF5500'
+CYAN = '#00FFFF'
+DKCYAN = '#007799'
+FUCHSIA = '#FF00FF'
+MAGENTA = '#990099'
+PURPLE = '#5500BB'
 
 
 # default UI values
@@ -55,10 +80,11 @@ class _btn_MenuEntry(ttk.Button):
 
 class BtnAbout(_btn_MenuEntry):
     def __init__(self, master, text=BTN_ABOUT_D, command=None, enabled=True):
+        icon = Icons("information", color=FUCHSIA).image
         super().__init__(
             master,
             text=text,
-            icon_bytes=QUESTION_MARK_B_ICON32,
+            icon_bytes=icon,
             command=command,
             enabled=enabled,
         )
@@ -66,10 +92,11 @@ class BtnAbout(_btn_MenuEntry):
 
 class BtnConfig(_btn_MenuEntry):
     def __init__(self, master, text=BTN_CONFIG_D, command=None, enabled=True):
+        icon = Icons("cog", color=MDGRAY).image
         super().__init__(
             master,
             text=text,
-            icon_bytes=SETTINGS_B_ICON32,
+            icon_bytes=icon,
             command=command,
             enabled=enabled,
         )
@@ -77,10 +104,11 @@ class BtnConfig(_btn_MenuEntry):
 
 class BtnPause(_btn_MenuEntry):
     def __init__(self, master, text=BTN_PAUSE, command=None, enabled=True):
+        icon = Icons("pause", color=LTGRAY).image
         super().__init__(
             master,
             text=text,
-            icon_bytes=PAUSE_SQUARED_B_ICON32,
+            icon_bytes=icon,
             command=command,
             enabled=enabled,
         )
@@ -88,10 +116,11 @@ class BtnPause(_btn_MenuEntry):
 
 class BtnResume(_btn_MenuEntry):
     def __init__(self, master, text=BTN_RESUME, command=None, enabled=True):
+        icon = Icons("play", color=GREEN).image
         super().__init__(
             master,
             text=text,
-            icon_bytes=CIRCLED_PLAY_B_ICON32,
+            icon_bytes=icon,
             command=command,
             enabled=enabled,
         )
@@ -99,10 +128,11 @@ class BtnResume(_btn_MenuEntry):
 
 class BtnReset(_btn_MenuEntry):
     def __init__(self, master, text=BTN_RESETCONDS, command=None, enabled=True):
+        icon = Icons("stop-circle", color=FUCHSIA).image
         super().__init__(
             master,
             text=text,
-            icon_bytes=RESET_B_ICON32,
+            icon_bytes=icon,
             command=command,
             enabled=enabled,
         )
@@ -110,10 +140,11 @@ class BtnReset(_btn_MenuEntry):
 
 class BtnHistory(_btn_MenuEntry):
     def __init__(self, master, text=BTN_HISTORY_D, command=None, enabled=True):
+        icon = Icons("stop-circle", color=FUCHSIA).image
         super().__init__(
             master,
             text=text,
-            icon_bytes=INDEX_B_ICON32,
+            icon_bytes=icon,
             command=command,
             enabled=enabled,
         )
@@ -121,10 +152,11 @@ class BtnHistory(_btn_MenuEntry):
 
 class BtnLeave(_btn_MenuEntry):
     def __init__(self, master, text=BTN_EXIT, command=None, enabled=True):
+        icon = Icons("stop-circle", color=FUCHSIA).image
         super().__init__(
             master,
             text=text,
-            icon_bytes=EXIT_B_ICON32,
+            icon_bytes=icon,
             command=command,
             enabled=enabled,
         )
