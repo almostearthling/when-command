@@ -36,8 +36,8 @@ WIDGET_PADDING_PIXELS = 5
 
 # menu box buttons
 class _btn_MenuEntry(ttk.Button):
-    def __init__(self, master, text, icon_bytes, command, enabled):
-        self._image = get_icon(icon_bytes)
+    def __init__(self, master, text, icon, command, enabled):
+        self._image = icon
         if command is None:
             command = ""
         super().__init__(
@@ -60,11 +60,11 @@ class _btn_MenuEntry(ttk.Button):
 
 class BtnAbout(_btn_MenuEntry):
     def __init__(self, master, text=BTN_ABOUT_D, command=None, enabled=True):
-        icon = Icons("information", color=FUCHSIA).image
+        icon = Icons("information", color=YELLOW).image
         super().__init__(
             master,
             text=text,
-            icon_bytes=icon,
+            icon=icon,
             command=command,
             enabled=enabled,
         )
@@ -76,7 +76,7 @@ class BtnConfig(_btn_MenuEntry):
         super().__init__(
             master,
             text=text,
-            icon_bytes=icon,
+            icon=icon,
             command=command,
             enabled=enabled,
         )
@@ -88,7 +88,7 @@ class BtnPause(_btn_MenuEntry):
         super().__init__(
             master,
             text=text,
-            icon_bytes=icon,
+            icon=icon,
             command=command,
             enabled=enabled,
         )
@@ -100,7 +100,7 @@ class BtnResume(_btn_MenuEntry):
         super().__init__(
             master,
             text=text,
-            icon_bytes=icon,
+            icon=icon,
             command=command,
             enabled=enabled,
         )
@@ -108,11 +108,11 @@ class BtnResume(_btn_MenuEntry):
 
 class BtnReset(_btn_MenuEntry):
     def __init__(self, master, text=BTN_RESETCONDS, command=None, enabled=True):
-        icon = Icons("stop-circle", color=FUCHSIA).image
+        icon = Icons("restore-alert", color=RED).image
         super().__init__(
             master,
             text=text,
-            icon_bytes=icon,
+            icon=icon,
             command=command,
             enabled=enabled,
         )
@@ -120,11 +120,11 @@ class BtnReset(_btn_MenuEntry):
 
 class BtnHistory(_btn_MenuEntry):
     def __init__(self, master, text=BTN_HISTORY_D, command=None, enabled=True):
-        icon = Icons("stop-circle", color=FUCHSIA).image
+        icon = Icons("format-list-bulleted", color=LTGRAY).image
         super().__init__(
             master,
             text=text,
-            icon_bytes=icon,
+            icon=icon,
             command=command,
             enabled=enabled,
         )
@@ -136,7 +136,7 @@ class BtnLeave(_btn_MenuEntry):
         super().__init__(
             master,
             text=text,
-            icon_bytes=icon,
+            icon=icon,
             command=command,
             enabled=enabled,
         )

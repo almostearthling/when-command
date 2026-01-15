@@ -44,7 +44,7 @@ class form_History(ApplicationForm):
         l_history = ttk.Label(area, text=UI_FORM_HISTORYITEMS_SC)
 
         style = ttk.Style()
-        style.map("Treeview", rowheight=[("!disabled", 24)])
+        style.map("Treeview", rowheight=[("!disabled", 30)])
         cols = [
             {
                 "text": "",
@@ -87,7 +87,8 @@ class form_History(ApplicationForm):
             coldata=cols,
             paginated=False,
             yscrollbar=True,
-            # disable_right_click=True,
+            disable_right_click=True,
+            bootstyle=ttkc.PRIMARY,
         )
 
         # arrange items in the grid
