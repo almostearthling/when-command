@@ -23,31 +23,11 @@ from ..icons import APP_ICON64 as APP_BITMAP
 #     EXIT_B_ICON32,
 # )
 from .ui import *   # type: ignore
+from .colors import *
+
 
 from ..repocfg import AppConfig
 from ..utility import get_image, get_icon
-
-
-# colors for buttons
-BLACK = '#000000'
-DKGRAY = '#444444'
-MDGRAY = '#777777'
-LTGRAY = '#BBBBBB'
-WHITE = '#FFFFFF'
-RED = '#FF0000'
-DKRED = '#990000'
-GREEN = '#00FF00'
-DKGREEN = '#007500'
-BLUE = '#0000FF'
-DKBLUE = '#000099'
-YELLOW = '#FFFF00'
-DKYELLOW = '#997700'
-ORANGE = '#FF5500'
-CYAN = '#00FFFF'
-DKCYAN = '#007799'
-FUCHSIA = '#FF00FF'
-MAGENTA = '#990099'
-PURPLE = '#5500BB'
 
 
 # default UI values

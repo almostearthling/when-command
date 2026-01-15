@@ -11,11 +11,6 @@ from ttkbootstrap import tableview
 from ttkbootstrap.icons import Emoji
 
 from .ui import *
-from ..utility import get_ui_image
-
-from ..icons import OUTCOME_OK_ICON16x16 as OK_ICON
-from ..icons import OUTCOME_FAIL_ICON16x16 as FAIL_ICON
-from ..icons import OUTCOME_UNKNOWN_ICON16x16 as UNK_ICON
 
 
 # form class: this form is fixed and will not be derived

@@ -5,17 +5,16 @@ import os
 
 import tkinter as tk
 import ttkbootstrap as ttk
+from ttkbootstrap.icons import Icon
+from ttkbootstrap_icons_mat import MatIcon as Icons
 
 from ..i18n.strings import *
 from ..icons import APP_ICON32 as APP_ICON
-from ..icons import TASK_ICON20x20 as TASK_ICON
-from ..icons import CONDITION_ICON20x20 as COND_ICON
-from ..icons import EVENT_ICON20x20 as EVENT_ICON
-from ..icons import UNKNOWN_ICON20x20 as UNKNOWN_ICON
 from .ui import *
+from .colors import *
 
 from ..repocfg import AppConfig
-from ..utility import get_configfile, get_ui_image, is_private_item_name
+from ..utility import get_configfile, is_private_item_name
 from ..items.item import ALL_AVAILABLE_ITEMS_D
 
 from ..configurator.reader import read_whenever_config
@@ -71,10 +70,10 @@ class form_Config(ApplicationForm):
         ]
 
         # list box icons
-        self._icon_task = get_ui_image(TASK_ICON)
-        self._icon_condition = get_ui_image(COND_ICON)
-        self._icon_event = get_ui_image(EVENT_ICON)
-        self._icon_unknown = get_ui_image(UNKNOWN_ICON)
+        self._icon_task = Icons("list-box", size=20, color=CYAN).image
+        self._icon_condition = Icons("arrow-decision", size=20, color=FUCHSIA).image
+        self._icon_event = Icons("lightbulb", size=20, color=YELLOW).image
+        self._icon_unknown = Icons("chat-question", size=20, color=RED).image
 
         # form data
         self._tasks = {}
@@ -431,7 +430,7 @@ class form_Config(ApplicationForm):
         selection = self.data_get("item_selection")
         if selection is None:
             return
-        
+
         item_name, _, item_signature = selection    # type: ignore
         item_type = item_signature.split(":", 1)[0]
 
