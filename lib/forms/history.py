@@ -7,7 +7,7 @@ import tkinter as tk
 import ttkbootstrap as ttk
 import ttkbootstrap.constants as ttkc
 
-from ttkbootstrap import tableview
+from ttkbootstrap.widgets import tableview
 from ttkbootstrap.icons import Emoji
 
 from .ui import *
@@ -43,6 +43,8 @@ class form_History(ApplicationForm):
         # history list section
         l_history = ttk.Label(area, text=UI_FORM_HISTORYITEMS_SC)
 
+        style = ttk.Style()
+        style.map("Treeview", rowheight=[("!disabled", 24)])
         cols = [
             {
                 "text": "",
@@ -56,12 +58,12 @@ class form_History(ApplicationForm):
             },
             {
                 "text": UI_FORM_HS_TASK,
-                "width": 240,
+                "width": 250,
                 "anchor": ttkc.W,
             },
             {
                 "text": UI_FORM_HS_TRIGGER,
-                "width": 240,
+                "width": 250,
                 "anchor": ttkc.W,
             },
             {
