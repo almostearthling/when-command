@@ -2,6 +2,7 @@
 
 import tkinter as tk
 import ttkbootstrap as ttk
+import ttkbootstrap.constants as ttkc
 
 from ..i18n.strings import *
 from .ui import *
@@ -62,6 +63,7 @@ class form_NewItem(ApplicationForm):
             displaycolumns=("type",),
             show="",
             height=5,
+            bootstyle=ttkc.SECONDARY,
         )
         tv_itemSubTypes.heading("type", anchor=tk.W, text=UI_FORM_ITEM)
         sb_itemSubTypes = ttk.Scrollbar(

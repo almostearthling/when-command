@@ -9,6 +9,7 @@ from shlex import split as arg_split, quote
 
 import tkinter as tk
 import ttkbootstrap as ttk
+import ttkbootstrap.constants as ttkc
 from tkinter import filedialog
 
 from .ui import *
@@ -97,7 +98,11 @@ class form_CommandTask(form_Task):
         # build a scrolled frame for the treeview
         sftv_vars = ttk.Frame(area_vars)
         tv_vars = ttk.Treeview(
-            sftv_vars, columns=("name", "value"), show="headings", height=7
+            sftv_vars,
+            columns=("name", "value"),
+            show="headings",
+            height=7,
+            bootstyle=ttkc.SECONDARY,
         )
         tv_vars.heading("name", anchor=tk.W, text=UI_FORM_NAME)
         tv_vars.heading("value", anchor=tk.W, text=UI_FORM_VALUE)
@@ -250,7 +255,7 @@ class form_CommandTask(form_Task):
         assert isinstance(startup_path, str)
         self._item.command = command
         self._item.command_arguments = arg_split(args)
-        self._item.startup_path = normpath(startup_path )
+        self._item.startup_path = normpath(startup_path)
         v = bool(self.data_get("include_environment"))
         self._item.include_environment = False if not v else None
         v = bool(self.data_get("set_environment_variables"))

@@ -58,17 +58,17 @@ class form_History(ApplicationForm):
             },
             {
                 "text": UI_FORM_HS_TASK,
-                "width": 250,
+                "width": 240,
                 "anchor": ttkc.W,
             },
             {
                 "text": UI_FORM_HS_TRIGGER,
-                "width": 250,
+                "width": 240,
                 "anchor": ttkc.W,
             },
             {
                 "text": UI_FORM_HS_DURATION,
-                "width": 70,
+                "width": 90,
                 "anchor": ttkc.CENTER,
             },
             # { "text": UI_FORM_HS_MESSAGE, "width": 20, "anchor": "w", },
@@ -88,7 +88,7 @@ class form_History(ApplicationForm):
             paginated=False,
             yscrollbar=True,
             disable_right_click=True,
-            bootstyle=ttkc.PRIMARY,
+            bootstyle=ttkc.SECONDARY,
         )
 
         # arrange items in the grid

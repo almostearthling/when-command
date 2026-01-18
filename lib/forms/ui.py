@@ -5,6 +5,7 @@ import tkinter as tk
 # from tkinter import ttk
 import ttkbootstrap as ttk
 from ttkbootstrap import dialogs
+import ttkbootstrap.constants as ttkc
 from ttkbootstrap.icons import Icon
 from ttkbootstrap_icons_mat import MatIcon as Icons
 

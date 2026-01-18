@@ -5,7 +5,7 @@ import os
 
 import tkinter as tk
 import ttkbootstrap as ttk
-from ttkbootstrap.icons import Icon
+import ttkbootstrap.constants as ttkc
 from ttkbootstrap_icons_mat import MatIcon as Icons
 
 from ..i18n.strings import *
@@ -36,7 +36,7 @@ class form_Config(ApplicationForm):
 
         # the main tree view has an increased row size
         style = ttk.Style()
-        style.configure("Items.Treeview", rowheight=30)
+        style.map("Treeview", rowheight=[("!disabled", 30)])
 
         size = AppConfig.get("SIZE_MAIN_FORM")
         assert isinstance(size, tuple)
@@ -161,7 +161,7 @@ class form_Config(ApplicationForm):
             columns=("name", "type", "signature"),
             displaycolumns=("name", "type"),
             show="tree headings",
-            style="Items.Treeview",
+            bootstyle=ttkc.SECONDARY,
             height=5,
         )
         tv_items.column("#0", anchor=tk.CENTER, width=40, stretch=tk.NO)

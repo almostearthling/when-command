@@ -4,6 +4,7 @@
 import re
 import tkinter as tk
 import ttkbootstrap as ttk
+import ttkbootstrap.constants as ttkc
 
 import pygments.lexers
 from chlorophyll import CodeView
@@ -91,6 +92,7 @@ class form_WMICondition(form_Condition):
             columns=("index", "field", "operator", "value"),
             show="headings",
             height=10,
+            bootstyle=ttkc.SECONDARY,
         )
         tv_wmiResults.heading("index", anchor=tk.W, text=UI_FORM_INDEX)
         tv_wmiResults.heading("field", anchor=tk.W, text=UI_FORM_FIELD)

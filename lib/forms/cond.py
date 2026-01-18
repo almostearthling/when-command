@@ -2,6 +2,7 @@
 
 import tkinter as tk
 import ttkbootstrap as ttk
+import ttkbootstrap.constants as ttkc
 
 from ..i18n.strings import *
 from .ui import *
@@ -68,7 +69,12 @@ class form_Condition(ApplicationForm):
         # build a scrolled frame for the treeview
         sftv_tasks = ttk.Frame(area_common)
         tv_tasks = ttk.Treeview(
-            sftv_tasks, columns=("seq", "tasks"), show="", displaycolumns=(1,), height=5
+            sftv_tasks,
+            columns=("seq", "tasks"),
+            show="",
+            displaycolumns=(1,),
+            height=5,
+            bootstyle=ttkc.SECONDARY,
         )
         sb_tasks = ttk.Scrollbar(sftv_tasks, orient=tk.VERTICAL, command=tv_tasks.yview)
         tv_tasks.configure(yscrollcommand=sb_tasks.set)

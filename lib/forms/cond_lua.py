@@ -4,6 +4,7 @@ import re
 import os
 import tkinter as tk
 import ttkbootstrap as ttk
+import ttkbootstrap.constants as ttkc
 
 import pygments.lexers
 from chlorophyll import CodeView
@@ -44,14 +45,19 @@ class form_LuaScriptCondition(form_Condition):
         # for unsupported or possibly binary modules
         luabase = get_luadir()
         ps = os.path.sep
-        lua_path = ";".join([
-            "?",
-            "?.lua",
-            f"{luabase}{ps}?",
-            f"{luabase}{ps}?.lua",
-            f"{luabase}{ps}?{ps}?",
-            f"{luabase}{ps}?{ps}?.lua",
-        ]) + ";;"
+        lua_path = (
+            ";".join(
+                [
+                    "?",
+                    "?.lua",
+                    f"{luabase}{ps}?",
+                    f"{luabase}{ps}?.lua",
+                    f"{luabase}{ps}?{ps}?",
+                    f"{luabase}{ps}?{ps}?.lua",
+                ]
+            )
+            + ";;"
+        )
         self._item.variables_to_set = {
             "LUA_PATH": lua_path,
         }
@@ -83,7 +89,11 @@ class form_LuaScriptCondition(form_Condition):
         # build a scrolled frame for the treeview
         sftv_luaVars = ttk.Frame(area)
         tv_luaVars = ttk.Treeview(
-            sftv_luaVars, columns=("variable", "value"), show="headings", height=10
+            sftv_luaVars,
+            columns=("variable", "value"),
+            show="headings",
+            height=10,
+            bootstyle=ttkc.SECONDARY,
         )
         tv_luaVars.heading("variable", anchor=tk.W, text=UI_FORM_VARNAME)
         tv_luaVars.heading("value", anchor=tk.W, text=UI_FORM_VARVALUE)

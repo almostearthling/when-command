@@ -3,6 +3,7 @@
 from time import localtime
 import tkinter as tk
 import ttkbootstrap as ttk
+import ttkbootstrap.constants as ttkc
 
 from ..i18n.strings import *
 from .ui import *
@@ -179,6 +180,7 @@ class form_TimeCondition(form_Condition):
             show="",
             displaycolumns=(1,),
             height=5,
+            bootstyle=ttkc.SECONDARY,
         )
         sb_timeSpecs = ttk.Scrollbar(
             sftv_timeSpecs, orient=tk.VERTICAL, command=tv_timeSpecs.yview

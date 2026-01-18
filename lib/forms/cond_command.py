@@ -10,6 +10,7 @@ from os.path import normpath
 
 import tkinter as tk
 import ttkbootstrap as ttk
+import ttkbootstrap.constants as ttkc
 from tkinter import filedialog
 
 
@@ -112,7 +113,11 @@ class form_CommandCondition(form_Condition):
         # build a scrolled frame for the treeview
         sftv_vars = ttk.Frame(area_vars)
         tv_vars = ttk.Treeview(
-            sftv_vars, columns=("name", "value"), show="headings", height=3
+            sftv_vars,
+            columns=("name", "value"),
+            show="headings",
+            height=3,
+            bootstyle=ttkc.SECONDARY,
         )
         tv_vars.heading("name", anchor=tk.W, text=UI_FORM_NAME)
         tv_vars.heading("value", anchor=tk.W, text=UI_FORM_VALUE)
@@ -270,7 +275,7 @@ class form_CommandCondition(form_Condition):
         assert isinstance(startup_path, str)
         self._item.command = command
         self._item.command_arguments = arg_split(args)
-        self._item.startup_path = normpath(startup_path )
+        self._item.startup_path = normpath(startup_path)
         v = bool(self.data_get("ignore_persistent_success"))
         self._item.recur_after_failed_check = v or None
         v = bool(self.data_get("include_environment"))

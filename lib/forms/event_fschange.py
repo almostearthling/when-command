@@ -6,6 +6,7 @@ from ..i18n.strings import *
 
 import tkinter as tk
 import ttkbootstrap as ttk
+import ttkbootstrap.constants as ttkc
 from tkinter import filedialog
 
 from .ui import *
@@ -46,6 +47,7 @@ class form_FilesystemChangeEvent(form_Event):
             show="",
             displaycolumns=(1,),
             height=5,
+            bootstyle=ttkc.SECONDARY,
         )
         sb_monitored = ttk.Scrollbar(
             sftv_monitored, orient=tk.VERTICAL, command=tv_monitored.yview
