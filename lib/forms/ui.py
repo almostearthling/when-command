@@ -142,7 +142,7 @@ class BtnCancel(_btn_Base):
 
 class BtnClose(_btn_Base):
     def __init__(self, master, text=BTN_CLOSE, command=None, enabled=True):
-        icon = Icons("stop-circle", color=ORANGE).image
+        icon = Icons("close", color=ORANGE).image
         super().__init__(
             master,
             text=text,

@@ -97,7 +97,7 @@ AppConfig = _AppConfiguration(
         # themes
         "DEFAULT_THEME_DARK": "darkly",
         "DEFAULT_THEME_LIGHT": "flatly",
-        "DEFAULT_THEME_DEBUG": "morph",
+        "DEFAULT_THEME_DEBUG": "vapor",
 
         # editor themes
         "EDITOR_THEME_DARK": "ayu-dark",
