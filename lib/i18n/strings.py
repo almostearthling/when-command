@@ -14,8 +14,8 @@ ENV_WHEN_APP_USELOCALE = "WHEN_APP_USELOCALE"
 UI_APP = "When"
 CLI_APP = "when"
 UI_APP_LABEL = "When Automation Tool"
-UI_APP_COPYRIGHT = "© 2023-2025 Francesco Garosi"
-UI_APP_VERSION = "1.13.2b2"
+UI_APP_COPYRIGHT = "© 2023-2026 Francesco Garosi"
+UI_APP_VERSION = "1.13.2b3"
 
 # other strings that should not be translated
 UI_WHENEVER = "Whenever"
