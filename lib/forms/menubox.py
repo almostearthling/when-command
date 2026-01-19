@@ -10,20 +10,10 @@ from ttkbootstrap_icons_mat import MatIcon as Icons
 
 from PIL import ImageTk
 
-from ..i18n.strings import *
+from ..i18n.strings import *  # type: ignore
 from ..icons import APP_ICON64 as APP_BITMAP
-# from ..icons import (
-#     PAUSE_SQUARED_B_ICON32,
-#     SETTINGS_B_ICON32,
-#     CIRCLED_PLAY_B_ICON32,
-#     RESET_B_ICON32,
-#     INDEX_B_ICON32,
-#     PAUSE_SQUARED_B_ICON32,
-#     QUESTION_MARK_B_ICON32,
-#     EXIT_B_ICON32,
-# )
-from .ui import *   # type: ignore
-from .colors import *
+from .ui import *  # type: ignore
+from .colors import *  # type: ignore
 
 
 from ..repocfg import AppConfig

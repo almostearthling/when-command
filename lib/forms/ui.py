@@ -12,7 +12,7 @@ from ttkbootstrap_icons_mat import MatIcon as Icons
 from typing import Callable, Any
 
 from ..utility import get_icon, get_appicon, get_tkroot
-from .colors import *
+from .colors import *  # type: ignore
 
 
 # default strings for UI (overwritten by `i18n.strings`)

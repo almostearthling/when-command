@@ -407,6 +407,16 @@ def main_start(args) -> None:
 
         main(_root)
         if _root is not None:
+            # the following block must be normally commented out, it is
+            # only used to create some forms for a screenshot
+            # if True:
+            #     from threading import Thread
+            #     def open_demos():
+            #         _root.open_cfgapp()
+            #         _root.open_history()
+            #         _root.open_aboutbox()
+            #     thread = Thread(target=open_demos)
+            #     thread.run()
             _root.run()
     else:
         try:

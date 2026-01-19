@@ -318,11 +318,11 @@ def get_whenever_version() -> None | str:
                     subprocess.CREATE_NO_WINDOW if sys.platform.startswith("win") else 0
                 ),
             )
+            if result:
+                _current_whenever_version = result.stdout.strip()
+            else:
+                _current_whenever_version = None
         except Exception:
-            _current_whenever_version = None
-        if result:
-            _current_whenever_version = result.stdout.strip()
-        else:
             _current_whenever_version = None
     return _current_whenever_version
 
@@ -394,15 +394,15 @@ def is_whenever_running() -> None | bool:
             text=True,
             creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0,
         )
+        if result:
+            if result.returncode == 0:
+                return True
+            else:
+                return False
+        else:
+            return None
     except Exception:
         return False
-    if result:
-        if result.returncode == 0:
-            return True
-        else:
-            return False
-    else:
-        return None
 
 
 # a couple of shortcuts for whenever options
