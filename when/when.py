@@ -368,6 +368,16 @@ def main_start(args) -> None:
         action="initializing",
         status=log.STATUS_MSG,
     ).log("starting resident %s, version %s" % (UI_APP, UI_APP_VERSION))
+    whenever: str = AppConfig.get("WHENEVER")  # type: ignore
+    if (
+        whenever is None
+        or not os.path.exists(whenever)
+        or not os.access(whenever, os.X_OK)
+    ):
+        log.use(level=log.LEVEL_ERROR, status=log.STATUS_ERR).log(
+            "error: `whenever` binary not found"
+        )
+        exit_error(CLI_ERR_WHENEVER_NOT_FOUND)
     if not check_whenever_version():
         v = get_whenever_version()
         log.use(
@@ -379,16 +389,6 @@ def main_start(args) -> None:
         exit_error(CLI_ERR_WHENEVER_WRONG_VERSION)
     if DEBUG:
         # setup the scheduler and associate it to the application
-        whenever: str = AppConfig.get("WHENEVER")  # type: ignore
-        if (
-            whenever is None
-            or not os.path.exists(whenever)
-            or not os.access(whenever, os.X_OK)
-        ):
-            log.use(level=log.LEVEL_ERROR, status=log.STATUS_ERR).log(
-                "error: `whenever` binary not found"
-            )
-            exit_error(CLI_ERR_WHENEVER_NOT_FOUND)
         wrapper = Wrapper(config_file, whenever, _root)
         # start the scheduler in a separate thread
         if not wrapper.start():
@@ -411,26 +411,23 @@ def main_start(args) -> None:
             # only used to create some forms for a screenshot
             # if True:
             #     from threading import Thread
+            #     from time import sleep
+            #
+            #     def detached_send_event(event):
+            #         thread = Thread(target=lambda : _root.send_event(event))  # type: ignore
+            #         thread.start()
             #     def open_demos():
-            #         _root.open_cfgapp()
-            #         _root.open_history()
-            #         _root.open_aboutbox()
+            #         sleep(3)
+            #         detached_send_event("<<OpenCfgApp>>")
+            #         detached_send_event("<<OpenHistory>>")
+            #         detached_send_event("<<OpenMenuBox>>")
+            #         detached_send_event("<<OpenAboutBox>>")
             #     thread = Thread(target=open_demos)
-            #     thread.run()
+            #     thread.start()
             _root.run()
     else:
         try:
             # setup the scheduler and associate it to the application
-            whenever: str = AppConfig.get("WHENEVER")  # type: ignore
-            if (
-                whenever is None
-                or not os.path.exists(whenever)
-                or not os.access(whenever, os.X_OK)
-            ):
-                log.use(level=log.LEVEL_ERROR, status=log.STATUS_ERR).log(
-                    "error: `whenever` binary not found"
-                )
-                exit_error(CLI_ERR_WHENEVER_NOT_FOUND)
             wrapper = Wrapper(config_file, whenever, _root)
             # start the scheduler in a separate thread
             if not wrapper.start():
