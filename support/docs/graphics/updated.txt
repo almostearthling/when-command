@@ -16,3 +16,4 @@ when-task-extra-session.png
 when-history.png
 when-cond-extra-locked-win.png
 when-cond-extra-rmdrive-win.png
+when-cond-extra-rmdrive-linux.png

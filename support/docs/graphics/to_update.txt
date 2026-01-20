@@ -18,5 +18,4 @@ tutorial_task_new_lua01.png
 when-application.png
 when-cond-extra-batterycharging.png
 when-cond-extra-batterylow.png
-when-cond-extra-rmdrive-linux.png
 when-event-extra-lock-linux.png
