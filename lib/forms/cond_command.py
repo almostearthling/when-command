@@ -85,6 +85,7 @@ class form_CommandCondition(form_Condition):
         l_checkAfter = ttk.Label(area_generic, text=UI_FORM_EXTRADELAY_SC)
         e_checkAfter = ttk.Entry(area_generic)
         l_checkAfterSeconds = ttk.Label(area_generic, text=UI_TIME_SECONDS)
+        pad0 = ttk.Frame(area_generic)
         ck_ignorePersistentSuccess = ttk.Checkbutton(
             area_generic, text=UI_FORM_IGNOREPERSISTSUCCESS
         )
@@ -101,10 +102,11 @@ class form_CommandCondition(form_Condition):
         b_startupPathBrowse.grid(row=2, column=2, sticky=tk.EW, padx=PAD, pady=PAD)
 
         l_checkAfter.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
-        e_checkAfter.grid(row=0, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        e_checkAfter.grid(row=0, column=1, sticky=tk.W, padx=PAD, pady=PAD)
         l_checkAfterSeconds.grid(row=0, column=2, sticky=tk.W, padx=PAD, pady=PAD)
+        pad0.grid(row=0, column=3, sticky=tk.EW, padx=PAD, pady=PAD)
         ck_ignorePersistentSuccess.grid(
-            row=1, column=1, sticky=tk.W, padx=PAD, pady=PAD
+            row=0, column=4, sticky=tk.W, padx=PAD, pady=PAD
         )
 
         # environment section: deserves an area to customize layout
@@ -116,7 +118,7 @@ class form_CommandCondition(form_Condition):
             sftv_vars,
             columns=("name", "value"),
             show="headings",
-            height=3,
+            height=2,
             bootstyle=ttkc.SECONDARY,
         )
         tv_vars.heading("name", anchor=tk.W, text=UI_FORM_NAME)
@@ -220,7 +222,7 @@ class form_CommandCondition(form_Condition):
         area.rowconfigure(2, weight=1)
         area.columnconfigure(0, weight=1)
         area_command.columnconfigure(1, weight=1)
-        area_generic.columnconfigure(1, weight=1)
+        area_generic.columnconfigure(3, weight=1)
         area_vars.columnconfigure(0, weight=1)
         area_vars.rowconfigure(1, weight=1)
         area_vars.columnconfigure(1, weight=1)

@@ -7,3 +7,12 @@ when-config-main-items.png
 when-event-fschange.png
 when-task-command.png
 when-task-lua.png
+when-cond-command.png
+when-cond-event.png
+when-cond-lua.png
+when-cond-time.png
+when-menu-form.png
+when-task-extra-session.png
+when-history.png
+when-cond-extra-locked-win.png
+when-cond-extra-rmdrive-win.png

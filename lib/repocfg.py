@@ -92,7 +92,7 @@ AppConfig = _AppConfiguration(
         "SIZE_ABOUT_BOX": (480, 300),
 
         # menu box size
-        "SIZE_MENU_BOX": (272, 440),
+        "SIZE_MENU_BOX": (272, 460),
 
         # themes
         "DEFAULT_THEME_DARK": "darkly",
