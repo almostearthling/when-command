@@ -44,7 +44,7 @@ class FilesystemChangeEvent(Event):
         # since `whenever` will complain on non-existing paths to watch
         # `os.path.exists()` is a good checking function for valid paths
         self.watch = tab.get_list_of_str_check("watch", exists, mandatory=True)
-        self.recursive = tab.get_str("recursive")
+        self.recursive = tab.get_bool("recursive")
 
     def as_table(self):
         if not check_not_none(

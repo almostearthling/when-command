@@ -380,9 +380,8 @@ class Wrapper(object):
                     when=self._log.WHEN_START,
                     status=self._log.STATUS_ERR,
                 ).log("scheduler exited unexpectedly")
-                self._thread.join()
-            for line in iter(self._pipe.stdout.readline, ""):  # type: ignore
-                self.process_output(line.strip())
+                for line in iter(self._pipe.stdout.readline, ""):  # type: ignore
+                    self.process_output(line.strip())
             self._running = False
             return False
         self._log.use(

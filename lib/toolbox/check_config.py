@@ -33,23 +33,24 @@ def check_globals(doc: TOMLDocument) -> list[ConfigurationError]:
             )
     # ...
     tags = doc.get("tags")
-    if not isinstance(tags, items.Table):
-        errors.append(
-            ConfigurationError(
-                "(globals)", key, message=f"the tags entry must be a dictionary"
-            )
-        )
-    else:
-        key = "reset_conditions_on_resume"
-        if (v := tags.get(key)) is not None:
-            if not isinstance(v, bool):
-                errors.append(
-                    ConfigurationError(
-                        "(globals/tags)", key, message=f"invalid value: {v}"
-                    )
+    if tags is not None:
+        if not isinstance(tags, items.Table):
+            errors.append(
+                ConfigurationError(
+                    "(globals)", key, message=f"the tags entry must be a dictionary"
                 )
-        # should other tags be added, tests can be performed here
-        # ...
+            )
+        else:
+            key = "reset_conditions_on_resume"
+            if (v := tags.get(key)) is not None:
+                if not isinstance(v, bool):
+                    errors.append(
+                        ConfigurationError(
+                            "(globals/tags)", key, message=f"invalid value: {v}"
+                        )
+                    )
+            # should other tags be added, tests can be performed here
+            # ...
     return errors
 
 
@@ -70,8 +71,8 @@ def check_items(doc: TOMLDocument) -> list[ConfigurationError]:
                         if not isinstance(tags, items.Table):
                             errors.append(
                                 ConfigurationError(
-                                    "(globals)", 
-                                    name, 
+                                    "task",
+                                    name,
                                     message=f"the tags entry must be a dictionary",
                                 )
                             )
@@ -111,8 +112,8 @@ def check_items(doc: TOMLDocument) -> list[ConfigurationError]:
                         if not isinstance(tags, items.Table):
                             errors.append(
                                 ConfigurationError(
-                                    "(globals)", 
-                                    name, 
+                                    "condition",
+                                    name,
                                     message=f"the tags entry must be a dictionary",
                                 )
                             )
@@ -156,8 +157,8 @@ def check_items(doc: TOMLDocument) -> list[ConfigurationError]:
                         if not isinstance(tags, items.Table):
                             errors.append(
                                 ConfigurationError(
-                                    "(globals)", 
-                                    name, 
+                                    "event",
+                                    name,
                                     message=f"the tags entry must be a dictionary",
                                 )
                             )
