@@ -61,11 +61,12 @@ if m is not None:
 def _has_battery():
     try:
         si = subprocess.STARTUPINFO(wShowWindow=0)
+        si.dwFlags = subprocess.STARTF_USESHOWWINDOW
         command = "pwsh -Command Get-CimInstance -Query 'select * from Win32_Battery'"
         e = subprocess.run(
             command,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
             startupinfo=si,
         )
         e.check_returncode()

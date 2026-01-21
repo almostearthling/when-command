@@ -20,6 +20,7 @@ def run_bg() -> None:
                 "when.when",
             ] + list(sys.argv[1:])
             si = subprocess.STARTUPINFO(wShowWindow=0)
+            si.dwFlags = subprocess.STARTF_USESHOWWINDOW
             subprocess.run(args, startupinfo=si)
     else:
         main()
