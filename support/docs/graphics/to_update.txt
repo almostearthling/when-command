@@ -1,7 +1,0 @@
-tutorial_cond_idle01.png
-tutorial_cond_idle02.png
-tutorial_cond_idle03.png
-tutorial_cond_new_idle01.png
-tutorial_config_main01.png
-tutorial_task_backup01.png
-tutorial_task_backup02.png

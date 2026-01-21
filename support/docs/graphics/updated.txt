@@ -31,4 +31,13 @@ tutorial_task_new_lua01.png
 tutorial_cond_interval01.png
 tutorial_cond_interval02.png
 tutorial_cond_new_interval01.png
+tutorial_cond_idle01.png
+tutorial_cond_idle02.png
+tutorial_cond_idle03.png
+tutorial_cond_new_idle01.png
+tutorial_config_main01.png
+tutorial_task_backup01.png
+tutorial_task_backup02.png
+tutorial_task_new_backup01.png
+tutorial_globals_backup01.png
 
