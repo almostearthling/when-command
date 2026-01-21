@@ -29,7 +29,6 @@ from ..items.cond_wmi import WMICondition
 
 
 # imports specific to this module
-import subprocess
 import sys
 
 
@@ -56,21 +55,15 @@ if m is not None:
     UI_FORM_THRESHOLD_SC = m.UI_FORM_THRESHOLD_SC
 
 
-# check whether the machine has batteries: for now it is done via a command in
-# order to avoid to import a WMI module for Python
+# check whether the machine has batteries: use WMI directly to query
 def _has_battery():
     try:
-        si = subprocess.STARTUPINFO(wShowWindow=0)
-        si.dwFlags = subprocess.STARTF_USESHOWWINDOW
-        command = "pwsh -Command Get-CimInstance -Query 'select * from Win32_Battery'"
-        e = subprocess.run(
-            command,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
-            startupinfo=si,
-        )
-        e.check_returncode()
-        return bool(len(e.stdout.strip()) > 0)
+        import wmi
+
+        query = "select * from Win32_Battery"
+        conn = wmi.WMI()
+        batteries = conn.query(query)
+        return bool(len(batteries) > 0)
     except:
         return False
 
