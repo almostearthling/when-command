@@ -60,11 +60,13 @@ if m is not None:
 # order to avoid to import a WMI module for Python
 def _has_battery():
     try:
+        si = subprocess.STARTUPINFO(wShowWindow=0)
         command = "pwsh -Command Get-CimInstance -Query 'select * from Win32_Battery'"
         e = subprocess.run(
             command,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
+            startupinfo=si,
         )
         e.check_returncode()
         return bool(len(e.stdout.strip()) > 0)

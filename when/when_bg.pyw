@@ -19,7 +19,8 @@ def run_bg() -> None:
                 "-m",
                 "when.when",
             ] + list(sys.argv[1:])
-            subprocess.run(args)
+            si = subprocess.STARTUPINFO(wShowWindow=0)
+            subprocess.run(args, startupinfo=si)
     else:
         main()
 
