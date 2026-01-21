@@ -29,6 +29,7 @@ from ..items.cond_wmi import WMICondition
 
 
 # imports specific to this module
+import subprocess
 import sys
 
 
@@ -55,12 +56,28 @@ if m is not None:
     UI_FORM_THRESHOLD_SC = m.UI_FORM_THRESHOLD_SC
 
 
+# check whether the machine has batteries: for now it is done via a command in
+# order to avoid to import a WMI module for Python
+def _has_battery():
+    try:
+        command = "pwsh -Command Get-CimInstance -Query 'select * from Win32_Battery'"
+        e = subprocess.run(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        e.check_returncode()
+        return bool(len(e.stdout.strip()) > 0)
+    except:
+        return False
+
+
 # check for availability: this version of the check is only for Windows, the
 # one for Linux is in a separate file, and availability is in fact mutually
 # exclusive: with this check we assume that this module is only run on Windows
 def _available():
     if sys.platform.startswith("win"):
-        if whenever_has_wmi():
+        if whenever_has_wmi() and _has_battery():
             return True
     return False
 

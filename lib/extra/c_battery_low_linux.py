@@ -57,12 +57,43 @@ if m is not None:
     UI_FORM_THRESHOLD_SC = m.UI_FORM_THRESHOLD_SC
 
 
+# sorted list of available batteries, imports the `dbus` module
+def _get_batteries():
+    try:
+        # detect battery by querying DBus
+        # see https://upower.freedesktop.org/docs/Device.html
+        import dbus  # type: ignore
+
+        bus = dbus.SystemBus()
+        service_name = "org.freedesktop.UPower"
+        device_service_name = "org.freedesktop.UPower.Device"
+        props_name = "org.freedesktop.DBus.Properties"
+        upower_obj = bus.get_object(service_name, "/org/freedesktop/UPower")
+        upower = dbus.Interface(upower_obj, service_name)
+        all_devices = upower.EnumerateDevices()
+        all_batteries = list(
+            x for x in all_devices
+            if str(x).split("/")[-1].startswith("battery_")
+        )
+        batteries = []
+        for x in all_batteries:
+            batt_obj = bus.get_object(service_name, x)
+            batt = dbus.Interface(batt_obj, props_name)
+            if batt.Get(device_service_name, "PowerSupply"):
+                batteries.append(str(x))
+        batteries.sort()
+        return batteries
+    except:
+        return []
+    
+
+
 # check for availability: this version of the check is only for Linux, the
 # one for Windows is in a separate file, and availability is in fact mutually
 # exclusive: with this check we assume that this module is only run on Linux
 def _available():
     if sys.platform == "linux":
-        return whenever_has_dbus()
+        return whenever_has_dbus() and len(get_batteries()) > 0
     else:
         return False
 
@@ -101,26 +132,27 @@ class LowBatteryCondition(DBusCondition):
 
         # detect battery by querying DBus
         # see https://upower.freedesktop.org/docs/Device.html
-        import dbus  # type: ignore
+        # import dbus  # type: ignore
 
-        bus = dbus.SystemBus()
-        service_name = "org.freedesktop.UPower"
-        device_service_name = "org.freedesktop.UPower.Device"
-        props_name = "org.freedesktop.DBus.Properties"
-        upower_obj = bus.get_object(service_name, "/org/freedesktop/UPower")
-        upower = dbus.Interface(upower_obj, service_name)
-        all_devices = upower.EnumerateDevices()
-        all_batteries = list(
-            x for x in all_devices if str(x).split("/")[-1].startswith("battery_")
-        )
-        batteries = []
-        for x in all_batteries:
-            batt_obj = bus.get_object(service_name, x)
-            batt = dbus.Interface(batt_obj, props_name)
-            if batt.Get(device_service_name, "PowerSupply"):
-                batteries.append(str(x))
-        # WARNING: this is completely arbitrary
-        batteries.sort()
+        # bus = dbus.SystemBus()
+        # service_name = "org.freedesktop.UPower"
+        # device_service_name = "org.freedesktop.UPower.Device"
+        # props_name = "org.freedesktop.DBus.Properties"
+        # upower_obj = bus.get_object(service_name, "/org/freedesktop/UPower")
+        # upower = dbus.Interface(upower_obj, service_name)
+        # all_devices = upower.EnumerateDevices()
+        # all_batteries = list(
+        #     x for x in all_devices if str(x).split("/")[-1].startswith("battery_")
+        # )
+        # batteries = []
+        # for x in all_batteries:
+        #     batt_obj = bus.get_object(service_name, x)
+        #     batt = dbus.Interface(batt_obj, props_name)
+        #     if batt.Get(device_service_name, "PowerSupply"):
+        #         batteries.append(str(x))
+        # # WARNING: this is completely arbitrary
+        # batteries.sort()
+        batteries = _get_batteries()
         self._batterypath = batteries.pop(0)
         self.updateitem()
 
