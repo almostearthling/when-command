@@ -147,6 +147,12 @@ The only thing that is left is to specify that the task sequence has to take pla
 
 Here we just write _3_ in the only available text entry: _minutes_ is the default unit of measure for time and can be left alone. Now we can press _OK_ and then, in the main configuration form, click the _Save_ button (we answer positively when possibly asked to overwrite the existing file): the next time **When** is started as resident frontend for **whenever**, our unattended backup routine will be scheduled for when we leave the workstation alone for three minutes. In case the configuration utility was accessed through the system tray menu, the configuration form will include a _Reload_ button which, when clicked, reloads the configuration file (after saving it) and dynamically adds the new condition and the two tasks, that will be immediately active in the running instance of the scheduler.
 
+In case you are used to just close the lid of your laptop to let it sleep, instead of shutting down your PC, you may want to verify that the _Reset conditions on system resume_ box is checked in the _Global Parameters_ page of the main configuration form, before saving the file:
+
+![TutorialBackup09](graphics/tutorial_globals_backup01.png)
+
+so that, when your laptop wakes up from sleep, the automation tool will perform a backup again as soon as the PC remains alone for three minutes.
+
 
 ## Temporary Files Cleanup
 
