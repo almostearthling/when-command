@@ -63,11 +63,15 @@ class LuaScriptTask(Task):
         self.init_script_path = tab.get_str_check(
             "init_script_path", check=os.path.isfile
         )
-        self.variables_to_set = tab.get_dict_check_keys_re(
-            "variables_to_set", LUA_VAR_PATTERN
+        self.variables_to_set = tab.get_dict_check_and_keys_re(
+            "variables_to_set", 
+            LUA_VAR_PATTERN, 
+            lambda x: isinstance(x, (bool, int, float, str)),
         )
-        self.expected_results = tab.get_dict_check_keys_re(
-            "expected_results", LUA_VAR_PATTERN
+        self.expected_results = tab.get_dict_check_and_keys_re(
+            "expected_results", 
+            LUA_VAR_PATTERN, 
+            lambda x: isinstance(x, (bool, int, float, str)),
         )
 
     def as_table(self) -> items.Table:

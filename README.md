@@ -54,9 +54,11 @@ The [documentation](https://almostearthling.github.io/when-command/) almost cove
 In some cases (that is, in _Wayland_ based environments that do not fully support the _X.org_ protocol) the _X.org_ backend may have to be used in order to successfully run **When**.
 
 
+<!--
 ## :radioactive: Issues and Breaking Changes
 
-As of version 1.10 the configuration file format specific to **When** has changed; while it is safe to use an old configuration file with the resident [tray application](https://almostearthling.github.io/when-command/tray.html), some of the items will not be recognized or edited by the configuration utility. Please use the `--fix-config` [tool](https://almostearthling.github.io/when-command/cli.html#toolbox) to safely convert an old configuration file to the new format, which by the way implements specific items in a more efficient way. The `--fix-config` tool also removes JSON strings from the configuration, which are not supported anymore in recent versions of **whenever**.
+The configuration file format has not changed for more than six months now, therefore there are no breaking change to be careful about.
+-->
 
 
 ## :lady_beetle: Bug Reporting

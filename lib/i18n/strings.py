@@ -15,7 +15,7 @@ UI_APP = "When"
 CLI_APP = "when"
 UI_APP_LABEL = "When Automation Tool"
 UI_APP_COPYRIGHT = "© 2023-2026 Francesco Garosi"
-UI_APP_VERSION = "1.13.4b2"
+UI_APP_VERSION = "1.13.5b1"
 
 # other strings that should not be translated
 UI_WHENEVER = "Whenever"
@@ -30,11 +30,6 @@ UI_TIMEFORMAT_ANY_WEEKDAY = "ANY_WEEKDAY"
 UI_TIMEFORMAT_ANY_HOUR = "ANY_HOUR"
 UI_TIMEFORMAT_ANY_MINUTE = "ANY_MINUTE"
 UI_TIMEFORMAT_ANY_SECOND = "ANY_SECOND"
-
-# symbols
-SYM_OK = "✓"
-SYM_FAIL = "✕"
-SYM_UNKNOWN = "∅"
 
 
 # first: import all fallback strings
