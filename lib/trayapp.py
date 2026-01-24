@@ -115,7 +115,7 @@ def main(root) -> None:
     # is unlikely to be available: since this is a default action, which
     # reacts to the left-click on the icon, and its entry is invisible
     # in the menu, a dummy text is used for it
-    if sys.platform == "linux":
+    if is_linux():
         if pystray.Icon.HAS_DEFAULT_ACTION:
             # in this case `AppIndicator` is not running, so it would be
             # worth only to enable the action for icon left click: for
@@ -156,7 +156,7 @@ def main(root) -> None:
     root.set_trayicon(tray)
 
     # show the tray icon
-    if sys.platform == "linux":
+    if is_linux():
         threading.Thread(target=tray.run).start()
     else:
         tray.run_detached()

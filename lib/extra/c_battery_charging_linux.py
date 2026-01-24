@@ -84,13 +84,13 @@ def _get_batteries():
         return batteries
     except:
         return []
-    
+
 
 # check for availability: this version of the check is only for Linux, the
 # one for Windows is in a separate file, and availability is in fact mutually
 # exclusive: with this check we assume that this module is only run on Linux
 def _available():
-    if sys.platform == "linux":
+    if is_linux():
         return whenever_has_dbus() and len(get_batteries()) > 0
     else:
         return False

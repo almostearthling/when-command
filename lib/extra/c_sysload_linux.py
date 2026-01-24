@@ -16,6 +16,7 @@ import ttkbootstrap as ttk
 
 from ..i18n.strings import *
 from ..utility import check_not_none, append_not_none
+from ..platform import is_windows, is_linux, is_mac, has_command
 
 from ..forms.ui import *
 
@@ -30,7 +31,6 @@ from ..items.cond_command import CommandCondition
 
 
 # imports specific to this module
-import shutil
 
 
 # resource strings (not internationalized)
@@ -58,12 +58,12 @@ if m is not None:
 
 # check for availability: in this case check all needed commands
 def _available():
-    if sys.platform == "linux":
+    if is_linux():
         if (
-            shutil.which("bash")
-            and shutil.which("vmstat")
-            and shutil.which("bc")
-            and shutil.which("awk")
+            has_command("bash")
+            and has_command("vmstat")
+            and has_command("bc")
+            and has_command("awk")
         ):
             return True
         return False

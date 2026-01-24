@@ -2,10 +2,11 @@
 
 import sys, os, subprocess
 from .when import main
+from lib.platform import is_windows
 
 
 def run_bg() -> None:
-    if sys.platform.startswith("win"):
+    if is_windows():
         if os.path.basename(sys.argv[0]) != os.path.basename(sys.executable):
             pythonw = os.path.join(os.path.dirname(sys.executable), "pythonw.exe")
             args = [

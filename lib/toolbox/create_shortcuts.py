@@ -13,6 +13,7 @@ import base64
 
 from ..i18n.strings import *
 from ..utility import write_error, write_warning, get_rich_console, get_appdata
+from ..platform import is_windows, is_linux, is_mac
 from .create_shortcuts_icons import ICON_ICO, ICON_PNG
 from ..repocfg import AppConfig
 
@@ -35,7 +36,7 @@ Categories=System
 
 # create the icon in the APPDATA directory
 def create_icon(verbose=False) -> None | str:
-    if sys.platform.startswith("win"):
+    if is_windows():
         icon_filename = "When.ico"
         icon = ICON_ICO
     else:
@@ -59,7 +60,7 @@ def create_icon(verbose=False) -> None | str:
 
 
 # shortcut creation for Windows
-if sys.platform.startswith("win"):
+if is_windows():
     import winshell
 
     def mk_shortcuts(
@@ -102,7 +103,7 @@ if sys.platform.startswith("win"):
 
 
 # shortcut creation for Linux
-elif sys.platform == "linux":
+elif is_linux():
 
     def mk_shortcuts(
         target,
@@ -173,7 +174,7 @@ def create_shortcuts(main_script, desktop=True, autostart=True, verbose=False) -
         return False
     # create menu shortcuts for configuration utility and scheduler start
     # first: check whether a `pipx`-style install is available
-    if sys.platform.startswith("win"):
+    if is_windows():
         exename = "when-bg.exe"
         interpreter = os.path.join(sys.exec_prefix, "pythonw.exe")
     else:

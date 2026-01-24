@@ -48,7 +48,7 @@ if m is not None:
 
 # check for availability
 def _available():
-    if sys.platform == "linux":
+    if is_linux():
         return whenever_has_dbus()
     else:
         return False

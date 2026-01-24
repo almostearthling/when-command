@@ -31,6 +31,7 @@ from semver import Version
 from .i18n.strings import *
 from .repocfg import AppConfig
 from .runner.logger import Logger
+from .platform import is_windows, is_linux, is_mac
 
 
 # lowest whenever version supported
@@ -190,7 +191,7 @@ def get_appicon(image: bytes) -> ImageTk.PhotoImage:
 
 # determine where configuration is stored by default
 def get_default_configdir() -> str:
-    if sys.platform.startswith("win"):
+    if is_windows():
         appdata = os.environ["APPDATA"]
         cfgname: str = AppConfig.get("CFGNAME") # type: ignore
         if AppConfig.get("DEBUG"):
@@ -204,7 +205,7 @@ def get_default_configdir() -> str:
         home = os.path.expanduser("~")
         if sys.platform == "darwin":
             return os.path.join(home, "Library", "Application Support", cfgname)
-        elif sys.platform == "linux":
+        elif is_linux():
             return os.path.join(home, cfgname)
         else:
             raise OSError("Unsupported platform: %s" % sys.platform)
@@ -214,7 +215,7 @@ def get_default_configdir() -> str:
 def get_default_whenever() -> str | None:
     default_whenever = shutil.which("whenever")
     if default_whenever is None:
-        if sys.platform.startswith("win"):
+        if is_windows():
             execname = "whenever.exe"
         else:
             execname = "whenever"
@@ -243,7 +244,7 @@ def get_appdata() -> str:
 # determine scripts directory and ensure that it exists
 def get_scriptsdir() -> str:
     configdir: str = AppConfig.get("APPDATA") # type: ignore
-    if sys.platform.startswith("win"):
+    if is_windows():
         subdir = "Scripts"
     else:
         subdir = "scripts"
@@ -259,7 +260,7 @@ def get_scriptsdir() -> str:
 # determine lua library directory and ensure that it exists
 def get_luadir() -> str:
     configdir: str = AppConfig.get("APPDATA") # type: ignore
-    if sys.platform.startswith("win"):
+    if is_windows():
         subdir = "Lua"
     else:
         subdir = "lua"
@@ -276,7 +277,7 @@ def get_luadir() -> str:
 # load Lua binary modules due to its safe setup, which disallows it
 # # determine binary lib extension depending on operating system
 # def get_luabinlibext() -> str:
-#     if sys.platform.startswith("win"):
+#     if is_windows():
 #         return "dll"
 #     else:
 #         return "so"
@@ -298,7 +299,7 @@ def save_script(fname, text) -> None:
     dest = os.path.join(get_scriptsdir(), fname)
     with open(dest, "w") as f:
         f.write(text)
-    if not sys.platform.startswith("win"):
+    if not is_windows():
         os.chmod(dest, 0o700)
 
 
@@ -473,7 +474,7 @@ def exit_error(s, code=2, verbose=True):
 
 # get extensions of executable files on Windows
 def get_executable_extensions() -> list[str] | None:
-    if sys.platform.startswith("win"):
+    if is_windows():
         return os.environ["PATHEXT"].split(";")
     else:
         return None
@@ -542,7 +543,7 @@ def toml_list_of_literals(los) -> items.Array | None:
 def toml_list_of_command_args(los) -> items.Array | None:
     if los is not None:
         switch_start = ['-', '--']
-        if sys.platform.startswith("win"):
+        if is_windows():
             switch_start.append('/')
         cur_line = []
         r = array()

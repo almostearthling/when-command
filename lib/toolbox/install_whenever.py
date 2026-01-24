@@ -20,6 +20,7 @@ CHECKSUM_FILE = "CHECKSUM.txt"
 
 from ..i18n.strings import *
 from ..utility import write_error, get_rich_console
+from ..platform import is_windows, is_linux, is_mac
 
 from .dlutils import *
 
@@ -35,9 +36,9 @@ def get_install_path():
 
 # specific release file names
 def get_whenever_release_pattern(verbose=False):
-    if sys.platform.startswith("win"):
+    if is_windows():
         osname = "windows"
-    elif sys.platform == "linux":
+    elif is_linux():
         osname = "linux"
     else:
         if verbose:
@@ -146,7 +147,7 @@ def unzip_binaries_to_directory(archive, folder=None, verbose=False) -> bool:
                 console.print(CLI_MSG_EXTRACTING_BINARIES % folder, highlight=False)
             try:
                 z.extractall(folder, bins)
-                if sys.platform == "linux":
+                if is_linux():
                     for binary in bins:
                         e = os.path.join(folder, binary)
                         os.chmod(e, 0o750)

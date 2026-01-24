@@ -8,6 +8,7 @@ import ttkbootstrap as ttk
 
 from ..i18n.strings import *
 from ..utility import whenever_has_wmi
+from ..platform import is_windows, is_linux, is_mac
 
 from ..forms.ui import *
 
@@ -58,7 +59,7 @@ if m is not None:
 # check for availability: include all needed checks in this function, may
 # or may not include actually checking the hosting platform
 def _available():
-    if sys.platform.startswith("win"):
+    if is_windows():
         if whenever_has_wmi():
             return True
     return False

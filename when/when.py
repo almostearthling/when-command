@@ -39,6 +39,7 @@ from lib.utility import (
     init_logger,
     get_logger,
 )
+from lib.platform import is_windows, is_linux, is_mac
 from lib.repocfg import AppConfig
 
 from lib.runner.process import Wrapper
@@ -63,7 +64,7 @@ class App(object):
     # is needed to be active for this purpose
     def __init__(self):
         # the following lines solve the wrong icon problem on Windows
-        if sys.platform.startswith("win"):
+        if is_windows():
             import ctypes
 
             myappid = "when.python.application"
@@ -151,7 +152,7 @@ class App(object):
             del self._window
             self._window = None
         if self._trayicon:
-            if sys.platform == "linux":
+            if is_linux():
                 # something's wrong wit pystray in this case
                 os._exit(os.EX_OK)
             else:

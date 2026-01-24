@@ -7,6 +7,7 @@ import tkinter as tk
 import ttkbootstrap as ttk
 
 from ..i18n.strings import *
+from ..platform import is_windows, is_linux, is_mac, has_command
 
 from ..forms.ui import *
 
@@ -19,7 +20,6 @@ from ..items.task_command import CommandTask
 
 
 # imports specific to this module
-import shutil
 import sys
 
 
@@ -44,12 +44,12 @@ if m is not None:
 
 # check for availability
 def _available():
-    if sys.platform.startswith("win"):
-        if shutil.which("rundll32.exe") and shutil.which("user32.dll"):
+    if is_windows():
+        if has_command("rundll32.exe") and has_command("user32.dll"):
             return True
         return False
-    elif sys.platform == "linux":
-        if shutil.which("dbus-send"):
+    elif is_linux():
+        if has_command("dbus-send"):
             return True
         return False
     return False
@@ -90,10 +90,10 @@ class LockSessionTask(CommandTask):
 
     def updateitem(self):
         # set base item properties according to specific parameters in `tags`
-        if sys.platform.startswith("win"):
+        if is_windows():
             self.command = "rundll32.exe"
             self.command_arguments = ["user32.dll,LockWorkStation"]
-        elif sys.platform == "linux":
+        elif is_linux():
             self.command = "dbus-send"
             self.command_arguments = [
                 "--type=method_call",

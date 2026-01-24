@@ -11,10 +11,11 @@ import sys
 import os
 
 from ..utility import get_private_item_name_prefix
+from ..platform import is_windows, is_linux, is_mac
 
-if sys.platform.startswith("win"):
+if is_windows():
     from ..items.event_wmi import WMIEvent
-elif sys.platform == "linux":
+elif is_linux():
     from ..items.event_dbus import DBusEvent
 else:
     raise OSError("unsupported platform")
@@ -50,7 +51,7 @@ _event = None
 # build the event for Windows platforms: see
 # https://devblogs.microsoft.com/scripting/monitor-and-respond-to-windows-power-events-with-powershell/
 # for details
-if sys.platform.startswith("win"):
+if is_windows():
     _SECONDS_TO_MONITOR = 15
     _EVENT_RESUME = 7
     _event = WMIEvent()
@@ -65,7 +66,7 @@ if sys.platform.startswith("win"):
 # build the event for Linux platforms: see
 # https://www.freedesktop.org/software/systemd/man/latest/org.freedesktop.login1.html#Signals
 # for details
-if sys.platform == "linux":
+if is_linux():
     from ..items.event_dbus import DBusEvent
 
     _event = DBusEvent()

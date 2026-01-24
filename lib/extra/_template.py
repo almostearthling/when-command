@@ -19,6 +19,7 @@ from typing import List, Tuple
 
 from ..i18n.strings import *
 from ..utility import check_not_none, append_not_none
+from ..platform import is_windows, is_linux, is_mac, has_command
 
 from ..forms.ui import *
 
@@ -30,7 +31,6 @@ from ..items.cond_command import CommandCondition
 
 
 # imports specific to this module
-import shutil
 
 
 # resource strings (not internationalized)
@@ -58,7 +58,7 @@ if m is not None:
 # check for availability: include all needed checks in this function, may
 # or may not include actually checking the hosting platform
 def _available() -> bool:
-    if shutil.which("ls"):
+    if has_command("ls"):
         return True
     return False
 

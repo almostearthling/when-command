@@ -17,6 +17,7 @@ import ttkbootstrap as ttk
 
 from ..i18n.strings import *
 from ..utility import whenever_has_wmi
+from ..platform import is_windows, is_linux, is_mac
 
 from ..forms.ui import *
 
@@ -72,7 +73,7 @@ def _has_battery():
 # one for Linux is in a separate file, and availability is in fact mutually
 # exclusive: with this check we assume that this module is only run on Windows
 def _available():
-    if sys.platform.startswith("win"):
+    if is_windows():
         if whenever_has_wmi() and _has_battery():
             return True
     return False

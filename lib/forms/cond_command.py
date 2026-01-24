@@ -18,6 +18,7 @@ from ..i18n.strings import *
 from .ui import *
 
 from ..utility import get_executable_extensions
+from ..platform import is_windows, is_linux, is_mac, is_command, is_dir
 
 from .cond import form_Condition
 from ..items.cond_command import CommandCondition
@@ -25,23 +26,6 @@ from ..items.cond_command import CommandCondition
 
 # regular expression for item name checking
 _RE_VALIDNAME = re.compile("^[a-zA-Z_][a-zA-Z0-9_]*$")
-
-
-# functions to check existence of commands and directories
-def _is_command(s):
-    if os.path.exists(s) and os.access(s, os.X_OK):
-        return True
-    elif shutil.which(s):
-        return True
-    else:
-        return False
-
-
-def _is_dir(s):
-    if os.path.exists(os.path.join(s, ".")):
-        return True
-    else:
-        return False
 
 
 # specialized subform
@@ -229,12 +213,9 @@ class form_CommandCondition(form_Condition):
         area_checks.columnconfigure(2, weight=1)
 
         # bind data to widgets
-        self.data_bind("command", e_command, TYPE_STRING, _is_command)
+        self.data_bind("command", e_command, TYPE_STRING, is_command)
         self.data_bind("command_arguments", e_args, TYPE_STRING)
-        self.data_bind("startup_path", e_startupPath, TYPE_STRING, _is_dir)
-        # the following checks would be optimal, but are actually too strict
-        # self.data_bind('command', e_command, TYPE_STRING, _is_command)
-        # self.data_bind('startup_path', e_startupPath, TYPE_STRING, _is_dir)
+        self.data_bind("startup_path", e_startupPath, TYPE_STRING, is_dir)
         self.data_bind("check_after", e_checkAfter, TYPE_INT, lambda x: x >= 0)
         self.data_bind("ignore_persistent_success", ck_ignorePersistentSuccess)
         self.data_bind("include_environment", ck_preserveEnv)
@@ -478,7 +459,7 @@ class form_CommandCondition(form_Condition):
 
     def browse_command(self) -> None:
         filetypes = [(UI_FILETYPE_ALL, ".*")]
-        if sys.platform.startswith("win"):
+        if is_windows():
             exts = get_executable_extensions()
             if exts:
                 execs_list = " ".join(exts)

@@ -16,6 +16,7 @@ import ttkbootstrap as ttk
 
 from ..i18n.strings import *
 from ..utility import whenever_has_wmi
+from ..platform import is_windows, is_linux, is_mac
 
 from ..forms.ui import *
 
@@ -30,7 +31,6 @@ from ..items.cond_wmi import WMICondition
 
 
 # imports specific to this module
-# import shutil
 
 
 # resource strings (not internationalized)
@@ -47,7 +47,7 @@ CHECK_EXTRA_DELAY = 60
 
 # check for availability: in this case check all needed commands
 def _available():
-    if sys.platform.startswith("win"):
+    if is_windows():
         if whenever_has_wmi():
             return True
     return False

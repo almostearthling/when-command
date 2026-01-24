@@ -7,6 +7,7 @@ import tkinter as tk
 import ttkbootstrap as ttk
 
 from ..i18n.strings import *
+from ..platform import is_windows, is_linux, is_mac, has_command
 
 from ..forms.ui import *
 
@@ -19,7 +20,6 @@ from ..items.task_command import CommandTask
 
 
 # imports specific to this module
-import shutil
 import sys
 
 
@@ -44,15 +44,15 @@ if m is not None:
 
 # check for availability
 def _available():
-    if sys.platform.startswith("win"):
-        if shutil.which("shutdown.exe"):
+    if is_windows():
+        if has_command(cmd="shutdown.exe"):
             return True
         return False
-    elif sys.platform == "linux":
+    elif is_linux():
         global ITEM_HR_NAME, UI_FORM_TITLE
         ITEM_HR_NAME += " (Gnome)"
         UI_FORM_TITLE += " (Gnome)"
-        if shutil.which("gnome-session-quit"):
+        if has_command("gnome-session-quit"):
             return True
         return False
     return False
@@ -93,10 +93,10 @@ class LogoffTask(CommandTask):
 
     def updateitem(self):
         # set base item properties according to specific parameters in `tags`
-        if sys.platform.startswith("win"):
+        if is_windows():
             self.command = "shutdown.exe"
             self.command_arguments = ["/l"]
-        elif sys.platform == "linux":
+        elif is_linux():
             self.command = "gnome-session-quit"
             self.command_arguments = [
                 "--no-prompt",
