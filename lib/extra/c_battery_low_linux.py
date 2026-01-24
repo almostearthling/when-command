@@ -19,6 +19,7 @@ import ttkbootstrap as ttk
 
 from ..i18n.strings import *
 from ..utility import whenever_has_dbus
+from ..platform import is_windows, is_linux, is_mac, has_command
 
 from ..forms.ui import *
 

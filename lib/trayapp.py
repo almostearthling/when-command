@@ -7,6 +7,7 @@ import sys
 import threading
 
 from .utility import get_image
+from .platform import is_windows, is_linux, is_mac
 
 from .icons import CLOCK_ICON48 as CLOCK_ICON
 from .icons import CLOCK_ICON_GRAY48 as CLOCK_ICON_GRAY
