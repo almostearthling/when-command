@@ -17,9 +17,9 @@ Actually, **When** consists of several different applications which are launched
 
 See the specific parts of the documentation for details on each application. The suggested [installation procedure](install.md), however, can be used to set up application icons for the resident application and for the configuration utility, as well as to configure **When** to start in the background at login.
 
-```{note}
+:::{note}
 Sometimes you will find suspension points in lists (like the one above) throughout this documentation: this does not mean that part of the documentation is missing or that there are some undocumented features. Suspension points like these indicate that the list might grow in the future.
-```
+:::
 
 
 ## About this Documentation

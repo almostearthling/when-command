@@ -22,9 +22,9 @@ More commands might be supported in the future. `OPTIONS` are the possible optio
 
 In order to know which options can be used for each command, `when COMMAND --help` can be invoked from the command line, where `COMMAND` is one of the commands described above.
 
-```{note}
+:::{note}
 In order to simplify the usage of **When**, many values that could have been implemented as parameters are instead left as defaults that cannot be changed, at least for now, if not via direct intervention on the code.
-```
+:::
 
 This version of **When** uses [poetry](https://python-poetry.org/) to manage dependencies and to provide a suitable environment for a source distribution, therefore after running `poetry install` in the project directory to install all necessary Python dependencies, **When** can also be launched as `poetry run when COMMAND [OPTIONS]`.
 
@@ -44,9 +44,9 @@ The `tool` command provides various utilities that can help in the setup of **Wh
 * ...
 * `--quiet`: (option) applies to all the operations described above, and inhibits printing messages to the console.
 
-```{note}
+:::{note}
 **When** will usually _not_ check the configuration file if not requested to, in order to avoid excessive delay on startup: **whenever** itself performs a check for correctness and refuses to start when any error is found. The `--check-config` tool is provided to verify the configuration file in such cases, and to provide at least some clues about the errors, such as the line number at which the misconfigured item is found. The tool will try to report _all_ errors found in the current configuration file. Since **When** normally generates correct configuration files, errors are generally introduced by manually editing the file itself. It is recommended, therefore, that the `--check-config` tool is launched after every manual change in the configuration file.
-```
+:::
 
 The subcommands cannot be combined. The **whenever** installation step should be performed first if there is no working copy of the core scheduler on the system.
 
@@ -84,13 +84,13 @@ Other errors can be reported, for instance TOML syntax errors, along with the co
 
 The `--check-config` tool, moreover, tries to report as many errors as possible: so, in case of a file which is affected by more than one error, more than an error line will be reported.
 
-```{warning}
+:::{warning}
 The error lines (the ones that begin with the `When - ERROR: * ConfigurationError` prefix) are _not_ translated to the current locale.
-```
+:::
 
-```{note}
+:::{note}
 If an error is detected in an event based condition or in a task, the corresponding item will not be registered: this has the secondary effect that all items that reference it will be invalid, since the name of the incorrect item that will not be considered a valid name. For instance, if a task named `Task01` is incorrectly configured, it will not be loaded as a task: this means, that all conditions that have `Task01` in their execution list, will report `Task01` as an _invalid value_.
-```
+:::
 
 
 ## See Also
