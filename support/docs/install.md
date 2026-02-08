@@ -37,7 +37,7 @@ These steps can be followed on recent Linux distributions that derive from Debia
 1. install, as root or via _sudo_, the common requirements:
 
    ```shell
-   sudo apt install build-essential pkg-config \
+   sudo apt install build-essential libdbus-1-dev pkg-config \
                     libx11-dev libxss-dev libglib2.0-dev \
                     libcairo2-dev libgirepository-1.0-dev \
                     gir1.2-ayatanaappindicator3-0.1 \
@@ -47,7 +47,7 @@ These steps can be followed on recent Linux distributions that derive from Debia
    On Debian, specifically, the _introspection_ package is called `libgirepository1.0-dev` instead of `libgirepository-1.0-dev`, and an extra package is needed (the _Gnome shell extension manager_) so use the following command:
 
    ```shell
-   sudo apt install build-essential pkg-config \
+   sudo apt install build-essential libdbus-1-dev pkg-config \
                     libx11-dev libxss-dev libglib2.0-dev \
                     libcairo2-dev libgirepository1.0-dev \
                     gir1.2-ayatanaappindicator3-0.1 \
@@ -90,6 +90,7 @@ sudo dnf install python3-tkinter python3-pip pipx python3-devel
 sudo dnf install cairo-devel cairo-gobject-devel
 sudo dnf install libglibutil-devel glib2-devel gobject-introspection-devel
 sudo dnf install libappindicator-gtk3
+sudo dnf install dbus-devel
 ```
 
 and adding the _Gnome Shell Extension Manager_ using the _Software_ utility, as well as _AppIndicator and KStatusNotifierItem Support_ using the extensions manager. After this, steps 2 to 6 are the same as in Debian based distributions.
