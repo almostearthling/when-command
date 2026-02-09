@@ -8,10 +8,9 @@ The list, representing the last completed tasks in descending time order (that i
 
 * _Time_: the time at which the task started running
 * _Task_: the name of the executed task
-* _Triggered By_: the name of the condition that triggered the task
+* _Triggered by_: the name of the condition that triggered the task
 * _Duration_: the duration of the task, in seconds
-* _OK_: a sign indicating the outcome: a checkmark for a positive outcome, a cross for a negative one, the empty set sign for undetermined results
-* _Message_: additional information provided by **whenever**
+* _Message_: outcome information provided by **whenever**
 
 The history box does not capture results in real time, but the _Reload_ button can be used to update its contents instantly. Only the latest 100 results are displayed -- this might become a configurable parameter in further versions.
 

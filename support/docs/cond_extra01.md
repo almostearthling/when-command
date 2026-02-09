@@ -37,7 +37,7 @@ Definition forms to check for presence of a removable drive are available, both 
 
 ### Windows
 
-On Windows, the _label_ of the removable drive has to be specified in order to be somewhat more selective in choosing which removable drive has been made available to the workstation: the label can be edited by any windows user, so it's possible to appropriately set labels for thumb drives, cards, and so on, in a way that helps select tasks to be executed when a removable drive is inserted.
+On Windows, the _label_ of the removable drive has to be specified in order to be somewhat more selective in choosing which removable drive has been made available to the workstation: the label can be edited by any Windows user, so it's possible to appropriately set labels for thumb drives, cards, and so on, in a way that helps select tasks to be executed when a removable drive is inserted.
 
 ![WhenCondRemovableDriveWin](graphics/when-cond-extra-rmdrive-win.png)
 
