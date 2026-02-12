@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "when"
-version = "2.0.0"
+version = "2.0.1"
 description = "Interface for the **whenever** automation tool"
 authors = ["Francesco Garosi <francesco.garosi@gmail.com>"]
 license = 'BSD 3-Clause "New" or "Revised" License'
@@ -14,7 +14,7 @@ packages = [
 python = "^3.10"
 chlorophyll = "^0.4.2"
 dbus-python = { version = "^1.3.2", markers = "sys_platform == 'linux'" }
-pillow = "^10.4.0"
+pillow = "^12.1.1"
 darkdetect = "^0.8.0"
 Pygments = "^2.19.2"
 pygobject = { version = "3.50.0", markers = "sys_platform == 'linux'" }
