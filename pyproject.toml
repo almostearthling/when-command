@@ -24,8 +24,7 @@ pywin32 = { version = "^308", markers = "sys_platform == 'win32'" }
 requests = "^2.32.5"
 rich = "^13.9.4"
 semver = "^3.0.4"
-# tkhtmlview = "^0.3.1"
-tkhtmlview = { git = "https://github.com/bauripalash/tkhtmlview.git", branch = "main" }
+tkhtmlview = "^0.3.2"
 tklinenums = "^1.7.1"
 tomlkit = "^0.13.3"
 tomlkit-extras = "^0.2.0"
