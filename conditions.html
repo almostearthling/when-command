@@ -1,0 +1,179 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="_static/favicon.ico" rel="icon" type="image/x-icon">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Condition Editors &mdash; The When Automation Tool 2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=60dbed4a"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Time Related Conditions" href="cond_timerelated.html" />
+    <link rel="prev" title="Extra Tasks: Session Related" href="tasks_extra_session.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            The When Automation Tool
+              <img src="_static/rafi-clock-256.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="main.html">The <strong>When</strong> Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cfgform.html">Main Configuration Form</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tray.html">System Tray Resident Application</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tasks.html">Native Tasks Editors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tasks_extra_session.html">Extra Tasks: Session Related</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Condition Editors</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cond_timerelated.html">Time Related Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_actionrelated.html">Action Related Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_eventrelated.html">Event Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_extra01.html">Extra Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events.html">Native Events Editors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events_extra01.html">Specific Events</a></li>
+<li class="toctree-l1"><a class="reference internal" href="history.html">History Box</a></li>
+<li class="toctree-l1"><a class="reference internal" href="i18n.html">Localization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="appdata.html">Application Data Directory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configfile.html">Generated Configuration File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lua_considerations.html">Some Considerations on Lua</a></li>
+<li class="toctree-l1"><a class="reference internal" href="credits.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="when_history.html">History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">The When Automation Tool</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Condition Editors</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/conditions.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="condition-editors">
+<h1>Condition Editors<a class="headerlink" href="#condition-editors" title="Link to this heading"></a></h1>
+<p>All condition editors share a common part, which encompasses all parameters that are common to all condition items:</p>
+<p><img alt="ConditionCommon" src="_images/when-cond-common.png" /></p>
+<p>It allows to set the mandatory item <em>Name</em> (an alphanumeric string beginning either with a letter or an underscore<a class="footnote-reference brackets" href="#id2" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>), the tasks associated with it, and to decide other behaviors specific to conditions:</p>
+<ul class="simple">
+<li><p><em>Check Condition Recurrently</em>: when set, the condition is continuously re-checked even after its verification, becoming <em>recurrent</em>. By default a verified condition stops being checked after the first occurrence, unless a <a class="reference internal" href="tray.html"><span class="std std-doc"><em>reset conditions</em></span></a> command is sent via the system tray menu.</p></li>
+<li><p><em>Max Task Retries</em>: when greater or equal to <code class="docutils literal notranslate"><span class="pre">0</span></code>, the number of times that the underlying scheduler will <em>retry</em> to run the associated task or list of tasks in case one of them fails (of course <code class="docutils literal notranslate"><span class="pre">0</span></code> means <em>only one check and no retries</em>); a value of <code class="docutils literal notranslate"><span class="pre">-1</span></code> means that the scheduler will try to run the associated task(s) forever until they all succeed. Only available if the <em>Check Condition Recurrently</em> flag is set.</p></li>
+<li><p><em>Suspend Condition at Startup</em>: to start the condition in suspended mode, which means that it will not be checked during the session.</p></li>
+</ul>
+<p>The central list displays the list of tasks associated with the condition, in the order in which they would be run in case the <em>Execute Tasks Sequentially</em> box is checked (otherwise, all tasks are spawned simultaneously). To add a task to the list, it must be selected from the drop down list below the list and the <em>Add</em> button must be clicked. To remove a task, it must be double clicked on the list (or selected in the drop down list, with the same effect) and the <em>Remove</em> button has to be clicked. Note that all occurrences of the task displayed in the text box are removed from the list.</p>
+<p>When the tasks are set to be run sequentially, the behavior upon success or failure of one of them (that is: stop the sequence on either success or failure) can be specified, by clicking the appropriate option, respectively the <em>Stop Running Sequence when a Task Succeeds/Fails</em> options. Leave the <em>Do Not Check for Task Outcome</em> selected to ignore the outcome of the associated tasks.</p>
+<p>These are the parameters that appear on the <em>Common Parameters</em> tab: the <em>Specific Parameters</em> tab, instead, varies according to the type of condition that is being edited.</p>
+<p>The conditions available in <strong>When</strong> that are natively supported by <strong>whenever</strong> are the following:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="cond_actionrelated.html#command"><span class="std std-ref"><em>Command</em> conditions</span></a></p></li>
+<li><p><a class="reference internal" href="cond_eventrelated.html"><span class="std std-doc"><em>Event</em> conditions</span></a></p></li>
+<li><p><a class="reference internal" href="cond_timerelated.html#idle-session"><span class="std std-ref"><em>Idle Session</em> conditions</span></a></p></li>
+<li><p><a class="reference internal" href="cond_timerelated.html#interval"><span class="std std-ref">Time <em>Interval</em> conditions</span></a></p></li>
+<li><p><a class="reference internal" href="cond_actionrelated.html#lua-script"><span class="std std-ref"><em>Lua Script</em> conditions</span></a></p></li>
+<li><p><a class="reference internal" href="cond_timerelated.html#time-specification"><span class="std std-ref"><em>Time</em> related conditions</span></a></p></li>
+</ul>
+<p>Other conditions are supported, that are implemented as reactions to particular commands, DBus messages or method invocations, WMI events or queries, <em>Lua</em> scripts. These conditions appear along with the native ones, and the related documentation can be found at the following locations:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="cond_extra01.html#system-load"><span class="std std-ref"><em>System Load</em> below Threshold</span></a> conditions</p></li>
+<li><p><a class="reference internal" href="cond_extra01.html#low-battery"><span class="std std-ref"><em>Battery Charge</em> below Threshold</span></a> conditions</p></li>
+<li><p><a class="reference internal" href="cond_extra01.html#charging-battery"><span class="std std-ref"><em>Battery Charge</em> above Threshold</span></a> conditions</p></li>
+<li><p><a class="reference internal" href="cond_extra01.html#removable-drives"><span class="std std-ref"><em>Removable Drive</em> available</span></a> conditions</p></li>
+<li><p><a class="reference internal" href="cond_extra01.html#session-locked-windows"><span class="std std-ref"><em>Session Locked</em></span></a> (Windows only) conditions</p></li>
+</ul>
+<p>The above list will grow with time, along with the discovery of new configuration possibilities on the supported platforms and the development of the related forms.</p>
+<section id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="tasks.html"><span class="std std-doc">Tasks</span></a></p></li>
+<li><p><a class="reference internal" href="events.html"><span class="std std-doc">Events</span></a></p></li>
+</ul>
+<p><a class="reference internal" href="main.html"><span class="std std-doc"><code class="docutils literal notranslate"><span class="pre">◀</span> <span class="pre">Main</span></code></span></a></p>
+</section>
+</section>
+<hr class="footnotes docutils" />
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id2" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>Names beginning with the prefix <code class="docutils literal notranslate"><span class="pre">__When__private__</span></code> are reserved, and are not allowed when creating items.</p>
+</aside>
+</aside>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tasks_extra_session.html" class="btn btn-neutral float-left" title="Extra Tasks: Session Related" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="cond_timerelated.html" class="btn btn-neutral float-right" title="Time Related Conditions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015-2026, Francesco Garosi.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

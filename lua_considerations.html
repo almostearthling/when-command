@@ -1,0 +1,167 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="_static/favicon.ico" rel="icon" type="image/x-icon">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Some Considerations on Lua &mdash; The When Automation Tool 2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=60dbed4a"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Credits" href="credits.html" />
+    <link rel="prev" title="Generated Configuration File" href="configfile.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            The When Automation Tool
+              <img src="_static/rafi-clock-256.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="main.html">The <strong>When</strong> Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cfgform.html">Main Configuration Form</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tray.html">System Tray Resident Application</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tasks.html">Native Tasks Editors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tasks_extra_session.html">Extra Tasks: Session Related</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conditions.html">Condition Editors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_timerelated.html">Time Related Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_actionrelated.html">Action Related Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_eventrelated.html">Event Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_extra01.html">Extra Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events.html">Native Events Editors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events_extra01.html">Specific Events</a></li>
+<li class="toctree-l1"><a class="reference internal" href="history.html">History Box</a></li>
+<li class="toctree-l1"><a class="reference internal" href="i18n.html">Localization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="appdata.html">Application Data Directory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configfile.html">Generated Configuration File</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Some Considerations on Lua</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="credits.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="when_history.html">History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">The When Automation Tool</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Some Considerations on Lua</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/lua_considerations.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="some-considerations-on-lua">
+<h1>Some Considerations on Lua<a class="headerlink" href="#some-considerations-on-lua" title="Link to this heading"></a></h1>
+<p>The embedded <em>Lua</em> interpreter in <strong>whenever</strong> is surely a powerful feature, that can efficiently replace OS commands and scripts for many purposes, sometimes also in a way that is</p>
+<ul class="simple">
+<li><p>more portable across systems, as the <em>Lua</em> interpreter is the same on all systems, as well as its standard library that provides many actions usually available via different commands on different operating systems,</p></li>
+<li><p>significantly faster, because the interpreter is already in memory when it is instantiated by <strong>whenever</strong> and there are no shells and no external commands to be launched.</p></li>
+</ul>
+<p>The current version of <strong>When</strong> supports a <a class="reference internal" href="cli.html#toolbox"><span class="std std-ref"><em>tool</em></span></a> to install a script or a library, so that it can be <code class="docutils literal notranslate"><span class="pre">require</span></code>d from the embedded interpreter in <strong>whenever</strong>: the <code class="docutils literal notranslate"><span class="pre">--install-lua</span></code> (or <code class="docutils literal notranslate"><span class="pre">--upgrade-lua</span></code> for upgrades) command, followed by a file name can be used and, if the file type is supported, it will be copied to an appropriate directory in <a class="reference internal" href="appdata.html"><span class="std std-doc"><em>APPDATA</em></span></a> which is in the searched <em>paths</em>. The supported file types are:</p>
+<ul class="simple">
+<li><p><em>.lua</em> (<em>Lua</em> scripts): obviously <em>Lua</em> source files that can define functions, initialize or update tables, and so on,</p></li>
+<li><p><em>.zip</em> (ZIP archives): the zip contents, which are expected to be a tree of <em>Lua</em> source files, are extracted in a directory with the same name of the ZIP file in the <em>Lua</em> subdirectory of <em>APPDATA</em>.</p></li>
+</ul>
+<p>There is no support for <em>Lua C (binary) modules</em>: the reason is that the interpreter embedded in <strong>whenever</strong> only operates in <em>safe</em> mode, which in turn disables dynamic loading of extenal binary libraries, which in fact <em>Lua C modules</em> are. Attempts to <code class="docutils literal notranslate"><span class="pre">require</span></code> a binary module, even if available in the correct directory, will result in a <em>module not found</em> runtime error for the embedded interpreter.</p>
+<p>The syntax for the <code class="docutils literal notranslate"><span class="pre">--install-lua</span></code> tool is the following:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>when<span class="w"> </span>tool<span class="w"> </span>--install-lua<span class="w"> </span>path/to/module.lua<span class="w">      </span><span class="c1"># for single Lua files</span>
+when<span class="w"> </span>tool<span class="w"> </span>--install-lua<span class="w"> </span>path/to/module.zip<span class="w">      </span><span class="c1"># for ZIP packed modules</span>
+</pre></div>
+</div>
+<p>and for <code class="docutils literal notranslate"><span class="pre">--upgrade-lua</span></code> is absolutely identical. <em>path/to/module.lua</em> and <em>path/to/module.zip</em> can be either relative or absolute.</p>
+<p>At the moment no real <em>package management</em> is available, mainly because the most popular <em>Lua</em> package managers rely on development tools which are not always expected to be available on the host platform.</p>
+<div class="admonition attention">
+<p class="admonition-title">Attention</p>
+<p>The <em>Lua</em> library installation tool is in its very early development stage, and for the moment does not support removal for installed modules. To remove a module, it has to be manually deleted from the <em>Lua</em> subdirectory in <em>APPDATA</em>. For updates, the <code class="docutils literal notranslate"><span class="pre">--upgrade-lua</span></code> tool is available, which removes the destination prior to installing the module: this only works if the module to upgrade already exists and fails otherwise. This is intentional, because some modules might be required by tasks or conditions used by <strong>When</strong>, and the upgrade tool will refuse anyways to overwrite them.</p>
+</div>
+<p>If a <em>pure Lua</em> module is available as a directory structure, it is easy to produce a ZIP file that can be used with the <code class="docutils literal notranslate"><span class="pre">--install-lua</span></code> tool: most modern file managers offer a <em>“Archive/Compress to ZIP”</em> option using a mouse click on a folder, which can be used with the folder containing the desired module. The resulting ZIP file is suitable for installation using the tool.</p>
+<section id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="tasks.html#lua-script"><span class="std std-ref">Lua Based Tasks</span></a></p></li>
+<li><p><a class="reference internal" href="cond_actionrelated.html#lua-script"><span class="std std-ref">Lua Based Conditions</span></a></p></li>
+<li><p><a class="reference internal" href="cli.html#toolbox"><span class="std std-ref">Toolbox</span></a></p></li>
+</ul>
+<p><a class="reference internal" href="main.html"><span class="std std-doc"><code class="docutils literal notranslate"><span class="pre">◀</span> <span class="pre">Main</span></code></span></a></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="configfile.html" class="btn btn-neutral float-left" title="Generated Configuration File" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="credits.html" class="btn btn-neutral float-right" title="Credits" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015-2026, Francesco Garosi.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

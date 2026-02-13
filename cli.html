@@ -1,0 +1,241 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="_static/favicon.ico" rel="icon" type="image/x-icon">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Command Line Interface (CLI) &mdash; The When Automation Tool 2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=60dbed4a"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Main Configuration Form" href="cfgform.html" />
+    <link rel="prev" title="Tutorial" href="tutorial.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            The When Automation Tool
+              <img src="_static/rafi-clock-256.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="main.html">The <strong>When</strong> Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Command Line Interface (CLI)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#toolbox">Toolbox</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#output-of-the-configuration-check-tool">Output of the Configuration Check Tool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cfgform.html">Main Configuration Form</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tray.html">System Tray Resident Application</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tasks.html">Native Tasks Editors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tasks_extra_session.html">Extra Tasks: Session Related</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conditions.html">Condition Editors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_timerelated.html">Time Related Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_actionrelated.html">Action Related Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_eventrelated.html">Event Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_extra01.html">Extra Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events.html">Native Events Editors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events_extra01.html">Specific Events</a></li>
+<li class="toctree-l1"><a class="reference internal" href="history.html">History Box</a></li>
+<li class="toctree-l1"><a class="reference internal" href="i18n.html">Localization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="appdata.html">Application Data Directory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configfile.html">Generated Configuration File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lua_considerations.html">Some Considerations on Lua</a></li>
+<li class="toctree-l1"><a class="reference internal" href="credits.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="when_history.html">History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">The When Automation Tool</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Command Line Interface (CLI)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/cli.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="command-line-interface-cli">
+<h1>Command Line Interface (CLI)<a class="headerlink" href="#command-line-interface-cli" title="Link to this heading"></a></h1>
+<p>The documentation assumes that <strong>When</strong> has been installed using the instructions provided in the installation <a class="reference internal" href="install.html"><span class="std std-doc">guide</span></a>. In this case the <code class="docutils literal notranslate"><span class="pre">when</span></code> command should be available from the command line, and could be invoked as follows:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>when<span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">COMMAND</span></code> is one of the following:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">config</span></code> to launch the <a class="reference internal" href="cfgform.html"><span class="std std-doc">configuration utility</span></a>, without staying resident (i.e. no system tray icon)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">start</span></code> to launch the resident <strong>whenever</strong> <a class="reference internal" href="tray.html"><span class="std std-doc">wrapper</span></a> displaying a control icon on the system tray area</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tool</span></code> to launch one of the utilities that can help in the setup of a working environment</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">version</span></code> to display version information.</p></li>
+</ul>
+<p>More commands might be supported in the future. <code class="docutils literal notranslate"><span class="pre">OPTIONS</span></code> are the possible options, which have effect on specific commands:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">-D</span></code>/<code class="docutils literal notranslate"><span class="pre">--dir-appdata</span></code> <em>PATH</em>: specify the application data and configuration directory (default: <em>%APPDATA%\Whenever</em> on Windows, <em>~/.whenever</em> on Linux)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-W</span></code>/<code class="docutils literal notranslate"><span class="pre">--whenever</span></code> <em>PATH</em>: specify the path to the whenever executable (defaults to the one found in the PATH if any, otherwise exit with error, specific to <code class="docutils literal notranslate"><span class="pre">start</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-L</span></code>/<code class="docutils literal notranslate"><span class="pre">--log-level</span></code> <em>LEVEL</em>: specify the log level, all <strong>whenever</strong> levels are supported (default: <em>info</em>, specific to <code class="docutils literal notranslate"><span class="pre">start</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-h</span></code>/<code class="docutils literal notranslate"><span class="pre">--help</span></code>: print a brief help message about commands and options.</p></li>
+</ul>
+<p>In order to know which options can be used for each command, <code class="docutils literal notranslate"><span class="pre">when</span> <span class="pre">COMMAND</span> <span class="pre">--help</span></code> can be invoked from the command line, where <code class="docutils literal notranslate"><span class="pre">COMMAND</span></code> is one of the commands described above.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In order to simplify the usage of <strong>When</strong>, many values that could have been implemented as parameters are instead left as defaults that cannot be changed, at least for now, if not via direct intervention on the code.</p>
+</div>
+<p>This version of <strong>When</strong> uses <a class="reference external" href="https://python-poetry.org/">poetry</a> to manage dependencies and to provide a suitable environment for a source distribution, therefore after running <code class="docutils literal notranslate"><span class="pre">poetry</span> <span class="pre">install</span></code> in the project directory to install all necessary Python dependencies, <strong>When</strong> can also be launched as <code class="docutils literal notranslate"><span class="pre">poetry</span> <span class="pre">run</span> <span class="pre">when</span> <span class="pre">COMMAND</span> <span class="pre">[OPTIONS]</span></code>.</p>
+<section id="toolbox">
+<h2>Toolbox<a class="headerlink" href="#toolbox" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">tool</span></code> command provides various utilities that can help in the setup of <strong>When</strong> for a desktop environment. Each utility is invoked by means of a subcommand, which might possibly have variants. The following list explains the available subcommands and their options:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--install-whenever</span></code>: downloads and installs the latest version of <strong>whenever</strong> for the current user</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--create-icons</span></code>: create the <strong>When</strong> desktop shortcuts (for both the configuration utility and for the resident application) for the current user in the <em>Start</em> or <em>Applications</em> menu – depending on the host platform; accepts the following modifiers</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">--autostart</span></code>: (option) creates a shortcut that launches the resident version of <strong>When</strong> when the user logs in</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--desktop</span></code>: (option) also creates icons on the desktop<a class="footnote-reference brackets" href="#id3" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--fix-config</span></code>: fix legacy configuration files converting <a class="reference internal" href="configfile.html#legacy-configuration-files"><span class="std std-ref">old item definitions</span></a> to new ones</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--check-config</span></code>: check the configuration file for errors that might have been introduced by manually editing it</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--install-lua</span></code>: install a <em>Lua</em> script or library in the <em>Lua</em> specific subtree within the <a class="reference internal" href="appdata.html"><span class="std std-doc"><em>APPDATA</em></span></a> directory</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--upgrade-lua</span></code>: upgrade a <em>Lua</em> script or library in the <em>Lua</em> specific subtree within the <a class="reference internal" href="appdata.html"><span class="std std-doc"><em>APPDATA</em></span></a> directory: similar to <code class="docutils literal notranslate"><span class="pre">--install-lua</span></code>, but only works when a module <em>already exists</em></p></li>
+<li><p>…</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--quiet</span></code>: (option) applies to all the operations described above, and inhibits printing messages to the console.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>When</strong> will usually <em>not</em> check the configuration file if not requested to, in order to avoid excessive delay on startup: <strong>whenever</strong> itself performs a check for correctness and refuses to start when any error is found. The <code class="docutils literal notranslate"><span class="pre">--check-config</span></code> tool is provided to verify the configuration file in such cases, and to provide at least some clues about the errors, such as the line number at which the misconfigured item is found. The tool will try to report <em>all</em> errors found in the current configuration file. Since <strong>When</strong> normally generates correct configuration files, errors are generally introduced by manually editing the file itself. It is recommended, therefore, that the <code class="docutils literal notranslate"><span class="pre">--check-config</span></code> tool is launched after every manual change in the configuration file.</p>
+</div>
+<p>The subcommands cannot be combined. The <strong>whenever</strong> installation step should be performed first if there is no working copy of the core scheduler on the system.</p>
+</section>
+<section id="output-of-the-configuration-check-tool">
+<h2>Output of the Configuration Check Tool<a class="headerlink" href="#output-of-the-configuration-check-tool" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">--check-config</span></code> tool can be useful to get help on errors in configuration files which have been manually edited: normally, files generated by the <strong>When</strong> configuration application should be correct and consistent,<a class="footnote-reference brackets" href="#id4" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a> however TOML files are known for being easily modifiable using a simple text editor, and <strong>When</strong> tries to produce configuration files which are as readable as possible, in order to allow for simple direct modifications according to the user preferences. The tool is usually invoked with no parameters, as it is designed to check the configuration file in use (the one in <a class="reference internal" href="appdata.html"><span class="std std-doc"><em>APPDATA</em></span></a>), and provides a verbose output:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>&gt; when tool --check-config
+
+When - ERROR: The following errors have been found in configuration file `[...]/whenever.toml`
+When - ERROR: * ConfigurationError Cond_AFK01@29 (idle_seconds): `invalid value: some`
+When - ERROR: Operation failed.
+</pre></div>
+</div>
+<p>which is the result when the mentioned configuration file contains the following snippet <em>at line 29</em>:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[[condition]]</span>
+<span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;Cond_AFK01&quot;</span>
+<span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;idle&quot;</span>
+<span class="n">tasks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Task_TRACE&quot;</span><span class="p">]</span>
+<span class="n">recurring</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<span class="n">idle_seconds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;some&quot;</span>
+</pre></div>
+</div>
+<p>where the <code class="docutils literal notranslate"><span class="pre">idle_seconds</span></code> parameter was expected to be an integer, and a string is provided. In other words, the tool reports (or at least tries to, in case of errors that are specifically related to items):</p>
+<ul class="simple">
+<li><p>the item name, followed by an <code class="docutils literal notranslate"><span class="pre">&#64;</span></code> sign and the line number where its definition <em>begins</em>,</p></li>
+<li><p>the entry that holds an unexpected value, or that is missing although required,</p></li>
+<li><p>a message stating what is wrong (an unexpected or missing value).</p></li>
+</ul>
+<p>Other errors can be reported, for instance TOML syntax errors, along with the coordinates needed to locate them in the file.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">--check-config</span></code> tool, moreover, tries to report as many errors as possible: so, in case of a file which is affected by more than one error, more than an error line will be reported.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The error lines (the ones that begin with the <code class="docutils literal notranslate"><span class="pre">When</span> <span class="pre">-</span> <span class="pre">ERROR:</span> <span class="pre">*</span> <span class="pre">ConfigurationError</span></code> prefix) are <em>not</em> translated to the current locale.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If an error is detected in an event based condition or in a task, the corresponding item will not be registered: this has the secondary effect that all items that reference it will be invalid, since the name of the incorrect item that will not be considered a valid name. For instance, if a task named <code class="docutils literal notranslate"><span class="pre">Task01</span></code> is incorrectly configured, it will not be loaded as a task: this means, that all conditions that have <code class="docutils literal notranslate"><span class="pre">Task01</span></code> in their execution list, will report <code class="docutils literal notranslate"><span class="pre">Task01</span></code> as an <em>invalid value</em>.</p>
+</div>
+</section>
+<section id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="install.html"><span class="std std-doc">Installation</span></a></p></li>
+<li><p><a class="reference internal" href="cfgform.html"><span class="std std-doc">Configuration Utility</span></a></p></li>
+<li><p><a class="reference internal" href="tray.html"><span class="std std-doc">Resident Wrapper</span></a></p></li>
+</ul>
+<p><a class="reference internal" href="main.html"><span class="std std-doc"><code class="docutils literal notranslate"><span class="pre">◀</span> <span class="pre">Main</span></code></span></a></p>
+</section>
+</section>
+<hr class="footnotes docutils" />
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id3" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>on some Linux desktop (for example, the most recent versions of Gnome) the deployment of launcher files in the <code class="docutils literal notranslate"><span class="pre">~/Desktop</span></code> subfolder is not honored as a way to create desktop icons, thus the <code class="docutils literal notranslate"><span class="pre">--desktop</span></code> option is actually executed, but has no effect.</p>
+</aside>
+<aside class="footnote brackets" id="id4" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
+<p>with the possible exception of files generated using old versions of <strong>When</strong> that produce configuration files in deprecated formats.</p>
+</aside>
+</aside>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tutorial.html" class="btn btn-neutral float-left" title="Tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="cfgform.html" class="btn btn-neutral float-right" title="Main Configuration Form" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015-2026, Francesco Garosi.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

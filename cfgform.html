@@ -1,0 +1,195 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="_static/favicon.ico" rel="icon" type="image/x-icon">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Main Configuration Form &mdash; The When Automation Tool 2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=60dbed4a"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="System Tray Resident Application" href="tray.html" />
+    <link rel="prev" title="Command Line Interface (CLI)" href="cli.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            The When Automation Tool
+              <img src="_static/rafi-clock-256.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="main.html">The <strong>When</strong> Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Main Configuration Form</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#edit-items">Edit Items</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#create-items">Create Items</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#remove-items">Remove Items</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#modify-scheduler-parameters">Modify Scheduler Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#reload-configuration">Reload Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#exiting">Exiting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tray.html">System Tray Resident Application</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tasks.html">Native Tasks Editors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tasks_extra_session.html">Extra Tasks: Session Related</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conditions.html">Condition Editors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_timerelated.html">Time Related Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_actionrelated.html">Action Related Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_eventrelated.html">Event Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_extra01.html">Extra Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events.html">Native Events Editors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events_extra01.html">Specific Events</a></li>
+<li class="toctree-l1"><a class="reference internal" href="history.html">History Box</a></li>
+<li class="toctree-l1"><a class="reference internal" href="i18n.html">Localization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="appdata.html">Application Data Directory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configfile.html">Generated Configuration File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lua_considerations.html">Some Considerations on Lua</a></li>
+<li class="toctree-l1"><a class="reference internal" href="credits.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="when_history.html">History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">The When Automation Tool</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Main Configuration Form</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/cfgform.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="main-configuration-form">
+<h1>Main Configuration Form<a class="headerlink" href="#main-configuration-form" title="Link to this heading"></a></h1>
+<p>The <em>Main Configuration Form</em> provides access to all <em>item</em> editors that are available for the hosting platform.</p>
+<p><img alt="MainWindow" src="_images/when-config-main-items.png" /></p>
+<p>This form allows to <a class="reference internal" href="#edit-items"><span class="xref myst">review, edit</span></a>, <a class="reference internal" href="#remove-items"><span class="xref myst">remove</span></a>, and <a class="reference internal" href="#create-items"><span class="xref myst">create</span></a> <em>items</em> in the current configuration file using the main pane, as well as to modify the global, scheduler related <a class="reference internal" href="#modify-scheduler-parameters"><span class="xref myst">parameters</span></a></p>
+<p><img alt="MainWindow" src="_images/when-config-main-globals.png" /></p>
+<p>in a separate panel. The configuration file path is shown in the top part of the globals subform, for reference, and cannot be altered: this path, based on the <a class="reference internal" href="appdata.html"><span class="std std-doc">application data directory</span></a>, ensures that the same configuration file can be used with either <strong>When</strong> or <strong>whenever_tray</strong> as the resident frontend (or <em>wrapper</em>) for the actual scheduler, assuming that the base directory is not altered via the specific <a class="reference internal" href="cli.html"><span class="std std-doc">CLI option</span></a>.</p>
+<section id="edit-items">
+<h2>Edit Items<a class="headerlink" href="#edit-items" title="Link to this heading"></a></h2>
+<p>An item can be edited by selecting its name row in the <em>Current Items</em> list, and then clicking on the <em>Edit…</em> button. This opens the appropriate item editor, displaying all the actual values for the selected item, in order to let the user modify them according to his needs or requirements.</p>
+</section>
+<section id="create-items">
+<h2>Create Items<a class="headerlink" href="#create-items" title="Link to this heading"></a></h2>
+<p>By clicking the <em>New…</em> button, a dialog will pop up asking which type of item has to be created: after selecting it and clicking <em>OK</em> the appropriate editor opens for the desired item type. Note that mandatory parameters are set with default values: of course such values can be modified to suit the user’s preferences. Item creation forms are, other than this, in no way different from the forms used to edit existing item parameters. These forms are specifically described throughout the documentation.</p>
+</section>
+<section id="remove-items">
+<h2>Remove Items<a class="headerlink" href="#remove-items" title="Link to this heading"></a></h2>
+<p>Just clicking the <em>Remove</em> button after selecting the item that has to be deleted will actually remove it from the configuration file, obviously after prompting for confirmation.</p>
+</section>
+<section id="modify-scheduler-parameters">
+<h2>Modify Scheduler Parameters<a class="headerlink" href="#modify-scheduler-parameters" title="Link to this heading"></a></h2>
+<p>The global scheduler related parameters that are avaiable through this form are the following:</p>
+<ul class="simple">
+<li><p><em>Randomize checks within ticks</em>: whether or not the actual execution of tests for each condition (excluding those that strictly depend on time) have to be performed at random instants within the tick interval or at the exact time when the interval has actually passed;</p></li>
+<li><p><em>Tick interval</em>: the amount of seconds that the scheduler will wait between subsequent checks that the defined, active conditions are verified: the default value is 5 seconds, which is actually frequent enough to ensure a quick reaction to external events;</p></li>
+<li><p><em>Reset conditions on system resume</em>: when set, every time the workstation wakes up from sleep, <strong>When</strong> resets the inner status of condition checks, which in fact resembles, from an operational point of view, a fresh start.</p></li>
+</ul>
+<p>The first option, if checked, allows the scheduler to try to run tests for different conditions at a random instant within the interval between ticks. This allows to avoid running all the condition tests at the same time, which could in certain cases cause a significant load on the local machine. Unless there are specific reasons not to, it is advisable to check this option.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Even though <em>condition reset on system resume</em> is a configuration option that is on by default, it is only applied the first time that the configuration is saved and then loaded or reloaded. This means that, if the user has a configuration file generated by a previous version of <strong>When</strong> that did not yet support this feature, the option will <em>still be turned off</em> until the configuration is saved <em>and</em> the check box in the UI is checked.</p>
+</div>
+</section>
+<section id="reload-configuration">
+<h2>Reload Configuration<a class="headerlink" href="#reload-configuration" title="Link to this heading"></a></h2>
+<p>When the application has been launched as a resident frontend for a live instance of <strong>whenever</strong>, this form also shows a <em>Reload</em> button which can be used to reload the configuration to the scheduler: only modified items are affected and will be updated and reset.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Only <em>items</em> are reloaded, the global scheduler parameters do not change while the scheduler is running and will be applied at the next start.</p>
+</div>
+</section>
+<section id="exiting">
+<h2>Exiting<a class="headerlink" href="#exiting" title="Link to this heading"></a></h2>
+<p>The <em>Close</em> button has different behaviors depending on how the main configuration form was entered: if a configuration-only session was launched using the <code class="docutils literal notranslate"><span class="pre">config</span></code> command, then the button allows for completely leaving the application. If the form was launched through the <em>Configurator…</em> entry in the system tray menu, the resident part of <strong>When</strong> remains active, and only the configuration utility is exited. Please note that writing a new configuration file will not cause the main scheduler to automatically reload it.</p>
+<p>Also note that, if anything had changed since the configuration file was last saved, the configuration form will ask anyway to save it again – no matter whether it had been launched via the <code class="docutils literal notranslate"><span class="pre">config</span></code> command or via the system tray menu.</p>
+</section>
+<section id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="install.html"><span class="std std-doc">Installation</span></a></p></li>
+<li><p><a class="reference internal" href="cli.html#toolbox"><span class="std std-ref">Toolbox</span></a></p></li>
+<li><p><a class="reference internal" href="tray.html"><span class="std std-doc">Resident Wrapper</span></a></p></li>
+<li><p><a class="reference internal" href="configfile.html"><span class="std std-doc">Configuration File</span></a></p></li>
+</ul>
+<p><a class="reference internal" href="main.html"><span class="std std-doc"><code class="docutils literal notranslate"><span class="pre">◀</span> <span class="pre">Main</span></code></span></a></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="cli.html" class="btn btn-neutral float-left" title="Command Line Interface (CLI)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tray.html" class="btn btn-neutral float-right" title="System Tray Resident Application" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015-2026, Francesco Garosi.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

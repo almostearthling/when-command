@@ -1,0 +1,270 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="_static/favicon.ico" rel="icon" type="image/x-icon">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Installation &mdash; The When Automation Tool 2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=60dbed4a"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Tutorial" href="tutorial.html" />
+    <link rel="prev" title="The When Documentation" href="main.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            The When Automation Tool
+              <img src="_static/rafi-clock-256.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="main.html">The <strong>When</strong> Documentation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#windows">Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#linux">Linux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#create-application-icons">Create Application Icons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#upgrade">Upgrade</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installing-directly-from-the-repository">Installing Directly from the Repository</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installation-scope">Installation Scope</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cfgform.html">Main Configuration Form</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tray.html">System Tray Resident Application</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tasks.html">Native Tasks Editors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tasks_extra_session.html">Extra Tasks: Session Related</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conditions.html">Condition Editors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_timerelated.html">Time Related Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_actionrelated.html">Action Related Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_eventrelated.html">Event Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_extra01.html">Extra Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events.html">Native Events Editors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events_extra01.html">Specific Events</a></li>
+<li class="toctree-l1"><a class="reference internal" href="history.html">History Box</a></li>
+<li class="toctree-l1"><a class="reference internal" href="i18n.html">Localization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="appdata.html">Application Data Directory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configfile.html">Generated Configuration File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lua_considerations.html">Some Considerations on Lua</a></li>
+<li class="toctree-l1"><a class="reference internal" href="credits.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="when_history.html">History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">The When Automation Tool</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Installation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/install.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h1>
+<p>The easiest way to install <em>When</em> is using <a class="reference external" href="https://pipx.pypa.io/">pipx</a>: this works both on <a class="reference internal" href="#windows"><span class="xref myst">Windows</span></a> and <a class="reference internal" href="#linux"><span class="xref myst">Linux</span></a>, at least in the tested distributions. Installation on Linux is somewhat more complicated due to the need of fulfilling the requirements before successfully running the application. On Windows the requirements are easier to deal with, in the sense that only <a class="reference external" href="https://www.python.org/">Python</a> and <a class="reference external" href="https://pipx.pypa.io/">pipx</a> need to be installed.</p>
+<p><em>Requirements</em>:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://www.python.org/">Python</a> in a recent release (at least version 3.11)</p></li>
+<li><p><a class="reference external" href="https://pipx.pypa.io/">pipx</a></p></li>
+<li><p><a class="reference external" href="https://github.com/almostearthling/whenever">whenever</a>, possibly the latest binary <a class="reference external" href="https://github.com/almostearthling/whenever/releases">release</a></p></li>
+</ul>
+<p>Note that even though a <a class="reference external" href="https://github.com/almostearthling/whenever/releases/latest">recent release</a> of <strong>whenever</strong> is required for <strong>When</strong> to work as intended, <strong>When</strong> itself can be used to properly install and configure the core scheduler as described below.</p>
+<section id="windows">
+<h2>Windows<a class="headerlink" href="#windows" title="Link to this heading"></a></h2>
+<p>These steps can be followed on both Windows 10 and Windows 11:</p>
+<ol class="arabic">
+<li><p>install <strong>Python</strong> using one of the official installation methods</p></li>
+<li><p>install pipx by issuing the command <code class="docutils literal notranslate"><span class="pre">py</span> <span class="pre">-m</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--user</span> <span class="pre">pipx</span></code> in a console window: after installation launch <code class="docutils literal notranslate"><span class="pre">pipx</span> <span class="pre">ensurepath</span></code> from the command prompt</p></li>
+<li><p>install the latest release of <strong>When</strong>, using <strong>pipx</strong>:</p>
+<div class="highlight-batch notranslate"><div class="highlight"><pre><span></span>pipx install https://github.com/almostearthling/when-command/releases/latest/download/when-command-latest.zip
+</pre></div>
+</div>
+</li>
+<li><p>close the current console window, and open a new one: this is to ensure that the updated <code class="docutils literal notranslate"><span class="pre">PATH</span></code> environemnt variable is active</p></li>
+<li><p>install <strong>whenever</strong> using the <strong>When</strong> installation tool: <code class="docutils literal notranslate"><span class="pre">when</span> <span class="pre">tool</span> <span class="pre">--install-whenever</span></code></p></li>
+<li><p>launch the configuration utility, by typing <code class="docutils literal notranslate"><span class="pre">when</span> <span class="pre">config</span></code> on the command line: create a task and a condition of your choice, and save the configuration file by clicking the <em>Save</em> button. The <a class="reference internal" href="tutorial.html#simple-trace"><span class="std std-ref">simple trace</span></a> example in the tutorial can be a good choice to verify that everything works as expected.</p></li>
+</ol>
+<p>Once a configuration is available, the resident application can be started from the command line using the <code class="docutils literal notranslate"><span class="pre">when</span> <span class="pre">start</span></code> command. A shortcut can be created as described <a class="reference internal" href="#create-application-icons"><span class="xref myst">below</span></a>. On Windows, the <code class="docutils literal notranslate"><span class="pre">when-bg</span></code> command can be used instead of <code class="docutils literal notranslate"><span class="pre">when</span></code> to launch the application <em>detached</em> from a console window.</p>
+</section>
+<section id="linux">
+<h2>Linux<a class="headerlink" href="#linux" title="Link to this heading"></a></h2>
+<p>These steps can be followed on recent Linux distributions that derive from Debian such as Ubuntu and Mint, using a terminal:</p>
+<ol class="arabic">
+<li><p>install, as root or via <em>sudo</em>, the common requirements:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>build-essential<span class="w"> </span>libdbus-1-dev<span class="w"> </span>pkg-config<span class="w"> </span><span class="se">\</span>
+<span class="w">                 </span>libx11-dev<span class="w"> </span>libxss-dev<span class="w"> </span>libglib2.0-dev<span class="w"> </span><span class="se">\</span>
+<span class="w">                 </span>libcairo2-dev<span class="w"> </span>libgirepository-1.0-dev<span class="w"> </span><span class="se">\</span>
+<span class="w">                 </span>gir1.2-ayatanaappindicator3-0.1<span class="w"> </span><span class="se">\</span>
+<span class="w">                 </span>python3-tk<span class="w"> </span>python3-pip<span class="w"> </span>pipx
+</pre></div>
+</div>
+<p>On Debian, specifically, the <em>introspection</em> package is called <code class="docutils literal notranslate"><span class="pre">libgirepository1.0-dev</span></code> instead of <code class="docutils literal notranslate"><span class="pre">libgirepository-1.0-dev</span></code>, and an extra package is needed (the <em>Gnome shell extension manager</em>) so use the following command:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>build-essential<span class="w"> </span>libdbus-1-dev<span class="w"> </span>pkg-config<span class="w"> </span><span class="se">\</span>
+<span class="w">                 </span>libx11-dev<span class="w"> </span>libxss-dev<span class="w"> </span>libglib2.0-dev<span class="w"> </span><span class="se">\</span>
+<span class="w">                 </span>libcairo2-dev<span class="w"> </span>libgirepository1.0-dev<span class="w"> </span><span class="se">\</span>
+<span class="w">                 </span>gir1.2-ayatanaappindicator3-0.1<span class="w"> </span><span class="se">\</span>
+<span class="w">                 </span>gnome-shell-extension-manager<span class="w"> </span><span class="se">\</span>
+<span class="w">                 </span>python3-tk<span class="w"> </span>python3-pip<span class="w"> </span>pipx
+</pre></div>
+</div>
+<p>Then, if you use Debian, launch the <em>Extension Manager</em>, choose the <em>Browse</em> tab, scroll down to <em>AppIndicator and KStatusNotifierItem Support</em> (you can use the search bar to find the entry) and install it</p>
+<p><img alt="GnomeExtensionManager" src="_images/install-linux-extmgr.png" /></p>
+<p>Make sure that it is enabled in order for <strong>When</strong> to work.</p>
+<p>On other, non-Debian based distributions, there are probably equivalent packages to install for <strong>When</strong> to function properly.</p>
+</li>
+<li><p>launch <code class="docutils literal notranslate"><span class="pre">pipx</span> <span class="pre">ensurepath</span></code> from the terminal: it should be done as the current user and <strong>not</strong> as root</p></li>
+<li><p>install the latest release of <strong>When</strong>, using <strong>pipx</strong>:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pipx<span class="w"> </span>install<span class="w"> </span>https://github.com/almostearthling/when-command/releases/latest/download/when-command-latest.zip
+</pre></div>
+</div>
+</li>
+<li><p>close the current console window, and open a new one: this is to ensure that the updated <code class="docutils literal notranslate"><span class="pre">PATH</span></code> environemnt variable is active</p></li>
+<li><p>install <strong>whenever</strong> using the <strong>When</strong> installation tool:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>when<span class="w"> </span>tool<span class="w"> </span>--install-whenever
+</pre></div>
+</div>
+</li>
+<li><p>launch the configuration utility, by typing <code class="docutils literal notranslate"><span class="pre">when</span> <span class="pre">config</span></code> on the command line: create a task and a condition of your choice, and save the configuration file by clicking the <em>Save</em> button. The <a class="reference internal" href="tutorial.html#simple-trace"><span class="std std-ref">simple trace</span></a> example in the tutorial can be a good choice to verify that everything works as expected.</p></li>
+</ol>
+<p>Once a configuration is available, the resident application can be started from the command line using the <code class="docutils literal notranslate"><span class="pre">when</span> <span class="pre">start</span></code> command. A shortcut can be created as described <a class="reference internal" href="#create-application-icons"><span class="xref myst">below</span></a>. The <code class="docutils literal notranslate"><span class="pre">when-bg</span></code> command also exists on Linux, but its behavior is absolutely identical to <code class="docutils literal notranslate"><span class="pre">when</span></code>.</p>
+<p>On non-Debian-based distributions, the package manager and the package names in step 1 will be different, while everything else should work exactly as described above. For instance, on Fedora, <strong>When</strong> runs apparently without major problems by installing the appropriate packages as follows:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>dnf<span class="w"> </span>group<span class="w"> </span>install<span class="w"> </span>c-development<span class="w"> </span>development-tools
+sudo<span class="w"> </span>dnf<span class="w"> </span>install<span class="w"> </span>libX11-devel<span class="w"> </span>libXScrnSaver-devel
+sudo<span class="w"> </span>dnf<span class="w"> </span>install<span class="w"> </span>python3-tkinter<span class="w"> </span>python3-pip<span class="w"> </span>pipx<span class="w"> </span>python3-devel
+sudo<span class="w"> </span>dnf<span class="w"> </span>install<span class="w"> </span>cairo-devel<span class="w"> </span>cairo-gobject-devel
+sudo<span class="w"> </span>dnf<span class="w"> </span>install<span class="w"> </span>libglibutil-devel<span class="w"> </span>glib2-devel<span class="w"> </span>gobject-introspection-devel
+sudo<span class="w"> </span>dnf<span class="w"> </span>install<span class="w"> </span>libappindicator-gtk3
+sudo<span class="w"> </span>dnf<span class="w"> </span>install<span class="w"> </span>dbus-devel
+</pre></div>
+</div>
+<p>and adding the <em>Gnome Shell Extension Manager</em> using the <em>Software</em> utility, as well as <em>AppIndicator and KStatusNotifierItem Support</em> using the extensions manager. After this, steps 2 to 6 are the same as in Debian based distributions.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>In case the appearance of <strong>When</strong> is quirky, for example the text elements in the interface are unreadable, you might need to start the desktop environment in an <em>X.org</em> session instead of <em>Wayland</em> that is the default on many Linux distributions:</p>
+<p><img alt="GnomeLogin" src="_images/install-gnome-login.png" /></p>
+<p>Older editions of <em>Wayland</em> have incomplete support for the GUI library used by <strong>When</strong>, which on the other side is the one that ships with Python by default.</p>
+</div>
+</section>
+<section id="create-application-icons">
+<h2>Create Application Icons<a class="headerlink" href="#create-application-icons" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">--create-icons</span></code> subcommand can be used to create icons in the <em>Start</em> or <em>Applications</em> menu, and on the user desktop. In particular, the following <em>subcommand</em>:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>when<span class="w"> </span>tool<span class="w"> </span>--create-icons<span class="w"> </span>--autostart
+</pre></div>
+</div>
+<p>will create the appropriate icons in the menu <em>and</em> create a shortcut that launches <strong>When</strong> and activates the <strong>whenever</strong> scheduler each time the desktop session is started.</p>
+</section>
+<section id="upgrade">
+<h2>Upgrade<a class="headerlink" href="#upgrade" title="Link to this heading"></a></h2>
+<p>The upgrade process is quite easy with this type of setup, and it just consists in the following command, issued from a terminal or command window (depending on the host operating system):</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pipx<span class="w"> </span>upgrade<span class="w"> </span>when
+</pre></div>
+</div>
+<p>and there is no need to recreate the program icons, as the existing ones will continue to work. It might be necessary to stop <strong>When</strong> during the upgrade process. To upgrade <strong>whenever</strong> it is sufficient to repeat its installation step, that is:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>when<span class="w"> </span>tool<span class="w"> </span>--install-whenever
+</pre></div>
+</div>
+<p>which will always download and install the most recent binary release.</p>
+</section>
+<section id="installing-directly-from-the-repository">
+<h2>Installing Directly from the Repository<a class="headerlink" href="#installing-directly-from-the-repository" title="Link to this heading"></a></h2>
+<p>If you have <em>git</em> installed and in your <em>PATH</em>, you can choose to install a version that has not been published yet as a release, using the same <em>pipx</em> based method. Instead of using the URL shown above, pointing to the ZIP file corresponding to the latest release, you can use the URL that points to the repository, or even a branch: launch</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pipx<span class="w"> </span>install<span class="w"> </span>git+https://github.com/almostearthling/when-command.git
+</pre></div>
+</div>
+<p>to install from the <em>main</em> branch, which is the release candidate and is kept as stable as possible. In order to install from the <em>development</em> branch, the command changes as follows:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pipx<span class="w"> </span>install<span class="w"> </span>git+https://github.com/almostearthling/when-command.git@development
+</pre></div>
+</div>
+<p>and can be used on both Linux and Windows. The rest of the installation process does not change in both cases. Please note, however, that subsequent upgrades will use the same upstream source: if you want to change source (be it a different repository branch, or the release ZIP file), <strong>When</strong> has to be uninstalled first by running <code class="docutils literal notranslate"><span class="pre">pipx</span> <span class="pre">uninstall</span> <span class="pre">when</span></code>.</p>
+</section>
+<section id="installation-scope">
+<h2>Installation Scope<a class="headerlink" href="#installation-scope" title="Link to this heading"></a></h2>
+<p>Both the installation of <strong>When</strong> using the <strong>pipx</strong> method, and the installation of <strong>whenever</strong> using the <code class="docutils literal notranslate"><span class="pre">--install-whenever</span></code> tool, are performed at the <em>user</em> level: neither one requires other privileges than write in the home directory. However, this also means that no other user, except the one performing the above described actions, will be able to access either <strong>When</strong> or <strong>whenever</strong>.</p>
+</section>
+<section id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="cli.html#toolbox"><span class="std std-ref">Toolbox</span></a></p></li>
+<li><p><a class="reference internal" href="cfgform.html"><span class="std std-doc">Configuration Utility</span></a></p></li>
+<li><p><a class="reference internal" href="tray.html"><span class="std std-doc">Resident Wrapper</span></a></p></li>
+</ul>
+<p><a class="reference internal" href="main.html"><span class="std std-doc"><code class="docutils literal notranslate"><span class="pre">◀</span> <span class="pre">Main</span></code></span></a></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="main.html" class="btn btn-neutral float-left" title="The When Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tutorial.html" class="btn btn-neutral float-right" title="Tutorial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015-2026, Francesco Garosi.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

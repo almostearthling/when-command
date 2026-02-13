@@ -1,0 +1,310 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="_static/favicon.ico" rel="icon" type="image/x-icon">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tutorial &mdash; The When Automation Tool 2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=60dbed4a"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Command Line Interface (CLI)" href="cli.html" />
+    <link rel="prev" title="Installation" href="install.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            The When Automation Tool
+              <img src="_static/rafi-clock-256.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="main.html">The <strong>When</strong> Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#simple-trace">Simple Trace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#automated-backups">Automated Backups</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#temporary-files-cleanup">Temporary Files Cleanup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#conclusion">Conclusion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cfgform.html">Main Configuration Form</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tray.html">System Tray Resident Application</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tasks.html">Native Tasks Editors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tasks_extra_session.html">Extra Tasks: Session Related</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conditions.html">Condition Editors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_timerelated.html">Time Related Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_actionrelated.html">Action Related Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_eventrelated.html">Event Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_extra01.html">Extra Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events.html">Native Events Editors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events_extra01.html">Specific Events</a></li>
+<li class="toctree-l1"><a class="reference internal" href="history.html">History Box</a></li>
+<li class="toctree-l1"><a class="reference internal" href="i18n.html">Localization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="appdata.html">Application Data Directory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configfile.html">Generated Configuration File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lua_considerations.html">Some Considerations on Lua</a></li>
+<li class="toctree-l1"><a class="reference internal" href="credits.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="when_history.html">History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">The When Automation Tool</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Tutorial</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/tutorial.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tutorial">
+<h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
+<p>Dealing with <strong>When</strong> forms for the various kinds of items, with all the parameters that are available for each item type – especially for the standard items that form the base for more specialized ones – can actually be tough: <strong>When</strong> and <strong>whenever</strong> are designed to be flexible, and flexibility comes at the cost of having many options to configure each task, condition, and possibly event that <strong>whenever</strong> should listen to.</p>
+<p>In this chapter I will try to illustrate some real life use cases of <strong>When</strong>, step by step: in fact these use cases come from what I use (or have been using) it for.</p>
+<p>The proposed examples are the following:</p>
+<ul class="simple">
+<li><p>implementation of a <a class="reference internal" href="#simple-trace"><span class="xref myst">simple trace</span></a> task</p></li>
+<li><p>how to easily <a class="reference internal" href="#automated-backups"><span class="xref myst">automate backups</span></a></p></li>
+<li><p><a class="reference internal" href="#temporary-files-cleanup"><span class="xref myst">cleanup</span></a> some temporary files</p></li>
+</ul>
+<p>and every example starts by invoking the main configuration window:</p>
+<p><img alt="Config01" src="_images/tutorial_config_main01.png" /></p>
+<p>either from the <a class="reference internal" href="cli.html"><span class="std std-doc">command line</span></a> or by selecting <em>Configurator</em> from the menu while <strong>When</strong> is <a class="reference internal" href="tray.html"><span class="std std-doc">running in the background</span></a>.</p>
+<p>The examples assume that <strong>When</strong> has been installed using the <a class="reference internal" href="install.html"><span class="std std-doc">suggested method</span></a>, and that, therefore, <strong>whenever</strong> is also available.</p>
+<section id="simple-trace">
+<h2>Simple Trace<a class="headerlink" href="#simple-trace" title="Link to this heading"></a></h2>
+<p>It’s sometimes useful to have the ability to trace the configuration of one or more conditions for debug purposes: configuring a condition can sometimes be awful, especially when it is one of the most complex ones (such as a <a class="reference internal" href="cond_actionrelated.html#command"><span class="std std-ref">command</span></a> or a <a class="reference internal" href="cond_actionrelated.html#lua-script"><span class="std std-ref">Lua</span></a> based condition), and you might just want to test your condition with no side effects other than dropping a line to the log. For this I use a simple <em>trace</em> task, consisting in a minimal Lua script:</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="nv">log</span><span class="p">.</span><span class="nf">warn</span><span class="p">(</span><span class="s2">&quot;Trace: *** VERIFIED CONDITION *** `&quot;</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="nv">whenever_condition</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s2">&quot;`&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>that exploits the <a class="reference internal" href="lua_considerations.html"><span class="std std-doc">abilities</span></a> of the internal Lua interpreter to</p>
+<ul class="simple">
+<li><p>access the name of the condition that triggered it</p></li>
+<li><p>write log messages at different severity levels.</p></li>
+</ul>
+<p>To create such a task, we only need to click <em>New</em> in the main configuration window (which can be accessed either from the popup menu of a running instance, or by typing <code class="docutils literal notranslate"><span class="pre">when</span> <span class="pre">config</span></code> in a terminal or console window), and select a <em>Lua Script Based Task</em> from the list:</p>
+<p><img alt="Trace01" src="_images/tutorial_task_new_lua01.png" /></p>
+<p>then change the name to <em>TRACE</em> (or whatever else that is meaningful: just remember that item names must begin with a letter, followed by alphanumeric characters and underscores, and that these names are case sensitive) and paste the script found above in the task editor <em>Script</em> section:</p>
+<p><img alt="Trace02" src="_images/tutorial_task_lua01.png" /></p>
+<p>Since this is just a <em>trace</em> task, we do not need to check any result, thus we just click ok. Just for the sake of completing the process, we will also define a condition to trigger the <em>TRACE</em> task every minute. In the main configuration window, click <em>New</em>, and in the item type dialog select first <em>Condition</em> in the upper part, and then select <em>Interval Based Condition</em> and click <em>OK</em>. The condition editor is opened: conditions are more complex than tasks, and the editor form has two tabs, of which the first is for common parameters, and the second for parameters that are specific for this type of condition. The name and the tasks to be run belong to the common part, so we change the name to something meaningful (in our example it is <em>Periodic_60sec</em>). Since we want to run the task periodically, we must also ensure that the <em>Check condition recurrently</em> has a tick, otherwise the <em>TRACE</em> task will run only once, a minute after <em>When</em> has started. After this, we select <em>TRACE</em> from the drop down list labeled <em>Task</em> and click the <em>Add</em> button at its right. The scenario is now the following:</p>
+<p><img alt="Trace03" src="_images/tutorial_cond_interval01.png" /></p>
+<p>and we still have to specify the “one minute” part. Being this specific to <em>interval</em> based conditions, we can find it in the other section, corresponding to the <em>Specific parameters</em> tab:</p>
+<p><img alt="Trace04" src="_images/tutorial_cond_interval02.png" /></p>
+<p>We only have to enter <em>1</em> in the input box, and leave the unit of measure drop down list alone, as it defaults to <em>minutes</em>. Now we can click <em>OK</em> and, when back to the main configuration box, click on <em>Save</em> to save our changes: <strong>When</strong> may ask us to confirm that we want to overwrite the file if present, which is true most of the times. Since the configuration file cannot be saved elsewhere, so we have to answer positively unless we want to discard it.</p>
+<p>If the configuration utility had been launched through a <a class="reference internal" href="tray.html"><span class="std std-doc">running instance</span></a> of <strong>When</strong>, then a <em>Reload</em> button is available: this can be used to force the new configuration to be reloaded and the new items to be active immediately without the need to restart <strong>When</strong>. If you do not click <em>Reload</em> (or if you don’t confirm), the new configuration will be available at the next start of <strong>When</strong> – usually, after the subsequent login.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>This example corresponds to the basic initial configuration that is suggested in the <strong>whenever</strong> installation instructions, that can be found in its <a class="reference external" href="https://github.com/almostearthling/whenever/releases/latest/">releases</a> pages and in the binary distribution.</p>
+</div>
+</section>
+<section id="automated-backups">
+<h2>Automated Backups<a class="headerlink" href="#automated-backups" title="Link to this heading"></a></h2>
+<p>In this example I will use <a class="reference external" href="https://restic.net/">restic</a> as a personal backup tool: it is a great piece of software, which offers features normally available in professional backup systems in a streamlined CLI interface, can be used with an unimaginable amount of backends directly or by means of another great utility, that is <a class="reference external" href="https://rclone.org/">rclone</a>. Both are open source, and both are very actively developed. I’ll assume that you already <a class="reference external" href="https://restic.readthedocs.io/en/stable/020_installation.html">installed</a> <em>restic</em> to <a class="reference external" href="https://restic.readthedocs.io/en/stable/030_preparing_a_new_repo.html">initialize</a> a repository, for instance on a locally mounted SD card on a Windows PC. The process is as easy as the following interactive CLI session (via the <em>Terminal</em> app or by manually starting <code class="docutils literal notranslate"><span class="pre">cmd</span></code>):</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>C:\Users\username&gt; restic init --repo E:\Backups\bk_username
+enter password for new repository:
+enter password again:
+created restic repository c0f1bad70e at E:\Backups\bk_username
+Please note that knowledge of your password is required to access the repository.
+Losing your password means that your data is irrecoverably lost.
+</pre></div>
+</div>
+<p>When prompted, you should type and confirm a password: let’s assume you chose the string <code class="docutils literal notranslate"><span class="pre">s3cr3t1!</span></code>. <code class="docutils literal notranslate"><span class="pre">E:</span></code> is assumed to be the drive letter assigned to the mounted SD card, <code class="docutils literal notranslate"><span class="pre">Backups\bk_username</span></code> is a directory of your choice on that drive. <code class="docutils literal notranslate"><span class="pre">username</span></code> can be replaced with your account name: I find it sensible to have a directory dedicated to your account for a local backup, but it is a matter of taste. Of course you should keep your password, for instance by preserving it via a password manager.</p>
+<p>We will use the environment variable method to let <em>restic</em> know where the repository is, and its password. This means we should define the following environment variables with the respective values:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">RESTIC_REPOSITORY</span></code>: <code class="docutils literal notranslate"><span class="pre">E:\Backups\bk_username</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RESTIC_PASSWORD</span></code>: <code class="docutils literal notranslate"><span class="pre">s3cr3t1!</span></code></p></li>
+</ul>
+<p>As we do not want to pollute the environment, we will set these variables directly in the task definitions. We will define two tasks:</p>
+<ol class="arabic simple">
+<li><p>the first task will actually backup some directories,</p></li>
+<li><p>the second task will perform some backup repository maintenance.</p></li>
+</ol>
+<p>We want to backup our <em>Documents</em> and our <em>Pictures</em> directories: on Windows they are located respectively in <code class="docutils literal notranslate"><span class="pre">C:\Users\username\Documents</span></code> and <code class="docutils literal notranslate"><span class="pre">C:\Users\username\Pictures</span></code>.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Depending on the amount of data, the first backup can take quite a long time in order to be carried out: consider the option of forcing a full backup by issuing the command <code class="docutils literal notranslate"><span class="pre">restic</span> <span class="pre">backup</span> <span class="pre">Documents</span> <span class="pre">Pictures</span></code> from the command line in your home directory, before automating it using <strong>When</strong>.</p>
+</div>
+<p>First off, we launch the configuration utility: if the program icons for <strong>When</strong> had been created as described in the installation instructions, then clicking <em>Configure When</em> on the desktop or in the <em>Start</em> menu should be sufficient. Other options are to launch <code class="docutils literal notranslate"><span class="pre">when</span> <span class="pre">config</span></code> from the command line or, if there is an instance of <strong>When</strong> running, to right-click the clock-shaped system tray icon, and to select <em>Configurator</em> from the context menu. The result is the same, apart from what we’ll see below for the latter, that is the configuration GUI utility is launched, and we will click the <em>New</em> button, which in turn allows us to select a <em>Command Based Task</em>:</p>
+<p><img alt="TutorialBackup01" src="_images/tutorial_task_new_cmd01.png" /></p>
+<p>Clicking <em>OK</em> takes us to the specific task editor. We choose to start <em>restic</em> in the home directory, in order to only mention subdirectories on the command line: this can be done by specifying the home directory in the <em>Working Folder</em> text entry, which can also be done by selecting it via the three-dotted button on its right side. Actually, for new <em>Command Based Tasks</em>, <strong>When</strong> proposes the home directory as the default value for this entry, so in our case it can be just left as it is.</p>
+<p>We have to define the two aforementioned variables in our task environment: to do so, for each of them, the name (which on Windows is not case sensitive, but it could be better to respect the casing specified in the <em>restic</em> documentation just to be sure) has to be written in the entry labeled <em>Variable Name</em>, the value in the one labeled <em>New Value</em>, and then the <em>Update</em> button has to be clicked. Clicking <em>Update</em> either sets a new variable (if the name is not present) or updates an existing one.</p>
+<p>Before clicking <em>OK</em> the form should be configured as follows:</p>
+<p><img alt="TutorialBackup02" src="_images/tutorial_task_backup01.png" /></p>
+<p>The reason why we chose to check for a failure in <em>restic</em> and that such failure only occurs with an exit code of <em>1</em> is that this is the exit code that <em>restic</em> uses to inform that no snapshot could be taken at all. Since some files could be open during backup (it should be unattended, after all), maybe <em>restic</em> will not be able to backup really everything. So we consider our backup to be a failure only when it is a <em>complete</em> failure.</p>
+<p>We could have accepted the suggested name for the task, something similar to <em>CommandTask_086F5F6C49</em>, but it would have been hardly recognizable when defining under which conditions it should take place, thus we chose <em>Backup_DocumentsAndPictures</em>.</p>
+<p>We also want to perform some maintenance after we backed up our stuff. Namely we would save some space by keeping:</p>
+<ul class="simple">
+<li><p>one snapshot per day for the last 7 days</p></li>
+<li><p>4 weekly snapshots before the daily ones (thus, roughly one month)</p></li>
+<li><p>at least one year of monthly snapshots</p></li>
+<li><p>3 other snapshots in the past, one per year.</p></li>
+</ul>
+<p>Yes, <em>restic</em> <a class="reference external" href="https://restic.readthedocs.io/en/stable/060_forget.html#removing-snapshots-according-to-a-policy">allows us to do so</a>: everybody loves <em>restic</em> and this is not a surprise to me. Following the documentation we should build a command line like the following:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>restic<span class="w"> </span>--quiet<span class="w"> </span>forget<span class="w"> </span>--keep-daily<span class="w"> </span><span class="m">7</span><span class="w"> </span>--keep-weekly<span class="w"> </span><span class="m">4</span><span class="w"> </span>--keep-monthly<span class="w"> </span><span class="m">12</span><span class="w"> </span>--keep-yearly<span class="w"> </span><span class="m">3</span><span class="w"> </span>--prune
+</pre></div>
+</div>
+<p>which translates to the following form:</p>
+<p><img alt="TutorialBackup03" src="_images/tutorial_task_backup02.png" /></p>
+<p>where the other entries are absolutely similar to the ones provided for the backup task, except that we expect <em>restic</em> to return a zero exit code for success: this is a repository-only operation, and every unusual outcome should be notified. We will call this task <em>Backup_Maintenance</em>.</p>
+<p>Ideally, the backup task should be run before the maintenance one. Also ideally, the maintenance task should be not performed if the backup task fails: we could lose a backup without replacing it with a new one, and we would like to avoid it.</p>
+<p>Now it’s time to decide <em>when</em> our backups have to take place: backups can be a lengthy (and noisy, considering fans) operation, thus I usually prefer that they are performed when I’m not using my laptop. So we will configure a condition that roughly indicates that we are away for a coffee. An idle time of three minutes should be enough for that. Moreover, choose not to backup more than once per session.</p>
+<p>We click on <em>New</em> again, and this time we select <em>Condition</em> as item type, <em>Idle Session Based Condition</em> in the list, and then click <em>OK</em>.</p>
+<p><img alt="TutorialBackup05" src="_images/tutorial_cond_new_idle01.png" /></p>
+<p>In the <em>Common parameters</em> section we specify the tasks that have to be executed: we choose them from the drop down list below the list of active tasks, <em>first</em> we choose the backup task and add it, <em>then</em> the maintenance task:</p>
+<p><img alt="TutorialBackup06" src="_images/tutorial_cond_idle01.png" /></p>
+<p>Since we do not want multiple backups in a session, we ensure that the <em>Check condition recurrently</em> box is not checked; as backups are something critical and we do not want to mess up things in case of an error, we leave <em>0</em> in the <em>Max tasks retries</em> field, so that <strong>When</strong> will not insist in running our backup routine when something goes wrong. The tasks have to be run sequentially: <em>restic</em> can perform one operation at a time, so we leave that option intact. And we also choose to stop execution if a task fails because, as we said above, we do not want to perform the maintenance step when a backup has failed.</p>
+<p><img alt="TutorialBackup07" src="_images/tutorial_cond_idle02.png" /></p>
+<p>We name the condition <em>AwayFromKeyboard01_Once</em>: I prefer to use the <em>Once</em> suffix for non recurrent conditions, in order to be sure that conditions that have triggered their tasks only once were actually intended to do so.</p>
+<p>The only thing that is left is to specify that the task sequence has to take place after three minutes of idle time, so we move to the <em>Specific parameters</em> tab:</p>
+<p><img alt="TutorialBackup08" src="_images/tutorial_cond_idle03.png" /></p>
+<p>Here we just write <em>3</em> in the only available text entry: <em>minutes</em> is the default unit of measure for time and can be left alone. Now we can press <em>OK</em> and then, in the main configuration form, click the <em>Save</em> button (we answer positively when possibly asked to overwrite the existing file): the next time <strong>When</strong> is started as resident frontend for <strong>whenever</strong>, our unattended backup routine will be scheduled for when we leave the workstation alone for three minutes. In case the configuration utility was accessed through the system tray menu, the configuration form will include a <em>Reload</em> button which, when clicked, reloads the configuration file (after saving it) and dynamically adds the new condition and the two tasks, that will be immediately active in the running instance of the scheduler.</p>
+<p>In case you are used to just close the lid of your laptop to let it sleep, instead of shutting down your PC, you may want to verify that the <em>Reset conditions on system resume</em> box is checked in the <em>Global Parameters</em> page of the main configuration form, before saving the file:</p>
+<p><img alt="TutorialBackup09" src="_images/tutorial_globals_backup01.png" /></p>
+<p>so that, when your laptop wakes up from sleep, the automation tool will perform a backup again as soon as the PC remains alone for three minutes.</p>
+</section>
+<section id="temporary-files-cleanup">
+<h2>Temporary Files Cleanup<a class="headerlink" href="#temporary-files-cleanup" title="Link to this heading"></a></h2>
+<p>This example was in the original <strong>When</strong> tutorial, I found it useful on Linux because many utilities leave temporary backups (those files that end with a <em>tilde</em> <code class="docutils literal notranslate"><span class="pre">~</span></code> character) when you modify a file by default. On one hand I didn’t want to modify the default settings of all of these utilities, and on the other I didn’t like to find my <em>Documents</em> folder full of these files that I had to find and remove from time to time.</p>
+<p>This example takes place on an up-to-date Linux machine, assuming a working Gnome on X.org desktop session, and a simple shell script will be used as the cleanup command. It also assumes that the CLI command to move files to the <em>Trash</em> bin is installed, in order to avoid to completely remove these files, as they could be useful anyway in some cases. If the <code class="docutils literal notranslate"><span class="pre">trash</span></code> command is not available, the following command can be used on Debian based distributions:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>trash-cli
+</pre></div>
+</div>
+<p>On other distributions something similar should be available. We will create a shell script in the <em>~/.local/bin</em> directory: if <strong>When</strong> was installed via <em>pipx</em> according to the <a class="reference internal" href="install.html"><span class="std std-doc">installation instructions</span></a> this directory should be already present and in the <em>PATH</em>. So the following commands can be run in a terminal window:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>~/.local/bin
+nano<span class="w"> </span>housekeep.sh
+</pre></div>
+</div>
+<p>which open the popular <em>nano</em> editor for our <em>housekeep.sh</em> script. We enter the following code in the editor:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/sh</span>
+find<span class="w"> </span>.<span class="w"> </span>-path<span class="w"> </span>./.local/share/Trash<span class="w"> </span>-prune<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-o<span class="w"> </span>-type<span class="w"> </span>f<span class="w"> </span>-name<span class="w"> </span><span class="s1">&#39;*~&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-exec<span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;{}&#39;</span><span class="w"> </span><span class="se">\;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-exec<span class="w"> </span>trash<span class="w"> </span>-f<span class="w"> </span><span class="s1">&#39;{}&#39;</span><span class="w"> </span><span class="se">\;</span>
+</pre></div>
+</div>
+<p>and save the file hitting <em>Ctrl+S</em>, then <em>Ctrl+X</em> to exit the editor. The reason for the <code class="docutils literal notranslate"><span class="pre">-path</span> <span class="pre">./.local/share/Trash</span> <span class="pre">-prune</span></code> line is that, since this script could be started in any directory, including the home directory (where <em>./.local/share/Trash</em> is found), we do not want the script to handle files already in the <em>Trash</em> bin again. Of course, being this a single command, the same command could have been placed directly in the <em>command</em> section of a <a class="reference internal" href="tasks.html#command"><span class="std std-ref">Command Based Task</span></a>, but a small script does not really introduce extra costs and makes things somewhat more clear. At last we change permissions for the script, in order for it to be executable:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>chmod<span class="w"> </span>a+x<span class="w"> </span>housekeep.sh
+</pre></div>
+</div>
+<p>while still in the <em>~/.local/bin</em> directory. We move back to the home directory and launch the configuration utility:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span>
+when<span class="w"> </span>config
+</pre></div>
+</div>
+<p>Of course, if <strong>When</strong> is already running, the tray icon can be clicked and <em>Configurator</em> can be selected in the popup <a class="reference internal" href="tray.html#menu-form"><span class="std std-ref">menu form</span></a>. The task has to be created first, and clicking <em>New</em> and selecting a command based task as in the previous example brings up the command task editor form. We just change the name of the task to be something more understandable, point to the script as our command and set the working directory:</p>
+<p><img alt="TutorialChores01" src="_images/tutorial_task_chores01.png" /></p>
+<p>Note that the <em>Command</em> entry shows the full path of our command: this is because I used the three-dotted button at the side of the entry to open a dialog box that allows to look for the executable file. Actually, if <em>housekeep.sh</em> is in the <em>PATH</em> as expected, we could just type <code class="docutils literal notranslate"><span class="pre">housekeep.sh</span></code> in the entry itself.</p>
+<p>We leave all other parameters alone, because the script takes no arguments and does not explicitly return anything meaningful. What we want is for it to run from time to time regardless of the outcome: if one or more files could not be sent to the bin, it probably will happen the next time the script runs. Now we set up a condition to tell <strong>whenever</strong> in which case the script has to be run. The script is in fact very lightweight, and it will probably never really bother us. However, running it on a strict (and possibly tight) time schedule might be overkill: some other possible choices that do not depend on time are</p>
+<ol class="arabic simple">
+<li><p>on idle time</p></li>
+<li><p>when the workstation isn’t really working a lot</p></li>
+<li><p>when a file in the <em>~/Documents</em> directory is modified.</p></li>
+</ol>
+<p>We used the first type of condition in the previous example. The third one might be interesting, but it can lead to a lot of work, especially if the contents of the folder change often (which is likely to happen). So we go for the second option: we click <em>New</em> again, select <em>Condition</em> as item type, and choose a <a class="reference internal" href="cond_extra01.html#system-load"><span class="std std-ref">System Load Below Threshold Condition</span></a>:</p>
+<p><img alt="TutorialChores02" src="_images/tutorial_cond_new_chores01.png" /></p>
+<p>Clicking <em>OK</em> takes us to the condition editor. In the common section we change the condition name and specify the task to be run, by selecting it from the drop down list. It will be the only task, so every other common option has little or no influence, and we leave them as per default:</p>
+<p><img alt="TutorialChores03" src="_images/tutorial_cond_chores01.png" /></p>
+<p>The name is now <em>SystemLoad_HouseKeeping</em>, which is meaningful enough for us. We also checked the <em>Check condition recurrently</em> option: we said that we want to run the script from time to time during the session, and leaving the option unchecked means that the script will be executed only once per session – that is, after the first <em>successful</em> condition check, no more checks will take place.<a class="footnote-reference brackets" href="#id2" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></p>
+<p>Going to the common section, we can leave the value for the <em>Load is Below</em> entry as <em>3%</em> (that is, the default): it is quite low but not completely unlikely to happen on most modern workstations. Of course your case could be different, and a higher value might be more appropriate.</p>
+<p><img alt="TutorialChores04" src="_images/tutorial_cond_chores02.png" /></p>
+<p>After clicking <em>OK</em> we are done: we can now save our new configuration and it will be active at the next start of <strong>When</strong>. Or, as in the previous example, <strong>When</strong> can reload the configuration by clicking the <em>Reload</em> button – which is available if the configuration has been edited accessing the configuration utility from the popup menu in a running <strong>When</strong> instance.</p>
+</section>
+<section id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading"></a></h2>
+<p>There are many ways to use <strong>When</strong> as an automation tool, this tutorial only shows some of them. Possibly, with time, the tutorial will be further enriched with other examples, to help build other, possibly more complex “action flows” which can be useful in everydays activity: the tutorial is an ongoing task.</p>
+</section>
+<section id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="install.html"><span class="std std-doc">Installation</span></a></p></li>
+<li><p><a class="reference internal" href="tasks.html"><span class="std std-doc">Tasks</span></a></p></li>
+<li><p><a class="reference internal" href="conditions.html"><span class="std std-doc">Conditions</span></a></p></li>
+<li><p><a class="reference internal" href="events.html"><span class="std std-doc">Events</span></a></p></li>
+</ul>
+<p><a class="reference internal" href="main.html"><span class="std std-doc"><code class="docutils literal notranslate"><span class="pre">◀</span> <span class="pre">Main</span></code></span></a></p>
+</section>
+</section>
+<hr class="footnotes docutils" />
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id2" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>Unless task outcomes are taken into account, and <strong>whenever</strong> is instructed to insist checking the condition until associated tasks run successfully.</p>
+</aside>
+</aside>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="install.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="cli.html" class="btn btn-neutral float-right" title="Command Line Interface (CLI)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015-2026, Francesco Garosi.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
