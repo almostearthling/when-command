@@ -18,7 +18,7 @@ UI_APP_COPYRIGHT = "© 2023-2026 Francesco Garosi"
 UI_APP_VERSION = "2.0.1"
 
 # other strings that should not be translated
-UI_WHENEVER = "Whenever"
+UI_WHENEVER = "whenever"
 CLI_WHENEVER = "whenever"
 
 UI_ENVVARS = "WHENEVER"

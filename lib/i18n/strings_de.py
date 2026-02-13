@@ -307,7 +307,7 @@ UI_POPUP_WARNFIXCONFIG = f"Ein oder mehrere Elemente werden nicht erkannt: wenn 
 UI_ABOUT_TITLE = "Informationen"
 UI_ABOUT_APP_VERSION = "Appversion"
 UI_ABOUT_WHENEVER_VERSION = "Schedulerversion"
-UI_ABOUT_TEXT = f"Konfigurationsprogramm und Wrapper für den {UI_WHENEVER}\nScheduler, das zum Ausführen und Steuerung beiträgt\ndas Automatisierungswerkzeug in einer Desktopumgebung."
+UI_ABOUT_TEXT = f"Konfigurationsprogramm und Wrapper für <b>{UI_WHENEVER}</b>\n, das zum Ausführen und Interaktion beiträgt das\nAutomatisierungswerkzeug in einer Desktopumgebung."
 
 
 # tray icon menu entries

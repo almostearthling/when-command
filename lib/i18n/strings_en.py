@@ -312,9 +312,9 @@ UI_ABOUT_TITLE = "About"
 UI_ABOUT_APP_VERSION = "Application version"
 UI_ABOUT_WHENEVER_VERSION = "Scheduler version"
 UI_ABOUT_TEXT = f"""\
-Configuration utility and wrapper for the {UI_WHENEVER}
-scheduler designed to help running and controlling
-the automation tool in a desktop environment.
+Configuration utility and wrapper for <b>{UI_WHENEVER}</b>,
+designed to help running and interacting with the
+automation tool in a desktop environment.
 """
 
 
