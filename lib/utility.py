@@ -257,6 +257,22 @@ def get_scriptsdir() -> str:
     return scriptdir
 
 
+# determine temp directory and ensure that it exists
+def get_tempdir() -> str:
+    configdir: str = AppConfig.get("APPDATA") # type: ignore
+    if is_windows():
+        subdir = "Temp"
+    else:
+        subdir = "temp"
+    tempdir = os.path.join(configdir, subdir)
+    if not os.path.isdir(tempdir):
+        try:
+            os.makedirs(tempdir)
+        except Exception:
+            raise OSError(CLI_ERR_SPECIFICDIR_UNACCESSIBLE % tempdir)
+    return tempdir
+
+
 # determine lua library directory and ensure that it exists
 def get_luadir() -> str:
     configdir: str = AppConfig.get("APPDATA") # type: ignore

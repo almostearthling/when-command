@@ -25,6 +25,7 @@ from lib.utility import (
     get_whenever_version,
     check_whenever_version,
     get_luadir,
+    get_tempdir,
     get_scriptsdir,
     get_appdata,
     get_logfile,
@@ -289,6 +290,10 @@ def prepare_environment() -> None:
         exit_error(e)
     try:
         _ = get_scriptsdir()
+    except Exception as e:
+        exit_error(e)
+    try:
+        _ = get_tempdir()
     except Exception as e:
         exit_error(e)
     try:
