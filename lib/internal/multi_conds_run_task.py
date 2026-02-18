@@ -22,17 +22,19 @@
 # multiple task groups (this is arbitrary, but cleaner than the opposite), and
 # that once a certain set of conditions that concur to a task group is verified
 # it has to be atomically removed from the list.
-# 
+#
 # The condition names are "mangled" before being written to the persistence
 # file, but the mangling is simple and effective: it only consists of a pair
-# of brackets around the name. This ensures that no name given to other items
+# of colons around the name. This ensures that no name given to other items
 # can conflict with the mangled name, since brackets are not allowed chars
 # for item names. This also allow for a quick and precise search without the
 # need for special considerations: if the name of a condition is "Cond1", for
-# instance, searching for the string "(Cond1)" will match only the presence
+# instance, searching for the string ":Cond1:" will match only the presence
 # of "Cond1" and not, for instance, "ThatCond1" - which is mangled, instead,
-# as "(ThatCond1)". This also eliminates the need for multiple lines, regex
-# search, and other complications.
+# as ":ThatCond1:". This also eliminates the need for multiple lines, regex
+# search, and other complications. The colon character is used because it has
+# no special meaning in Lua pattern syntax, so the `string.gsub` function can
+# be used.
 
 import sys
 import os
@@ -47,29 +49,7 @@ _MCRT_LOCK_FILE = ".mcrt_persist.lock"
 
 
 _LUA_LIBRARY = '''
--- mcrt: multiple conditions to trigger a task
-
-MCRT_LOCK_FILE = [[{MCRT_LOCK_FILE}]]
-MCRT_PERSIST_FILE = [[{MCRT_PERSIST_FILE}]]
-
-function mcrt_mangle_name(name)
-    return "(" .. name .. ")"
-end
-
-function mcrt_has_name(name, s)
-    return string.find(s, mcrt_mangle_name(name)) ~= nil
-end
-
--- see if a file exists
-function file_exists(file)
-  local f = io.open(file, "rb")
-  if f then f:close() end
-  return f ~= nil
-end
-
--- ...to be continued
-
-
+-- to be eventually replaced by the contents of ../../support/mcrt_lib.lua
 '''
 
 
