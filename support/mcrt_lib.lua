@@ -115,5 +115,4 @@ function check_conditions_verified(cond_names)
     return res
 end
 
-
-'''
+-- end.
