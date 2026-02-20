@@ -76,6 +76,14 @@ end
 
 -- actual library functions
 
+-- initialize the persistent file
+function initialize()
+    __wait_lock()
+    __set_lock()
+    __write_persistent(nil)
+    __reset_lock()
+end
+
 -- set the condition bearing the provided name to verified
 function set_condition_verified(cond_name)
     __wait_lock()
