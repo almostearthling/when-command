@@ -39,13 +39,23 @@
 import sys
 import os
 
-from ..utility import get_tempdir
+from tomlkit.items import Table
 
+from ..utility import (
+    get_tempdir,
+    get_luadir,
+    get_private_item_name_prefix,
+    generate_item_name_suffix,
+    )
+
+from tomlkit import items
+from ..items import task_lua, cond_lua, cond_interval
 
 
 # constants
 _MCRT_PERSIST_FILE = ".mcrt_persist"
 _MCRT_LOCK_FILE = ".mcrt_persist.lock"
+_MCRT_LIBRARY = "_mcrt_lib.lua"
 
 
 _LUA_LIBRARY = '''
@@ -178,7 +188,8 @@ end
 '''
 
 
-
+# this is the prefix for all of our item names
+_ITEM_PREFIX = get_private_item_name_prefix() + "_MCRT_"
 
 
 # the persistence file is the file that contains the list of conditions that
@@ -193,9 +204,82 @@ def mcrt_lock_file():
     return os.path.join(get_tempdir(), _MCRT_LOCK_FILE)
 
 
+# utility functions
+def mcrt_install_lib():
+    s = os.path.join(get_luadir(), _MCRT_LIBRARY)
+    if not os.path.exists(s):
+        lua_library = _LUA_LIBRARY.format(
+            MCRT_LOCK_FILE=mcrt_lock_file(),
+            MCRT_PERSIST_FILE=mcrt_persist_file(),
+        )
+        with open(s, 'w') as f:
+            f.write(lua_library)
+
+
+# the following items are the specific ones that implement the confluence
+
+# 1. initialization task: resets the persistence file; the reason why we want
+# this to be performed by the Lua interpreter instead of the GUI application,
+# is that in this way the MCRT system is initialized even when used with
+# another frontend
+_mcrt_InitializationTask = task_lua.LuaScriptTask()
+_mcrt_InitializationTask.name = _ITEM_PREFIX + "_Initializer"
+_mcrt_InitializationTask.script = f"""\
+local mcrt = require "{_MCRT_LIBRARY}"
+mcrt.initialize()
+"""
+mcrt_Initializer = _mcrt_InitializationTask
+
+# 2. updater: just adds the verified condition to the persistence file
+_mcrt_UpdateTask = task_lua.LuaScriptTask()
+_mcrt_UpdateTask.name = _ITEM_PREFIX + "_Updater"
+_mcrt_UpdateTask.script = f"""\
+local mcrt = require "{_MCRT_LIBRARY}"
+mcrt.set_condition_verified(whenever_condition)
+"""
+mcrt_Updater = _mcrt_UpdateTask
+
+# 3. initialization condition: it is a once-only condition that only is
+# verified at the first ttick, and runs the initialization task
+_mcrt_InitializationCond = cond_interval.IntervalCondition()
+_mcrt_InitializationCond.name = _ITEM_PREFIX + "_Initializer"
+_mcrt_InitializationCond.interval_seconds = 1  # the bare minimum
+_mcrt_InitializationCond.tasks = [_mcrt_InitializationTask.name]
+mcrt_InitialCondition = _mcrt_InitializationCond
+
+
+# the following part is more difficult, because a condition is needed for
+# every set of conditions that have to be verified to run a task, so we use
+# a function that creates it
+_mcrt_CondConfluence_scriptTemplate = f"""\
+local mcrt = require "{_MCRT_LIBRARY}"
+res = mcrt.check_conditions_verified([[COND_LIST]])
+"""
+def mcrt_CondConfluence(conditions: list[str], suffix: str | None) -> cond_lua.LuaScriptCondition:
+    if suffix is None:
+        suffix = generate_item_name_suffix()
+    cond_list = '{"%s"}' % '", "'.join(conditions)
+    cond = cond_lua.LuaScriptCondition()
+    cond.name = _ITEM_PREFIX + "Check_" + suffix
+    cond.script = _mcrt_CondConfluence_scriptTemplate.replace(
+        "[[COND_LIST]]",
+        cond_list,
+    )
+    cond.expected_results = { "res": True }
+    return cond
+
+
 # ...to be continued
 
 
+
+# only return interesting elements (this may actually change)
+__all__ = [
+    "mcrt_InitialCondition",
+    "mcrt_Initializer",
+    "mcrt_Updater",
+    "mcrt_CondConfluence",
+]
 
 
 # end.

@@ -156,15 +156,20 @@ def guess_typed_value(s: str) -> bool | int | float | str:
                 return s
 
 
+# find an unique-ish suffix for an item name
+def generate_item_name_suffix() -> str:
+    d = blake2s(digest_size=5)
+    d.update(str(time()).encode("utf-8"))
+    return d.hexdigest().upper()
+
+
 # find an unique-ish name for an item
 def generate_item_name(o=None) -> str:
     if o is None:
         base = "Item"
     else:
         base = o.__class__.__name__
-    d = blake2s(digest_size=5)
-    d.update(str(time()).encode("utf-8"))
-    return "%s_%s" % (base, d.hexdigest().upper())
+    return "%s_%s" % (base, generate_item_name_suffix())
 
 
 # get an image from a stored icon
