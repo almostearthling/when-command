@@ -45,6 +45,8 @@ from lib.repocfg import AppConfig
 
 from lib.runner.process import Wrapper
 
+from lib.internal.multi_conds_run_task import mcrt_install_lib
+
 
 # main root window, to be withdrawn
 _root = None
@@ -625,6 +627,9 @@ def main() -> None:
     # for now set the paths to their default values
     AppConfig.set("APPDATA", default_appdata)
     AppConfig.set("WHENEVER", default_whenever)
+
+    # other initialization actions
+    mcrt_install_lib()
 
     # main parser
     parser = argparse.ArgumentParser(

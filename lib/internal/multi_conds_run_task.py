@@ -45,6 +45,7 @@ from ..utility import (
 )
 
 from ..items import task_lua, cond_lua, cond_interval
+from ..toolbox import install_lua
 
 
 # constants
@@ -199,7 +200,9 @@ def _mcrt_lock_file():
     return os.path.join(get_tempdir(), _MCRT_LOCK_FILE)
 
 
-# utility functions
+# utility to install the Lua library: it also reserves the library file name
+# so that it is not overwritten by the user in case he decides to install
+# a Lua library of choice
 def mcrt_install_lib():
     s = os.path.join(get_luadir(), _MCRT_LIBRARY)
     if not os.path.exists(s):
@@ -209,6 +212,7 @@ def mcrt_install_lib():
         )
         with open(s, "w") as f:
             f.write(lua_library)
+    install_lua.reserve_lua(_MCRT_LIBRARY)
 
 
 # the following items are the specific ones that implement the confluence

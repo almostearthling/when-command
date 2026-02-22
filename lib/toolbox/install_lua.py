@@ -170,9 +170,18 @@ def upgrade_lua(fname: str, verbose: bool = True) -> bool:
     return install_lua(fname, verbose)
 
 
+# add a name to the list of reserved files and directories: this is used
+# internally upon initialization of services by When itself, so we assume
+# that the name is correct
+def reserve_lua(fname: str):
+    if fname not in RESERVED:
+        RESERVED.append(fname)
+
+
 __all__ = [
     "install_lua",
     "upgrade_lua",
+    "reserve_lua",
 ]
 
 
