@@ -17,6 +17,7 @@ ITEM_COND_TIME = "Time Based Condition"
 ITEM_COND_DBUS = "DBus Inspection Based Condition"
 ITEM_COND_WMI = "WMI Query Based Condition"
 ITEM_COND_EVENT = "Event Based Condition"
+ITEM_COND_MCRT_CONFLUENCE = "Condition Verified By Other Conditions"
 
 ITEM_EVENT = "Event"
 ITEM_EVENT_FSCHANGE = "Filesystem Monitoring Based Event"

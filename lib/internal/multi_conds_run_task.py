@@ -36,7 +36,10 @@
 # no special meaning in Lua pattern syntax, so the `string.gsub` function can
 # be used.
 
+from ..i18n.strings import *
+
 import os
+from tomlkit import items, table
 
 from ..utility import (
     get_tempdir,
@@ -52,6 +55,8 @@ from ..toolbox import install_lua
 _MCRT_PERSIST_FILE = ".mcrt_persist"
 _MCRT_LOCK_FILE = ".mcrt_persist.lock"
 _MCRT_LIBRARY = "_mcrt_lib.lua"
+
+_MCRT_EXTRA_DELAY = 15
 
 _LUA_LIBRARY = """
 -- mcrt: multiple conditions to run a task
@@ -277,20 +282,76 @@ res = mcrt.check_conditions_verified([[COND_LIST]])
 """
 
 
-def mcrt_confluence_condition(
-    name: str, conditions: list[str]
-) -> cond_lua.LuaScriptCondition:
-    cond = cond_lua.LuaScriptCondition()
-    cond.name = name
-    cond.script = _mcrt_CondConfluence_scriptTemplate.replace(
-        "[[COND_LIST]]",
-        '{"%s"}' % '", "'.join(conditions),
-    )
-    cond.expected_results = {"res": True}
-    cond.tags = {
-        "mcrt_confluent_conditions": conditions,
-    }
-    return cond
+# we can implement this type of condition as an "extra" condition anyway, so
+# we define an item and a form for it exactly in the same way: the only
+# difference is that the item is forced into the available ones and not
+# dynamically loaded from the `extra` module folder
+class mcrt_ConfluenceCondition(cond_lua.LuaScriptCondition):
+
+    # availability at class level: these variables *MUST* be set for all items
+    item_type = "lua"
+    item_subtype = "mcrt_confluence"
+    item_hrtype = ITEM_COND_MCRT_CONFLUENCE
+    available = True
+
+    def __init__(self, t: items.Table | None = None):
+        self.type = self.item_type
+        self.subtype = self.item_subtype
+        self.hrtype = self.item_hrtype
+        if t:
+            assert t.get("type") == self.type
+            self.tags = t.get("tags", table())
+            assert isinstance(self.tags, items.Table)
+            assert self.tags.get("subtype") == self.subtype
+        else:
+            self.tags = table()
+            self.tags.append("subtype", self.subtype)
+            self.tags.append("mcrt_confluent_conditions", list())
+        self.updateitem()
+
+    def updateitem(self):
+        confluent_conditions = self.tags.get("mcrt_confluent_conditions", list())
+        self.script = _mcrt_CondConfluence_scriptTemplate.replace(
+            "[[COND_LIST]]",
+            '{"%s"}' % '", "'.join(confluent_conditions),
+        )
+        self.expected_results = {"res": True}
+        self.check_after = _MCRT_EXTRA_DELAY  # for now keep it fixed to 15 seconds
+        self.recur_after_failed_check = True
+
+    @classmethod
+    def check_tags(cls, tags):
+        missing = []
+        errors = []
+        confluent_conditions = tags.get("mcrt_confluent_conditions")
+        if confluent_conditions is None:
+            missing.append("mcrt_confluent_conditions")
+        elif (
+            not isinstance(confluent_conditions, list)
+            or not len(confluent_conditions) > 1
+            or any(not isinstance(x, str) for x in confluent_conditions)
+        ):
+            errors.append("mcrt_confluent_conditions")
+        if errors or missing:
+            return (errors, missing)
+        return None
+
+
+# def mcrt_confluence_condition(
+#     name: str, conditions: list[str]
+# ) -> cond_lua.LuaScriptCondition:
+#     cond = cond_lua.LuaScriptCondition()
+#     cond.name = name
+#     cond.script = _mcrt_CondConfluence_scriptTemplate.replace(
+#         "[[COND_LIST]]",
+#         '{"%s"}' % '", "'.join(conditions),
+#     )
+#     cond.expected_results = {"res": True}
+#     cond.tags = {
+#         "subtype": "mcrt_confluence",
+#         "mcrt_confluent_conditions": conditions,
+#     }
+#     return cond
 
 
 # only return interesting elements (this may actually change)
@@ -298,8 +359,8 @@ __all__ = [
     "mcrt_initial_condition",
     "mcrt_initializer",
     "mcrt_updater",
-    "mcrt_confluence_condition",
     "mcrt_install_lib",
+    "mcrt_ConfluenceCondition",
 ]
 
 
