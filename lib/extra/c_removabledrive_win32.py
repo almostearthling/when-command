@@ -107,7 +107,14 @@ class RemovableDrivePresent(WMICondition):
         # a system enum, and ::Removable is the fixed value 2;
         label = self.tags.get("drive_label", DEFAULT_DRIVE_LABEL)
         letter = self.tags.get("drive_letter", DEFAULT_DRIVE_LETTER)
-        self.query = "SELECT * FROM Win32_Volume WHERE DriveType=2"
+        query = (
+            "SELECT * FROM Win32_Volume WHERE DriveType=2"
+            " AND Label=\"%s\"" % label
+        )
+        if letter:
+            query += " AND DriveLetter=\"%s\"" % letter
+        self.query = query
+        # the following is just to verify that there is a result
         self.result_check = [
             {
                 "index": 0,
@@ -116,15 +123,6 @@ class RemovableDrivePresent(WMICondition):
                 "value": label,
             },
         ]
-        if letter:
-            self.result_check.append(
-                {
-                    "index": 0,
-                    "field": "DriveLetter",
-                    "operator": "eq",
-                    "value": letter,
-                }
-            )
         self.result_check_all = True
         self.check_after = CHECK_EXTRA_DELAY
         self.recur_after_failed_check = True
