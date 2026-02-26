@@ -120,9 +120,9 @@ class RemovableDrivePresent(WMICondition):
             self.result_check.append(
                 {
                     "index": 0,
-                    "field": "Label",
+                    "field": "DriveLetter",
                     "operator": "eq",
-                    "value": label,
+                    "value": letter,
                 }
             )
         self.result_check_all = True
@@ -140,7 +140,7 @@ class RemovableDrivePresent(WMICondition):
         if drive_letter is not None:
             if (
                 not isinstance(drive_letter, str)
-                and not drive_letter in AVAILABLE_DRIVE_LETTERS
+                and not drive_letter[0] in AVAILABLE_DRIVE_LETTERS
             ):
                 errors.append("drive_letter")
         drive_label = tags.get("drive_label")
@@ -227,11 +227,13 @@ class form_RemovableDrivePresent(form_Condition):
     # update the form with the specific parameters (usually in the `tags`)
     def _updateform(self):
         self.data_set("drive_label", self._item.tags.get("drive_label"))
-        if not self._item.tags.get("drive_letter"):
+        letter = self._item.tags.get("drive_letter")
+        if not letter:
             self.data_set("specify_letter", False)
             self._cb_driveLetter.config(state=tk.DISABLED)
         else:
             self.data_set("specify_letter", True)
+            self.data_set("drive_letter", letter.upper())  # to be sure
             self._cb_driveLetter.config(state="readonly")
         return super()._updateform()
 
