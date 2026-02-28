@@ -39,6 +39,9 @@ from lib.items.event_dbus import DBusEvent
 from lib.items.event_fschange import FilesystemChangeEvent
 from lib.items.event_wmi import WMIEvent
 
+# this is a special case because it implies auxiliary item when used
+from ..internal.multi_conds_run_task import ConfluenceCondition, form_ConfluenceCondition
+
 # to dynamically determine nature of extra items
 from lib.items.task import Task
 from lib.items.cond import Condition
@@ -85,6 +88,7 @@ ALL_AVAILABLE_ITEMS = [
     ('cond:lua',       ITEM_COND_LUA,       form_LuaScriptCondition,    LuaScriptCondition),
     ('cond:time',      ITEM_COND_TIME,      form_TimeCondition,         TimeCondition),
     ('cond:wmi',       ITEM_COND_WMI,       form_WMICondition,          WMICondition),
+    ('cond:mcrt',      ITEM_COND_MCRT,      form_ConfluenceCondition,   ConfluenceCondition),
 
     ('event:cli',      ITEM_EVENT_CLI,      form_CommandEvent,          CommandEvent),
     ('event:dbus',     ITEM_EVENT_DBUS,     form_DBusEvent,             DBusEvent),

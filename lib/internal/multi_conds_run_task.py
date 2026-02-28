@@ -41,13 +41,26 @@ from ..i18n.strings import *
 import os
 from tomlkit import items, table
 
+import tkinter as tk
+import ttkbootstrap as ttk
+
+from typing import List, Tuple
+
+from ..utility import check_not_none, append_not_none
+
+from ..forms.ui import *
+
+# since a condition is defined, the base form is the one for conditions
+from ..forms.cond import form_Condition
+
+
 from ..utility import (
     get_tempdir,
     get_luadir,
     get_private_item_name_prefix,
 )
 
-from ..items import task_lua, cond_lua, cond_interval
+from ..items import cond, task_lua, cond_lua, cond_interval
 from ..toolbox import install_lua
 
 
@@ -191,6 +204,17 @@ end
 # this is the prefix for all of our item names
 _ITEM_PREFIX = get_private_item_name_prefix() + "_MCRT_"
 
+# specific names, local to this module
+_TASK_INITIALIZER = _ITEM_PREFIX + "Initializer"
+_TASK_UPDATER = _ITEM_PREFIX + "Updater"
+_COND_INITIALIZER = _ITEM_PREFIX + "Initializer"
+
+# the template for the confluence condition Lua script
+_MCRT_COND_CONFLUENCE_SCRIPT_TEMPLATE = f"""\
+local mcrt = require "{_MCRT_LIBRARY}"
+res = mcrt.check_conditions_verified([[COND_LIST]])
+"""
+
 
 # the persistence file is the file that contains the list of conditions that
 # concur to task triggering which have been successfully checked
@@ -227,30 +251,36 @@ def mcrt_install_lib():
 # is that in this way the MCRT system is initialized even when used with
 # another frontend
 _mcrt_InitializationTask = task_lua.LuaScriptTask()
-_mcrt_InitializationTask.name = _ITEM_PREFIX + "_Initializer"
+_mcrt_InitializationTask.name = _TASK_INITIALIZER
 _mcrt_InitializationTask.script = f"""\
 local mcrt = require "{_MCRT_LIBRARY}"
 mcrt.initialize()
 """
 
 
-# return this item
+# return this item and its name
 def mcrt_initializer() -> task_lua.LuaScriptTask:
     return _mcrt_InitializationTask
+
+def mcrt_initializer_name() -> str:
+    return _TASK_INITIALIZER
 
 
 # 2. updater: just adds the verified condition to the persistence file
 _mcrt_UpdateTask = task_lua.LuaScriptTask()
-_mcrt_UpdateTask.name = _ITEM_PREFIX + "_Updater"
+_mcrt_UpdateTask.name = _TASK_UPDATER
 _mcrt_UpdateTask.script = f"""\
 local mcrt = require "{_MCRT_LIBRARY}"
 mcrt.set_condition_verified(whenever_condition)
 """
 
 
-# return this item
+# return this item and its name
 def mcrt_updater() -> task_lua.LuaScriptTask:
     return _mcrt_UpdateTask
+
+def mcrt_updater_name() -> str:
+    return _TASK_UPDATER
 
 
 # 3. initialization condition: it is a once-only condition that only is
@@ -262,36 +292,30 @@ def mcrt_updater() -> task_lua.LuaScriptTask:
 # also accepts a zero duration in the configuration (which is in fact the
 # way to create a condition that is verified at startup)
 _mcrt_InitializationCond = cond_interval.IntervalCondition()
-_mcrt_InitializationCond.name = _ITEM_PREFIX + "_Initializer"
+_mcrt_InitializationCond.name = _COND_INITIALIZER
 _mcrt_InitializationCond.interval_seconds = 0  # that is, at the first tick
 _mcrt_InitializationCond.tasks = [_mcrt_InitializationTask.name]
 
 
-# return this item
+# return this item and its name
 def mcrt_initial_condition() -> cond_interval.IntervalCondition:
     return _mcrt_InitializationCond
 
-
-# 4. the confluence condition creation function uses a template to define a
-# new condition for each set of conditions that have to be verified in order
-# to let a task group be run: verification depends on the result of the Lua
-# function, that must be `true`
-_mcrt_CondConfluence_scriptTemplate = f"""\
-local mcrt = require "{_MCRT_LIBRARY}"
-res = mcrt.check_conditions_verified([[COND_LIST]])
-"""
+def mcrt_initial_condition_name() -> str:
+    return _COND_INITIALIZER
 
 
-# we can implement this type of condition as an "extra" condition anyway, so
+# 4. confluence condition: uses the script template defined above; we
+# can implement this type of condition as an "extra" condition anyway, so
 # we define an item and a form for it exactly in the same way: the only
 # difference is that the item is forced into the available ones and not
 # dynamically loaded from the `extra` module folder
-class mcrt_ConfluenceCondition(cond_lua.LuaScriptCondition):
+class ConfluenceCondition(cond_lua.LuaScriptCondition):
 
     # availability at class level: these variables *MUST* be set for all items
     item_type = "lua"
     item_subtype = "mcrt_confluence"
-    item_hrtype = ITEM_COND_MCRT_CONFLUENCE
+    item_hrtype = ITEM_COND_MCRT
     available = True
 
     def __init__(self, t: items.Table | None = None):
@@ -311,7 +335,7 @@ class mcrt_ConfluenceCondition(cond_lua.LuaScriptCondition):
 
     def updateitem(self):
         confluent_conditions = self.tags.get("mcrt_confluent_conditions", list())
-        self.script = _mcrt_CondConfluence_scriptTemplate.replace(
+        self.script = _MCRT_COND_CONFLUENCE_SCRIPT_TEMPLATE.replace(
             "[[COND_LIST]]",
             '{"%s"}' % '", "'.join(confluent_conditions),
         )
@@ -337,30 +361,80 @@ class mcrt_ConfluenceCondition(cond_lua.LuaScriptCondition):
         return None
 
 
-# def mcrt_confluence_condition(
-#     name: str, conditions: list[str]
-# ) -> cond_lua.LuaScriptCondition:
-#     cond = cond_lua.LuaScriptCondition()
-#     cond.name = name
-#     cond.script = _mcrt_CondConfluence_scriptTemplate.replace(
-#         "[[COND_LIST]]",
-#         '{"%s"}' % '", "'.join(conditions),
-#     )
-#     cond.expected_results = {"res": True}
-#     cond.tags = {
-#         "subtype": "mcrt_confluence",
-#         "mcrt_confluent_conditions": conditions,
-#     }
-#     return cond
+# TODO: this form should disable the possibility to be confluent
+class form_ConfluenceCondition(form_Condition):
+
+    # note that the available conditions should be filtered, the provided
+    # names must correspond to conditions that activate confluence: this
+    # module provides a helper to distinguish them from others
+    def __init__(self, tasks_available, conds_available, item=None):
+        # check that item is the expected one for safety, build one by default
+        if item:
+            assert isinstance(item, ConfluenceCondition)
+        else:
+            item = ConfluenceCondition()
+        super().__init__(UI_TITLE_MCRTCOND, tasks_available, item)
+
+        # create a specific frame for the contents
+        area = ttk.Frame(super().contents)
+        area.grid(row=0, column=0, sticky=tk.NSEW)
+        PAD = WIDGET_PADDING_PIXELS
+
+        # copy the list of conditions, since we have to manipulate it: remove
+        # the conditions that are already in the activating lists and sort
+        # the left ones for readability in the combo box; note that the items
+        # that are not present in the available list are probably leftovers
+        # from a manual edit of the configuration file, so they should be
+        # discarded if found
+        self._conds_available = conds_available.copy()
+        self._conds_activating = item.tags.get("mcrt_confluent_conditions") or list()
+        for cond in self._conds_activating.copy():
+            if cond in self._conds_available:
+                self._conds_available.remove(cond)
+            else:
+                self._conds_activating.remove(cond)
+        self._conds_available.sort()
+
+        # ...
+
+        # always update the form at the end of initialization
+        self._updateform()
+
+    # update the form with the specific parameters (usually in the `tags`)
+    def _updateform(self) -> None:
+        self.data_set("parameter1", self._item.tags.get("parameter1"))  # type: ignore
+        return super()._updateform()
+
+    # update the item from the form elements (usually update `tags`)
+    def _updatedata(self) -> None:
+        self._item.tags["parameter1"] = self.data_get("parameter1")  # type: ignore
+        self._item.updateitem()  # type: ignore
+        return super()._updatedata()
 
 
-# only return interesting elements (this may actually change)
+# check whether a condition is confluent
+def is_mcrt_confluent_cond(c: cond.Condition) -> bool:
+    if c.tasks is not None and len(c.tasks) == 1:
+        return c.tasks[0] == _TASK_UPDATER
+    return False
+
+# check whether a condition implements confluence
+def is_mcrt_confluence_cond(c: cond.Condition) -> bool:
+    return isinstance(c, ConfluenceCondition)
+
+
+# only return interesting symbols
 __all__ = [
     "mcrt_initial_condition",
+    "mcrt_initial_condition_name",
     "mcrt_initializer",
+    "mcrt_initializer_name",
     "mcrt_updater",
+    "mcrt_updater_name",
+    "is_mcrt_confluent_cond",
+    "is_mcrt_confluence_cond",
     "mcrt_install_lib",
-    "mcrt_ConfluenceCondition",
+    "ConfluenceCondition",
 ]
 
 
