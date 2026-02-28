@@ -107,7 +107,14 @@ class RemovableDrivePresent(WMICondition):
         # a system enum, and ::Removable is the fixed value 2;
         label = self.tags.get("drive_label", DEFAULT_DRIVE_LABEL)
         letter = self.tags.get("drive_letter", DEFAULT_DRIVE_LETTER)
-        self.query = "SELECT * FROM Win32_Volume WHERE DriveType=2"
+        query = (
+            "SELECT * FROM Win32_Volume WHERE DriveType=2"
+            " AND Label=\"%s\"" % label
+        )
+        if letter:
+            query += " AND DriveLetter=\"%s\"" % letter
+        self.query = query
+        # the following is just to verify that there is a result
         self.result_check = [
             {
                 "index": 0,
@@ -116,15 +123,6 @@ class RemovableDrivePresent(WMICondition):
                 "value": label,
             },
         ]
-        if letter:
-            self.result_check.append(
-                {
-                    "index": 0,
-                    "field": "Label",
-                    "operator": "eq",
-                    "value": label,
-                }
-            )
         self.result_check_all = True
         self.check_after = CHECK_EXTRA_DELAY
         self.recur_after_failed_check = True
@@ -140,7 +138,7 @@ class RemovableDrivePresent(WMICondition):
         if drive_letter is not None:
             if (
                 not isinstance(drive_letter, str)
-                and not drive_letter in AVAILABLE_DRIVE_LETTERS
+                and not drive_letter[0] in AVAILABLE_DRIVE_LETTERS
             ):
                 errors.append("drive_letter")
         drive_label = tags.get("drive_label")
@@ -227,11 +225,13 @@ class form_RemovableDrivePresent(form_Condition):
     # update the form with the specific parameters (usually in the `tags`)
     def _updateform(self):
         self.data_set("drive_label", self._item.tags.get("drive_label"))
-        if not self._item.tags.get("drive_letter"):
+        letter = self._item.tags.get("drive_letter")
+        if not letter:
             self.data_set("specify_letter", False)
             self._cb_driveLetter.config(state=tk.DISABLED)
         else:
             self.data_set("specify_letter", True)
+            self.data_set("drive_letter", letter.upper())  # to be sure
             self._cb_driveLetter.config(state="readonly")
         return super()._updateform()
 

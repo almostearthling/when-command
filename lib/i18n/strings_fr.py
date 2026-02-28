@@ -307,7 +307,7 @@ UI_POPUP_WARNFIXCONFIG = f"Un ou plusieurs éléments ne sont pas reconnus: si l
 UI_ABOUT_TITLE = "À propos"
 UI_ABOUT_APP_VERSION = "Version de lapplication"
 UI_ABOUT_WHENEVER_VERSION = "Version du scheduler"
-UI_ABOUT_TEXT = f"Utilitaire de configuration et emballage pour le {UI_WHENEVER}\nscheduler conçu pour aider à la course et au contrôle\nde l'outil d'automatisation dans un environment desktop."
+UI_ABOUT_TEXT = f"Utilitaire de configuration et emballage pour <b>{UI_WHENEVER}</b>,\nconçu pour aider à la course et à l'interaction avec\nl'outil d'automatisation dans un environment desktop."
 
 
 # tray icon menu entries
