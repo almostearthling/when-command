@@ -37,7 +37,7 @@ class form_FilesystemChangeEvent(form_Event):
         PAD = WIDGET_PADDING_PIXELS
 
         # parameters section
-        ck_recursive = ttk.Checkbutton(area, text=UI_FORM_RECURSIVE_DIRSCAN)
+        ck_recursive = ttk.Checkbutton(area, text=UI_FORM_RECURSIVEDIRSCAN)
         l_monitored = ttk.Label(area, text=UI_FORM_MONITOREDFSITEMS_SC)
         # build a scrolled frame for the treeview
         sftv_monitored = ttk.Frame(area)
@@ -65,7 +65,7 @@ class form_FilesystemChangeEvent(form_Event):
         b_delEntry = ttk.Button(
             area, text=UI_DEL, width=BUTTON_STANDARD_WIDTH, command=self.del_fsitem
         )
-        ck_selectDir = ttk.Checkbutton(area, text=UI_FORM_SELECT_DIRECTORY)
+        ck_selectDir = ttk.Checkbutton(area, text=UI_FORM_SELECTDIRECTORY)
 
         # arrange top items in the grid
         ck_recursive.grid(

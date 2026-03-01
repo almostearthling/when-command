@@ -43,6 +43,7 @@ from tomlkit import items, table
 
 import tkinter as tk
 import ttkbootstrap as ttk
+import ttkbootstrap.constants as ttkc
 
 from typing import List, Tuple
 
@@ -58,6 +59,7 @@ from ..utility import (
     get_tempdir,
     get_luadir,
     get_private_item_name_prefix,
+    clean_caption,
 )
 
 from ..items import cond, task_lua, cond_lua, cond_interval
@@ -262,6 +264,7 @@ mcrt.initialize()
 def mcrt_initializer() -> task_lua.LuaScriptTask:
     return _mcrt_InitializationTask
 
+
 def mcrt_initializer_name() -> str:
     return _TASK_INITIALIZER
 
@@ -278,6 +281,7 @@ mcrt.set_condition_verified(whenever_condition)
 # return this item and its name
 def mcrt_updater() -> task_lua.LuaScriptTask:
     return _mcrt_UpdateTask
+
 
 def mcrt_updater_name() -> str:
     return _TASK_UPDATER
@@ -301,6 +305,7 @@ _mcrt_InitializationCond.tasks = [_mcrt_InitializationTask.name]
 def mcrt_initial_condition() -> cond_interval.IntervalCondition:
     return _mcrt_InitializationCond
 
+
 def mcrt_initial_condition_name() -> str:
     return _COND_INITIALIZER
 
@@ -319,6 +324,10 @@ class ConfluenceCondition(cond_lua.LuaScriptCondition):
     available = True
 
     def __init__(self, t: items.Table | None = None):
+        # first initialize the base class
+        cond_lua.LuaScriptCondition.__init__(self, t)
+
+        # then set type (same as base), subtype and human readable name
         self.type = self.item_type
         self.subtype = self.item_subtype
         self.hrtype = self.item_hrtype
@@ -367,12 +376,26 @@ class form_ConfluenceCondition(form_Condition):
     # note that the available conditions should be filtered, the provided
     # names must correspond to conditions that activate confluence: this
     # module provides a helper to distinguish them from others
-    def __init__(self, tasks_available, conds_available, item=None):
+    def __init__(self, tasks_available, conds_available=None, item=None):
         # check that item is the expected one for safety, build one by default
         if item:
             assert isinstance(item, ConfluenceCondition)
         else:
             item = ConfluenceCondition()
+
+        # copy the list of conditions, since we want to sort it; the items
+        # that are not present in the available list are probably leftovers
+        # from a manual edit of the configuration file, so they should be
+        # discarded if found
+        if conds_available is None:
+            self._conds_available = list()
+        else:
+            self._conds_available = conds_available.copy()
+        self._conds_activating = item.tags.get("mcrt_confluent_conditions") or list()
+        for cond in self._conds_activating.copy():
+            if cond not in self._conds_available:
+                self._conds_activating.remove(cond)
+        self._conds_available.sort()
         super().__init__(UI_TITLE_MCRTCOND, tasks_available, item)
 
         # create a specific frame for the contents
@@ -380,35 +403,107 @@ class form_ConfluenceCondition(form_Condition):
         area.grid(row=0, column=0, sticky=tk.NSEW)
         PAD = WIDGET_PADDING_PIXELS
 
-        # copy the list of conditions, since we have to manipulate it: remove
-        # the conditions that are already in the activating lists and sort
-        # the left ones for readability in the combo box; note that the items
-        # that are not present in the available list are probably leftovers
-        # from a manual edit of the configuration file, so they should be
-        # discarded if found
-        self._conds_available = conds_available.copy()
-        self._conds_activating = item.tags.get("mcrt_confluent_conditions") or list()
-        for cond in self._conds_activating.copy():
-            if cond in self._conds_available:
-                self._conds_available.remove(cond)
-            else:
-                self._conds_activating.remove(cond)
-        self._conds_available.sort()
+        l_activatingConds = ttk.Label(area, text=UI_FORM_MCRT_ACTIVATINGCONDS_SC)
+        sftv_activatingConds = ttk.Frame(area)
+        tv_activatingConds = ttk.Treeview(
+            sftv_activatingConds,
+            columns=("seq", "conditions"),
+            show="",
+            displaycolumns=(1,),
+            height=5,
+            bootstyle=ttkc.SECONDARY,
+        )
+        sb_activatingConds = ttk.Scrollbar(
+            sftv_activatingConds, orient=tk.VERTICAL, command=tv_activatingConds.yview
+        )
+        tv_activatingConds.configure(yscrollcommand=sb_activatingConds.set)
+        tv_activatingConds.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        sb_activatingConds.pack(side=tk.RIGHT, fill=tk.Y)
 
-        # ...
+        sf_condChoose = ttk.Frame(area)
+        l_chooseCond = ttk.Label(sf_condChoose, text=UI_FORM_COND_SC)
+        cb_chooseCond = ttk.Combobox(
+            sf_condChoose, values=self._conds_available, state="readonly"
+        )
+        b_addCond = ttk.Button(
+            sf_condChoose,
+            text=UI_ADD,
+            width=BUTTON_STANDARD_WIDTH,
+            command=self.add_cond,
+        )
+        b_delCond = ttk.Button(
+            sf_condChoose,
+            text=UI_DEL,
+            width=BUTTON_STANDARD_WIDTH,
+            command=self.del_cond,
+        )
+
+        # choose condition section: arrange items
+        l_chooseCond.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        cb_chooseCond.grid(row=0, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        b_addCond.grid(row=0, column=2, sticky=tk.E, padx=PAD, pady=PAD)
+        b_delCond.grid(row=0, column=3, sticky=tk.E, padx=PAD, pady=PAD)
+
+        # notebook area: arrange items
+        l_activatingConds.grid(row=0, column=0, sticky=tk.EW, padx=PAD, pady=PAD)
+        sftv_activatingConds.grid(row=1, column=0, sticky=tk.NSEW, padx=PAD, pady=PAD)
+        sf_condChoose.grid(row=2, column=0, sticky=tk.EW, padx=PAD, pady=PAD)
+
+        # expand appropriate sections
+        sf_condChoose.columnconfigure(1, weight=1)
+        area.rowconfigure(1, weight=1)
+        area.columnconfigure(0, weight=1)
+
+        # bind data to widgets
+        self.data_bind(
+            "cond_selection",
+            tv_activatingConds,
+            check=lambda _: len(self._conds_activating) > 1,
+        )
+        self.data_bind("choose_cond", cb_chooseCond, TYPE_STRING)
+
+        # add a check that the chosen conditions should be more than one
+        self.add_check_caption(
+            "cond_selection", clean_caption(UI_FORM_MCRT_ACTIVATINGCONDS_SC)
+        )
+
+        # propagate widgets that need to be accessed
+        self._tv_activatingConds = tv_activatingConds
 
         # always update the form at the end of initialization
         self._updateform()
 
+    def add_cond(self):
+        # only add a condition if not present, ignore otherwise
+        elem = self.data_get("choose_cond")
+        if elem and elem not in self._conds_activating:
+            self._conds_activating.append(elem)
+        self._updatedata()
+        self._updateform()
+
+    def del_cond(self):
+        elem = self.data_get("cond_selection")
+        if elem:
+            idx = int(elem[0])
+            del self._conds_activating[idx]
+            self._updatedata()
+            self._updateform()
+
     # update the form with the specific parameters (usually in the `tags`)
     def _updateform(self) -> None:
-        self.data_set("parameter1", self._item.tags.get("parameter1"))  # type: ignore
+        self._tv_activatingConds.delete(*self._tv_tasks.get_children())
+        idx = 0
+        for cond in self._conds_activating:
+            self._tv_activatingConds.insert(
+                "", iid="%s-%s" % (idx, cond), values=(idx, cond), index=tk.END
+            )
+            idx += 1
         return super()._updateform()
 
     # update the item from the form elements (usually update `tags`)
     def _updatedata(self) -> None:
-        self._item.tags["parameter1"] = self.data_get("parameter1")  # type: ignore
-        self._item.updateitem()  # type: ignore
+        assert isinstance(self._item, ConfluenceCondition)
+        self._item.tags["mcrt_confluent_conditions"] = self._conds_activating  # type: ignore
         return super()._updatedata()
 
 
@@ -417,6 +512,7 @@ def is_mcrt_confluent_cond(c: cond.Condition) -> bool:
     if c.tasks is not None and len(c.tasks) == 1:
         return c.tasks[0] == _TASK_UPDATER
     return False
+
 
 # check whether a condition implements confluence
 def is_mcrt_confluence_cond(c: cond.Condition) -> bool:

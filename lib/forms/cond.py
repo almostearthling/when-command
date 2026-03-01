@@ -12,6 +12,11 @@ from ..repocfg import AppConfig
 from ..items.cond import Condition
 
 from ..utility import is_valid_item_name, clean_caption
+from ..internal.multi_conds_run_task import mcrt_updater_name
+
+
+# add a negated disabled to tk dictionary (please forgive me)
+tk.NOT_DISABLED = f"!{tk.DISABLED}"  # type: ignore
 
 
 # condition box base class: since this is the class that will be used in
@@ -61,8 +66,11 @@ class form_Condition(ApplicationForm):
         ck_itemSuspended = ttk.Checkbutton(
             area_common, text=UI_FORM_SUSPENDCONDATSTARTUP
         )
-        l_maxTasksRetries = ttk.Label(area_common, text=UI_FORM_MAXTASKRETRIES_SC)
-        e_maxTasksRetries = ttk.Entry(area_common)
+        ck_mcrtActivateFurther = ttk.Checkbutton(
+            area_common, text=UI_FORM_ACTIVATEFURTHERCONDS
+        )
+        # l_maxTasksRetries = ttk.Label(area_common, text=UI_FORM_MAXTASKRETRIES_SC)
+        # e_maxTasksRetries = ttk.Entry(area_common)
         sep1 = ttk.Separator(area_common)
 
         l_tasks = ttk.Label(area_common, text=UI_FORM_ACTIVETASKS_SC)
@@ -113,28 +121,39 @@ class form_Condition(ApplicationForm):
 
         # control flow section
         area_ctlflow = ttk.Frame(area_common)
+        area_ctlflowL = ttk.Frame(area_ctlflow)
+        area_ctlflowR = ttk.Frame(area_ctlflow)
+        area_ctlflowRsub = ttk.Frame(area_ctlflowR)
+        area_ctlflowL.grid(row=0, column=0, sticky=tk.W)
+        area_ctlflowR.grid(row=0, column=1, sticky=tk.SE)
+        area_ctlflowRsub.grid(row=0, column=0, sticky=tk.S)
         rb_noCheck = ttk.Radiobutton(
-            area_ctlflow, text=UI_FORM_BREAKNEVER, value="break_none"
+            area_ctlflowL, text=UI_FORM_BREAKNEVER, value="break_none"
         )
         rb_breakFailure = ttk.Radiobutton(
-            area_ctlflow, text=UI_FORM_BREAKONFAILURE, value="break_failure"
+            area_ctlflowL, text=UI_FORM_BREAKONFAILURE, value="break_failure"
         )
         rb_breakSuccess = ttk.Radiobutton(
-            area_ctlflow, text=UI_FORM_BREAKONSUCCESS, value="break_success"
+            area_ctlflowL, text=UI_FORM_BREAKONSUCCESS, value="break_success"
         )
+        l_maxTasksRetries = ttk.Label(area_ctlflowRsub, text=UI_FORM_MAXTASKRETRIES_SC)
+        e_maxTasksRetries = ttk.Entry(area_ctlflowRsub, width=10)
 
         # control flow section: arrange widgets
         rb_noCheck.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         rb_breakFailure.grid(row=1, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         rb_breakSuccess.grid(row=2, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        l_maxTasksRetries.grid(row=0, column=0, sticky=tk.E, padx=PAD, pady=PAD)
+        e_maxTasksRetries.grid(row=0, column=1, sticky=tk.E, padx=PAD, pady=PAD)
 
         # arrange top items items in the appropriate notebook
         l_itemName.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         e_itemName.grid(row=0, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
         ck_itemRecurring.grid(row=1, column=1, sticky=tk.W, padx=PAD, pady=PAD)
         ck_itemSuspended.grid(row=2, column=1, sticky=tk.W, padx=PAD, pady=PAD)
-        l_maxTasksRetries.grid(row=4, column=0, sticky=tk.W, padx=PAD, pady=PAD)
-        e_maxTasksRetries.grid(row=4, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
+        ck_mcrtActivateFurther.grid(row=3, column=1, sticky=tk.W, padx=PAD, pady=PAD)
+        # l_maxTasksRetries.grid(row=4, column=0, sticky=tk.W, padx=PAD, pady=PAD)
+        # e_maxTasksRetries.grid(row=4, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
         sep1.grid(row=5, column=0, columnspan=2, sticky=tk.EW, pady=PAD)
         l_tasks.grid(row=10, column=0, columnspan=2, sticky=tk.W, padx=PAD, pady=PAD)
         sftv_tasks.grid(
@@ -148,17 +167,21 @@ class form_Condition(ApplicationForm):
 
         ck_itemRecurring.bind("<ButtonPress-1>", lambda _: self._check_recurring())
         ck_itemRecurring.bind("<KeyPress-space>", lambda _: self._check_recurring())
+        ck_mcrtActivateFurther.bind("<ButtonPress-1>", lambda _: self._mcrt_confluent())
+        ck_mcrtActivateFurther.bind("<KeyPress-space>", lambda _: self._mcrt_confluent())
 
         # expand appropriate sections
         area_common.rowconfigure(index=11, weight=1)
         area_common.columnconfigure(1, weight=1)
         area_taskchoose.columnconfigure(1, weight=1)
+        area_ctlflow.columnconfigure(0, weight=1)
         self._area_specific.rowconfigure(index=0, weight=1)
         self._area_specific.columnconfigure(index=0, weight=1)
 
         # bind data to widgets
         self.data_bind("@name", e_itemName, TYPE_STRING, is_valid_item_name)
         self.data_bind("@recurring", ck_itemRecurring)
+        self.data_bind("@confluent", ck_mcrtActivateFurther)
         self.data_bind(
             "@max_tasks_retries", e_maxTasksRetries, TYPE_INT, lambda x: x >= -1
         )
@@ -176,6 +199,27 @@ class form_Condition(ApplicationForm):
             "@max_tasks_retries": clean_caption(UI_FORM_MAXTASKRETRIES_SC),
         }
 
+        # keep a list of task related widget to disable them when needed
+        self._task_elems = [
+            # current list
+            l_tasks,
+            tv_tasks,
+            sb_tasks,
+            # chooser
+            l_chooseTask,
+            cb_chooseTask,
+            b_addTask,
+            b_delTask,
+            # control flow
+            ck_execSequence,
+            rb_noCheck,
+            rb_breakSuccess,
+            rb_breakFailure,
+            # retry control
+            l_maxTasksRetries,
+            e_maxTasksRetries,
+        ]
+
         # propagate widgets that need to be accessed
         self._tv_tasks = tv_tasks
         self._max_retries = e_maxTasksRetries
@@ -190,9 +234,9 @@ class form_Condition(ApplicationForm):
         self.changed = False
 
     def add_task(self) -> None:
-        task = self.data_get("@choose_task")
-        if task:
-            self._tasks.append(task)
+        elem = self.data_get("@choose_task")
+        if elem:
+            self._tasks.append(elem)
         self._updatedata()
         self._updateform()
 
@@ -230,9 +274,51 @@ class form_Condition(ApplicationForm):
         # for <KeyPress-space>, while <KeyRelease-space> does better)
         not_rec = not self.data_get("@recurring") or False
         if not_rec:
+            self.data_set("@max_tasks_retries", 0)
+            self._updatedata()
             self._max_retries.config(state=tk.DISABLED)
         else:
             self._max_retries.config(state=tk.NORMAL)
+
+    def _mcrt_confluent(self) -> None:
+        # same consideration as above; this function also disables all task
+        # related form widgets when the condition is set to be confluent
+        not_rec = not self.data_get("@recurring") or False
+        mcrt = not self.data_get("@confluent") or False
+        # retrieve the name of the MCRT updater task
+        mcrt_updater = mcrt_updater_name()
+        if mcrt:
+            self.data_set("@name", "")
+            self.data_set("@control_flow", "break_none")
+            self.data_set("@execute_sequence", True)
+            self.data_set("@choose_task", "")
+            self.data_set("@max_tasks_retries", 0)
+            self._tv_tasks.delete(*self._tv_tasks.get_children())
+            self._tasks = [mcrt_updater]
+            self._updatedata()
+            for elem in self._task_elems:
+                spec = list(elem.state())
+                if tk.DISABLED not in spec:
+                    spec.append(tk.DISABLED)
+                if tk.NOT_DISABLED in spec:  # type:ignore
+                    spec.remove(tk.NOT_DISABLED)  # type:ignore
+                elem.state(spec)
+            self._max_retries.config(state=tk.DISABLED)
+        else:
+            for elem in self._task_elems:
+                spec = list(elem.state())
+                if tk.DISABLED in spec:
+                    spec.remove(tk.DISABLED)
+                if tk.NOT_DISABLED not in spec:  # type:ignore
+                    spec.append(tk.NOT_DISABLED)  # type:ignore
+                elem.state(spec)
+            if not_rec:
+                self._max_retries.config(state=tk.DISABLED)
+            else:
+                self._max_retries.config(state=tk.NORMAL)
+            if mcrt_updater in self._tasks:
+                self._tasks.remove(mcrt_updater)
+
 
     # contents is the root for slave widgets
     @property
@@ -278,6 +364,7 @@ class form_Condition(ApplicationForm):
             self.data_set("@recurring", True)
             self.data_set("@suspended", False)
             self.data_set("@execute_sequence", True)
+            self.data_set("@max_tasks_retries", 0)
         self.data_set("@choose_task", "")
 
     # the data update utility loads data into the item
