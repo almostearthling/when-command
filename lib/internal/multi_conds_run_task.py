@@ -376,21 +376,14 @@ class form_ConfluenceCondition(form_Condition):
     # note that the available conditions should be filtered, the provided
     # names must correspond to conditions that activate confluence: this
     # module provides a helper to distinguish them from others
-    def __init__(self, tasks_available, conds_available=None, item=None):
+    def __init__(self, tasks_available, item=None):
         # check that item is the expected one for safety, build one by default
         if item:
             assert isinstance(item, ConfluenceCondition)
         else:
             item = ConfluenceCondition()
 
-        # copy the list of conditions, since we want to sort it; the items
-        # that are not present in the available list are probably leftovers
-        # from a manual edit of the configuration file, so they should be
-        # discarded if found
-        if conds_available is None:
-            self._conds_available = list()
-        else:
-            self._conds_available = conds_available.copy()
+        self._conds_available = list()
         self._conds_activating = item.tags.get("mcrt_confluent_conditions") or list()
         for cond in self._conds_activating.copy():
             if cond not in self._conds_available:
@@ -491,7 +484,7 @@ class form_ConfluenceCondition(form_Condition):
 
     # update the form with the specific parameters (usually in the `tags`)
     def _updateform(self) -> None:
-        self._tv_activatingConds.delete(*self._tv_tasks.get_children())
+        self._tv_activatingConds.delete(*self._tv_activatingConds.get_children())
         idx = 0
         for cond in self._conds_activating:
             self._tv_activatingConds.insert(
@@ -505,6 +498,10 @@ class form_ConfluenceCondition(form_Condition):
         assert isinstance(self._item, ConfluenceCondition)
         self._item.tags["mcrt_confluent_conditions"] = self._conds_activating  # type: ignore
         return super()._updatedata()
+
+    # set the list of available conditions, that implement confluence
+    def set_available_conditions(self, conds: list[str]) -> None:
+        self._conds_available = conds.copy()
 
 
 # check whether a condition is confluent

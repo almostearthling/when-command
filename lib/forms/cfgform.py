@@ -16,6 +16,7 @@ from .colors import *
 from ..repocfg import AppConfig
 from ..utility import get_configfile, is_private_item_name
 from ..items.item import ALL_AVAILABLE_ITEMS_D
+from ..internal.multi_conds_run_task import is_mcrt_confluent_cond, form_ConfluenceCondition
 
 from ..configurator.reader import read_whenever_config
 from ..configurator.writer import write_whenever_config
@@ -473,6 +474,14 @@ class form_Config(ApplicationForm):
                     x for x in self._tasks.keys() if not is_private_item_name(x)
                 )
                 e = fform(available_tasks, self._conditions[item_name])
+                # this is a special case, which has an extra parameter
+                if isinstance(e, form_ConfluenceCondition):
+                    confluent_conds = list(
+                        x for x in self._conditions.keys()
+                        if not is_private_item_name(x)
+                        and is_mcrt_confluent_cond(self._conditions[x])
+                    )
+                    e.set_available_conditions(confluent_conds)
                 if e is not None:
                     new_item = e.run()
                     if new_item:
@@ -531,6 +540,14 @@ class form_Config(ApplicationForm):
                         x for x in self._tasks.keys() if not is_private_item_name(x)
                     ]
                     form = form_class(list(available_tasks))
+                    # this is a special case, which has an extra parameter
+                    if isinstance(form, form_ConfluenceCondition):
+                        confluent_conds = list(
+                            x for x in self._conditions.keys()
+                            if not is_private_item_name(x)
+                            and is_mcrt_confluent_cond(self._conditions[x])
+                        )
+                        form.set_available_conditions(confluent_conds)
                 # note that, since providing a suitable event based
                 # condition is mandatory for an event, the form will
                 # refuse to create a new event
