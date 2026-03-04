@@ -123,7 +123,6 @@ class RemovableDrivePresent(WMICondition):
                 "value": label,
             },
         ]
-        self.result_check_all = True
         self.check_after = CHECK_EXTRA_DELAY
         self.recur_after_failed_check = True
 
