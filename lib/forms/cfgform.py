@@ -16,17 +16,7 @@ from .colors import *
 from ..repocfg import AppConfig
 from ..utility import get_configfile, is_private_item_name
 from ..items.item import ALL_AVAILABLE_ITEMS_D
-from ..internal.multi_conds_run_task import (
-    is_mcrt_confluent_cond,
-    mcrt_initial_condition,
-    mcrt_initial_condition_name,
-    mcrt_initializer,
-    mcrt_initializer_name,
-    mcrt_updater,
-    mcrt_updater_name,
-    ConfluenceCondition,
-    form_ConfluenceCondition,
-)
+from ..internal import multi_conds_run_task as mcrt
 
 from ..configurator.reader import read_whenever_config
 from ..configurator.writer import write_whenever_config
@@ -383,21 +373,21 @@ class form_Config(ApplicationForm):
         # confluent) and, if so, create the support items, that is, the initial
         # task and condition, and the updater task, otherwise remove them if
         # present so that no time and resources are wasted for no reason
-        n_mcrt_initializer = mcrt_initializer_name()
-        n_mcrt_initial_cond = mcrt_initial_condition_name()
-        n_mcrt_updater = mcrt_updater_name()
+        n_mcrt_initializer = mcrt.initializer_name()
+        n_mcrt_initial_cond = mcrt.initial_condition_name()
+        n_mcrt_updater = mcrt.updater_name()
         mcrt_active = False
-        for _, cond in self._conditions:
-            if isinstance(cond, ConfluenceCondition) or is_mcrt_confluent_cond(cond):
+        for cond in self._conditions.values():
+            if isinstance(cond, mcrt.ConfluenceCondition) or mcrt.is_confluent_cond(cond):
                 mcrt_active = True
                 break
         if mcrt_active:
             if n_mcrt_updater not in self._tasks.keys():
-                self._tasks[n_mcrt_updater] = mcrt_updater()
+                self._tasks[n_mcrt_updater] = mcrt.updater()
             if n_mcrt_initializer not in self._tasks.keys():
-                self._tasks[n_mcrt_initializer] = mcrt_initializer()
+                self._tasks[n_mcrt_initializer] = mcrt.initializer()
             if n_mcrt_initial_cond not in self._conditions.keys():
-                self._conditions[n_mcrt_initial_cond] = mcrt_initial_condition()
+                self._conditions[n_mcrt_initial_cond] = mcrt.initial_condition()
         else:
             if n_mcrt_updater in self._tasks.keys():
                 del self._tasks[n_mcrt_updater]
@@ -515,12 +505,12 @@ class form_Config(ApplicationForm):
                 )
                 e = fform(available_tasks, self._conditions[item_name])
                 # this is a special case, which has an extra parameter
-                if isinstance(e, form_ConfluenceCondition):
+                if isinstance(e, mcrt.form_ConfluenceCondition):
                     confluent_conds = list(
                         x
                         for x in self._conditions.keys()
                         if not is_private_item_name(x)
-                        and is_mcrt_confluent_cond(self._conditions[x])
+                        and mcrt.is_confluent_cond(self._conditions[x])
                     )
                     e.set_available_conditions(confluent_conds)
                 if e is not None:
@@ -581,12 +571,12 @@ class form_Config(ApplicationForm):
                     ]
                     form = form_class(list(available_tasks))
                     # this is a special case, which has an extra parameter
-                    if isinstance(form, form_ConfluenceCondition):
+                    if isinstance(form, mcrt.form_ConfluenceCondition):
                         confluent_conds = list(
                             x
                             for x in self._conditions.keys()
                             if not is_private_item_name(x)
-                            and is_mcrt_confluent_cond(self._conditions[x])
+                            and mcrt.is_confluent_cond(self._conditions[x])
                         )
                         form.set_available_conditions(confluent_conds)
                 # note that, since providing a suitable event based

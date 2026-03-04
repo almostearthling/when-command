@@ -12,7 +12,7 @@ from ..repocfg import AppConfig
 from ..items.cond import Condition
 
 from ..utility import is_valid_item_name, clean_caption
-from ..internal.multi_conds_run_task import mcrt_updater_name
+from ..internal import multi_conds_run_task as mcrt
 
 
 # add a negated disabled to tk dictionary (please forgive me)
@@ -284,10 +284,10 @@ class form_Condition(ApplicationForm):
         # same consideration as above; this function also disables all task
         # related form widgets when the condition is set to be confluent
         not_rec = not self.data_get("@recurring") or False
-        mcrt = not self.data_get("@confluent") or False
+        confluent = not self.data_get("@confluent") or False
         # retrieve the name of the MCRT updater task
-        mcrt_updater = mcrt_updater_name()
-        if mcrt:
+        mcrt_updater = mcrt.updater_name()
+        if confluent:
             self.data_set("@name", "")
             self.data_set("@control_flow", "break_none")
             self.data_set("@execute_sequence", True)

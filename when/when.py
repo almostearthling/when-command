@@ -45,7 +45,7 @@ from lib.repocfg import AppConfig
 
 from lib.runner.process import Wrapper
 
-from lib.internal.multi_conds_run_task import mcrt_install_lib
+from lib.internal import multi_conds_run_task as mcrt
 
 
 # main root window, to be withdrawn
@@ -629,7 +629,7 @@ def main() -> None:
     AppConfig.set("WHENEVER", default_whenever)
 
     # other initialization actions
-    mcrt_install_lib()
+    mcrt.install_lib()
 
     # main parser
     parser = argparse.ArgumentParser(

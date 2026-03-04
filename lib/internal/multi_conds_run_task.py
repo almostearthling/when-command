@@ -47,17 +47,16 @@ import ttkbootstrap.constants as ttkc
 
 from typing import List, Tuple
 
-from ..utility import check_not_none, append_not_none
-
 from ..forms.ui import *
 
 # since a condition is defined, the base form is the one for conditions
 from ..forms.cond import form_Condition
 
-
 from ..utility import (
     get_tempdir,
     get_luadir,
+    get_lua_initscript,
+    get_lua_path,
     get_private_item_name_prefix,
     clean_caption,
 )
@@ -234,7 +233,7 @@ def _mcrt_lock_file():
 # utility to install the Lua library: it also reserves the library file name
 # so that it is not overwritten by the user in case he decides to install
 # a Lua library of choice
-def mcrt_install_lib():
+def install_lib():
     s = os.path.join(get_luadir(), _MCRT_LIBRARY)
     if not os.path.exists(s):
         lua_library = _LUA_LIBRARY.format(
@@ -252,38 +251,35 @@ def mcrt_install_lib():
 # this to be performed by the Lua interpreter instead of the GUI application,
 # is that in this way the MCRT system is initialized even when used with
 # another frontend
-_mcrt_InitializationTask = task_lua.LuaScriptTask()
-_mcrt_InitializationTask.name = _TASK_INITIALIZER
-_mcrt_InitializationTask.script = f"""\
-local mcrt = require "{_MCRT_LIBRARY}"
-mcrt.initialize()
-"""
+def initializer() -> task_lua.LuaScriptTask:
+    task = task_lua.LuaScriptTask()
+    task.name = _TASK_INITIALIZER
+    task.variables_to_set = { "LUA_PATH": get_lua_path() }
+    task.init_script_path = get_lua_initscript()
+    task.script = f"""\
+    local mcrt = require "{_MCRT_LIBRARY}"
+    mcrt.initialize()
+    """
+    return task
 
-
-# return this item and its name
-def mcrt_initializer() -> task_lua.LuaScriptTask:
-    return _mcrt_InitializationTask
-
-
-def mcrt_initializer_name() -> str:
+def initializer_name() -> str:
     return _TASK_INITIALIZER
 
 
 # 2. updater: just adds the verified condition to the persistence file
-_mcrt_UpdateTask = task_lua.LuaScriptTask()
-_mcrt_UpdateTask.name = _TASK_UPDATER
-_mcrt_UpdateTask.script = f"""\
-local mcrt = require "{_MCRT_LIBRARY}"
-mcrt.set_condition_verified(whenever_condition)
-"""
+def updater() -> task_lua.LuaScriptTask:
+    task = task_lua.LuaScriptTask()
+    task.name = _TASK_UPDATER
+    task.variables_to_set = { "LUA_PATH": get_lua_path() }
+    task.init_script_path = get_lua_initscript()
+    task.script = f"""\
+    local mcrt = require "{_MCRT_LIBRARY}"
+    mcrt.set_condition_verified(whenever_condition)
+    """
+    return task
 
 
-# return this item and its name
-def mcrt_updater() -> task_lua.LuaScriptTask:
-    return _mcrt_UpdateTask
-
-
-def mcrt_updater_name() -> str:
+def updater_name() -> str:
     return _TASK_UPDATER
 
 
@@ -295,18 +291,15 @@ def mcrt_updater_name() -> str:
 # definition form only accepts values strictly above zero, while whenever
 # also accepts a zero duration in the configuration (which is in fact the
 # way to create a condition that is verified at startup)
-_mcrt_InitializationCond = cond_interval.IntervalCondition()
-_mcrt_InitializationCond.name = _COND_INITIALIZER
-_mcrt_InitializationCond.interval_seconds = 0  # that is, at the first tick
-_mcrt_InitializationCond.tasks = [_mcrt_InitializationTask.name]
+def initial_condition() -> cond_interval.IntervalCondition:
+    cond = cond_interval.IntervalCondition()
+    cond.name = _COND_INITIALIZER
+    cond.interval_seconds = 0  # that is, at the first tick
+    cond.tasks = [_TASK_INITIALIZER]
+    return cond
 
 
-# return this item and its name
-def mcrt_initial_condition() -> cond_interval.IntervalCondition:
-    return _mcrt_InitializationCond
-
-
-def mcrt_initial_condition_name() -> str:
+def initial_condition_name() -> str:
     return _COND_INITIALIZER
 
 
@@ -344,6 +337,8 @@ class ConfluenceCondition(cond_lua.LuaScriptCondition):
 
     def updateitem(self):
         confluent_conditions = self.tags.get("mcrt_confluent_conditions", list())
+        self.variables_to_set = { "LUA_PATH": get_lua_path() }
+        self.init_script_path = get_lua_initscript()
         self.script = _MCRT_COND_CONFLUENCE_SCRIPT_TEMPLATE.replace(
             "[[COND_LIST]]",
             '{"%s"}' % '", "'.join(confluent_conditions),
@@ -505,28 +500,28 @@ class form_ConfluenceCondition(form_Condition):
 
 
 # check whether a condition is confluent
-def is_mcrt_confluent_cond(c: cond.Condition) -> bool:
+def is_confluent_cond(c: cond.Condition) -> bool:
     if c.tasks is not None and len(c.tasks) == 1:
         return c.tasks[0] == _TASK_UPDATER
     return False
 
 
 # check whether a condition implements confluence
-def is_mcrt_confluence_cond(c: cond.Condition) -> bool:
+def is_confluence_cond(c: cond.Condition) -> bool:
     return isinstance(c, ConfluenceCondition)
 
 
 # only return interesting symbols
 __all__ = [
-    "mcrt_initial_condition",
-    "mcrt_initial_condition_name",
-    "mcrt_initializer",
-    "mcrt_initializer_name",
-    "mcrt_updater",
-    "mcrt_updater_name",
-    "is_mcrt_confluent_cond",
-    "is_mcrt_confluence_cond",
-    "mcrt_install_lib",
+    "initial_condition",
+    "initial_condition_name",
+    "initializer",
+    "initializer_name",
+    "updater",
+    "updater_name",
+    "is_confluent_cond",
+    "is_confluence_cond",
+    "install_lib",
     "ConfluenceCondition",
 ]
 

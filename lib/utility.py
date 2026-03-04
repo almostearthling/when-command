@@ -278,9 +278,9 @@ def get_tempdir() -> str:
     return tempdir
 
 
-# determine lua library directory and ensure that it exists
+# determine Lua library directory and ensure that it exists
 def get_luadir() -> str:
-    configdir: str = AppConfig.get("APPDATA") # type: ignore
+    configdir: str = AppConfig.get("APPDATA")  # type: ignore
     if is_windows():
         subdir = "Lua"
     else:
@@ -292,6 +292,25 @@ def get_luadir() -> str:
         except Exception:
             raise OSError(CLI_ERR_SPECIFICDIR_UNACCESSIBLE % luadir)
     return luadir
+
+
+# construct Lua path
+def get_lua_path() -> str:
+    luabase = get_luadir()
+    ps = os.path.sep
+    return (
+        ";".join(
+            [
+                "?",
+                "?.lua",
+                f"{luabase}{ps}?",
+                f"{luabase}{ps}?.lua",
+                f"{luabase}{ps}?{ps}?",
+                f"{luabase}{ps}?{ps}?.lua",
+            ]
+        )
+        + ";;"
+    )
 
 
 # the following cannot be used, because the embedded Lua interpreter cannot
