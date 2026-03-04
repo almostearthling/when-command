@@ -16,7 +16,17 @@ from .colors import *
 from ..repocfg import AppConfig
 from ..utility import get_configfile, is_private_item_name
 from ..items.item import ALL_AVAILABLE_ITEMS_D
-from ..internal.multi_conds_run_task import is_mcrt_confluent_cond, form_ConfluenceCondition
+from ..internal.multi_conds_run_task import (
+    is_mcrt_confluent_cond,
+    mcrt_initial_condition,
+    mcrt_initial_condition_name,
+    mcrt_initializer,
+    mcrt_initializer_name,
+    mcrt_updater,
+    mcrt_updater_name,
+    ConfluenceCondition,
+    form_ConfluenceCondition,
+)
 
 from ..configurator.reader import read_whenever_config
 from ..configurator.writer import write_whenever_config
@@ -368,6 +378,34 @@ class form_Config(ApplicationForm):
                 del self._conditions[name]
             if name in self._events.keys():
                 del self._events[name]
+
+        # check whether there are MCRT conditions (both confluence and
+        # confluent) and, if so, create the support items, that is, the initial
+        # task and condition, and the updater task, otherwise remove them if
+        # present so that no time and resources are wasted for no reason
+        n_mcrt_initializer = mcrt_initializer_name()
+        n_mcrt_initial_cond = mcrt_initial_condition_name()
+        n_mcrt_updater = mcrt_updater_name()
+        mcrt_active = False
+        for _, cond in self._conditions:
+            if isinstance(cond, ConfluenceCondition) or is_mcrt_confluent_cond(cond):
+                mcrt_active = True
+                break
+        if mcrt_active:
+            if n_mcrt_updater not in self._tasks.keys():
+                self._tasks[n_mcrt_updater] = mcrt_updater()
+            if n_mcrt_initializer not in self._tasks.keys():
+                self._tasks[n_mcrt_initializer] = mcrt_initializer()
+            if n_mcrt_initial_cond not in self._conditions.keys():
+                self._conditions[n_mcrt_initial_cond] = mcrt_initial_condition()
+        else:
+            if n_mcrt_updater in self._tasks.keys():
+                del self._tasks[n_mcrt_updater]
+            if n_mcrt_initializer in self._tasks.keys():
+                del self._tasks[n_mcrt_initializer]
+            if n_mcrt_initial_cond in self._conditions.keys():
+                del self._conditions[n_mcrt_initial_cond]
+
         # ...
 
         # finally write the configuration fle
@@ -418,7 +456,9 @@ class form_Config(ApplicationForm):
         fn = self.data_get("config_file")
         if fn and self._changed:
             if os.path.exists(fn):
-                if self.messagebox.askyesno(UI_POPUP_T_CONFIRM, UI_POPUP_OVERWRITEFILE_Q):
+                if self.messagebox.askyesno(
+                    UI_POPUP_T_CONFIRM, UI_POPUP_OVERWRITEFILE_Q
+                ):
                     self._save_config(fn)
                     self._changed = False
             else:
@@ -432,7 +472,7 @@ class form_Config(ApplicationForm):
         if selection is None:
             return
 
-        item_name, _, item_signature = selection    # type: ignore
+        item_name, _, item_signature = selection  # type: ignore
         item_type = item_signature.split(":", 1)[0]
 
         # task items
@@ -477,7 +517,8 @@ class form_Config(ApplicationForm):
                 # this is a special case, which has an extra parameter
                 if isinstance(e, form_ConfluenceCondition):
                     confluent_conds = list(
-                        x for x in self._conditions.keys()
+                        x
+                        for x in self._conditions.keys()
                         if not is_private_item_name(x)
                         and is_mcrt_confluent_cond(self._conditions[x])
                     )
@@ -504,8 +545,7 @@ class form_Config(ApplicationForm):
             event_conds = list(
                 x
                 for x in self._conditions
-                if self._conditions[x].type == "event"
-                and not is_private_item_name(x)
+                if self._conditions[x].type == "event" and not is_private_item_name(x)
             )
             available_item = ALL_AVAILABLE_ITEMS_D.get(item_signature)
             assert available_item is not None
@@ -543,7 +583,8 @@ class form_Config(ApplicationForm):
                     # this is a special case, which has an extra parameter
                     if isinstance(form, form_ConfluenceCondition):
                         confluent_conds = list(
-                            x for x in self._conditions.keys()
+                            x
+                            for x in self._conditions.keys()
                             if not is_private_item_name(x)
                             and is_mcrt_confluent_cond(self._conditions[x])
                         )
@@ -600,7 +641,9 @@ class form_Config(ApplicationForm):
     # has changed the user is asked whether or not he wants to discard it
     def exit_close(self) -> None:
         if self._changed:
-            if self.messagebox.askokcancel(UI_POPUP_T_CONFIRM, UI_POPUP_DISCARDCONFIG_Q):
+            if self.messagebox.askokcancel(
+                UI_POPUP_T_CONFIRM, UI_POPUP_DISCARDCONFIG_Q
+            ):
                 return super().exit_close()
         else:
             return super().exit_close()
