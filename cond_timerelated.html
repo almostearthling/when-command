@@ -1,0 +1,162 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="_static/favicon.ico" rel="icon" type="image/x-icon">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Time Related Conditions &mdash; The When Automation Tool 2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=60dbed4a"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Action Related Conditions" href="cond_actionrelated.html" />
+    <link rel="prev" title="Condition Editors" href="conditions.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            The When Automation Tool
+              <img src="_static/rafi-clock-256.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="main.html">The <strong>When</strong> Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cfgform.html">Main Configuration Form</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tray.html">System Tray Resident Application</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tasks.html">Native Tasks Editors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tasks_extra_session.html">Extra Tasks: Session Related</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conditions.html">Condition Editors</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Time Related Conditions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#interval">Interval</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#time-specification">Time Specification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#idle-session">Idle Session</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cond_actionrelated.html">Action Related Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_eventrelated.html">Event Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_extra01.html">Extra Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events.html">Native Events Editors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events_extra01.html">Specific Events</a></li>
+<li class="toctree-l1"><a class="reference internal" href="history.html">History Box</a></li>
+<li class="toctree-l1"><a class="reference internal" href="i18n.html">Localization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="appdata.html">Application Data Directory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configfile.html">Generated Configuration File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lua_considerations.html">Some Considerations on Lua</a></li>
+<li class="toctree-l1"><a class="reference internal" href="credits.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="when_history.html">History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">The When Automation Tool</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Time Related Conditions</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/cond_timerelated.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="time-related-conditions">
+<h1>Time Related Conditions<a class="headerlink" href="#time-related-conditions" title="Link to this heading"></a></h1>
+<p>The condition items described in this section depend on time checking, therefore the related tests will always be performed exactly at the scheduler tick: this means that such tests ar never performed <a class="reference internal" href="cfgform.html#modify-scheduler-parameters"><span class="std std-ref">at a random instant</span></a> between two ticks.</p>
+<section id="interval">
+<h2>Interval<a class="headerlink" href="#interval" title="Link to this heading"></a></h2>
+<p>Interval based conditions are possibly the simplest ones: verification depends on the passing of a certain amount of time since the start of the scheduler. In combination with the <em>recurring</em> flag (in the common section) leads to <em>periodic</em> conditions, that is, occurring every time the specified interval passes.</p>
+<p><img alt="WhenCondInterval" src="_images/when-cond-interval.png" /></p>
+<p>The only available parameter is the <em>interval duration</em>, that may be specified in seconds, minutes, or hours.</p>
+</section>
+<section id="time-specification">
+<h2>Time Specification<a class="headerlink" href="#time-specification" title="Link to this heading"></a></h2>
+<p>This type of condition overlaps with the common, system provided time based scheduler. One or more time specifications can be provided, at which the condition is verified. The time specification can be given indicating a (partial) instant, by filling part of the entries in the row above the time specification list. Omitting part of the entries has different effects depending on which ones are omitted. Generally, specifying the date entries and omitting the time related ones indicates that the condition occurs at midnight at the specified date. Omitting the year indicates that the condition occurs every specified month and day at midnight. Omitting year and month and specifying day <em>N</em> indicates that the condition occurs every day <em>N</em> of the month in all months (unless, of course, <em>N</em> is above 28 or 29, which excludes some months). Specifying a day of the week of course indicates the occurrence every that day of the week. Providing hours, minutes and seconds restricts occurrence to the specified time. If no date or weekday are specified, the condition occurs every day at the specified time, but in this case, when the hour is omitted, the occurrence happens every hour at the specified minute (and second if provided).</p>
+<p><img alt="WhenCondTime" src="_images/when-cond-time.png" /></p>
+<p>The list tries to display the provided specifications in human-readable form. In order to add a specification, once the necessary fields are filled, it is sufficient to click the <em>Add</em> button. To remove a specification it must be double clicked in the list, and then the <em>Remove</em> button must be clicked. The <em>Clear</em> button in the first row is useful to clear all the entries at its left (it does not modify the list contents). To remove <em>all</em> provided time specifications at once, the <em>Clear All</em> button is available in the lower part of the form.</p>
+<p>Note that, if the condition is not recurrent, it will occur when just <em>one</em> of the provided time specifications is reached for the first time.</p>
+</section>
+<section id="idle-session">
+<h2>Idle Session<a class="headerlink" href="#idle-session" title="Link to this heading"></a></h2>
+<p>This condition occurs after a certain time has passed since there was any type of user interaction (mouse, keyboard, touch screen, etc.) with the current session.</p>
+<p><img alt="WhenCondIdle" src="_images/when-cond-idle.png" /></p>
+<p>The only available parameter is the <em>duration of the idle session</em>, that may be specified in seconds, minutes, or hours. In this case specifying the condition as <em>recurring</em> will cause it to occur again if the session exits its idle state first, and then returns idle for the same amount of time.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>On some <em>Wayland</em> based Linux environments, idle time is calculated as the time after the session has been locked: this should not be the case of recent version of <em>Wayland</em> though.</p>
+</div>
+<p><a class="reference internal" href="conditions.html"><span class="std std-doc"><code class="docutils literal notranslate"><span class="pre">◀</span> <span class="pre">Conditions</span></code></span></a></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="conditions.html" class="btn btn-neutral float-left" title="Condition Editors" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="cond_actionrelated.html" class="btn btn-neutral float-right" title="Action Related Conditions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015-2026, Francesco Garosi.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,267 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="_static/favicon.ico" rel="icon" type="image/x-icon">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The When Automation Tool &mdash; The When Automation Tool 2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=60dbed4a"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="The When Documentation" href="main.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            The When Automation Tool
+              <img src="_static/rafi-clock-256.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="main.html">The <strong>When</strong> Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cfgform.html">Main Configuration Form</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tray.html">System Tray Resident Application</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tasks.html">Native Tasks Editors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tasks_extra_session.html">Extra Tasks: Session Related</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conditions.html">Condition Editors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_timerelated.html">Time Related Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_actionrelated.html">Action Related Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_eventrelated.html">Event Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_extra01.html">Extra Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events.html">Native Events Editors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events_extra01.html">Specific Events</a></li>
+<li class="toctree-l1"><a class="reference internal" href="history.html">History Box</a></li>
+<li class="toctree-l1"><a class="reference internal" href="i18n.html">Localization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="appdata.html">Application Data Directory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configfile.html">Generated Configuration File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lua_considerations.html">Some Considerations on Lua</a></li>
+<li class="toctree-l1"><a class="reference internal" href="credits.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="when_history.html">History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">The When Automation Tool</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">The When Automation Tool</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="the-when-automation-tool">
+<h1>The When Automation Tool<a class="headerlink" href="#the-when-automation-tool" title="Link to this heading"></a></h1>
+<p>This document describes the new version of <strong>When</strong>, a Python-based automation tool for desktop
+environments. This version, instead of incorporating the scheduler, relies on the
+<a class="reference external" href="https://github.com/almostearthling/whenever">whenever</a> core, which focuses on reliability and
+lightweightness, while trying to achieve a good performance even when running at low priority.
+In this sense, <strong>When</strong> acts as a <em>wrapper</em> for <strong>whenever</strong>, both providing a simple interface
+for configuration and an easy way to control the scheduler via an icon sitting in the tray area
+of your desktop. This version of <strong>When</strong> aims at being cross-platform, dynamically providing
+access to the features of <strong>whenever</strong> that are supported on the host environment.</p>
+<p><a class="reference external" href="https://github.com/almostearthling/when-command">When</a> development is hosted on GitHub.</p>
+<img alt="_images/when-application.png" src="_images/when-application.png" />
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="main.html">The <strong>When</strong> Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="main.html#what-is-when">What is When?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main.html#about-this-documentation">About this Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main.html#covered-topics">Covered Topics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main.html#glossary">Glossary</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html#windows">Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#linux">Linux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#create-application-icons">Create Application Icons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#upgrade">Upgrade</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#installing-directly-from-the-repository">Installing Directly from the Repository</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#installation-scope">Installation Scope</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#simple-trace">Simple Trace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#automated-backups">Automated Backups</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#temporary-files-cleanup">Temporary Files Cleanup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#conclusion">Conclusion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command Line Interface (CLI)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#toolbox">Toolbox</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#output-of-the-configuration-check-tool">Output of the Configuration Check Tool</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cfgform.html">Main Configuration Form</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cfgform.html#edit-items">Edit Items</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfgform.html#create-items">Create Items</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfgform.html#remove-items">Remove Items</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfgform.html#modify-scheduler-parameters">Modify Scheduler Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfgform.html#reload-configuration">Reload Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfgform.html#exiting">Exiting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cfgform.html#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tray.html">System Tray Resident Application</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tray.html#menu-form">Menu Form</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tray.html#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tasks.html">Native Tasks Editors</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html#command">Command</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html#lua-script">Lua Script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html#session-related-tasks">Session Related Tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html#see-also">See also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tasks_extra_session.html">Extra Tasks: Session Related</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tasks_extra_session.html#tasks">Tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tasks_extra_session.html#see-also">See also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="conditions.html">Condition Editors</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="conditions.html#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cond_timerelated.html">Time Related Conditions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cond_timerelated.html#interval">Interval</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cond_timerelated.html#time-specification">Time Specification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cond_timerelated.html#idle-session">Idle Session</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cond_actionrelated.html">Action Related Conditions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cond_actionrelated.html#command">Command</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cond_actionrelated.html#lua-script">Lua Script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cond_actionrelated.html#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cond_eventrelated.html">Event Conditions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cond_eventrelated.html#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cond_extra01.html">Extra Conditions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cond_extra01.html#system-load">System Load</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cond_extra01.html#low-battery">Low Battery</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cond_extra01.html#charging-battery">Charging Battery</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cond_extra01.html#removable-drives">Removable Drives</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cond_extra01.html#session-locked-windows">Session Locked (Windows)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cond_extra01.html#see-also">See also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="events.html">Native Events Editors</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="events.html#file-system-monitoring">File System Monitoring</a></li>
+<li class="toctree-l2"><a class="reference internal" href="events.html#other-event-types">Other Event Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="events.html#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="events_extra01.html">Specific Events</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="events_extra01.html#session-locked-unlocked-events-linux">Session Locked/Unlocked Events (Linux)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="events_extra01.html#see-also">See also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="history.html">History Box</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="history.html#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="i18n.html">Localization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="i18n.html#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="appdata.html">Application Data Directory</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="appdata.html#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="configfile.html">Generated Configuration File</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configfile.html#legacy-configuration-files">Legacy Configuration Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configfile.html#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="lua_considerations.html">Some Considerations on Lua</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="lua_considerations.html#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="credits.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="when_history.html">History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="main.html" class="btn btn-neutral float-right" title="The When Documentation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015-2026, Francesco Garosi.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

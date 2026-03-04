@@ -1,0 +1,196 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="_static/favicon.ico" rel="icon" type="image/x-icon">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Extra Conditions &mdash; The When Automation Tool 2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=60dbed4a"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Native Events Editors" href="events.html" />
+    <link rel="prev" title="Event Conditions" href="cond_eventrelated.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            The When Automation Tool
+              <img src="_static/rafi-clock-256.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="main.html">The <strong>When</strong> Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cfgform.html">Main Configuration Form</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tray.html">System Tray Resident Application</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tasks.html">Native Tasks Editors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tasks_extra_session.html">Extra Tasks: Session Related</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conditions.html">Condition Editors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_timerelated.html">Time Related Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_actionrelated.html">Action Related Conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cond_eventrelated.html">Event Conditions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Extra Conditions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#system-load">System Load</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#low-battery">Low Battery</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#charging-battery">Charging Battery</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#removable-drives">Removable Drives</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#windows">Windows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#linux">Linux</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#session-locked-windows">Session Locked (Windows)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#see-also">See also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="events.html">Native Events Editors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="events_extra01.html">Specific Events</a></li>
+<li class="toctree-l1"><a class="reference internal" href="history.html">History Box</a></li>
+<li class="toctree-l1"><a class="reference internal" href="i18n.html">Localization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="appdata.html">Application Data Directory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configfile.html">Generated Configuration File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lua_considerations.html">Some Considerations on Lua</a></li>
+<li class="toctree-l1"><a class="reference internal" href="credits.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="when_history.html">History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">The When Automation Tool</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Extra Conditions</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/cond_extra01.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="extra-conditions">
+<h1>Extra Conditions<a class="headerlink" href="#extra-conditions" title="Link to this heading"></a></h1>
+<p>The condition items described here cover various different aspects of a session, and their availability may vary depending on the hosting platform and the presence of certain features. On Linux <strong>whenever</strong> is generally expected to be compiled with DBus support, on Windows it is expected to be compiled with WMI support.</p>
+<section id="system-load">
+<h2>System Load<a class="headerlink" href="#system-load" title="Link to this heading"></a></h2>
+<p>This test verifies whether or not the system load is below a certain percentage and, if so, runs the related tasks. The only available specific parameter is the percentage threshold below which the test is considered successful.</p>
+<p><img alt="WhenCondExtraSysload" src="_images/when-cond-extra-sysload.png" /></p>
+<p>The item can be used on Windows and Linux systems, on Linux it depends on the presence of the <code class="docutils literal notranslate"><span class="pre">vmstat</span></code> and <code class="docutils literal notranslate"><span class="pre">bc</span></code> OS commands, which may need to be installed on some distributions. The checks for this condition are performed about every minute.</p>
+</section>
+<section id="low-battery">
+<h2>Low Battery<a class="headerlink" href="#low-battery" title="Link to this heading"></a></h2>
+<p>This test checks whether the battery is draining and its charge is below a certain percentage and, if so, runs the related tasks. The only available specific parameter is the percentage threshold below which the test is considered successful.</p>
+<p><img alt="WhenCondExtraSysload" src="_images/when-cond-extra-batterylow.png" /></p>
+<p>The checks for this condition are performed about every minute.</p>
+</section>
+<section id="charging-battery">
+<h2>Charging Battery<a class="headerlink" href="#charging-battery" title="Link to this heading"></a></h2>
+<p>This test checks whether the battery is charging and its charge is above a certain percentage and, if so, runs the related tasks. The only available specific parameter is the percentage threshold above which the test is considered successful.</p>
+<p><img alt="WhenCondExtraSysload" src="_images/when-cond-extra-batterycharging.png" /></p>
+<p>The checks for this condition are performed about every minute.</p>
+</section>
+<section id="removable-drives">
+<h2>Removable Drives<a class="headerlink" href="#removable-drives" title="Link to this heading"></a></h2>
+<p>Definition forms to check for presence of a removable drive are available, both for Windows and for Linux. The behavior and configuration is slightly different depending on the host platform.</p>
+<section id="windows">
+<h3>Windows<a class="headerlink" href="#windows" title="Link to this heading"></a></h3>
+<p>On Windows, the <em>label</em> of the removable drive has to be specified in order to be somewhat more selective in choosing which removable drive has been made available to the workstation: the label can be edited by any Windows user, so it’s possible to appropriately set labels for thumb drives, cards, and so on, in a way that helps select tasks to be executed when a removable drive is inserted.</p>
+<p><img alt="WhenCondRemovableDriveWin" src="_images/when-cond-extra-rmdrive-win.png" /></p>
+<p>The label has to be specified by the user with no assistance: the exact string to be checked must be entered. Optionally, by checking the appropriate box, it is possible to specify on which drive letter the support is supposed to be auto-mounted: this is another parameter for fine-tuning, since often Windows reuses the same drive letter when the same removable drive is used.</p>
+</section>
+<section id="linux">
+<h3>Linux<a class="headerlink" href="#linux" title="Link to this heading"></a></h3>
+<p>On Linux, it’s only possible to choose among a system-determined list of available removable drive <em>names</em>, or it is possible for the user to specify the exact name: since these names are not always easy to remember, it is suggested that the removable storage to monitor is inserted when creating the condition in <strong>whenever</strong>, so that its name appears in the list.</p>
+<p><img alt="WhenCondRemovableDriveLinux" src="_images/when-cond-extra-rmdrive-linux.png" /></p>
+<p>It is not possible to specify the expected mount point: its determination, which depends on the specific Linux distribution and configuration, is up to the user.</p>
+</section>
+</section>
+<section id="session-locked-windows">
+<h2>Session Locked (Windows)<a class="headerlink" href="#session-locked-windows" title="Link to this heading"></a></h2>
+<p>This check detects whether the session is locked. It does not depend on the desktop being idle (there is the <a class="reference internal" href="cond_timerelated.html#idle-session"><span class="std std-ref">idle session</span></a> based condition for this purpose), so it is verified also when the user voluntarily locks the session via a key combination or a session menu entry.</p>
+<p><img alt="WhenCondSessionLockedWin" src="_images/when-cond-extra-locked-win.png" /></p>
+<p>Since on Windows the state is detected by querying the system actively, the user can decide if the check is performed at a normal pace (the default, every second minute), very often (the <em>pedantic</em> choice, every minute), or in a more relaxed way – that is, every five minutes.</p>
+</section>
+<section id="see-also">
+<h2>See also<a class="headerlink" href="#see-also" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="cond_actionrelated.html#command"><span class="std std-ref">Command Based Conditions</span></a></p></li>
+<li><p><a class="reference internal" href="cond_actionrelated.html#lua-script"><span class="std std-ref">Lua Script Based Conditions</span></a></p></li>
+<li><p><a class="reference internal" href="conditions.html"><span class="std std-doc">Conditions</span></a></p></li>
+<li><p><a class="reference internal" href="tasks.html"><span class="std std-doc">Tasks</span></a></p></li>
+<li><p><a class="reference internal" href="events.html"><span class="std std-doc">Events</span></a></p></li>
+</ul>
+<p><a class="reference internal" href="conditions.html"><span class="std std-doc"><code class="docutils literal notranslate"><span class="pre">◀</span> <span class="pre">Conditions</span></code></span></a></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="cond_eventrelated.html" class="btn btn-neutral float-left" title="Event Conditions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="events.html" class="btn btn-neutral float-right" title="Native Events Editors" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2015-2026, Francesco Garosi.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
