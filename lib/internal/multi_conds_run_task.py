@@ -203,7 +203,7 @@ end
 
 
 # this is the prefix for all of our item names
-_ITEM_PREFIX = get_private_item_name_prefix() + "_MCRT_"
+_ITEM_PREFIX = get_private_item_name_prefix() + "MCRT_"
 
 # specific names, local to this module
 _TASK_INITIALIZER = _ITEM_PREFIX + "Initializer"
