@@ -260,7 +260,7 @@ UI_TITLE_EVENTCOND = f"{UI_APP}: Event Condition Editor"
 UI_TITLE_TIMECOND = f"{UI_APP}: Time Condition Editor"
 UI_TITLE_DBUSCOND = f"{UI_APP}: DBus Method Condition Editor"
 UI_TITLE_WMICOND = f"{UI_APP}: WMI Query Condition Editor"
-UI_TITLE_MCRTCOND = f"{UI_APP}: Condition Activated by Other Conditions"
+UI_TITLE_MCRTCOND = f"{UI_APP}: Condition Activated by Other Conditions Editor"
 
 UI_TITLE_DBUSEVENT = f"{UI_APP}: DBus Signal Event Editor"
 UI_TITLE_FSCHANGEEVENT = f"{UI_APP}: Filesystem Monitoring Event Editor"

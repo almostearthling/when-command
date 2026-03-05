@@ -280,11 +280,13 @@ class form_Condition(ApplicationForm):
         else:
             self._max_retries.config(state=tk.NORMAL)
 
-    def _mcrt_confluent(self) -> None:
+    def _mcrt_confluent(self, force=False) -> None:
         # same consideration as above; this function also disables all task
         # related form widgets when the condition is set to be confluent
-        not_rec = not self.data_get("@recurring") or False
-        confluent = not self.data_get("@confluent") or False
+        if force:
+            confluent = True
+        else:
+            confluent = not self.data_get("@confluent") or False
         # retrieve the name of the MCRT updater task
         mcrt_updater = mcrt.updater_name()
         if confluent:
@@ -312,10 +314,6 @@ class form_Condition(ApplicationForm):
                 if tk.NOT_DISABLED not in spec:  # type:ignore
                     spec.append(tk.NOT_DISABLED)  # type:ignore
                 elem.state(spec)
-            if not_rec:
-                self._max_retries.config(state=tk.DISABLED)
-            else:
-                self._max_retries.config(state=tk.NORMAL)
             if mcrt_updater in self._tasks:
                 self._tasks.remove(mcrt_updater)
 
@@ -404,7 +402,14 @@ class form_Condition(ApplicationForm):
         except ValueError:
             self._item = item  # item was newly created: use it
         assert isinstance(self._item.tasks, list)
-        self._tasks = self._item.tasks.copy()
+        # check if this is a confluent condition and set widgets accordingly
+        if mcrt.is_confluent_cond(item):
+            self._tasks = list()
+            self.data_set("@confluent", True)
+            self._mcrt_confluent(True)
+        else:
+            self._tasks = self._item.tasks.copy()
+            self.data_set("@confluent", False)
 
     def reset_item(self) -> None:
         self._item = None
