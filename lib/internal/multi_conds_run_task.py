@@ -284,7 +284,7 @@ def updater() -> task_lua.LuaScriptTask:
     task.name = _TASK_UPDATER
     task.variables_to_set = { "LUA_PATH": get_lua_path() }
     task.init_script_path = get_lua_initscript()
-    task.script = f"""\
+    task.script = f"""
     local mcrt = require("{_MCRT_LIBRARY}")
     mcrt.set_condition_verified(whenever_condition)
     """
