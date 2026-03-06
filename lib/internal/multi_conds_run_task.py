@@ -68,7 +68,7 @@ from ..toolbox import install_lua
 # constants
 _MCRT_PERSIST_FILE = ".mcrt_persist"
 _MCRT_LOCK_FILE = ".mcrt_persist.lock"
-_MCRT_LIBRARY = "_mcrt_lib.lua"
+_MCRT_LIBRARY = "_mcrt_lib"
 
 _MCRT_EXTRA_DELAY = 15
 
@@ -165,7 +165,7 @@ function set_condition_verified(cond_name)
     __set_lock()
     local persistent = __read_persistent()
     if persistent ~= nil then
-        if !__has_name(cond_name, persistent) then
+        if not __has_name(cond_name, persistent) then
             persistent = __add_name(cond_name, persistent)
         end
     else
@@ -183,7 +183,7 @@ function check_conditions_verified(cond_names)
     __set_lock()
     local persistent = __read_persistent()
     for _, name in ipairs(cond_names) do
-        if !__has_name(name, persistent) then
+        if not __has_name(name, persistent) then
             res = false
             break
         end
@@ -211,9 +211,9 @@ _TASK_UPDATER = _ITEM_PREFIX + "Updater"
 _COND_INITIALIZER = _ITEM_PREFIX + "Initializer"
 
 # the template for the confluence condition Lua script
-_MCRT_COND_CONFLUENCE_SCRIPT_TEMPLATE = f"""\
-local mcrt = require "{_MCRT_LIBRARY}"
-res = mcrt.check_conditions_verified([[COND_LIST]])
+_MCRT_COND_CONFLUENCE_SCRIPT_TEMPLATE = f"""
+    local mcrt = require("{_MCRT_LIBRARY}")
+    res = mcrt.check_conditions_verified([[COND_LIST]])
 """
 
 
@@ -242,7 +242,7 @@ def install_lib():
         )
         with open(s, "w") as f:
             f.write(lua_library)
-    install_lua.reserve_lua(_MCRT_LIBRARY)
+    install_lua.reserve_lua(f"{_MCRT_LIBRARY}.lua")
 
 
 # the following items are the specific ones that implement the confluence
@@ -256,8 +256,8 @@ def initializer() -> task_lua.LuaScriptTask:
     task.name = _TASK_INITIALIZER
     task.variables_to_set = { "LUA_PATH": get_lua_path() }
     task.init_script_path = get_lua_initscript()
-    task.script = f"""\
-    local mcrt = require "{_MCRT_LIBRARY}"
+    task.script = f"""
+    local mcrt = require("{_MCRT_LIBRARY}")
     mcrt.initialize()
     """
     return task
@@ -273,7 +273,7 @@ def updater() -> task_lua.LuaScriptTask:
     task.variables_to_set = { "LUA_PATH": get_lua_path() }
     task.init_script_path = get_lua_initscript()
     task.script = f"""\
-    local mcrt = require "{_MCRT_LIBRARY}"
+    local mcrt = require("{_MCRT_LIBRARY}")
     mcrt.set_condition_verified(whenever_condition)
     """
     return task
