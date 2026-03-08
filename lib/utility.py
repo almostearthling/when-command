@@ -263,14 +263,21 @@ def get_scriptsdir() -> str:
 
 
 # determine temp directory and ensure that it exists
-def get_tempdir() -> str:
+def get_tempdir(cleanup: bool=False) -> str:
     configdir: str = AppConfig.get("APPDATA") # type: ignore
     if is_windows():
         subdir = "Temp"
     else:
         subdir = "temp"
     tempdir = os.path.join(configdir, subdir)
-    if not os.path.isdir(tempdir):
+    if os.path.isdir(tempdir):
+        if cleanup:
+            shutil.rmtree(tempdir)
+            try:
+                os.makedirs(tempdir)
+            except Exception:
+                raise OSError(CLI_ERR_SPECIFICDIR_UNACCESSIBLE % tempdir)
+    else:
         try:
             os.makedirs(tempdir)
         except Exception:

@@ -542,6 +542,7 @@ __all__ = [
     "is_confluence_cond",
     "install_lib",
     "ConfluenceCondition",
+    "form_ConfluenceCondition",
 ]
 
 

@@ -11,7 +11,7 @@ from ..repocfg import AppConfig
 
 from ..items.cond import Condition
 
-from ..utility import is_valid_item_name, clean_caption
+from ..utility import is_valid_item_name, clean_caption, is_private_item_name
 from ..internal import multi_conds_run_task as mcrt
 
 
@@ -168,7 +168,9 @@ class form_Condition(ApplicationForm):
         ck_itemRecurring.bind("<ButtonPress-1>", lambda _: self._check_recurring())
         ck_itemRecurring.bind("<KeyPress-space>", lambda _: self._check_recurring())
         ck_mcrtActivateFurther.bind("<ButtonPress-1>", lambda _: self._mcrt_confluent())
-        ck_mcrtActivateFurther.bind("<KeyPress-space>", lambda _: self._mcrt_confluent())
+        ck_mcrtActivateFurther.bind(
+            "<KeyPress-space>", lambda _: self._mcrt_confluent()
+        )
 
         # expand appropriate sections
         area_common.rowconfigure(index=11, weight=1)
@@ -278,7 +280,9 @@ class form_Condition(ApplicationForm):
             self._updatedata()
             self._max_retries.config(state=tk.DISABLED)
         else:
-            self._max_retries.config(state=tk.NORMAL)
+            # before enabling, check that this is not a confluent condition
+            if not self.data_get("@confluent"):
+                self._max_retries.config(state=tk.NORMAL)
 
     def _mcrt_confluent(self, force=False) -> None:
         # same consideration as above; this function also disables all task
@@ -305,7 +309,9 @@ class form_Condition(ApplicationForm):
                 if tk.NOT_DISABLED in spec:  # type:ignore
                     spec.remove(tk.NOT_DISABLED)  # type:ignore
                 elem.state(spec)
-            self._max_retries.config(state=tk.DISABLED)
+                # TODO: there must be a better way to achieve this
+                if "config" in elem.__dict__:
+                    elem.config(state=tk.DISABLED)
         else:
             for elem in self._task_elems:
                 spec = list(elem.state())
@@ -314,9 +320,11 @@ class form_Condition(ApplicationForm):
                 if tk.NOT_DISABLED not in spec:  # type:ignore
                     spec.append(tk.NOT_DISABLED)  # type:ignore
                 elem.state(spec)
+                # TODO: there must be a better way to do this (same as above)
+                if "config" in elem.__dict__:
+                    elem.config(state=tk.NORMAL)
             if mcrt_updater in self._tasks:
                 self._tasks.remove(mcrt_updater)
-
 
     # contents is the root for slave widgets
     @property
@@ -333,28 +341,38 @@ class form_Condition(ApplicationForm):
                 self._max_retries.config(state=tk.DISABLED)
             self.data_set("@name", self._item.name)
             self.data_set("@recurring", self._item.recurring or False)
-            self.data_set("@max_tasks_retries", self._item.max_tasks_retries or 0)
             self.data_set("@suspended", self._item.suspended or False)
-            self.data_set(
-                "@execute_sequence",
-                (
-                    self._item.execute_sequence
-                    if self._item.execute_sequence is False
-                    else True
-                ),
-            )
-            idx = 0
-            for task in self._tasks:
-                self._tv_tasks.insert(
-                    "", iid="%s-%s" % (idx, task), values=(idx, task), index=tk.END
-                )
-                idx += 1
-            if self._item.break_on_failure:
-                self.data_set("@control_flow", "break_failure")
-            elif self._item.break_on_success:
-                self.data_set("@control_flow", "break_success")
+            if mcrt.is_confluent_cond(self._item):
+                self.data_set("@confluent", True)
+                self._mcrt_confluent(True)
             else:
-                self.data_set("@control_flow", "break_none")
+                self.data_set("@confluent", False)
+                self.data_set("@max_tasks_retries", self._item.max_tasks_retries or 0)
+                self.data_set(
+                    "@execute_sequence",
+                    (
+                        self._item.execute_sequence
+                        if self._item.execute_sequence is False
+                        else True
+                    ),
+                )
+                idx = 0
+                for task in self._tasks:
+                    # this is correct and avoid listing possible confluent tasks
+                    if not is_private_item_name(task):
+                        self._tv_tasks.insert(
+                            "",
+                            iid="%s-%s" % (idx, task),
+                            values=(idx, task),
+                            index=tk.END,
+                        )
+                    idx += 1
+                if self._item.break_on_failure:
+                    self.data_set("@control_flow", "break_failure")
+                elif self._item.break_on_success:
+                    self.data_set("@control_flow", "break_success")
+                else:
+                    self.data_set("@control_flow", "break_none")
         else:
             self._max_retries.config(state=tk.DISABLED)
             self.data_set("@name", "")
@@ -363,6 +381,7 @@ class form_Condition(ApplicationForm):
             self.data_set("@suspended", False)
             self.data_set("@execute_sequence", True)
             self.data_set("@max_tasks_retries", 0)
+            self.data_set("@confluent", False)
         self.data_set("@choose_task", "")
 
     # the data update utility loads data into the item

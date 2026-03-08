@@ -290,14 +290,17 @@ def prepare_environment() -> None:
         _ = get_appdata()
     except Exception as e:
         exit_error(e)
+    # create the scripts directory if it does not exist
     try:
         _ = get_scriptsdir()
     except Exception as e:
         exit_error(e)
+    # create temp directory if it does not exist, ensuring that it is clean
     try:
-        _ = get_tempdir()
+        _ = get_tempdir(True)
     except Exception as e:
         exit_error(e)
+    # create the Lua library directory if it does not exist
     try:
         _ = get_luadir()
     except Exception as e:
