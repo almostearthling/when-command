@@ -188,17 +188,21 @@ function mcrt.check_conditions_verified(cond_names)
     __wait_lock()
     __set_lock()
     local persistent = __read_persistent()
-    for _, name in ipairs(cond_names) do
-        if not __has_name(name, persistent) then
-            res = false
-            break
-        end
-    end
-    if res then
+    if persistent ~= nil then
         for _, name in ipairs(cond_names) do
-            persistent = __rm_name(name, persistent)
+            if not __has_name(name, persistent) then
+                res = false
+                break
+            end
         end
-        __write_persistent(persistent)
+        if res then
+            for _, name in ipairs(cond_names) do
+                persistent = __rm_name(name, persistent)
+            end
+            __write_persistent(persistent)
+        end
+    else
+        res = false
     end
     __reset_lock()
     return res
@@ -392,10 +396,6 @@ class form_ConfluenceCondition(form_Condition):
 
         self._conds_available = list()
         self._conds_activating = item.tags.get("mcrt_confluent_conditions") or list()
-        for cond in self._conds_activating.copy():
-            if cond not in self._conds_available:
-                self._conds_activating.remove(cond)
-        self._conds_available.sort()
         super().__init__(UI_TITLE_MCRTCOND, tasks_available, item)
 
         # create a specific frame for the contents
@@ -469,6 +469,7 @@ class form_ConfluenceCondition(form_Condition):
 
         # propagate widgets that need to be accessed
         self._tv_activatingConds = tv_activatingConds
+        self._cb_chooseCond = cb_chooseCond
 
         # always update the form at the end of initialization
         self._updateform()
@@ -509,6 +510,12 @@ class form_ConfluenceCondition(form_Condition):
     # set the list of available conditions, that implement confluence
     def set_available_conditions(self, conds: list[str]) -> None:
         self._conds_available = conds.copy()
+        self._conds_available.sort()
+        self._cb_chooseCond['values'] = self._conds_available
+        for cond in self._conds_activating.copy():
+            if cond not in self._conds_available:
+                self._conds_activating.remove(cond)
+        self._updateform()
 
 
 # check whether a condition is confluent

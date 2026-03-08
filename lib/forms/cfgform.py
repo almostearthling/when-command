@@ -505,7 +505,7 @@ class form_Config(ApplicationForm):
                 )
                 e = fform(available_tasks, self._conditions[item_name])
                 # this is a special case, which has an extra parameter
-                if isinstance(e, mcrt.form_ConfluenceCondition):
+                if item_signature == "cond:lua:mcrt_confluence":
                     confluent_conds = list(
                         x
                         for x in self._conditions.keys()
@@ -571,7 +571,7 @@ class form_Config(ApplicationForm):
                     ]
                     form = form_class(list(available_tasks))
                     # this is a special case, which has an extra parameter
-                    if isinstance(form, mcrt.form_ConfluenceCondition):
+                    if form_class is mcrt.form_ConfluenceCondition:
                         confluent_conds = list(
                             x
                             for x in self._conditions.keys()

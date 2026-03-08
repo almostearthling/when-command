@@ -88,12 +88,14 @@ ALL_AVAILABLE_ITEMS = [
     ('cond:lua',       ITEM_COND_LUA,       form_LuaScriptCondition,    LuaScriptCondition),
     ('cond:time',      ITEM_COND_TIME,      form_TimeCondition,         TimeCondition),
     ('cond:wmi',       ITEM_COND_WMI,       form_WMICondition,          WMICondition),
-    ('cond:mcrt',      ITEM_COND_MCRT,      form_ConfluenceCondition,   ConfluenceCondition),
 
     ('event:cli',      ITEM_EVENT_CLI,      form_CommandEvent,          CommandEvent),
     ('event:dbus',     ITEM_EVENT_DBUS,     form_DBusEvent,             DBusEvent),
     ('event:fschange', ITEM_EVENT_FSCHANGE, form_FilesystemChangeEvent, FilesystemChangeEvent),
     ('event:wmi',      ITEM_EVENT_WMI,      form_WMIEvent,              WMIEvent),
+
+    # the following item are native to When (and not to whenever), thus not extras
+    ('cond:lua:mcrt_confluence', ITEM_COND_MCRT, form_ConfluenceCondition, ConfluenceCondition),
 ]
 
 
