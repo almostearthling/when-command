@@ -86,7 +86,12 @@ end
 function mcrt.initialize()
     __wait_lock()
     __set_lock()
-    __write_persistent(nil)
+    local ok, msg = pcall(function()
+        __write_persistent(nil)
+    end)
+    if not ok then
+        log.debug("the following error occurred: " .. (msg or "<unknown>"))
+    end
     __reset_lock()
 end
 
@@ -94,40 +99,50 @@ end
 function mcrt.set_condition_verified(cond_name)
     __wait_lock()
     __set_lock()
-    local persistent = __read_persistent()
-    if persistent ~= nil then
-        if not __has_name(cond_name, persistent) then
-            persistent = __add_name(cond_name, persistent)
+    local ok, msg = pcall(function()
+        local persistent = __read_persistent()
+        if persistent ~= nil then
+            if not __has_name(cond_name, persistent) then
+                persistent = __add_name(cond_name, persistent)
+            end
+        else
+            persistent = __add_name(cond_name, "")
         end
-    else
-        persistent = __add_name(cond_name, "")
+        __write_persistent(persistent)
+    end)
+    if not ok then
+        log.debug("the following error occurred: " .. (msg or "<unknown>"))
     end
-    __write_persistent(persistent)
     __reset_lock()
 end
 
 -- check whether the provided conditions are all verified, and if so remove
 -- their names prior to returning true; otherwise return false
 function mcrt.check_conditions_verified(cond_names)
-    local res = true
+    res = true
     __wait_lock()
     __set_lock()
-    local persistent = __read_persistent()
-    if persistent ~= nil then
-        for _, name in ipairs(cond_names) do
-            if not __has_name(name, persistent) then
-                res = false
-                break
-            end
-        end
-        if res then
+    local ok, msg = pcall(function()
+        local persistent = __read_persistent()
+        if persistent ~= nil then
             for _, name in ipairs(cond_names) do
-                persistent = __rm_name(name, persistent)
+                if not __has_name(name, persistent) then
+                    res = false
+                    break
+                end
             end
-            __write_persistent(persistent)
+            if res then
+                for _, name in ipairs(cond_names) do
+                    persistent = __rm_name(name, persistent)
+                end
+                __write_persistent(persistent)
+            end
+        else
+            res = false
         end
-    else
-        res = false
+    end)
+    if not ok then
+        log.debug("the following error occurred: " .. (msg or "<unknown>"))
     end
     __reset_lock()
     return res
