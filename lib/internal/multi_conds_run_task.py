@@ -66,8 +66,8 @@ from ..toolbox import install_lua
 
 
 # constants
-_MCRT_PERSIST_FILE = ".mcrt_persist"
-_MCRT_LOCK_FILE = ".mcrt_persist.lock"
+_MCRT_LOCK = "Confluence_LOCK"
+_MCRT_PERSIST = "Confluence_STATE"
 _MCRT_LIBRARY = "_mcrt_lib"
 
 _MCRT_EXTRA_DELAY = 15
@@ -78,8 +78,8 @@ _LUA_LIBRARY = """\
 -- used in the scripts that require the library
 
 
-local __MCRT_LOCK_FILE = [[{MCRT_LOCK_FILE}]]
-local __MCRT_PERSIST_FILE = [[{MCRT_PERSIST_FILE}]]
+local __MCRT_LOCK = [[{MCRT_SHAREDSTATE_LOCK}]]
+local __MCRT_PERSIST = [[{MCRT_SHAREDSTATE_PERSIST}]]
 
 
 -- the library itself
@@ -107,120 +107,77 @@ local function __add_name(name, s)
 end
 
 
--- test if a file exists
-local function __file_exists(file)
-  local f = io.open(file, "rb")
-  if f then f:close() end
-  return f ~= nil
-end
-
--- wait for the lock file to disappear: unfortunately stock Lua has no
--- sleep() function, so we do busy wait here hoping that it will never be
--- useful and that the lock would last possibly a bunch of usecs at most
-local function __wait_lock()
-    while __file_exists(__MCRT_LOCK_FILE) do end
-end
-
--- set and reset the lock
-local function __set_lock()
-    local f = io.open(__MCRT_LOCK_FILE, "wb")
-    f:close()
-end
-
-local function __reset_lock()
-    if __file_exists(__MCRT_LOCK_FILE) then
-        os.remove(__MCRT_LOCK_FILE)
-    end
-end
-
--- read the contents of the persistent file, return nil if read failed
-local function __read_persistent()
-    local f = io.open(__MCRT_PERSIST_FILE, "r")
-    local s = nil
-    if f then
-        s = f:read("*all")
-        f:close()
-    end
-    return s
-end
-
--- write the specified contents to the persistent file, truncate the file
--- on null content, which is useful for initialization
-local function __write_persistent(content)
-    local f = io.open(__MCRT_PERSIST_FILE, "w")
-    if content ~= nil then
-        f:write(content)
-    end
-    f:close()
-end
-
-
 -- actual library functions
 
--- initialize the persistent file
+-- initialization is a do-nothing in this edition, but may come in handy
 function mcrt.initialize()
-    __wait_lock()
-    __set_lock()
-    local ok, msg = pcall(function()
-        __write_persistent(nil)
-    end)
-    if not ok then
-        log.debug("the following error occurred: " .. (msg or "<unknown>"))
+    return true
     end
-    __reset_lock()
-end
 
 -- set the condition bearing the provided name to verified
 function mcrt.set_condition_verified(cond_name)
-    __wait_lock()
-    __set_lock()
-    local ok, msg = pcall(function()
-        local persistent = __read_persistent()
-        if persistent ~= nil then
-            if not __has_name(cond_name, persistent) then
-                persistent = __add_name(cond_name, persistent)
+    if sync.lock(__MCRT_LOCK, 1.0) then
+        local ok, msg = pcall(function()
+            local sst = sharedstate.load(__MCRT_PERSIST)
+            local persistent = sst.persistent
+            if persistent ~= nil then
+                if not __has_name(cond_name, persistent) then
+                    persistent = __add_name(cond_name, persistent)
+                end
+            else
+                persistent = __add_name(cond_name, "")
             end
-        else
-            persistent = __add_name(cond_name, "")
+            sst.persistent = persistent
+            sharedstate.save(__MCRT_PERSIST, sst)
+        end)
+        if not ok then
+            log.debug("the following error occurred: " .. (msg or "<unknown>"))
+            res = false
         end
-        __write_persistent(persistent)
-    end)
-    if not ok then
-        log.debug("the following error occurred: " .. (msg or "<unknown>"))
+        sync.release(__MCRT_LOCK)
+        return res
+    else
+        log.debug("could not acquire shared state for condition confluence")
+        return false
     end
-    __reset_lock()
 end
 
 -- check whether the provided conditions are all verified, and if so remove
 -- their names prior to returning true; otherwise return false
 function mcrt.check_conditions_verified(cond_names)
-    res = true
-    __wait_lock()
-    __set_lock()
-    local ok, msg = pcall(function()
-        local persistent = __read_persistent()
-        if persistent ~= nil then
-            for _, name in ipairs(cond_names) do
-                if not __has_name(name, persistent) then
-                    res = false
-                    break
-                end
-            end
-            if res then
+    if sync.lock(__MCRT_LOCK, 1.0) then
+        res = true
+        local ok, msg = pcall(function()
+            local sst = sharedstate.load(__MCRT_PERSIST)
+            local persistent = sst.persistent
+            if persistent ~= nil then
                 for _, name in ipairs(cond_names) do
-                    persistent = __rm_name(name, persistent)
+                    if not __has_name(name, persistent) then
+                        res = false
+                        break
+                    end
                 end
-                __write_persistent(persistent)
+                if res then
+                    for _, name in ipairs(cond_names) do
+                        persistent = __rm_name(name, persistent)
+                    end
+                    sst.persistent = persistent
+                    sharedstate.save(__MCRT_PERSIST, sst)
+                end
+            else
+                res = false
             end
-        else
+        end)
+        if not ok then
+            log.debug("the following error occurred: " .. (msg or "<unknown>"))
             res = false
         end
-    end)
-    if not ok then
-        log.debug("the following error occurred: " .. (msg or "<unknown>"))
+        sync.release(__MCRT_LOCK)
+        return res
+    else
+        log.debug("could not acquire shared state for condition confluence")
+        return false
     end
-    __reset_lock()
-    return res
 end
 
 -- return the library table
@@ -246,19 +203,6 @@ _MCRT_COND_CONFLUENCE_SCRIPT_TEMPLATE = f"""
 """
 
 
-# the persistence file is the file that contains the list of conditions that
-# concur to task triggering which have been successfully checked
-def _mcrt_persist_file():
-    return os.path.join(get_tempdir(), _MCRT_PERSIST_FILE)
-
-
-# the lock file is checked when trying to access the persistence file: no other
-# access (including read-only access) will be performed when the lock file is
-# present, which indicates a current access
-def _mcrt_lock_file():
-    return os.path.join(get_tempdir(), _MCRT_LOCK_FILE)
-
-
 # utility to install the Lua library: it also reserves the library file name
 # so that it is not overwritten by the user in case he decides to install
 # a Lua library of choice
@@ -268,8 +212,8 @@ def install_lib():
     if not os.path.exists(s):
         lua_library = _LUA_LIBRARY.format(
             "{}",  # this replaces the brackets!
-            MCRT_LOCK_FILE=_mcrt_lock_file(),
-            MCRT_PERSIST_FILE=_mcrt_persist_file(),
+            MCRT_SHAREDSTATE_LOCK=_ITEM_PREFIX + _MCRT_LOCK,
+            MCRT_PERSIST_FILE=_ITEM_PREFIX + _MCRT_PERSIST,
         )
         with open(s, "w") as f:
             f.write(lua_library)
