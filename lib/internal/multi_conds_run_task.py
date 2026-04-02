@@ -109,9 +109,23 @@ end
 
 -- actual library functions
 
--- initialization is a do-nothing in this edition, but may come in handy
+-- initialization just resets the shared state
 function mcrt.initialize()
-    return true
+    if sync.lock(__MCRT_LOCK, 1.0) then
+        local ok, msg = pcall(function()
+            local sst = {{ }}
+            sst.persistent = ""
+            sharedstate.save(__MCRT_PERSIST, sst)
+        end)
+        if not ok then
+            log.debug("the following error occurred: " .. (msg or "<unknown>"))
+            res = false
+        end
+        sync.release(__MCRT_LOCK)
+        return res
+    else
+        log.debug("could not acquire shared state for condition confluence")
+        return false
     end
 
 -- set the condition bearing the provided name to verified
