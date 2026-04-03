@@ -385,6 +385,14 @@ def check_whenever_version() -> bool:
 
 # return the output of `whenever --options`
 def retrieve_whenever_options() -> None:
+    # first assume no feature is available
+    AppConfig.set("WHENEVER_HAS_DBUS", False)
+    AppConfig.set("WHENEVER_HAS_WMI", False)
+    AppConfig.set("WHENEVER_HAS_LUAHTTP", False)
+    AppConfig.set("WHENEVER_HAS_LUASYNC", False)
+    # ...other options might appear above here
+
+    # then ask the executable for options
     whenever_path: str = AppConfig.get("WHENEVER")  # type: ignore
     try:
         result = subprocess.run(
@@ -397,37 +405,34 @@ def retrieve_whenever_options() -> None:
                 subprocess.CREATE_NO_WINDOW if sys.platform.startswith("win") else 0
             ),
         )
-    except Exception:
-        # maybe no executable has been found?
-        AppConfig.set("WHENEVER_HAS_DBUS", False)
-        AppConfig.set("WHENEVER_HAS_WMI", False)
-        # ...other options might appear
-        return None
-    if result:
-        # output has the form: `options: [wmi] [dbus]`, each one might or
-        # might not be present in the output, so we check whether the list
-        # below contains or not one of them
-        if result.returncode == 0:
-            opts = result.stdout.strip().split()
-            if "dbus" in opts:
+        if result:
+            # output has the form: `options: <opt1> <opt2> ..`, each one might
+            # or might not be present in the output, so we check whether the
+            # list below contains or not one of them
+            if result.returncode == 0:
+                opts = result.stdout.strip().split()
+                if opts[0] != "options":
+                    # maybe it is not the `whenever` we are looking for?
+                    return
+                opts = opts[1:]
+                if "dbus" in opts:
+                    AppConfig.set("WHENEVER_HAS_DBUS", True)
+                if sys.platform.startswith("win") and "wmi" in opts:
+                    AppConfig.set("WHENEVER_HAS_WMI", True)
+                if "lua_sync" in opts:
+                    AppConfig.set("WHENEVER_HAS_LUASYNC", True)
+                if "lua_httpreq" in opts:
+                    AppConfig.set("WHENEVER_HAS_LUAHTTPREQ", True)
+                # ...other options might appear
+            else:
+                # this might be an older version, assume DBus is available
                 AppConfig.set("WHENEVER_HAS_DBUS", True)
-            else:
-                AppConfig.set("WHENEVER_HAS_DBUS", False)
-            if sys.platform.startswith("win") and "wmi" in opts:
-                AppConfig.set("WHENEVER_HAS_WMI", True)
-            else:
-                AppConfig.set("WHENEVER_HAS_WMI", False)
-            # ...other options might appear
         else:
-            # this might be an older version, assume DBus is available
+            # this too might be an older version, assume DBus is available
             AppConfig.set("WHENEVER_HAS_DBUS", True)
-            AppConfig.set("WHENEVER_HAS_WMI", False)
-            # ...other options might appear
-    else:
-        # this might be an older version, assume DBus is available
-        AppConfig.set("WHENEVER_HAS_DBUS", True)
-        AppConfig.set("WHENEVER_HAS_WMI", False)
-        # ...other options might appear
+    except Exception:
+        # maybe no executable has been found? Still, no available option.
+        return
 
 
 # check whether the scheduler is running
@@ -453,14 +458,21 @@ def is_whenever_running() -> None | bool:
         return False
 
 
-# a couple of shortcuts for whenever options
+# some shortcuts for whenever options
 def whenever_has_dbus() -> bool:
     res = bool(AppConfig.get("WHENEVER_HAS_DBUS"))
     return res
 
-
 def whenever_has_wmi() -> bool:
     res = bool(AppConfig.get("WHENEVER_HAS_WMI"))
+    return res
+
+def whenever_has_lua_sync() -> bool:
+    res = bool(AppConfig.get("WHENEVER_HAS_LUASYNC"))
+    return res
+
+def whenever_has_luahttpreq() -> bool:
+    res = bool(AppConfig.get("WHENEVER_HAS_LUAHTTPREQ"))
     return res
 
 
