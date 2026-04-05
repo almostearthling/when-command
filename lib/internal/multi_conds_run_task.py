@@ -3,20 +3,20 @@
 # private items that enable the condition "confluence" feature (issue #187),
 # that is the possibility for a task to depend on more than one condition.
 #
-# The idea is to have a persistence file where *all* the conditions that are
-# defined as concurring to the triggering of tasks are recorded: this file is
+# The idea is to have a persistence store where *all* the conditions that are
+# defined as concurring to the triggering of tasks are recorded: this store is
 # periodically read, and when all the conditions that concur to a specific
-# task (or list/set of tasks) are found in the file, the following happens:
+# task (or list/set of tasks) are found in the store, the following happens:
 #
-# 1. the conditions are _removed_ from the file
+# 1. the conditions are _removed_ from the store
 # 2. the corresponding task or list/set of tasks is executed
 #
 # For this purpose, the conditions that concur to tasks will all be bound to
-# a single Lua-based task, which writes their name in the file, while multiple
+# a single Lua-based task, which writes their name in the store, while multiple
 # conditions will be built for each task group to be activated by multiple
 # conditions.
 #
-# The persistence file does not need to be structured, it only has to be read,
+# The persistence store does not need to be structured, it only has to be read,
 # operated on, and written quickly. No concurrent reads or writes should be
 # allowed, assuming that one instance of a verified condition cannot concur to
 # multiple task groups (this is arbitrary, but cleaner than the opposite), and
@@ -53,7 +53,6 @@ from ..forms.ui import *
 from ..forms.cond import form_Condition
 
 from ..utility import (
-    get_tempdir,
     get_luadir,
     get_lua_initscript,
     get_lua_path,
@@ -266,7 +265,6 @@ def updater() -> task_lua.LuaScriptTask:
     mcrt.set_condition_verified(whenever_condition)
     """
     return task
-
 
 def updater_name() -> str:
     return _TASK_UPDATER

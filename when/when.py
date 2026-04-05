@@ -31,6 +31,7 @@ from lib.utility import (
     get_logfile,
     get_configfile,
     is_whenever_running,
+    whenever_has_lua_sync,
     get_image,
     get_UI_theme,
     get_tkroot,
@@ -323,6 +324,10 @@ def main_config(args) -> None:
     AppConfig.set("APPDATA", args.dir_appdata)
     retrieve_whenever_options()
     prepare_environment()
+    # the following disables Confluence for `whenever` without shared states
+    if not whenever_has_lua_sync():
+        mcrt.ConfluenceCondition.available = False
+    # different exception handling for DEBUG/RELEASE runs
     if DEBUG:
         configfile = get_configfile()
         if not os.path.exists(configfile):
@@ -363,6 +368,9 @@ def main_start(args) -> None:
     AppConfig.set("WHENEVER", args.whenever)
     retrieve_whenever_options()
     prepare_environment()
+    # the following disables Confluence for `whenever` without shared states
+    if not whenever_has_lua_sync():
+        mcrt.ConfluenceCondition.available = False
     # prepare application so that the logger can be initialized
     setup_windows()
     if is_whenever_running():
@@ -398,6 +406,7 @@ def main_start(args) -> None:
             status=log.STATUS_MSG,
         ).log(f"found `whenever` version {v}: please upgrade")
         exit_error(CLI_ERR_WHENEVER_WRONG_VERSION)
+    # different exception handling for DEBUG/RELEASE runs
     if DEBUG:
         # setup the scheduler and associate it to the application
         wrapper = Wrapper(config_file, whenever, _root)

@@ -38,7 +38,7 @@ end
 function mcrt.initialize()
     if sync.lock(__MCRT_LOCK, 1.0) then
         local ok, msg = pcall(function()
-            local sst = { }
+            local sst = {{ }}
             sst.persistent = ""
             sharedstate.save(__MCRT_PERSIST, sst)
         end)

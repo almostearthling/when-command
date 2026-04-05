@@ -11,7 +11,12 @@ from ..repocfg import AppConfig
 
 from ..items.cond import Condition
 
-from ..utility import is_valid_item_name, clean_caption, is_private_item_name
+from ..utility import (
+    is_valid_item_name, 
+    clean_caption, 
+    is_private_item_name,
+    whenever_has_lua_sync,
+    )
 from ..internal import multi_conds_run_task as mcrt
 
 
@@ -69,9 +74,11 @@ class form_Condition(ApplicationForm):
         ck_mcrtActivateFurther = ttk.Checkbutton(
             area_common, text=UI_FORM_ACTIVATEFURTHERCONDS
         )
-        # l_maxTasksRetries = ttk.Label(area_common, text=UI_FORM_MAXTASKRETRIES_SC)
-        # e_maxTasksRetries = ttk.Entry(area_common)
         sep1 = ttk.Separator(area_common)
+
+        # disable confluence if `whenever` has no shared states
+        if not whenever_has_lua_sync():
+            ck_mcrtActivateFurther.config(state=tk.DISABLED)
 
         l_tasks = ttk.Label(area_common, text=UI_FORM_ACTIVETASKS_SC)
         # build a scrolled frame for the treeview
@@ -152,8 +159,6 @@ class form_Condition(ApplicationForm):
         ck_itemRecurring.grid(row=1, column=1, sticky=tk.W, padx=PAD, pady=PAD)
         ck_itemSuspended.grid(row=2, column=1, sticky=tk.W, padx=PAD, pady=PAD)
         ck_mcrtActivateFurther.grid(row=3, column=1, sticky=tk.W, padx=PAD, pady=PAD)
-        # l_maxTasksRetries.grid(row=4, column=0, sticky=tk.W, padx=PAD, pady=PAD)
-        # e_maxTasksRetries.grid(row=4, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
         sep1.grid(row=5, column=0, columnspan=2, sticky=tk.EW, pady=PAD)
         l_tasks.grid(row=10, column=0, columnspan=2, sticky=tk.W, padx=PAD, pady=PAD)
         sftv_tasks.grid(
@@ -232,14 +237,12 @@ class form_Condition(ApplicationForm):
         else:
             self.reset_item()
         self._check_recurring()
-        # self._max_retries.config(state=tk.NORMAL)
         self.changed = False
 
     def add_task(self) -> None:
         elem = self.data_get("@choose_task")
         if elem:
             self._tasks.append(elem)
-        self._updatedata()
         self._updateform()
 
     def del_task(self) -> None:
@@ -247,7 +250,6 @@ class form_Condition(ApplicationForm):
         if elem:
             idx = int(elem[0])
             del self._tasks[idx]
-            self._updatedata()
             self._updateform()
 
     def add_check_caption(self, dataname, caption) -> None:
@@ -277,7 +279,6 @@ class form_Condition(ApplicationForm):
         not_rec = not self.data_get("@recurring") or False
         if not_rec:
             self.data_set("@max_tasks_retries", 0)
-            self._updatedata()
             self._max_retries.config(state=tk.DISABLED)
         else:
             # before enabling, check that this is not a confluent condition
@@ -301,7 +302,6 @@ class form_Condition(ApplicationForm):
             self.data_set("@max_tasks_retries", 0)
             self._tv_tasks.delete(*self._tv_tasks.get_children())
             self._tasks = [mcrt_updater]
-            self._updatedata()
             for elem in self._task_elems:
                 spec = list(elem.state())
                 if tk.DISABLED not in spec:
