@@ -42,7 +42,7 @@ class form_LuaScriptTask(form_Task):
         # form data
         self._results = []
 
-        self._item.variables_to_set = { "LUA_PATH": get_lua_path() }  # legacy
+        self._item.variables_to_set = {"LUA_PATH": get_lua_path()}  # legacy
         self._item.init_script_path = get_lua_initscript()
 
         # build the UI: build widgets, arrange them in the box, bind data

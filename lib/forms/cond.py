@@ -12,11 +12,11 @@ from ..repocfg import AppConfig
 from ..items.cond import Condition
 
 from ..utility import (
-    is_valid_item_name, 
-    clean_caption, 
+    is_valid_item_name,
+    clean_caption,
     is_private_item_name,
     whenever_has_lua_sync,
-    )
+)
 from ..internal import multi_conds_run_task as mcrt
 
 

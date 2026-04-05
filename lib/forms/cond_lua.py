@@ -38,7 +38,7 @@ class form_LuaScriptCondition(form_Condition):
         super().__init__(UI_TITLE_LUACOND, tasks_available, item)
         assert isinstance(self._item, LuaScriptCondition)
 
-        self._item.variables_to_set = { "LUA_PATH": get_lua_path() }  # legacy
+        self._item.variables_to_set = {"LUA_PATH": get_lua_path()}  # legacy
         self._item.init_script_path = get_lua_initscript()
 
         # form data

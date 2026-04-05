@@ -235,6 +235,7 @@ def install_lib():
 
 # the following items are the specific ones that implement the confluence
 
+
 # 1. initialization task: resets the persistence file; the reason why we want
 # this to be performed by the Lua interpreter instead of the GUI application,
 # is that in this way the MCRT system is initialized even when used with
@@ -242,13 +243,14 @@ def install_lib():
 def initializer() -> task_lua.LuaScriptTask:
     task = task_lua.LuaScriptTask()
     task.name = _TASK_INITIALIZER
-    task.variables_to_set = { "LUA_PATH": get_lua_path() }
+    task.variables_to_set = {"LUA_PATH": get_lua_path()}
     task.init_script_path = get_lua_initscript()
     task.script = f"""
     local mcrt = require("{_MCRT_LIBRARY}")
     mcrt.initialize()
     """
     return task
+
 
 def initializer_name() -> str:
     return _TASK_INITIALIZER
@@ -258,13 +260,14 @@ def initializer_name() -> str:
 def updater() -> task_lua.LuaScriptTask:
     task = task_lua.LuaScriptTask()
     task.name = _TASK_UPDATER
-    task.variables_to_set = { "LUA_PATH": get_lua_path() }
+    task.variables_to_set = {"LUA_PATH": get_lua_path()}
     task.init_script_path = get_lua_initscript()
     task.script = f"""
     local mcrt = require("{_MCRT_LIBRARY}")
     mcrt.set_condition_verified(whenever_condition)
     """
     return task
+
 
 def updater_name() -> str:
     return _TASK_UPDATER
@@ -324,7 +327,7 @@ class ConfluenceCondition(cond_lua.LuaScriptCondition):
 
     def updateitem(self):
         confluent_conditions = self.tags.get("mcrt_confluent_conditions", list())
-        self.variables_to_set = { "LUA_PATH": get_lua_path() }
+        self.variables_to_set = {"LUA_PATH": get_lua_path()}
         self.init_script_path = get_lua_initscript()
         self.script = _MCRT_COND_CONFLUENCE_SCRIPT_TEMPLATE.replace(
             "[[COND_LIST]]",
@@ -482,7 +485,7 @@ class form_ConfluenceCondition(form_Condition):
     def set_available_conditions(self, conds: list[str]) -> None:
         self._conds_available = conds.copy()
         self._conds_available.sort()
-        self._cb_chooseCond['values'] = self._conds_available
+        self._cb_chooseCond["values"] = self._conds_available
         for cond in self._conds_activating.copy():
             if cond not in self._conds_available:
                 self._conds_activating.remove(cond)
