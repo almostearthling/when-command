@@ -6,7 +6,12 @@ import re
 import os
 
 from tomlkit import items
-from ..utility import check_not_none, append_not_none, toml_script_string
+from ..utility import (
+    check_not_none,
+    append_not_none,
+    toml_script_string,
+    toml_literal,
+    )
 
 from .itemhelp import CheckedTable
 from .task import Task
@@ -84,7 +89,7 @@ class LuaScriptTask(Task):
         t = append_not_none(t, "expect_all", self.expect_all)
         t = append_not_none(t, "variables_to_set", self.variables_to_set)
         t = append_not_none(t, "expected_results", self.expected_results)
-        t = append_not_none(t, "init_script_path", self.init_script_path)
+        t = append_not_none(t, "init_script_path", toml_literal(self.init_script_path))
         return t
 
 
