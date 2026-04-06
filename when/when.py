@@ -31,7 +31,10 @@ from lib.utility import (
     get_logfile,
     get_configfile,
     is_whenever_running,
+    whenever_has_wmi,
+    whenever_has_dbus,
     whenever_has_lua_sync,
+    whenever_has_lua_httpreq,
     get_image,
     get_UI_theme,
     get_tkroot,
@@ -306,6 +309,28 @@ def prepare_environment() -> None:
         _ = get_luadir()
     except Exception as e:
         exit_error(e)
+    # ...
+
+
+# activate or deactivate non-extra features according to availability
+def check_prepare_features():
+    # deactivate main capabilities depending on WMI
+    if not whenever_has_wmi():
+        pass
+        # ...
+    # deactivate main capabilities depending on DBus
+    if not whenever_has_dbus():
+        pass
+        # ...
+    # deactivate main capabilities depending on Lua sync facilities
+    if not whenever_has_lua_sync():
+        mcrt.ConfluenceCondition.available = False
+        pass
+        # ...
+    # deactivate main capabilities depending on Lua HTTP access
+    if not whenever_has_lua_httpreq():
+        pass
+        # ...
 
 
 # subcommand main functions
@@ -322,12 +347,10 @@ def main_config(args) -> None:
     # set some global configuration values according to CLI options
     AppConfig.delete("APPDATA")
     AppConfig.set("APPDATA", args.dir_appdata)
+    # prepare application
     retrieve_whenever_options()
     prepare_environment()
-    # the following disables Confluence for `whenever` without shared states
-    if not whenever_has_lua_sync():
-        mcrt.ConfluenceCondition.available = False
-    # different exception handling for DEBUG/RELEASE runs
+    check_prepare_features()
     if DEBUG:
         configfile = get_configfile()
         if not os.path.exists(configfile):
@@ -366,16 +389,14 @@ def main_start(args) -> None:
     AppConfig.set("LOGLEVEL", args.log_level.upper())
     AppConfig.delete("WHENEVER")
     AppConfig.set("WHENEVER", args.whenever)
-    retrieve_whenever_options()
-    prepare_environment()
-    # the following disables Confluence for `whenever` without shared states
-    if not whenever_has_lua_sync():
-        mcrt.ConfluenceCondition.available = False
-    # prepare application so that the logger can be initialized
-    setup_windows()
+    # exit with an error if whenever is already running
     if is_whenever_running():
         exit_error(CLI_ERR_ALREADY_RUNNING)
-    # get configuration options
+    # prepare application and initialize the logger
+    retrieve_whenever_options()
+    prepare_environment()
+    check_prepare_features()
+    setup_windows()
     log_level = AppConfig.get("LOGLEVEL")
     log_file = get_logfile()
     config_file = get_configfile()

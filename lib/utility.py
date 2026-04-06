@@ -35,7 +35,7 @@ from .platform import is_windows, is_linux, is_mac
 
 
 # lowest whenever version supported
-_MIN_WHENEVER_SUPPORTED = Version.parse("1.0.0")
+_MIN_WHENEVER_SUPPORTED = Version.parse("1.2.0")
 
 
 # a regular expression to check whether an user-given name is valid
@@ -388,8 +388,8 @@ def retrieve_whenever_options() -> None:
     # first assume no feature is available
     AppConfig.set("WHENEVER_HAS_DBUS", False)
     AppConfig.set("WHENEVER_HAS_WMI", False)
-    AppConfig.set("WHENEVER_HAS_LUAHTTP", False)
     AppConfig.set("WHENEVER_HAS_LUASYNC", False)
+    AppConfig.set("WHENEVER_HAS_LUAHTTPREQ", False)
     # ...other options might appear above here
 
     # then ask the executable for options
@@ -411,24 +411,30 @@ def retrieve_whenever_options() -> None:
             # list below contains or not one of them
             if result.returncode == 0:
                 opts = result.stdout.strip().split()
-                if opts[0] != "options":
+                if opts[0] != "options:":
                     # maybe it is not the `whenever` we are looking for?
                     return
                 opts = opts[1:]
                 if "dbus" in opts:
+                    AppConfig.delete("WHENEVER_HAS_DBUS")
                     AppConfig.set("WHENEVER_HAS_DBUS", True)
                 if sys.platform.startswith("win") and "wmi" in opts:
+                    AppConfig.delete("WHENEVER_HAS_WMI")
                     AppConfig.set("WHENEVER_HAS_WMI", True)
                 if "lua_sync" in opts:
+                    AppConfig.delete("WHENEVER_HAS_LUASYNC")
                     AppConfig.set("WHENEVER_HAS_LUASYNC", True)
                 if "lua_httpreq" in opts:
+                    AppConfig.delete("WHENEVER_HAS_LUAHTTPREQ")
                     AppConfig.set("WHENEVER_HAS_LUAHTTPREQ", True)
                 # ...other options might appear
             else:
                 # this might be an older version, assume DBus is available
+                AppConfig.delete("WHENEVER_HAS_DBUS")
                 AppConfig.set("WHENEVER_HAS_DBUS", True)
         else:
             # this too might be an older version, assume DBus is available
+            AppConfig.delete("WHENEVER_HAS_DBUS")
             AppConfig.set("WHENEVER_HAS_DBUS", True)
     except Exception:
         # maybe no executable has been found? Still, no available option.
@@ -460,20 +466,16 @@ def is_whenever_running() -> None | bool:
 
 # some shortcuts for whenever options
 def whenever_has_dbus() -> bool:
-    res = bool(AppConfig.get("WHENEVER_HAS_DBUS"))
-    return res
+    return bool(AppConfig.get("WHENEVER_HAS_DBUS"))
 
 def whenever_has_wmi() -> bool:
-    res = bool(AppConfig.get("WHENEVER_HAS_WMI"))
-    return res
+    return bool(AppConfig.get("WHENEVER_HAS_WMI"))
 
 def whenever_has_lua_sync() -> bool:
-    res = bool(AppConfig.get("WHENEVER_HAS_LUASYNC"))
-    return res
+    return bool(AppConfig.get("WHENEVER_HAS_LUASYNC"))
 
-def whenever_has_luahttpreq() -> bool:
-    res = bool(AppConfig.get("WHENEVER_HAS_LUAHTTPREQ"))
-    return res
+def whenever_has_lua_httpreq() -> bool:
+    return bool(AppConfig.get("WHENEVER_HAS_LUAHTTPREQ"))
 
 
 # return the configuration file path
