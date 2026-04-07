@@ -239,12 +239,14 @@ class form_Condition(ApplicationForm):
 
     def add_task(self) -> None:
         elem = self.data_get("@choose_task")
+        self._updatedata()
         if elem:
             self._tasks.append(elem)
         self._updateform()
 
     def del_task(self) -> None:
         elem = self.data_get("@tasks_selection")
+        self._updatedata()
         if elem:
             idx = int(elem[0])
             del self._tasks[idx]

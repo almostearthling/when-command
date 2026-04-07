@@ -38,14 +38,11 @@
 
 from ..i18n.strings import *
 
-import os
 from tomlkit import items, table
 
 import tkinter as tk
 import ttkbootstrap as ttk
 import ttkbootstrap.constants as ttkc
-
-from typing import List, Tuple
 
 from ..forms.ui import *
 
@@ -53,7 +50,6 @@ from ..forms.ui import *
 from ..forms.cond import form_Condition
 
 from ..utility import (
-    get_luadir,
     get_lua_initscript,
     get_lua_path,
     get_private_item_name_prefix,
@@ -65,140 +61,9 @@ from ..toolbox import install_lua
 
 
 # constants
-_MCRT_LOCK = "Confluence_LOCK"
-_MCRT_PERSIST = "Confluence_STATE"
 _MCRT_LIBRARY = "_mcrt_lib"
 
 _MCRT_EXTRA_DELAY = 15
-
-# _LUA_LIBRARY = """\
-# -- mcrt: multiple conditions to run a task
-# -- NOTE: internals have a double underscore and will not be directly
-# -- used in the scripts that require the library
-
-
-# local __MCRT_LOCK = [[{MCRT_SHAREDSTATE_LOCK}]]
-# local __MCRT_PERSIST = [[{MCRT_SHAREDSTATE_PERSIST}]]
-
-
-# -- the library itself
-# local mcrt = {}
-
-
-# -- mangle names
-# local function __mangle_name(name)
-#     return ":" .. name .. ":"
-# end
-
-# -- find whether or not a (mangled) name is present in a string
-# local function __has_name(name, s)
-#     return string.find(s, __mangle_name(name)) ~= nil
-# end
-
-# -- remove a name from a string
-# local function __rm_name(name, s)
-#     return string.gsub(s, __mangle_name(name), "")
-# end
-
-# -- add a name to a string
-# local function __add_name(name, s)
-#     return s .. __mangle_name(name)
-# end
-
-
-# -- actual library functions
-
-# -- initialization just resets the shared state
-# function mcrt.initialize()
-#     if sync.lock(__MCRT_LOCK, 1.0) then
-#         local ok, msg = pcall(function()
-#             local sst = {{ }}
-#             sst.persistent = ""
-#             sharedstate.save(__MCRT_PERSIST, sst)
-#         end)
-#         if not ok then
-#             log.debug("the following error occurred: " .. (msg or "<unknown>"))
-#             res = false
-#         end
-#         sync.release(__MCRT_LOCK)
-#         return res
-#     else
-#         log.debug("could not acquire shared state for condition confluence")
-#         return false
-#     end
-
-# -- set the condition bearing the provided name to verified
-# function mcrt.set_condition_verified(cond_name)
-#     if sync.lock(__MCRT_LOCK, 1.0) then
-#         local ok, msg = pcall(function()
-#             local sst = sharedstate.load(__MCRT_PERSIST)
-#             local persistent = sst.persistent
-#             if persistent ~= nil then
-#                 if not __has_name(cond_name, persistent) then
-#                     persistent = __add_name(cond_name, persistent)
-#                 end
-#             else
-#                 persistent = __add_name(cond_name, "")
-#             end
-#             sst.persistent = persistent
-#             sharedstate.save(__MCRT_PERSIST, sst)
-#         end)
-#         if not ok then
-#             log.debug("the following error occurred: " .. (msg or "<unknown>"))
-#             res = false
-#         end
-#         sync.release(__MCRT_LOCK)
-#         return res
-#     else
-#         log.debug("could not acquire shared state for condition confluence")
-#         return false
-#     end
-# end
-
-# -- check whether the provided conditions are all verified, and if so remove
-# -- their names prior to returning true; otherwise return false
-# function mcrt.check_conditions_verified(cond_names)
-#     if sync.lock(__MCRT_LOCK, 1.0) then
-#         res = true
-#         local ok, msg = pcall(function()
-#             local sst = sharedstate.load(__MCRT_PERSIST)
-#             local persistent = sst.persistent
-#             if persistent ~= nil then
-#                 for _, name in ipairs(cond_names) do
-#                     if not __has_name(name, persistent) then
-#                         res = false
-#                         break
-#                     end
-#                 end
-#                 if res then
-#                     for _, name in ipairs(cond_names) do
-#                         persistent = __rm_name(name, persistent)
-#                     end
-#                     sst.persistent = persistent
-#                     sharedstate.save(__MCRT_PERSIST, sst)
-#                 end
-#             else
-#                 res = false
-#             end
-#         end)
-#         if not ok then
-#             log.debug("the following error occurred: " .. (msg or "<unknown>"))
-#             res = false
-#         end
-#         sync.release(__MCRT_LOCK)
-#         return res
-#     else
-#         log.debug("could not acquire shared state for condition confluence")
-#         return false
-#     end
-# end
-
-# -- return the library table
-# return mcrt
-
-
-# -- end.
-# """
 
 
 # this is the prefix for all of our item names
@@ -214,23 +79,6 @@ _MCRT_COND_CONFLUENCE_SCRIPT_TEMPLATE = f"""
     local mcrt = require("{_MCRT_LIBRARY}")
     res = mcrt.check_conditions_verified([[COND_LIST]])
 """
-
-
-# utility to install the Lua library: it also reserves the library file name
-# so that it is not overwritten by the user in case he decides to install
-# a Lua library of choice
-# def install_lib():
-#     libfilename = f"{_MCRT_LIBRARY}.lua"
-#     s = os.path.join(get_luadir(), libfilename)
-#     if not os.path.exists(s):
-#         lua_library = _LUA_LIBRARY.format(
-#             "{}",  # this replaces the brackets!
-#             MCRT_SHAREDSTATE_LOCK=_ITEM_PREFIX + _MCRT_LOCK,
-#             MCRT_PERSIST_FILE=_ITEM_PREFIX + _MCRT_PERSIST,
-#         )
-#         with open(s, "w") as f:
-#             f.write(lua_library)
-#     install_lua.reserve_lua(libfilename)
 
 
 # the following items are the specific ones that implement the confluence
@@ -514,7 +362,6 @@ __all__ = [
     "updater_name",
     "is_confluent_cond",
     "is_confluence_cond",
-    # "install_lib",
     "ConfluenceCondition",
     "form_ConfluenceCondition",
 ]

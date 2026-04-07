@@ -3,8 +3,8 @@
 -- used in the scripts that require the library
 
 
-local __MCRT_LOCK = [[{MCRT_SHAREDSTATE_LOCK}]]
-local __MCRT_PERSIST = [[{MCRT_SHAREDSTATE_PERSIST}]]
+local __MCRT_LOCK = "__When__private__MCRT_LockState"
+local __MCRT_PERSIST = "__When__private__MCRT_SharedState"
 
 
 -- the library itself
@@ -38,7 +38,7 @@ end
 function mcrt.initialize()
     if sync.lock(__MCRT_LOCK, 1.0) then
         local ok, msg = pcall(function()
-            local sst = {{ }}
+            local sst = {}
             sst.persistent = ""
             sharedstate.save(__MCRT_PERSIST, sst)
         end)
@@ -52,6 +52,7 @@ function mcrt.initialize()
         log.debug("could not acquire shared state for condition confluence")
         return false
     end
+end
 
 -- set the condition bearing the provided name to verified
 function mcrt.set_condition_verified(cond_name)

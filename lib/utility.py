@@ -32,6 +32,7 @@ from .i18n.strings import *
 from .repocfg import AppConfig
 from .runner.logger import Logger
 from .platform import is_windows, is_linux, is_mac
+from .lua import lua_library_path
 
 
 # lowest whenever version supported
@@ -309,9 +310,7 @@ def get_app_basedir():
 # construct Lua path
 def get_lua_path() -> str:
     luabase = get_luadir()
-    appbase = get_app_basedir()
-    assert(isinstance(appbase, str))
-    lualib = os.path.join(appbase, "lua")
+    lualib = lua_library_path()
     ps = os.path.sep
     return (
         ";".join(
@@ -320,6 +319,8 @@ def get_lua_path() -> str:
                 "?.lua",
                 f"{lualib}{ps}?",
                 f"{lualib}{ps}?.lua",
+                f"{lualib}{ps}?{ps}?",
+                f"{lualib}{ps}?{ps}?.lua",
                 f"{luabase}{ps}?",
                 f"{luabase}{ps}?.lua",
                 f"{luabase}{ps}?{ps}?",
@@ -347,6 +348,11 @@ def get_lua_initscript() -> str:
         with open(init, 'w') as f:
             f.write(_LUA_INIT_SCRIPT)
     return init
+
+
+# return the path to Lua static library shipped with When
+def get_lua_staticlib_path() -> str:
+    return lua_library_path()
 
 
 # save a script to the scripts directory and make it executable: possible

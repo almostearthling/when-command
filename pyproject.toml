@@ -21,9 +21,6 @@ packages = [
     { include = "lib" },
     { include = "when" },
 ]
-include = [
-    { path ="lua/*.lua", format = ["sdist", "wheel"] },
-]
 
 [tool.poetry.dependencies]
 python = "^3.10"
