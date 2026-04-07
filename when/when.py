@@ -25,6 +25,7 @@ from lib.utility import (
     get_whenever_version,
     check_whenever_version,
     get_luadir,
+    get_lua_initscript,
     get_tempdir,
     get_scriptsdir,
     get_appdata,
@@ -58,6 +59,9 @@ _root = None
 
 # this is used to enable exception handling too
 DEBUG = AppConfig.get("DEBUG")
+
+# add current base directory to the configuration store
+AppConfig.set("WHEN_BASEDIR", BASEDIR)
 
 
 # the following class is used to create an invisible window that actually
@@ -307,6 +311,11 @@ def prepare_environment() -> None:
     # create the Lua library directory if it does not exist
     try:
         _ = get_luadir()
+    except Exception as e:
+        exit_error(e)
+    # create the Lua initialization script if it does not exist
+    try:
+        _ = get_lua_initscript()
     except Exception as e:
         exit_error(e)
     # ...
@@ -660,9 +669,6 @@ def main() -> None:
     # for now set the paths to their default values
     AppConfig.set("APPDATA", default_appdata)
     AppConfig.set("WHENEVER", default_whenever)
-
-    # other initialization actions
-    mcrt.install_lib()
 
     # main parser
     parser = argparse.ArgumentParser(

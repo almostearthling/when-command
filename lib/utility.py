@@ -301,15 +301,25 @@ def get_luadir() -> str:
     return luadir
 
 
+# get directory where the application is installed
+def get_app_basedir():
+    return AppConfig.get("WHEN_BASEDIR")
+
+
 # construct Lua path
 def get_lua_path() -> str:
     luabase = get_luadir()
+    appbase = get_app_basedir()
+    assert(isinstance(appbase, str))
+    lualib = os.path.join(appbase, "lua")
     ps = os.path.sep
     return (
         ";".join(
             [
                 "?",
                 "?.lua",
+                f"{lualib}{ps}?",
+                f"{lualib}{ps}?.lua",
                 f"{luabase}{ps}?",
                 f"{luabase}{ps}?.lua",
                 f"{luabase}{ps}?{ps}?",

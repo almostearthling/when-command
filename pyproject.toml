@@ -9,6 +9,13 @@ license = 'BSD 3-Clause "New" or "Revised" License'
 readme = "README.md"
 requires-python = ">=3.10"
 
+[project.scripts]
+when = "when.when:main"
+
+[project.gui-scripts]
+when-bg = "when.when_bg:run_bg"
+
+
 [tool.poetry]
 packages = [
     { include = "lib" },
@@ -17,13 +24,6 @@ packages = [
 include = [
     "lua",
 ]
-
-[project.scripts]
-when = "when.when:main"
-
-[project.gui-scripts]
-when-bg = "when.when_bg:run_bg"
-
 
 [tool.poetry.dependencies]
 python = "^3.10"
