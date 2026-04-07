@@ -76,8 +76,8 @@ class form_Condition(ApplicationForm):
         )
         sep1 = ttk.Separator(area_common)
 
-        # disable confluence if `whenever` has no shared states
-        if not whenever_has_lua_sync():
+        # disable confluence if confluence condition is not available
+        if not mcrt.ConfluenceCondition.available:
             ck_mcrtActivateFurther.config(state=tk.DISABLED)
 
         l_tasks = ttk.Label(area_common, text=UI_FORM_ACTIVETASKS_SC)
@@ -123,8 +123,6 @@ class form_Condition(ApplicationForm):
         cb_chooseTask.grid(row=0, column=1, sticky=tk.EW, padx=PAD, pady=PAD)
         b_addTask.grid(row=0, column=2, sticky=tk.E, padx=PAD, pady=PAD)
         b_delTask.grid(row=0, column=3, sticky=tk.E, padx=PAD, pady=PAD)
-
-        # self._tv_tasks.bind('<Double-Button-1>', lambda _: self.recall_task())
 
         # control flow section
         area_ctlflow = ttk.Frame(area_common)
