@@ -22,7 +22,7 @@ packages = [
     { include = "when" },
 ]
 include = [
-    "lua",
+    { path ="lua/*.lua", format = ["sdist", "wheel"] },
 ]
 
 [tool.poetry.dependencies]
