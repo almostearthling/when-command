@@ -1,14 +1,29 @@
-[tool.poetry]
+[project]
 name = "when"
 version = "2.0.3"
 description = "Interface for the **whenever** automation tool"
-authors = ["Francesco Garosi <francesco.garosi@gmail.com>"]
+authors = [
+    { name = "Francesco Garosi", email = "francesco.garosi@gmail.com" },
+]
 license = 'BSD 3-Clause "New" or "Revised" License'
 readme = "README.md"
+requires-python = ">=3.10"
+
+[tool.poetry]
 packages = [
     { include = "lib" },
     { include = "when" },
 ]
+include = [
+    "lua",
+]
+
+[project.scripts]
+when = "when.when:main"
+
+[project.gui-scripts]
+when-bg = "when.when_bg:run_bg"
+
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -33,10 +48,6 @@ ttkbootstrap-icons = "^3.3.0"
 ttkbootstrap-icons-mat = "^1.0.0"
 winshell = { version = "^0.6", markers = "sys_platform == 'win32'" }
 wmi = { version = "^1.5.1", markers = "sys_platform == 'win32'" }
-
-[tool.poetry.scripts]
-when = "when.when:main"
-when-bg = "when.when_bg:run_bg"
 
 [build-system]
 requires = ["poetry-core"]
