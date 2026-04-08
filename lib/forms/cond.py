@@ -204,7 +204,7 @@ class form_Condition(ApplicationForm):
             "@max_tasks_retries": clean_caption(UI_FORM_MAXTASKRETRIES_SC),
         }
 
-        # keep a list of task related widget to disable them when needed
+        # keep a list of task related widgets to disable them when needed
         self._task_elems = [
             # current list
             l_tasks,
@@ -231,6 +231,10 @@ class form_Condition(ApplicationForm):
 
         # finally set the item
         if item:
+            # disable the possibility to activate other condition if the
+            # associated condition is already a confluence
+            if isinstance(item, mcrt.ConfluenceCondition):
+                ck_mcrtActivateFurther.config(state=tk.DISABLED)
             self.set_item(item)
         else:
             self.reset_item()
@@ -286,6 +290,9 @@ class form_Condition(ApplicationForm):
                 self._max_retries.config(state=tk.NORMAL)
 
     def _mcrt_confluent(self, force=False) -> None:
+        # since this reacts to click, bail out if item is a confluence
+        if isinstance(self._item, mcrt.ConfluenceCondition):
+            return
         # same consideration as above; this function also disables all task
         # related form widgets when the condition is set to be confluent
         if force:

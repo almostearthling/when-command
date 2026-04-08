@@ -197,7 +197,6 @@ class ConfluenceCondition(cond_lua.LuaScriptCondition):
         return None
 
 
-# TODO: this form should disable the possibility to be confluent
 class form_ConfluenceCondition(form_Condition):
 
     # note that the available conditions should be filtered, the provided
