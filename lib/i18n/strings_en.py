@@ -17,7 +17,7 @@ ITEM_COND_TIME = "Time Based Condition"
 ITEM_COND_DBUS = "DBus Inspection Based Condition"
 ITEM_COND_WMI = "WMI Query Based Condition"
 ITEM_COND_EVENT = "Event Based Condition"
-ITEM_COND_MCRT = "Condition Activated Through Other Conditions"
+ITEM_COND_MCRT = "Condition Activated by Other Conditions"
 ITEM_COND_STARTUP = "Startup Condition"
 
 ITEM_EVENT = "Event"
