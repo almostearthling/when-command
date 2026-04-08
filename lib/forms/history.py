@@ -53,17 +53,17 @@ class form_History(ApplicationForm):
             },
             {
                 "text": UI_FORM_HS_TIME,
-                "width": 130,
+                "width": 160,
                 "anchor": ttkc.CENTER,
             },
             {
                 "text": UI_FORM_HS_TASK,
-                "width": 240,
+                "width": 225,
                 "anchor": ttkc.W,
             },
             {
                 "text": UI_FORM_HS_TRIGGER,
-                "width": 240,
+                "width": 225,
                 "anchor": ttkc.W,
             },
             {
