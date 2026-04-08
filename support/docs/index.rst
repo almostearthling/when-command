@@ -32,6 +32,7 @@ access to the features of **whenever** that are supported on the host environmen
    cond_timerelated
    cond_actionrelated
    cond_eventrelated
+   cond_confluence
    cond_extra01
    events
    events_extra01
