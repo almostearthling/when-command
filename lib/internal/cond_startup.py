@@ -11,7 +11,6 @@ from ..forms.ui import *
 
 # since a condition is defined, the base form is the one for conditions
 from ..forms.cond import form_Condition
-from ..utility import check_not_none, append_not_none
 
 from ..items.cond_interval import IntervalCondition
 from ..items.itemhelp import CheckedTable, ConfigurationError
