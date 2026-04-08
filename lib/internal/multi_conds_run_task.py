@@ -58,6 +58,8 @@ from ..utility import (
 
 from ..items import cond, task_lua, cond_lua, cond_interval
 
+from .cond_startup import StartupCondition
+
 
 # constants
 _MCRT_LIBRARY = "_mcrt_lib"
@@ -121,17 +123,10 @@ def updater_name() -> str:
 
 
 # 3. initialization condition: it is a once-only condition that only is
-# verified at the first tick, and runs the initialization task; using a
-# zero duration here makes us quite confident that, if the user has not
-# edited the configuration file by hand, this will be the first interval
-# based condition that will be verified, because the interval condition
-# definition form only accepts values strictly above zero, while whenever
-# also accepts a zero duration in the configuration (which is in fact the
-# way to create a condition that is verified at startup)
-def initial_condition() -> cond_interval.IntervalCondition:
-    cond = cond_interval.IntervalCondition()
+# verified at the first tick, and runs the initialization task
+def initial_condition() -> StartupCondition:
+    cond = StartupCondition()
     cond.name = _COND_INITIALIZER
-    cond.interval_seconds = 0  # that is, at the first tick
     cond.tasks = [_TASK_INITIALIZER]
     return cond
 

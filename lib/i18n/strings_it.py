@@ -18,6 +18,7 @@ ITEM_COND_DBUS = "Condizione basata sull'ispezione di DBUS"
 ITEM_COND_WMI = "Condizione basata su query WMI"
 ITEM_COND_EVENT = "Condizione basata su evento"
 ITEM_COND_MCRT = "Condizione attivata da altre condizioni"
+ITEM_COND_STARTUP = "Condizione iniziale"
 
 ITEM_EVENT = "Evento"
 ITEM_EVENT_FSCHANGE = "Evento basato su monitoraggio del filesystem"

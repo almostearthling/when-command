@@ -41,6 +41,7 @@ from lib.items.event_wmi import WMIEvent
 
 # this is a special case because it implies auxiliary item when used
 from ..internal.multi_conds_run_task import ConfluenceCondition, form_ConfluenceCondition
+from ..internal.cond_startup import StartupCondition, form_StartupCondition
 
 # to dynamically determine nature of extra items
 from lib.items.task import Task
@@ -96,6 +97,7 @@ ALL_AVAILABLE_ITEMS = [
 
     # the following item are native to When (and not to whenever), thus not extras
     ('cond:lua:mcrt_confluence', ITEM_COND_MCRT, form_ConfluenceCondition, ConfluenceCondition),
+    ('cond:interval:startup', ITEM_COND_STARTUP, form_StartupCondition, StartupCondition),
 ]
 
 
