@@ -96,7 +96,7 @@ def get_whenever_download_metadata(verbose=False):
         if verbose:
             write_error(CLI_ERR_NO_SUITABLE_BINARY)
         return None
-    except ValueError as e:  # too many values to unpack
+    except ValueError:  # too many values to unpack
         if verbose:
             write_error(f"malformed `{CHECKSUM_FILE}` file")
         return None

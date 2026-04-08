@@ -381,7 +381,7 @@ locale_map = {
     "dutch_netherlands": "nl", "nl_nl": "nl", "nl-nl": "nl",
 
     # Norwegian
-    "norwegian_bokmål": "no", "norwegian_nynorsk": "no", "no_no": "no", "no-no": "no",
+    "norwegian_bokmål": "no", "norwegian_nynorsk": "no",
     "norwegian_norway": "no", "no_no": "no", "no-no": "no",
 
     # Polish
@@ -464,7 +464,7 @@ def get_locale(force_locale=None):
             if cur_locale in locale_map.keys():
                 _CURRENT_SHORT_LOCALE = locale_map[cur_locale]
                 return locale_map[cur_locale]
-        except:
+        except Exception:
             pass
     return _CURRENT_SHORT_LOCALE
 

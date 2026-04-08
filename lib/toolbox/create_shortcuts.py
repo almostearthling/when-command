@@ -52,7 +52,7 @@ def create_icon(verbose=False) -> None | str:
         try:
             with open(target, "wb") as f:
                 f.write(base64.b64decode(icon))
-        except Exception as e:
+        except Exception:
             if verbose:
                 write_error(CLI_ERR_CANNOT_CREATE_FILE % icon_filename)
             return None
@@ -176,10 +176,8 @@ def create_shortcuts(main_script, desktop=True, autostart=True, verbose=False) -
     # first: check whether a `pipx`-style install is available
     if is_windows():
         exename = "when-bg.exe"
-        interpreter = os.path.join(sys.exec_prefix, "pythonw.exe")
     else:
         exename = "when"
-        interpreter = sys.executable
     p = os.path.expanduser(os.path.join("~", ".local", "bin"))
     target = os.path.join(p, exename)
     if not (os.path.isfile(target) and os.access(target, os.X_OK)):

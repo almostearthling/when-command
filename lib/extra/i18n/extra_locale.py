@@ -1,7 +1,6 @@
 # get localized versions of strings for extra items UIs
 
 
-import os
 from importlib import import_module
 
 from ...i18n.localizer import get_locale

@@ -37,7 +37,7 @@ def check_globals(doc: TOMLDocument) -> list[ConfigurationError]:
         if not isinstance(tags, items.Table):
             errors.append(
                 ConfigurationError(
-                    "(globals)", key, message=f"the tags entry must be a dictionary"
+                    "(globals)", key, message="the tags entry must be a dictionary"
                 )
             )
         else:
@@ -73,7 +73,7 @@ def check_items(doc: TOMLDocument) -> list[ConfigurationError]:
                                 ConfigurationError(
                                     "task",
                                     name,
-                                    message=f"the tags entry must be a dictionary",
+                                    message="the tags entry must be a dictionary",
                                 )
                             )
                         else:
@@ -96,7 +96,7 @@ def check_items(doc: TOMLDocument) -> list[ConfigurationError]:
                     err = ConfigurationError(name, message=f"malformed task {name}")
             else:
                 # TODO: report item line in TOML document
-                err = ConfigurationError("<unnamed>", message=f"unnamed task found")
+                err = ConfigurationError("<unnamed>", message="unnamed task found")
             if err is not None:
                 errors.append(err)
     # retrieve conditions and store names of event based ones
@@ -114,7 +114,7 @@ def check_items(doc: TOMLDocument) -> list[ConfigurationError]:
                                 ConfigurationError(
                                     "condition",
                                     name,
-                                    message=f"the tags entry must be a dictionary",
+                                    message="the tags entry must be a dictionary",
                                 )
                             )
                         else:
@@ -141,7 +141,7 @@ def check_items(doc: TOMLDocument) -> list[ConfigurationError]:
             else:
                 # TODO: report item line in TOML document
                 err = ConfigurationError(
-                    "<unnamed>", message=f"unnamed condition found"
+                    "<unnamed>", message="unnamed condition found"
                 )
             if err is not None:
                 errors.append(err)
@@ -159,7 +159,7 @@ def check_items(doc: TOMLDocument) -> list[ConfigurationError]:
                                 ConfigurationError(
                                     "event",
                                     name,
-                                    message=f"the tags entry must be a dictionary",
+                                    message="the tags entry must be a dictionary",
                                 )
                             )
                         else:
@@ -182,7 +182,7 @@ def check_items(doc: TOMLDocument) -> list[ConfigurationError]:
                     err = ConfigurationError(name, message=f"malformed event {name}")
             else:
                 # TODO: report item line in TOML document
-                err = ConfigurationError("<unnamed>", message=f"unnamed event found")
+                err = ConfigurationError("<unnamed>", message="unnamed event found")
             if err is not None:
                 errors.append(err)
     return errors
@@ -217,12 +217,12 @@ def check_config_file(filename, verbose=True) -> bool:
     except ParseError as err:
         if verbose:
             write_error(CLI_ERR_CONFIG_INVALID % (filename, str(err)))
-    except Exception as err:
+    except Exception as _err:
         if verbose:
             # uncomment the following to have the exception reported
             # if AppConfig.get("DEBUG"):
             #     import traceback
-            #     traceback.print_exception(err)
+            #     traceback.print_exception(_err)
             write_error(CLI_ERR_ERROR_GENERIC)
     # if we are here the check was not positive
     return False

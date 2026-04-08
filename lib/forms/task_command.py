@@ -1,6 +1,5 @@
 # command task form
 
-import sys
 from os.path import normpath
 
 from ..i18n.strings import *

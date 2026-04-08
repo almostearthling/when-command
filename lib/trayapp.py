@@ -3,7 +3,6 @@
 from lib.i18n.strings import *
 
 import pystray
-import sys
 import threading
 
 from .utility import get_image

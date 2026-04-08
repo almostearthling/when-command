@@ -94,7 +94,7 @@ class Task(object):
                     except Exception:
                         raise ConfigurationError(
                             name,
-                            message=f"condition not found in the configuration",
+                            message="task not found in the configuration",
                         )
         # check that elem and elemd are not None
         assert elem is not None and elemd is not None

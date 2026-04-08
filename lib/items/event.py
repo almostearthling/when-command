@@ -109,7 +109,7 @@ class Event(object):
                     except Exception:
                         raise ConfigurationError(
                             name,
-                            message=f"event not found in the configuration",
+                            message="event not found in the configuration",
                         )
         # check that elem and elemd are not None
         assert elem is not None and elemd is not None

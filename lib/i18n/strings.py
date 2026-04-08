@@ -61,7 +61,7 @@ _short_locale = which_locale()
 if _short_locale is not None:
     try:
         exec(f"from .strings_{_short_locale} import *")
-    except:
+    except Exception:
         pass
 
 

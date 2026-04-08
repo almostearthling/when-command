@@ -7,9 +7,6 @@
 # - a private condition that the above event triggers
 # - a private task that runs the whenever internal `reset_conditions` command
 
-import sys
-import os
-
 from ..utility import get_private_item_name_prefix
 from ..platform import is_windows, is_linux, is_mac
 

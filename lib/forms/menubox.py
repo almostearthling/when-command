@@ -5,7 +5,6 @@
 
 import tkinter as tk
 import ttkbootstrap as ttk
-from ttkbootstrap.icons import Icon
 from ttkbootstrap_icons_mat import MatIcon as Icons
 
 from PIL import ImageTk
@@ -17,7 +16,7 @@ from .colors import *  # type: ignore
 
 
 from ..repocfg import AppConfig
-from ..utility import get_image, get_icon
+from ..utility import get_image
 
 
 # default UI values

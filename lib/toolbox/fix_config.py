@@ -299,7 +299,7 @@ def fix_config_file(filename, verbose=True, backup=True) -> bool:
             console.print(CLI_MSG_WRITE_NEW_CONFIG % filename)  # type: ignore
         write_whenever_config(filename, tasks, conditions, events, globals)
         return True
-    except Exception as e:
+    except Exception:
         write_warning(CLI_ERR_CANNOT_FIX_CONFIG % filename)
         return False
 

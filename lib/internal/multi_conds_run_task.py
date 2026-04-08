@@ -57,7 +57,6 @@ from ..utility import (
 )
 
 from ..items import cond, task_lua, cond_lua, cond_interval
-from ..toolbox import install_lua
 
 
 # constants

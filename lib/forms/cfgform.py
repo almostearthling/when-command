@@ -9,7 +9,6 @@ import ttkbootstrap.constants as ttkc
 from ttkbootstrap_icons_mat import MatIcon as Icons
 
 from ..i18n.strings import *
-from ..icons import APP_ICON32 as APP_ICON
 from .ui import *
 from .colors import *
 

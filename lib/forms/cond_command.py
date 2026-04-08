@@ -1,9 +1,6 @@
 # command condition form
 
-import sys
-import os
 import re
-import shutil
 
 from shlex import split as arg_split, quote
 from os.path import normpath

@@ -1,7 +1,6 @@
 # Lua condition form
 
 import re
-import os
 import tkinter as tk
 import ttkbootstrap as ttk
 import ttkbootstrap.constants as ttkc
@@ -15,7 +14,6 @@ from .ui import *
 from ..utility import (
     guess_typed_value,
     get_editor_theme,
-    get_luadir,
     get_lua_path,
     get_lua_initscript,
 )

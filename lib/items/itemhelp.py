@@ -59,7 +59,7 @@ class CheckedTable(object):
                 name,
                 entry_name=entry,
                 item_line=self._table_line,
-                message=f"entry must be provided",
+                message="entry must be provided",
             )
         return v
 
@@ -73,7 +73,7 @@ class CheckedTable(object):
                 name,
                 entry_name=entry,
                 item_line=self._table_line,
-                message=f"item name invalid or not provided",
+                message="item name invalid or not provided",
             )
         if not check(v):
             raise ConfigurationError(
