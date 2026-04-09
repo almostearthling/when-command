@@ -51,4 +51,10 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.ruff.lint]
-ignore = ["E402", "F401", "F403", "F405", "E731"]
+ignore = [
+    "E402",     # module-import-not-at-top-of-file / Module level import not at top of cell
+    "F401",     # unused-import / {name} imported but unused
+    "F403",     # undefined-local-with-import-star / from {name} import * used; unable to detect undefined names
+    "F405",     # undefined-local-with-import-star-usage / {name} may be undefined, or defined from star imports
+    "E731",     # lambda-assignment / Do not assign a lambda expression, use a def
+]
