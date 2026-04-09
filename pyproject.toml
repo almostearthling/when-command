@@ -1,6 +1,6 @@
 [project]
 name = "when"
-version = "2.1.0"
+version = "2.1.1-rc1"
 description = "Interface for the **whenever** automation tool"
 authors = [
     { name = "Francesco Garosi", email = "francesco.garosi@gmail.com" },
