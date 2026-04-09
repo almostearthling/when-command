@@ -313,15 +313,15 @@ class form_WMICondition(form_Condition):
             self.data_get("ignore_persistent_success") or None
         )
         e = []
-        for l in self._results:
+        for c in self._results:
             d = {
-                "field": l[1],
-                "operator": l[2],
-                "value": l[3],
+                "field": c[1],
+                "operator": c[2],
+                "value": c[3],
             }
-            if l[0] != "" and l[0] is not None:
+            if c[0] != "" and c[0] is not None:
                 try:
-                    index = int(l[0])
+                    index = int(c[0])
                     d["index"] = index
                 except ValueError:
                     self.messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDINDEX)

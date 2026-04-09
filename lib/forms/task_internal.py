@@ -32,13 +32,13 @@ _COMMANDS = {
 
 
 def _check_command(s: str):
-    l = s.split(None, 1)
-    if len(l) == 0:
+    c = s.split(None, 1)
+    if len(c) == 0:
         return False
-    elif len(l) == 1:
-        command, args = l[0], ""
-    elif len(l) == 2:
-        command, args = l[0], l[1]
+    elif len(c) == 1:
+        command, args = c[0], ""
+    elif len(c) == 2:
+        command, args = c[0], c[1]
     else:
         # unreachable
         return False

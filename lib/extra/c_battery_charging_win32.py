@@ -66,7 +66,7 @@ def _has_battery():
         conn = wmi.WMI()
         batteries = conn.query(query)
         return bool(len(batteries) > 0)
-    except:
+    except Exception:
         return False
 
 

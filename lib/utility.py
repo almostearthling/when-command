@@ -128,8 +128,8 @@ def is_valid_item_name(s: str) -> bool:
 
 
 # check that all passed arguments are not None
-def check_not_none(*l) -> bool:
-    for x in l:
+def check_not_none(*args) -> bool:
+    for x in args:
         if x is None:
             return False
     return True

@@ -84,7 +84,7 @@ def _get_batteries():
                 batteries.append(str(x))
         batteries.sort()
         return batteries
-    except:
+    except Exception:
         return []
 
 

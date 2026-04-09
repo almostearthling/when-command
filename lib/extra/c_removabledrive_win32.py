@@ -137,7 +137,7 @@ class RemovableDrivePresent(WMICondition):
         if drive_letter is not None:
             if (
                 not isinstance(drive_letter, str)
-                and not drive_letter[0] in AVAILABLE_DRIVE_LETTERS
+                and drive_letter[0] not in AVAILABLE_DRIVE_LETTERS
             ):
                 errors.append("drive_letter")
         drive_label = tags.get("drive_label")

@@ -51,4 +51,4 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.ruff.lint]
-ignore = ["E402", "F403", "F405"]
+ignore = ["E402", "F401", "F403", "F405", "E731"]

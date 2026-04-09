@@ -239,8 +239,8 @@ class form_CommandTask(form_Task):
         v = bool(self.data_get("set_environment_variables"))
         self._item.set_environment_variables = False if not v else None
         e = {}
-        for l in self._envvars:
-            e[l[0]] = str(l[1])
+        for c in self._envvars:
+            e[c[0]] = str(c[1])
         self._item.environment_variables = e or None
         self._item.success_status = None
         self._item.success_stdout = None
@@ -389,8 +389,8 @@ class form_CommandTask(form_Task):
                 )
                 self._envvars.append([name, value])
                 e = {}
-                for l in self._envvars:
-                    e[l[0]] = str(l[1])
+                for c in self._envvars:
+                    e[c[0]] = str(c[1])
                 self._item.environment_variables = e or None
                 self._envvars.sort(key=lambda x: x[0])
                 self._updatedata()
@@ -404,8 +404,8 @@ class form_CommandTask(form_Task):
         value = entry[1]
         self._envvars = list(entry for entry in self._envvars if entry[0] != name)
         e = {}
-        for l in self._envvars:
-            e[l[0]] = str(l[1])
+        for c in self._envvars:
+            e[c[0]] = str(c[1])
         self._item.environment_variables = e or None
         # first update the form data, then recall the variable in the input
         # fields, so that the user can re-add the variable again if needed

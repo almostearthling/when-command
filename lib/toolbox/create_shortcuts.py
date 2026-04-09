@@ -209,7 +209,7 @@ def create_shortcuts(main_script, desktop=True, autostart=True, verbose=False) -
             True,
             autostart,
         )
-    except Exception as e:
+    except Exception:
         if verbose:
             write_warning(CLI_ERR_CANNOT_CREATE_SHORTCUT)
         return False

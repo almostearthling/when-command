@@ -309,9 +309,9 @@ class form_ConfluenceCondition(form_Condition):
     def _updateform(self) -> None:
         self._tv_activatingConds.delete(*self._tv_activatingConds.get_children())
         idx = 0
-        for cond in self._conds_activating:
+        for cnd in self._conds_activating:
             self._tv_activatingConds.insert(
-                "", iid="%s-%s" % (idx, cond), values=(idx, cond), index=tk.END
+                "", iid="%s-%s" % (idx, cnd), values=(idx, cnd), index=tk.END
             )
             idx += 1
         return super()._updateform()
@@ -327,9 +327,9 @@ class form_ConfluenceCondition(form_Condition):
         self._conds_available = conds.copy()
         self._conds_available.sort()
         self._cb_chooseCond["values"] = self._conds_available
-        for cond in self._conds_activating.copy():
-            if cond not in self._conds_available:
-                self._conds_activating.remove(cond)
+        for cnd in self._conds_activating.copy():
+            if cnd not in self._conds_available:
+                self._conds_activating.remove(cnd)
         self._updateform()
 
 

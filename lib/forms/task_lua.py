@@ -155,8 +155,8 @@ class form_LuaScriptTask(form_Task):
                 )
                 self._results.append([name, value])
                 e = {}
-                for l in self._results:
-                    e[l[0]] = str(l[1])
+                for c in self._results:
+                    e[c[0]] = str(c[1])
                 self._item.expected_results = e or None
                 self._results.sort(key=lambda x: x[0])
                 self._updatedata()
@@ -172,8 +172,8 @@ class form_LuaScriptTask(form_Task):
         value = entry[1]
         self._results = list(entry for entry in self._results if entry[0] != name)
         e = {}
-        for l in self._results:
-            e[l[0]] = str(l[1])
+        for c in self._results:
+            e[c[0]] = str(c[1])
         self._item.expected_results = e or None
         # first update the form data, then recall the variable in the input
         # fields, so that the user can re-add the variable again if needed
@@ -197,8 +197,8 @@ class form_LuaScriptTask(form_Task):
         self._item.script = script.strip() or ""
         self._item.expect_all = bool(self.data_get("expect_all")) or None
         e = {}
-        for l in self._results:
-            e[l[0]] = guess_typed_value(str(l[1]))
+        for c in self._results:
+            e[c[0]] = guess_typed_value(str(c[1]))
         self._item.expected_results = e or None
         return super()._updatedata()
 
