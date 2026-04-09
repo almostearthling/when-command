@@ -114,7 +114,7 @@ class form_FilesystemChangeEvent(form_Event):
             idx += 1
         return super()._updateform()
 
-    def _updatedata(self) -> None:
+    def _updatedata(self):
         assert isinstance(self._item, FilesystemChangeEvent)
         self._item.recursive = self.data_get("recursive") or None
         e = []
@@ -123,7 +123,7 @@ class form_FilesystemChangeEvent(form_Event):
         self._item.watch = e or None
         return super()._updatedata()
 
-    def recall_fsitem(self) -> None:
+    def recall_fsitem(self):
         e = self.data_get("item_selection")
         if e:
             entry = e[1]
@@ -133,7 +133,7 @@ class form_FilesystemChangeEvent(form_Event):
                 # in this case a non-existing item is selected
                 self.data_set("item_monitor")
 
-    def browse_fsitem(self) -> None:
+    def browse_fsitem(self):
         if self.data_get("select_dir"):
             entry = filedialog.askdirectory(parent=self.dialog)
         else:
@@ -141,7 +141,7 @@ class form_FilesystemChangeEvent(form_Event):
         if entry:
             self.data_set("item_monitor", entry)
 
-    def add_fsitem(self) -> None:
+    def add_fsitem(self):
         self._updatedata()
         i = self.data_get("item_monitor")
         assert isinstance(i, str)
@@ -150,7 +150,7 @@ class form_FilesystemChangeEvent(form_Event):
             self._watch.append(item)
             self._updateform()
 
-    def del_fsitem(self) -> None:
+    def del_fsitem(self):
         self._updatedata()
         e = self.data_get("item_monitor")
         if e:

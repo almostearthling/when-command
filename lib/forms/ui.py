@@ -472,7 +472,7 @@ class ApplicationForm(object):
     def __enter__(self):
         return self
 
-    def __exit__(self, _exc_type, _exc_value, _traceback) -> None:
+    def __exit__(self, _exc_type, _exc_value, _traceback):
         del self._dialog
 
     # contents is the root for slave widgets
@@ -491,7 +491,7 @@ class ApplicationForm(object):
 
     # internals
     # force a variable value (and mimic ttk *Var retrieval method used below)
-    def _force_set_data(self, name: str, value: Any) -> None:
+    def _force_set_data(self, name: str, value: Any):
         class _Elem(object):
             def __init__(self, v):
                 self._v = v
@@ -504,7 +504,7 @@ class ApplicationForm(object):
 
     # bind a ttk.Treeview to a variable: it involves defining a new
     # function and reacting to a (virtual) event
-    def _bind_ttk_treeview(self, name: str, treeview: ttk.Treeview) -> None:
+    def _bind_ttk_treeview(self, name: str, treeview: ttk.Treeview):
         def _store_data(event):
             iid = treeview.focus()
             data = treeview.item(iid)["values"]
@@ -514,19 +514,19 @@ class ApplicationForm(object):
         treeview.bind("<<TreeviewSelect>>", _store_data)
 
     # bind an event to this form
-    def event_bind(self, event, reaction) -> None:
+    def event_bind(self, event, reaction):
         self._dialog.bind(event, reaction)
 
     # bind <Return> and <Escape> when gaining focus and unbind when n is lost
-    def _key_exit_close(self, event) -> None:
+    def _key_exit_close(self, event):
         if event.widget == self._dialog:
             self.exit_close()
 
-    def _key_exit_ok(self, event) -> None:
+    def _key_exit_ok(self, event):
         if event.widget == self._dialog:
             self.exit_ok()
 
-    def focus_in(self) -> None:
+    def focus_in(self):
         self.event_bind("<Escape>", self._key_exit_close)
         self.event_bind("<Return>", self._key_exit_ok)
 
@@ -547,7 +547,7 @@ class ApplicationForm(object):
         widget: tk.Widget | tuple[ttk.Radiobutton, ...],
         dtype: str | None = None,
         check: Callable[..., bool] | None = None,
-    ) -> None:
+    ):
         # as per documentation, the configure() method is not the preferred
         # method to configure a widget in tkinter, and direct access to the
         # widget keys (as if it were a dict) is used in the examples
@@ -662,7 +662,7 @@ class ApplicationForm(object):
             return default
 
     # set the value of a widget: None is used to clear the widget
-    def data_set(self, dataname: str, value: Any | None = None) -> None:
+    def data_set(self, dataname: str, value: Any | None = None):
         if dataname in self._data:
             try:
                 if value is None:
@@ -700,7 +700,7 @@ class ApplicationForm(object):
             return False
 
     # set autocheck feature on or off
-    def set_autocheck(self, c: bool) -> None:
+    def set_autocheck(self, c: bool):
         self._autocheck = bool(c)
 
     # return a list of the widget-bound variables
@@ -711,65 +711,65 @@ class ApplicationForm(object):
     # exit functions are predefined and may be overridden or not: the
     # default implementation destroys the window and: if OK leave form
     # data accessible, otherwise clear form data
-    def exit_ok(self) -> None:
+    def exit_ok(self):
         self._dialog.destroy()
 
-    def exit_cancel(self) -> None:
+    def exit_cancel(self):
         self._data = {}
         self._dialog.destroy()
 
-    def exit_close(self) -> None:
+    def exit_close(self):
         self._dialog.destroy()
 
-    def exit_quit(self) -> None:
+    def exit_quit(self):
         self._dialog.destroy()
 
     # other button reactions have to be overridden because the default
     # implementation just does nothing
-    def load(self) -> None:
+    def load(self):
         pass
 
-    def save(self) -> None:
+    def save(self):
         pass
 
-    def new(self) -> None:
+    def new(self):
         pass
 
-    def add(self) -> None:
+    def add(self):
         pass
 
-    def delete(self) -> None:
+    def delete(self):
         pass
 
-    def edit(self) -> None:
+    def edit(self):
         pass
 
-    def modify(self) -> None:
+    def modify(self):
         pass
 
-    def reset(self) -> None:
+    def reset(self):
         pass
 
-    def reload(self) -> None:
+    def reload(self):
         pass
 
-    def remove(self) -> None:
+    def remove(self):
         pass
 
     # the following utilities allow to enable or disable the default buttons
-    def enable_buttons(self, *names: str) -> None:
+    def enable_buttons(self, *names: str):
         for name in map(str.lower, names):
             if name in self._std_buttons:
                 self._std_buttons[name].enable(True)
 
-    def disable_buttons(self, *names: str) -> None:
+    def disable_buttons(self, *names: str):
         for name in map(str.lower, names):
             if name in self._std_buttons:
                 self._std_buttons[name].enable(False)
 
     # main dialog loop: the initial dialog will actually have a main loop
     # while the following ones will just be spawned and then waited for
-    def run(self) -> None:
+    def run(self):
         if self._main:
             self._dialog.mainloop()
         else:

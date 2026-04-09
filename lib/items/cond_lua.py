@@ -62,7 +62,7 @@ class LuaScriptCondition(Condition):
 
     def load_checking(
         self, item: items.Table, item_line: int, tasks: list[str] | None = None
-    ) -> None:
+    ):
         super().load_checking(item, item_line, tasks)
         self.type = "lua"
         self.hrtype = ITEM_COND_LUA
@@ -77,13 +77,13 @@ class LuaScriptCondition(Condition):
             "init_script_path", check=os.path.isfile
         )
         self.variables_to_set = tab.get_dict_check_and_keys_re(
-            "variables_to_set", 
-            LUA_VAR_PATTERN, 
+            "variables_to_set",
+            LUA_VAR_PATTERN,
             lambda x: isinstance(x, (bool, int, float, str)),
         )
         self.expected_results = tab.get_dict_check_and_keys_re(
-            "expected_results", 
-            LUA_VAR_PATTERN, 
+            "expected_results",
+            LUA_VAR_PATTERN,
             lambda x: isinstance(x, (bool, int, float, str)),
         )
 

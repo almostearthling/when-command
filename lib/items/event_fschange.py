@@ -35,7 +35,7 @@ class FilesystemChangeEvent(Event):
             self.recursive = None
             # self.poll_seconds = None
 
-    def load_checking(self, item: items.Table, item_line: int, event_conds: list[str] | None = None) -> None:
+    def load_checking(self, item: items.Table, item_line: int, event_conds: list[str] | None = None):
         super().load_checking(item, item_line, event_conds)
         self.type = "fschange"
         self.hrtype = ITEM_EVENT_FSCHANGE

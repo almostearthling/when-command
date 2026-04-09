@@ -15,7 +15,7 @@ COMMENT_PRIVATE_ITEMS = "private items: please do not modify below this line"
 
 # all items have an `as_table()` utility that converts them to TOML tables
 # this writer separates private items from user created ones
-def write_whenever_config(filename, tasks, conditions, events, globals) -> None:
+def write_whenever_config(filename, tasks, conditions, events, globals):
     head = document()
     doc = document()
     priv = document()

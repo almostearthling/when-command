@@ -358,7 +358,7 @@ def get_lua_staticlib_path() -> str:
 # save a script to the scripts directory and make it executable: possible
 # existing files are overwritten without confirmation as the scripts folder
 # should be completely managed by When
-def save_script(fname, text) -> None:
+def save_script(fname, text):
     dest = os.path.join(get_scriptsdir(), fname)
     with open(dest, "w") as f:
         f.write(text)
@@ -400,7 +400,7 @@ def check_whenever_version() -> bool:
 
 
 # return the output of `whenever --options`
-def retrieve_whenever_options() -> None:
+def retrieve_whenever_options():
     # first assume no feature is available
     AppConfig.set("WHENEVER_HAS_DBUS", False)
     AppConfig.set("WHENEVER_HAS_WMI", False)
@@ -533,12 +533,12 @@ def get_editor_theme():
 
 
 # write a warning to stderr
-def write_warning(s) -> None:
+def write_warning(s):
     _err_console.print(f"[bold yellow]{UI_APP} - warning:[/] {s}", highlight=False)
 
 
 # write an error to stderr
-def write_error(s) -> None:
+def write_error(s):
     _err_console.print(f"[bold red]{UI_APP} - ERROR:[/] {s}", highlight=False)
 
 
@@ -660,7 +660,7 @@ def clean_caption(s) -> str:
 
 
 # initialize the logger
-def init_logger(filename, level, app=None) -> None:
+def init_logger(filename, level, app=None):
     global _logger
     _logger = Logger(filename, level, app)
 

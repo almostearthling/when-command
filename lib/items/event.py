@@ -56,7 +56,7 @@ class Event(object):
     # to check the correctness of the configuration file as a side effect
     def load_checking(
         self, item: items.Table, item_line: int, event_conds: list[str] | None = None
-    ) -> None:
+    ):
         self.type = None
         self.hrtype = None
         name_check = lambda x: is_valid_item_name(x) or is_private_item_name(x)

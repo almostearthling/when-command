@@ -27,7 +27,7 @@ _HISTORY_LENGTH: int = AppConfig.get("HISTORY_LENGTH")  # type: ignore
 # the following function will be used to start a thread that actually
 # reads subprocess output and possibly provides input to the subprocess
 # itself: it has to be aware of the wrapper instance that calls it
-def _logreader(wrapper) -> None:
+def _logreader(wrapper):
     pipe = wrapper.pipe()
     sleep_seconds = _MSECS_BETWEEN_READS / 1000.0
     while wrapper.running():
@@ -63,7 +63,7 @@ class Wrapper(object):
         return self._history.get_copy()
 
     # use the logger to determine whether a line is pertinent to history
-    def process_output(self, line: str | None) -> None:
+    def process_output(self, line: str | None):
         if line:
             log_record = json.loads(line)
             if not self._logger.log(log_record):

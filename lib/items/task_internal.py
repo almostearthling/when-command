@@ -27,7 +27,7 @@ class InternalCommandTask(Task):
         else:
             self.command = DEFAULT_COMMAND
 
-    def load_checking(self, item: items.Table, item_line: int) -> None:
+    def load_checking(self, item: items.Table, item_line: int):
         super().load_checking(item, item_line)
         self.type = "internal"
         self.hrtype = ITEM_TASK_INTERNAL

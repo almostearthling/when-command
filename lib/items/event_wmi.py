@@ -48,7 +48,7 @@ class WMIEvent(Event):
 
     def load_checking(
         self, item: items.Table, item_line: int, event_conds: list[str] | None = None
-    ) -> None:
+    ):
         super().load_checking(item, item_line, event_conds)
         self.type = "wmi"
         self.hrtype = ITEM_EVENT_WMI

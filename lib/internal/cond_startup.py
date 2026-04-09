@@ -45,7 +45,7 @@ class StartupCondition(IntervalCondition):
 
     def load_checking(
         self, item: items.Table, item_line: int, tasks: list[str] | None = None
-    ) -> None:
+    ):
         try:
             super().load_checking(item, item_line, tasks)
         # ignore the erro on `interval_seconds`

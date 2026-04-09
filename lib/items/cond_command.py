@@ -86,7 +86,7 @@ class CommandCondition(Condition):
 
     def load_checking(
         self, item: items.Table, item_line: int, tasks: list[str] | None = None
-    ) -> None:
+    ):
         super().load_checking(item, item_line, tasks)
         self.type = "command"
         self.hrtype = ITEM_COND_COMMAND

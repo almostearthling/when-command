@@ -46,7 +46,7 @@ class DBusEvent(Event):
             self.parameter_check_all = None
             self.parameter_check = None
 
-    def load_checking(self, item: items.Table, item_line: int, event_conds: list[str] | None = None) -> None:
+    def load_checking(self, item: items.Table, item_line: int, event_conds: list[str] | None = None):
         super().load_checking(item, item_line, event_conds)
         self.type = "dbus"
         self.hrtype = ITEM_EVENT_DBUS

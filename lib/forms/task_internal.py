@@ -86,14 +86,14 @@ class form_InternalCommandTask(form_Task):
         # update the form
         self._updateform()
 
-    def _updatedata(self) -> None:
+    def _updatedata(self):
         assert isinstance(self._item, InternalCommandTask)
         command = self.data_get("command")
         assert isinstance(command, str)
         self._item.command = command.strip() or ""
         return super()._updatedata()
 
-    def _updateform(self) -> None:
+    def _updateform(self):
         assert isinstance(self._item, InternalCommandTask)
         self.data_set("command", self._item.command)
         return super()._updateform()

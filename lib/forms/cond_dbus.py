@@ -168,7 +168,7 @@ class form_DBusCondition(form_Condition):
         # update the form
         self._updateform()
 
-    def _updateform(self) -> None:
+    def _updateform(self):
         assert isinstance(self._item, DBusCondition)
         self.data_set("bus", self._item.bus)
         self.data_set("service", self._item.service)
@@ -185,7 +185,7 @@ class form_DBusCondition(form_Condition):
         )
         return super()._updateform()
 
-    def _updatedata(self) -> None:
+    def _updatedata(self):
         assert isinstance(self._item, DBusCondition)
         parameter_call = self.data_get("parameter_call")
         parameter_check = self.data_get("parameter_check")

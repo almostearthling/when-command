@@ -222,7 +222,7 @@ CONVERSIONS_WMI = {
 }
 
 
-def update_conversions() -> None:
+def update_conversions():
     if whenever_has_dbus():
         for k in CONVERSIONS_DBUS:
             CONVERSIONS[k] = CONVERSIONS_DBUS[k]

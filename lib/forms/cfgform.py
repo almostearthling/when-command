@@ -209,7 +209,7 @@ class form_Config(ApplicationForm):
         self._updateform()
 
     # update the associated data according to what is in the form
-    def _updatedata(self) -> None:
+    def _updatedata(self):
         self._itemlistentries = []
         # encode the invisible list field with the same signature that is used in
         # the _item_ module, so that the corresponding form and item factories can
@@ -244,7 +244,7 @@ class form_Config(ApplicationForm):
         )
 
     # update the form fields according to the associated actual data
-    def _updateform(self) -> None:
+    def _updateform(self):
         self._tv_items.delete(*self._tv_items.get_children())
         for entry in self._itemlistentries:
             t = entry[2].split(":", 1)[0]
@@ -293,7 +293,7 @@ class form_Config(ApplicationForm):
         self._changed = False
 
     # load the configuration from a TOML file, only display non-private items
-    def _load_config(self, fn) -> None:
+    def _load_config(self, fn):
         self._resetdata()
         default_globals = self._globals.copy()
         tasks, conditions, events, self._globals = read_whenever_config(fn)
@@ -333,7 +333,7 @@ class form_Config(ApplicationForm):
         self._changed = False
 
     # save the configuration to a TOML file: add private items when required
-    def _save_config(self, fn) -> None:
+    def _save_config(self, fn):
         # 0. set configuration globals as retrieved from the form
         AppConfig.delete("RESET_CONDS_ON_RESUME")
         AppConfig.set(
@@ -407,7 +407,7 @@ class form_Config(ApplicationForm):
         )
 
     # to be called when one of the global parameters has been changed
-    def _set_changed(self, changed=True) -> None:
+    def _set_changed(self, changed=True):
         self._changed = changed
 
     # check currently loaded items for signature coherence
@@ -425,7 +425,7 @@ class form_Config(ApplicationForm):
         return True
 
     # command button reactions
-    def delete(self) -> None:
+    def delete(self):
         # TODO: do not ignore type error
         item_name, _, item_signature = self.data_get("item_selection")  # type: ignore
         item_type = item_signature.split(":", 1)[0]
@@ -440,7 +440,7 @@ class form_Config(ApplicationForm):
             self._updateform()
             self._changed = True
 
-    def save(self) -> None:
+    def save(self):
         self._updatedata()
         fn = self.data_get("config_file")
         if fn and self._changed:
@@ -456,7 +456,7 @@ class form_Config(ApplicationForm):
 
     # edit a specific item: to be complete, this is also bound
     # to the double click event for an element of the list
-    def edit(self) -> None:
+    def edit(self):
         selection = self.data_get("item_selection")
         if selection is None:
             return
@@ -556,7 +556,7 @@ class form_Config(ApplicationForm):
 
     # create a new item: open the item type selection dialog and, if an
     # item type is chosen, open the appropriate form with default values
-    def new(self) -> None:
+    def new(self):
         e = form_NewItem()
         if e is not None:
             r = e.run()
@@ -620,7 +620,7 @@ class form_Config(ApplicationForm):
 
     # reload the configuration by sending the appropriate message to the
     # main (hidden) application form
-    def reload(self) -> None:
+    def reload(self):
         if self.messagebox.askyesno(UI_POPUP_T_CONFIRM, UI_POPUP_RELOADCONFIG_Q):
             if self._app:
                 self._app.send_event("<<SchedReloadConfig>>")
@@ -628,7 +628,7 @@ class form_Config(ApplicationForm):
 
     # modify the reaction to the quit button so that if the configuration
     # has changed the user is asked whether or not he wants to discard it
-    def exit_close(self) -> None:
+    def exit_close(self):
         if self._changed:
             if self.messagebox.askokcancel(
                 UI_POPUP_T_CONFIRM, UI_POPUP_DISCARDCONFIG_Q

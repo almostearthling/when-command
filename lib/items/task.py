@@ -48,7 +48,7 @@ class Task(object):
     # the following too is a constructor, that may generate errors: it can be
     # used in a configuration checking function, or by the constructor itself
     # to check the correctness of the configuration file as a side effect
-    def load_checking(self, item: items.Table, item_line: int) -> None:
+    def load_checking(self, item: items.Table, item_line: int):
         self.type = None
         self.hrtype = None
         check = lambda x: is_valid_item_name(x) or is_private_item_name(x)

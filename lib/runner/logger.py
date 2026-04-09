@@ -180,7 +180,7 @@ class Context(object):
         status=None,
         message=None,
         logger=None,
-    ) -> None:
+    ):
         self._level = level or self.LEVEL_INFO
         self._emitter = emitter
         self._action = action
@@ -201,7 +201,7 @@ class Context(object):
         when=None,
         status=None,
         message=None,
-    ) -> None:
+    ):
         if level is not None:
             self._level = level
         if emitter is not None:
@@ -268,7 +268,7 @@ class Context(object):
             },
         }
 
-    def log(self, message=None) -> None:
+    def log(self, message=None):
         assert self._logger is not None
         if message is not None:
             self._message = str(message)

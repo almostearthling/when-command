@@ -306,7 +306,7 @@ class form_ConfluenceCondition(form_Condition):
             self._updateform()
 
     # update the form with the specific parameters (usually in the `tags`)
-    def _updateform(self) -> None:
+    def _updateform(self):
         self._tv_activatingConds.delete(*self._tv_activatingConds.get_children())
         idx = 0
         for cnd in self._conds_activating:
@@ -317,13 +317,13 @@ class form_ConfluenceCondition(form_Condition):
         return super()._updateform()
 
     # update the item from the form elements (usually update `tags`)
-    def _updatedata(self) -> None:
+    def _updatedata(self):
         assert isinstance(self._item, ConfluenceCondition)
         self._item.tags["mcrt_confluent_conditions"] = self._conds_activating  # type: ignore
         return super()._updatedata()
 
     # set the list of available conditions, that implement confluence
-    def set_available_conditions(self, conds: list[str]) -> None:
+    def set_available_conditions(self, conds: list[str]):
         self._conds_available = conds.copy()
         self._conds_available.sort()
         self._cb_chooseCond["values"] = self._conds_available

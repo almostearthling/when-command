@@ -15,7 +15,7 @@ class History(object):
         self._open_records_timing = {}
         self._private_prefix = get_private_item_name_prefix()
 
-    def append(self, record) -> None:
+    def append(self, record):
         time = record["header"]["time"]
         # application = record['header']['application']
         # level = record['header']['level']

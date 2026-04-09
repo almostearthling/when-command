@@ -129,32 +129,32 @@ class App(object):
         self._busy = False
 
     # the main loop is mandatory to react to events
-    def run(self) -> None:
+    def run(self):
         if self._window is not None:
             self._window.mainloop()
 
     # the scheduler wrapper is needed as it provides access to task history
-    def set_wrapper(self, wrapper) -> None:
+    def set_wrapper(self, wrapper):
         self._wrapper = wrapper
 
     # the tray icon if any
-    def set_trayicon(self, icon) -> None:
+    def set_trayicon(self, icon):
         self._trayicon = icon
 
     # send an event to the main loop asynchronously
-    def send_event(self, event: str) -> None:
+    def send_event(self, event: str):
         if self._window:
             self._window.update()
             self._window.event_generate(event)
 
     # shortcut to send an EXIT event
-    def send_exit(self) -> None:
+    def send_exit(self):
         if self._window:
             self._window.update()
             self._window.event_generate("<<ExitApplication>>")
 
     # destroy the window, stop whenever, and cleanup internals
-    def destroy(self) -> None:
+    def destroy(self):
         if self._wrapper:
             self._wrapper.whenever_exit()
             self._wrapper = None
@@ -172,14 +172,14 @@ class App(object):
 
     # event reactions: these are called by the systray app that runs in a
     # separate, detached thread so that it does not slow down the main loop
-    def open_history(self, _) -> None:
+    def open_history(self, _):
         if self._window and self._wrapper:
             form = self.form_History(self._wrapper)
             form.run()
             del form
             gc.collect()
 
-    def sched_pause(self, _) -> None:
+    def sched_pause(self, _):
         if not self._paused and self._window and self._wrapper:
             log = get_logger().context().use(emitter="FRONTEND")
             log.use(
@@ -190,7 +190,7 @@ class App(object):
             ).log("pausing the scheduler")
             self._wrapper.whenever_pause()
 
-    def sched_resume(self, _) -> None:
+    def sched_resume(self, _):
         if self._paused and self._window and self._wrapper:
             log = get_logger().context().use(emitter="FRONTEND")
             log.use(
@@ -201,7 +201,7 @@ class App(object):
             ).log("resuming scheduler activity")
             self._wrapper.whenever_resume()
 
-    def sched_reset_conditions(self, _) -> None:
+    def sched_reset_conditions(self, _):
         if self._window and self._wrapper:
             log = get_logger().context().use(emitter="FRONTEND")
             log.use(
@@ -212,7 +212,7 @@ class App(object):
             ).log("resetting all conditions")
             self._wrapper.whenever_reset_conditions()
 
-    def sched_reload_configuration(self, _) -> None:
+    def sched_reload_configuration(self, _):
         if self._window and self._wrapper:
             log = get_logger().context().use(emitter="FRONTEND")
             log.use(
@@ -223,7 +223,7 @@ class App(object):
             ).log("reloading configuration")
             self._wrapper.whenever_reload_configuration()
 
-    def sched_icon_busy(self, _) -> None:
+    def sched_icon_busy(self, _):
         if self._icon:
             # check current status to avoid useless icon swaps
             if not self._busy:
@@ -231,7 +231,7 @@ class App(object):
                 if not self._paused:
                     self.set_tray_icon_busy(self._trayicon)
 
-    def sched_icon_not_busy(self, _) -> None:
+    def sched_icon_not_busy(self, _):
         if self._icon:
             # check current status to avoid useless icon swaps
             if self._busy:
@@ -241,14 +241,14 @@ class App(object):
                 else:
                     self.set_tray_icon_normal(self._trayicon)
 
-    def sched_icon_paused(self, _) -> None:
+    def sched_icon_paused(self, _):
         if self._icon:
             # check current status to avoid useless icon swaps
             if not self._paused:
                 self._paused = True
                 self.set_tray_icon_gray(self._trayicon)
 
-    def sched_icon_not_paused(self, _) -> None:
+    def sched_icon_not_paused(self, _):
         if self._icon:
             # check current status to avoid useless icon swaps
             if self._paused:
@@ -258,26 +258,26 @@ class App(object):
                 else:
                     self.set_tray_icon_normal(self._trayicon)
 
-    def open_cfgapp(self, _) -> None:
+    def open_cfgapp(self, _):
         if self._window:
             form = self.form_Config(self)
             form.run()
             del form
             gc.collect()
 
-    def open_menubox(self, _) -> None:
+    def open_menubox(self, _):
         if self._window and self._wrapper:
             form = self.form_MenuBox(self)
             form.run()
             del form
             gc.collect()
 
-    def open_aboutbox(self, _) -> None:
+    def open_aboutbox(self, _):
         if self._window:
             self.show_about_box(False)
             gc.collect()
 
-    def exit_app(self, _) -> None:
+    def exit_app(self, _):
         self.destroy()
 
 
@@ -286,13 +286,13 @@ class App(object):
 # displays a window, because all other forms are just non-root toplevels;
 # NOTE: every windowed subprogram *must* receive a reference to the root
 # window and take care of sending a `send_exit()` event when finishing
-def setup_windows() -> None:
+def setup_windows():
     global _root
     _root = App()
 
 
 # prepare expected environment, such as configuration directory
-def prepare_environment() -> None:
+def prepare_environment():
     # create the application data directory if it does not exist
     try:
         _ = get_appdata()
@@ -346,13 +346,13 @@ def check_prepare_features():
 
 
 # version: display the application version and exit
-def main_version(_) -> None:
+def main_version(_):
     # print plain text: could be programatically used to determine version
     print("%s: v%s" % (UI_APP, UI_APP_VERSION))
 
 
 # config: enter the configuration utility and exit (no scheduler launched)
-def main_config(args) -> None:
+def main_config(args):
     # set some global configuration values according to CLI options
     AppConfig.delete("APPDATA")
     AppConfig.set("APPDATA", args.dir_appdata)
@@ -390,7 +390,7 @@ def main_config(args) -> None:
 
 
 # start: start the scheduler in the background and display the tray icon
-def main_start(args) -> None:
+def main_start(args):
     # set some global configuration values according to CLI options
     AppConfig.delete("APPDATA")
     AppConfig.set("APPDATA", args.dir_appdata)
@@ -505,7 +505,7 @@ def main_start(args) -> None:
 
 
 # toolbox: various utilities that can help build a proper setup
-def main_toolbox(args) -> None:
+def main_toolbox(args):
     AppConfig.delete("APPDATA")
     AppConfig.set("APPDATA", args.dir_appdata)
     prepare_environment()
@@ -660,7 +660,7 @@ def main_toolbox(args) -> None:
 
 
 # main program: perform CLI parsing and run the appropriate subcommand
-def main() -> None:
+def main():
     global _root
 
     default_appdata = get_default_configdir()

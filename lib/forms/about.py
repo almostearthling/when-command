@@ -73,7 +73,7 @@ class AboutBox(ApplicationForm):
 
 
 # display a simple about box
-def show_about_box(main=False) -> None:
+def show_about_box(main=False):
     box = AboutBox(main)
     box.run()
     del box

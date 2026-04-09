@@ -206,7 +206,7 @@ class form_WMICondition(form_Condition):
         # update the form
         self._updateform()
 
-    def add_check(self) -> None:
+    def add_check(self):
         assert isinstance(self._item, WMICondition)
         if self.data_get("index") == "":
             index = None
@@ -257,7 +257,7 @@ class form_WMICondition(form_Condition):
         self._updatedata()
         self._updateform()
 
-    def del_check(self) -> None:
+    def del_check(self):
         assert isinstance(self._item, WMICondition)
         entry = self.data_get("result_selection")
         assert isinstance(entry, list)
@@ -290,7 +290,7 @@ class form_WMICondition(form_Condition):
         self._updatedata()
         self._updateform()
 
-    def recall_check(self) -> None:
+    def recall_check(self):
         entry = self.data_get("result_selection")
         assert isinstance(entry, list)
         index = entry[0]
@@ -302,7 +302,7 @@ class form_WMICondition(form_Condition):
         self.data_set("operator", operator)
         self.data_set("value", value)
 
-    def _updatedata(self) -> None:
+    def _updatedata(self):
         assert isinstance(self._item, WMICondition)
         query = self.data_get("query")
         assert isinstance(query, str)
@@ -329,7 +329,7 @@ class form_WMICondition(form_Condition):
         self._item.result_check = e or None
         return super()._updatedata()
 
-    def _updateform(self) -> None:
+    def _updateform(self):
         assert isinstance(self._item, WMICondition)
         self.data_set("query", self._item.query)
         self.data_set("check_all", self._item.result_check_all or False)

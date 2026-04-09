@@ -241,14 +241,14 @@ class form_Condition(ApplicationForm):
         self._check_recurring()
         self.changed = False
 
-    def add_task(self) -> None:
+    def add_task(self):
         elem = self.data_get("@choose_task")
         self._updatedata()
         if elem:
             self._tasks.append(elem)
         self._updateform()
 
-    def del_task(self) -> None:
+    def del_task(self):
         elem = self.data_get("@tasks_selection")
         self._updatedata()
         if elem:
@@ -256,7 +256,7 @@ class form_Condition(ApplicationForm):
             del self._tasks[idx]
             self._updateform()
 
-    def add_check_caption(self, dataname, caption) -> None:
+    def add_check_caption(self, dataname, caption):
         assert self.data_exists(dataname)
         self._captions[dataname] = clean_caption(caption)
 
@@ -270,13 +270,13 @@ class form_Condition(ApplicationForm):
         else:
             return res
 
-    def _popup_invalid_data(self, captions) -> None:
+    def _popup_invalid_data(self, captions):
         captions.sort()
         capts = "- " + "\n- ".join(captions)
         msg = UI_POPUP_INVALIDPARAMETERS_T % capts
         self.messagebox.showerror(UI_POPUP_T_ERR, msg)
 
-    def _check_recurring(self) -> None:
+    def _check_recurring(self):
         # we use the opposite of the value because of <ButtonPress-1>: anyway
         # the <ButtonRelease-1> counterpart does not work so well (same thing
         # for <KeyPress-space>, while <KeyRelease-space> does better)
@@ -289,7 +289,7 @@ class form_Condition(ApplicationForm):
             if not self.data_get("@confluent"):
                 self._max_retries.config(state=tk.NORMAL)
 
-    def _mcrt_confluent(self, force=False) -> None:
+    def _mcrt_confluent(self, force=False):
         # since this reacts to click, bail out if item is a confluence
         if isinstance(self._item, mcrt.ConfluenceCondition):
             return
@@ -338,7 +338,7 @@ class form_Condition(ApplicationForm):
     def contents(self) -> ttk.Frame:
         return self._area_specific
 
-    def _updateform(self) -> None:
+    def _updateform(self):
         self._tv_tasks.delete(*self._tv_tasks.get_children())
         if self._item:
             assert isinstance(self._item, Condition)
@@ -392,7 +392,7 @@ class form_Condition(ApplicationForm):
         self.data_set("@choose_task", "")
 
     # the data update utility loads data into the item
-    def _updatedata(self) -> None:
+    def _updatedata(self):
         assert isinstance(self._item, Condition)
         name = self.data_get("@name")
         if name is not None:
@@ -419,7 +419,7 @@ class form_Condition(ApplicationForm):
         self._item.tasks = self._tasks.copy()
 
     # set and remove the associated item
-    def set_item(self, item: Condition) -> None:
+    def set_item(self, item: Condition):
         assert isinstance(item, Condition)
         try:
             self._item = item.__class__(
@@ -437,18 +437,18 @@ class form_Condition(ApplicationForm):
             self._tasks = self._item.tasks.copy()
             self.data_set("@confluent", False)
 
-    def reset_item(self) -> None:
+    def reset_item(self):
         self._item = None
         self._tasks = []
 
     # command button reactions: cancel deletes the current item so that None
     # is returned upon dialog close, while ok finalizes item initialization
     # and lets the run() function return a configured item
-    def exit_cancel(self) -> None:
+    def exit_cancel(self):
         self._item = None
         return super().exit_cancel()
 
-    def exit_ok(self) -> None:
+    def exit_ok(self):
         errs = self._invalid_data_captions()
         if errs is None:
             self._updatedata()

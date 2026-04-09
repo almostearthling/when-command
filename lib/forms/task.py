@@ -71,7 +71,7 @@ class form_Task(ApplicationForm):
             self.reset_item()
         self.changed = False
 
-    def add_check_caption(self, dataname, caption) -> None:
+    def add_check_caption(self, dataname, caption):
         assert self.data_exists(dataname)
         self._captions[dataname] = clean_caption(caption)
 
@@ -85,7 +85,7 @@ class form_Task(ApplicationForm):
         else:
             return res
 
-    def _popup_invalid_data(self, captions) -> None:
+    def _popup_invalid_data(self, captions):
         captions.sort()
         capts = "- " + "\n- ".join(captions)
         msg = UI_POPUP_INVALIDPARAMETERS_T % capts
@@ -96,7 +96,7 @@ class form_Task(ApplicationForm):
     def contents(self) -> ttk.Frame:
         return self._sub_contents
 
-    def _updateform(self) -> None:
+    def _updateform(self):
         if self._item:
             assert isinstance(self._item, Task)
             self.data_set("@name", self._item.name)
@@ -104,14 +104,14 @@ class form_Task(ApplicationForm):
             self.data_set("@name", "")
 
     # the data update utility loads data into the item
-    def _updatedata(self) -> None:
+    def _updatedata(self):
         assert isinstance(self._item, Task)
         name = self.data_get("@name")
         if name is not None:
             self._item.name = name
 
     # set and remove the associated item
-    def set_item(self, item) -> None:
+    def set_item(self, item):
         assert isinstance(item, Task)
         try:
             self._item = item.__class__(
@@ -120,17 +120,17 @@ class form_Task(ApplicationForm):
         except ValueError:
             self._item = item  # item was newly created: use it
 
-    def reset_item(self) -> None:
+    def reset_item(self):
         self._item = None
 
     # command button reactions: cancel deletes the current item so that None
     # is returned upon dialog close, while ok finalizes item initialization
     # and lets the run() function return a configured item
-    def exit_cancel(self) -> None:
+    def exit_cancel(self):
         self._item = None
         return super().exit_cancel()
 
-    def exit_ok(self) -> None:
+    def exit_ok(self):
         errs = self._invalid_data_captions()
         if errs is None:
             self._updatedata()

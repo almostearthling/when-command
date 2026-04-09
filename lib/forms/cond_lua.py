@@ -186,7 +186,7 @@ class form_LuaScriptCondition(form_Condition):
         else:
             self.messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_INVALIDVARNAME)
 
-    def del_var(self) -> None:
+    def del_var(self):
         assert isinstance(self._item, LuaScriptCondition)
         entry = self.data_get("luavar_selection")
         assert isinstance(entry, list)
@@ -204,7 +204,7 @@ class form_LuaScriptCondition(form_Condition):
         self.data_set("varname", name)
         self.data_set("newvalue", value)
 
-    def recall_var(self) -> None:
+    def recall_var(self):
         entry = self.data_get("luavar_selection")
         assert isinstance(entry, list)
         name = entry[0]
@@ -212,7 +212,7 @@ class form_LuaScriptCondition(form_Condition):
         self.data_set("varname", name)
         self.data_set("newvalue", value)
 
-    def _updatedata(self) -> None:
+    def _updatedata(self):
         assert isinstance(self._item, LuaScriptCondition)
         script = self.data_get("script")
         assert isinstance(script, str)
@@ -228,7 +228,7 @@ class form_LuaScriptCondition(form_Condition):
         self._item.expected_results = e or None
         return super()._updatedata()
 
-    def _updateform(self) -> None:
+    def _updateform(self):
         assert isinstance(self._item, LuaScriptCondition)
         self.data_set("script", self._item.script)
         self.data_set("expect_all", self._item.expect_all or False)

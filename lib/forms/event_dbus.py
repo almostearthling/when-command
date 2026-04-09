@@ -107,7 +107,7 @@ class form_DBusEvent(form_Event):
         # update the form
         self._updateform()
 
-    def _updateform(self) -> None:
+    def _updateform(self):
         assert isinstance(self._item, DBusEvent)
         self.data_set("bus", self._item.bus)
         self.data_set("rule", self._item.rule)
@@ -115,7 +115,7 @@ class form_DBusEvent(form_Event):
         self.data_set("parameter_check_all", self._item.parameter_check_all or False)
         return super()._updateform()
 
-    def _updatedata(self) -> None:
+    def _updatedata(self):
         assert isinstance(self._item, DBusEvent)
         parameter_check = self.data_get("parameter_check")
         assert isinstance(parameter_check, str)

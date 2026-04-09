@@ -80,7 +80,7 @@ class CommandTask(Task):
             self.set_environment_variables = None
             self.environment_variables = None
 
-    def load_checking(self, item: items.Table, item_line: int) -> None:
+    def load_checking(self, item: items.Table, item_line: int):
         super().load_checking(item, item_line)
         self.type = "command"
         self.hrtype = ITEM_TASK_COMMAND

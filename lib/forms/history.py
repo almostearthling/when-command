@@ -107,7 +107,7 @@ class form_History(ApplicationForm):
 
         self._updateform()
 
-    def set_history(self, history) -> None:
+    def set_history(self, history):
         h = list(
             (
                 [
@@ -124,7 +124,7 @@ class form_History(ApplicationForm):
         h.reverse()
         self._history = h
 
-    def _updateform(self) -> None:
+    def _updateform(self):
         self._tv_history.delete_rows()
         for entry, outcome in self._history:
             icon = (
@@ -136,7 +136,7 @@ class form_History(ApplicationForm):
             self._tv_history.insert_row("end", values=entry)
 
     # reload history data when the `reload` button is clicked
-    def reload(self) -> None:
+    def reload(self):
         self.set_history(self._wrapper.get_history())
         self._updateform()
         return super().reload()

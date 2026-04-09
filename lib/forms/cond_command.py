@@ -331,7 +331,7 @@ class form_CommandCondition(form_Condition):
                     self._item.case_sensitive = False if not case_sensitive else None
         return super()._updatedata()
 
-    def _updateform(self) -> None:
+    def _updateform(self):
         assert isinstance(self._item, CommandCondition)
         self.data_set("varname", "")
         self.data_set("newvalue", "")
@@ -406,7 +406,7 @@ class form_CommandCondition(form_Condition):
             )
         return super()._updateform()
 
-    def add_var(self) -> None:
+    def add_var(self):
         assert isinstance(self._item, CommandCondition)
         name = self.data_get("varname")
         value = self.data_get("newvalue")
@@ -428,7 +428,7 @@ class form_CommandCondition(form_Condition):
             self._updatedata()
             self._updateform()
 
-    def del_var(self) -> None:
+    def del_var(self):
         assert isinstance(self._item, CommandCondition)
         entry = self.data_get("envvar_selection")
         assert isinstance(entry, list)
@@ -446,7 +446,7 @@ class form_CommandCondition(form_Condition):
         self.data_set("varname", name)
         self.data_set("newvalue", value)
 
-    def recall_var(self) -> None:
+    def recall_var(self):
         entry = self.data_get("envvar_selection")
         assert isinstance(entry, list)
         name = entry[0]
@@ -454,7 +454,7 @@ class form_CommandCondition(form_Condition):
         self.data_set("varname", name)
         self.data_set("newvalue", value)
 
-    def browse_command(self) -> None:
+    def browse_command(self):
         filetypes = [(UI_FILETYPE_ALL, ".*")]
         if is_windows():
             exts = get_executable_extensions()
@@ -465,7 +465,7 @@ class form_CommandCondition(form_Condition):
         if entry:
             self.data_set("command", entry)
 
-    def browse_startup_path(self) -> None:
+    def browse_startup_path(self):
         entry = filedialog.askdirectory(parent=self.dialog)
         if entry:
             self.data_set("startup_path", entry)
