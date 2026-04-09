@@ -31,7 +31,11 @@ This document references:
 * [**whenever**](https://github.com/almostearthling/whenever): the main scheduler and automation tool used by **When**;
 * [**whenever_tray**](https://github.com/almostearthling/whenever_tray): a minimal, lightweight, cross platform wrapper and frontend for **whenever**.
 
-The first is the main core that **When** uses to accomplish its mission: unlike the previous version, **When** totally relies on **whenever** as its internal engine instead of implementing a scheduler on its own. The second can be considered as a complement to **When**, in the sense that **When** is designed to share its configuration location with **whenever_tray** in an interoperable way that would allow the latter to be launched as an alternative frontend for running **whenever** after having configured it with the help of **When**.
+The first is the main core that **When** uses to accomplish its mission: unlike the previous version, **When** totally relies on **whenever** as its internal engine instead of implementing a scheduler on its own. The second can be considered as a complement to **When**, in the sense that **When** is designed to share its configuration location with **whenever_tray** in an interoperable way that would allow the latter to be launched as an alternate frontend for running **whenever** after having configured it with the help of **When**.
+
+:::{tip}
+A configuration file generated with **When** will still work in case **whenever** is started by an alternate frontend, or even on its own. This includes advanced features such as the ability to [_reset conditions on system resume_](cfgform.md#modify-scheduler-parameters), or the [_conditions activated by other conditions_](cond_confluence.md), as well as the specific items. Some of these features, however, require **When** to be _installed_ (although not _running_), because they depend on resources (for instance, _Lua_ scripts), that are located in the **When** installation tree. Apart from that, the configuration is read by **whenever** as a definitely regular configuration file.
+:::
 
 
 ## Covered Topics
@@ -57,16 +61,16 @@ For more information about the companion tools, **whenever** and **whenever_tray
 
 For the sake of readability, a glossary follows for some of the terms used throughout this documentation.
 
-| **Term**           | **Meaning**                                                                                                                                                |
-|--------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| _APPDATA_          | the _application data_ directory is where **When** keeps configuration files, data files, and logs: see [this page](appdata.md) for details                |
-| _condition_        | circumstance or set of circumstances that may or may not occur in a certain moment and whose occurrence determines the execution of tasks                  |
-| _event_            | signal, message, or external coincidence anyway that **When** (or **whenever**) can be instructed to listen to                                             |
-| _item_             | used throughout the document to specify one of a _task_, a _condition_ or an _event_                                                                       |
-| _system tray area_ | area of the desktop where background-running applications show an icon and notifications: goes by several other names                                      |
-| _task_             | an action that **When** will perform upon verification of a certain _condition_                                                                            |
-| _tick_             | the instant in which the tests for condition verification are started and possibly consequential tasks are launched                                        |
-| ...                | ...                                                                                                                                                        |
+| **Term**           | **Meaning**                                                                                                                                 |
+|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
+| _APPDATA_          | the _application data_ directory is where **When** keeps configuration files, data files, and logs: see [this page](appdata.md) for details |
+| _condition_        | circumstance or set of circumstances that may or may not occur in a certain moment and whose occurrence determines the execution of tasks   |
+| _event_            | signal, message, or external coincidence anyway that **When** (or **whenever**) can be instructed to listen to                              |
+| _item_             | used throughout the document to specify one of a _task_, a _condition_ or an _event_                                                        |
+| _system tray area_ | area of the desktop where background-running applications show an icon and notifications: goes by several other names                       |
+| _task_             | an action that **When** will perform upon verification of a certain _condition_                                                             |
+| _tick_             | the instant in which the tests for condition verification are started and possibly consequential tasks are launched                         |
+| ...                | ...                                                                                                                                         |
 
 
 [^1]: this actually fulfills what was requested in Issue #85.
