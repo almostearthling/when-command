@@ -299,13 +299,13 @@ UI_POPUP_EMPTYVARVALUE = "Aucune valeur fournie pour la variable"
 UI_POPUP_EMPTYCHECKVALUE = "Aucune valeur prévue pour le test"
 UI_POPUP_INVALIDFILEORDIR = "Nom de fichier ou de répertoire non valide"
 UI_POPUP_INVALIDTIMESPEC = "Spécification de temps non valide ou manquante"
-UI_POPUP_REFERENCEDTASK = "Le task est toujours référencée au moins dans\nune condition: supprimez toutes les références\navant d'essayer de l'éliminer'"
-UI_POPUP_REFERENCEDCOND = "La condition est toujours référencée au moins dans\nun événement: supprimez toutes les références avant\nd'essayer de l'éliminer"
+UI_POPUP_REFERENCEDTASK = "Le task est toujours référencée au moins dans une condition: supprimez toutes les références avant d'essayer de l'éliminer'"
+UI_POPUP_REFERENCEDCOND = "La condition est toujours référencée au moins dans un événement: supprimez toutes les références avant d'essayer de l'éliminer"
 UI_POPUP_MISSINGEVENTCOND = "Aucune condition spécifiée pour l'événement"
 UI_POPUP_INVALIDOPERATOR = "L'opérateur spécifié n'est pas valide"
 UI_POPUP_INVALIDINDEX = "L'indice spécifié n'est pas valide"
 UI_POPUP_INVALIDFIELD = "Le nom de champ spécifié n'est pas valide"
-UI_POPUP_WARNFIXCONFIG = f"Un ou plusieurs éléments ne sont pas reconnus: si la configuration\na été généré avec une version précédente de {UI_APP}, vous pouvez\navoir besoin d'exécuter l'outil `{CLI_APP} --fix-config` à partir de la ligne de commande."
+UI_POPUP_WARNFIXCONFIG = f"Un ou plusieurs éléments ne sont pas reconnus: si la configuration a été généré avec une version précédente de {UI_APP}, vous pouvez avoir besoin d'exécuter l'outil `{CLI_APP} --fix-config` à partir de la ligne de commande."
 
 
 # about box

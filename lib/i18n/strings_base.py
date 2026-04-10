@@ -299,16 +299,16 @@ UI_POPUP_EMPTYVARVALUE = "No value provided for variable"
 UI_POPUP_EMPTYCHECKVALUE = "No value provided for check"
 UI_POPUP_INVALIDFILEORDIR = "Invalid file or directory name"
 UI_POPUP_INVALIDTIMESPEC = "Invalid or missing time specification"
-UI_POPUP_REFERENCEDTASK = "The task is still referenced in at least\none condition: remove any references\nbefore attempting to delete it"
-UI_POPUP_REFERENCEDCOND = "The condition is still referenced in at least\none event: remove any references before\nattempting to delete it"
+UI_POPUP_REFERENCEDTASK = "The task is still referenced in at least one condition: remove any references before attempting to delete it"
+UI_POPUP_REFERENCEDCOND = "The condition is still referenced in at least one event: remove any references before attempting to delete it"
 UI_POPUP_MISSINGEVENTCOND = "No condition specified for event"
 UI_POPUP_INVALIDOPERATOR = "The specified operator is not valid"
 UI_POPUP_INVALIDINDEX = "The specified index is not valid"
 UI_POPUP_INVALIDFIELD = "The specified field name is not valid"
 UI_POPUP_WARNFIXCONFIG = f"""\
-One or more items are not recognized: if the configuration
-has been generated with a previous version of {UI_APP}, you may
-need to run `{CLI_APP} tool --fix-config` from the command line.
+One or more items are not recognized: if the configuration \
+has been generated with a previous version of {UI_APP}, you may \
+need to run `{CLI_APP} tool --fix-config` from the command line.\
 """
 
 

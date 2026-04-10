@@ -299,13 +299,13 @@ UI_POPUP_EMPTYVARVALUE = "Nessun valore fornito per la variabile"
 UI_POPUP_EMPTYCHECKVALUE = "Nessun valore fornito per la verifica"
 UI_POPUP_INVALIDFILEORDIR = "File o nome della directory non valido"
 UI_POPUP_INVALIDTIMESPEC = "Specifiche di tempo non valide o mancanti"
-UI_POPUP_REFERENCEDTASK = "Il task è ancora citato in almeno\nuna condizione: rimuovere qualsiasi riferimento\nprima di tentare di eliminarlo"
-UI_POPUP_REFERENCEDCOND = "La condizione è ancora citata in almeno\nun evento: rimuovere qualsiasi riferimento prima\ndi tentare di eliminarla"
+UI_POPUP_REFERENCEDTASK = "Il task è ancora citato in almeno una condizione: rimuovere qualsiasi riferimento prima di tentare di eliminarlo"
+UI_POPUP_REFERENCEDCOND = "La condizione è ancora citata in almeno un evento: rimuovere qualsiasi riferimento prima di tentare di eliminarla"
 UI_POPUP_MISSINGEVENTCOND = "Nessuna condizione specificata per l'evento"
 UI_POPUP_INVALIDOPERATOR = "L'operatore specificato non è valido"
 UI_POPUP_INVALIDINDEX = "L'indice specificato non è valido"
 UI_POPUP_INVALIDFIELD = "Il nome del campo specificato non è valido"
-UI_POPUP_WARNFIXCONFIG = f"Uno o più elementi non sono stati riconosciuti: se la configurazione\nè stata generata con una versione precedente di {UI_APP}, può\nessere necessario eseguire `{CLI_APP} tool --fix-config` dalla riga di comando."
+UI_POPUP_WARNFIXCONFIG = f"Uno o più elementi non sono stati riconosciuti: se la configurazione è stata generata con una versione precedente di {UI_APP}, può essere necessario eseguire `{CLI_APP} tool --fix-config` dalla riga di comando."
 
 
 # about box

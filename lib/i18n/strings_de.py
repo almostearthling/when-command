@@ -299,13 +299,13 @@ UI_POPUP_EMPTYVARVALUE = "Kein Wert für Variable bereitgestellt"
 UI_POPUP_EMPTYCHECKVALUE = "Kein Wert für die Prüfung bereitgestellt"
 UI_POPUP_INVALIDFILEORDIR = "Ungültiger Datei- oder Verzeichnisname"
 UI_POPUP_INVALIDTIMESPEC = "Ungültige oder fehlende Zeitspezifikation"
-UI_POPUP_REFERENCEDTASK = "Der Task wird zumindest immer noch verwiesen\neine Kondition: entfernen Sie alle Referenzen\nbevor Sie versuchen, ihn zu löschen"
-UI_POPUP_REFERENCEDCOND = "Die Kondition wird zumindest immer noch verwiesen\nein Ereignis: entfernen Sie vor Beweisvorgängen vorher\nversuch, ihn zu löschen"
+UI_POPUP_REFERENCEDTASK = "Der Task wird zumindest immer noch verwiesen eine Kondition: entfernen Sie alle Referenzen bevor Sie versuchen, ihn zu löschen"
+UI_POPUP_REFERENCEDCOND = "Die Kondition wird zumindest immer noch verwiesen ein Ereignis: entfernen Sie alle Referenzen bevor Sie versuchen, ihn zu löschen"
 UI_POPUP_MISSINGEVENTCOND = "Keine Kondition für das Ereignis angegeben"
 UI_POPUP_INVALIDOPERATOR = "Der angegebene Operator ist nicht gültig"
 UI_POPUP_INVALIDINDEX = "Der angegebene Index ist nicht gültig"
 UI_POPUP_INVALIDFIELD = "Der angegebene Feldname ist nicht gültig"
-UI_POPUP_WARNFIXCONFIG = f"Ein oder mehrere Elemente werden nicht erkannt: wenn die Konfiguration\nwurde mit einer früheren Version von {UI_APP} generiert, sollten Sie vielleicht\n`{CLI_APP} tool  --fix-config` durch die Befehlszeile anwenden."
+UI_POPUP_WARNFIXCONFIG = f"Ein oder mehrere Elemente werden nicht erkannt: wenn die Konfiguration wurde mit einer früheren Version von {UI_APP} generiert, sollten Sie vielleicht `{CLI_APP} tool  --fix-config` durch die Befehlszeile anwenden."
 
 
 # about box
