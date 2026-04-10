@@ -16,6 +16,7 @@ from ..utility import (
     is_private_item_name,
 )
 
+from .cond import Condition
 from .itemhelp import CheckedTable, ConfigurationError
 
 
@@ -189,6 +190,13 @@ class Task(object):
     def private(self):
         assert isinstance(self.name, str)
         return is_private_item_name(self.name)
+
+    def can_be_removed(self, all_conds: dict[str, Condition]) -> bool:
+        for k in all_conds:
+            tasks = all_conds[k].tasks
+            if tasks is not None and self.name in tasks:
+                return False
+        return True
 
     def as_table(self):
         if not check_not_none(

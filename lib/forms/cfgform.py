@@ -377,7 +377,9 @@ class form_Config(ApplicationForm):
         n_mcrt_updater = mcrt.updater_name()
         mcrt_active = False
         for cond in self._conditions.values():
-            if isinstance(cond, mcrt.ConfluenceCondition) or mcrt.is_confluent_cond(cond):
+            if isinstance(cond, mcrt.ConfluenceCondition) or mcrt.is_confluent_cond(
+                cond
+            ):
                 mcrt_active = True
                 break
         if mcrt_active:
@@ -431,9 +433,17 @@ class form_Config(ApplicationForm):
         item_type = item_signature.split(":", 1)[0]
         if self.messagebox.askyesno(UI_POPUP_T_CONFIRM, UI_POPUP_DELETEITEM_Q):
             if item_type == "task":
-                del self._tasks[item_name]
+                e = self._tasks[item_name]
+                if e.can_be_removed(self._conditions):
+                    del self._tasks[item_name]
+                else:
+                    self.messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_REFERENCEDTASK)
             elif item_type == "cond":
-                del self._conditions[item_name]
+                e = self._conditions[item_name]
+                if e.can_be_removed(self._events):
+                    del self._conditions[item_name]
+                else:
+                    self.messagebox.showerror(UI_POPUP_T_ERR, UI_POPUP_REFERENCEDCOND)
             elif item_type == "event":
                 del self._events[item_name]
             self._updatedata()

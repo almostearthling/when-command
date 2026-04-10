@@ -27,6 +27,7 @@ from ..utility import (
 )
 
 from .itemhelp import CheckedTable, ConfigurationError
+from .event import Event
 
 
 # base class for conditions: all condition items will have the same interface
@@ -226,6 +227,12 @@ class Condition(object):
     def private(self):
         assert isinstance(self.name, str)
         return is_private_item_name(self.name)
+    
+    def can_be_removed(self, all_events: dict[str, Event]) -> bool:
+        for k in all_events:
+            if self.name == all_events[k].condition:
+                return False
+        return True
 
     def as_table(self):
         if not check_not_none(

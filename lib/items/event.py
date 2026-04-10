@@ -205,6 +205,9 @@ class Event(object):
         assert isinstance(self.name, str)
         return is_private_item_name(self.name)
 
+    def can_be_removed(self) -> bool:
+        return True
+
     def as_table(self) -> items.Table:
         if not check_not_none(
             self.name,
