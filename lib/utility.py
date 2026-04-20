@@ -14,7 +14,7 @@ from tomlkit import (
     string,
     items,
     exceptions,
-    )
+)
 from hashlib import blake2s
 from base64 import decodebytes as b64_decodeb
 from io import BytesIO
@@ -85,12 +85,23 @@ _current_whenever_version = None
 
 # operators allowed in WMI and DBus result/parameter checks
 _WMI_RESULT_CHECK_OPERATORS = ("eq", "neq", "gt", "ge", "lt", "le", "match")
-_DBUS_PARAM_CHECK_OPERATORS = ("eq", "neq", "gt", "ge", "lt", "le", "match", "contains", "ncontains")
+_DBUS_PARAM_CHECK_OPERATORS = (
+    "eq",
+    "neq",
+    "gt",
+    "ge",
+    "lt",
+    "le",
+    "match",
+    "contains",
+    "ncontains",
+)
 
 
 # check that an operator is correct for either DBus or WMI result checks
 def is_wmi_operator(s: str) -> bool:
     return s in _WMI_RESULT_CHECK_OPERATORS
+
 
 def is_dbus_operator(s: str) -> bool:
     return s in _DBUS_PARAM_CHECK_OPERATORS
@@ -198,18 +209,21 @@ def get_appicon(image: bytes) -> ImageTk.PhotoImage:
 # determine where configuration is stored by default
 def get_default_configdir() -> str:
     if is_windows():
-        appdata = os.environ["APPDATA"]
-        cfgname: str = AppConfig.get("CFGNAME") # type: ignore
+        appdata = os.getenv("APPDATA") or os.path.join(
+            os.getenv("USERPROFILE"),  # type: ignore
+            "AppData",
+        )
+        cfgname: str = AppConfig.get("CFGNAME")  # type: ignore
         if AppConfig.get("DEBUG"):
             cfgname += "_DEBUG"
         return os.path.join(appdata, cfgname)
     else:
-        s: str = AppConfig.get("CFGNAME")   # type: ignore
+        s: str = AppConfig.get("CFGNAME")  # type: ignore
         cfgname = "." + s.lower()
         if AppConfig.get("DEBUG"):
             cfgname += "_DEBUG"
         home = os.path.expanduser("~")
-        if sys.platform == "darwin":
+        if is_mac():
             return os.path.join(home, "Library", "Application Support", cfgname)
         elif is_linux():
             return os.path.join(home, cfgname)
@@ -238,7 +252,7 @@ def get_default_whenever() -> str | None:
 
 # determine appdata directory and ensure it exists
 def get_appdata() -> str:
-    appdata: str = AppConfig.get("APPDATA") # type: ignore
+    appdata: str = AppConfig.get("APPDATA")  # type: ignore
     if not os.path.isdir(appdata):
         try:
             os.makedirs(appdata)
@@ -249,7 +263,7 @@ def get_appdata() -> str:
 
 # determine scripts directory and ensure that it exists
 def get_scriptsdir() -> str:
-    configdir: str = AppConfig.get("APPDATA") # type: ignore
+    configdir: str = AppConfig.get("APPDATA")  # type: ignore
     if is_windows():
         subdir = "Scripts"
     else:
@@ -264,8 +278,8 @@ def get_scriptsdir() -> str:
 
 
 # determine temp directory and ensure that it exists
-def get_tempdir(cleanup: bool=False) -> str:
-    configdir: str = AppConfig.get("APPDATA") # type: ignore
+def get_tempdir(cleanup: bool = False) -> str:
+    configdir: str = AppConfig.get("APPDATA")  # type: ignore
     if is_windows():
         subdir = "Temp"
     else:
@@ -345,7 +359,7 @@ def get_lua_path() -> str:
 def get_lua_initscript() -> str:
     init = os.path.join(get_scriptsdir(), _LUA_INIT_NAME)
     if not os.path.exists(init):
-        with open(init, 'w') as f:
+        with open(init, "w") as f:
             f.write(_LUA_INIT_SCRIPT)
     return init
 
@@ -484,11 +498,14 @@ def is_whenever_running() -> None | bool:
 def whenever_has_dbus() -> bool:
     return bool(AppConfig.get("WHENEVER_HAS_DBUS"))
 
+
 def whenever_has_wmi() -> bool:
     return bool(AppConfig.get("WHENEVER_HAS_WMI"))
 
+
 def whenever_has_lua_sync() -> bool:
     return bool(AppConfig.get("WHENEVER_HAS_LUASYNC"))
+
 
 def whenever_has_lua_httpreq() -> bool:
     return bool(AppConfig.get("WHENEVER_HAS_LUAHTTPREQ"))
@@ -496,16 +513,16 @@ def whenever_has_lua_httpreq() -> bool:
 
 # return the configuration file path
 def get_configfile() -> str:
-    s: str = AppConfig.get("CFGNAME")   # type: ignore
-    d: str = AppConfig.get("APPDATA")   # type: ignore
+    s: str = AppConfig.get("CFGNAME")  # type: ignore
+    d: str = AppConfig.get("APPDATA")  # type: ignore
     basename = "%s.toml" % s.lower()
     return os.path.join(d, basename)
 
 
 # return the log file path
 def get_logfile() -> str:
-    s: str = AppConfig.get("CFGNAME")   # type: ignore
-    d: str = AppConfig.get("APPDATA")   # type: ignore
+    s: str = AppConfig.get("CFGNAME")  # type: ignore
+    d: str = AppConfig.get("APPDATA")  # type: ignore
     basename = "%s.log" % s.lower()
     return os.path.join(d, basename)
 
@@ -619,9 +636,9 @@ def toml_list_of_literals(los) -> items.Array | None:
 # in the array, possibly followed by the first non-dashed argument
 def toml_list_of_command_args(los) -> items.Array | None:
     if los is not None:
-        switch_start = ['-', '--']
+        switch_start = ["-", "--"]
         if is_windows():
-            switch_start.append('/')
+            switch_start.append("/")
         cur_line = []
         r = array()
         for s in los:
@@ -647,7 +664,6 @@ def toml_list_of_command_args(los) -> items.Array | None:
 def toml_literal(s) -> items.String | None:
     if s is not None:
         return toml_try_literal(s)
-
 
 
 # clean a caption from non-alphanumeric characters at the end
