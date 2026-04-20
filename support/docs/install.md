@@ -15,7 +15,7 @@ Note that even though a [recent release](https://github.com/almostearthling/when
 
 These steps can be followed on both Windows 10 and Windows 11:
 
-1. install **Python** using one of the official installation methods
+1. install **Python** using the standalone installer, and choosing to install it for all users[^1]
 2. install pipx by issuing the command `py -m pip install --user pipx` in a console window: after installation launch `pipx ensurepath` from the command prompt
 3. install the latest release of **When**, using **pipx**:
 
@@ -163,3 +163,5 @@ Both the installation of **When** using the **pipx** method, and the installatio
 
 [`◀ Main`](main.md)
 
+
+[^1]: the reason is that, when Python is installed for the current user or via the _App Store_, the APPDATA directory is relocated within the interpreter to a non-canonical location; the problem is under investigation in order to support all installation methods for Python.
