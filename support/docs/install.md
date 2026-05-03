@@ -15,7 +15,7 @@ Note that even though a [recent release](https://github.com/almostearthling/when
 
 These steps can be followed on both Windows 10 and Windows 11:
 
-1. install **Python** using one of the following methods:[^1]
+1. install **Python**, preferably using one of the following methods:[^1]
    * the [_winget_](https://learn.microsoft.com/en-us/windows/package-manager/winget) utility, by running `winget install Python` in a terminal window
    * the [_Python Install Manager_](https://apps.microsoft.com/detail/9nq7512cxl7t), by running `py install 3` in a terminal window after installing it from the store
    * the standalone installer, which can be found at the downloads page on the Python main site
@@ -167,4 +167,4 @@ Both the installation of **When** using the **pipx** method, and the installatio
 [`◀ Main`](main.md)
 
 
-[^1]: the reason is that, when Python is installed via the _Microsoft Store_, the _APPDATA_ directory is relocated within the interpreter in order to provide a sandbox for the interpreter: the way of handling file system redirections for packaged applications is [documented](https://learn.microsoft.com/en-us/windows/msix/desktop/desktop-to-uwp-behind-the-scenes#file-system) and there is no way to escape this because such redirections are enabled at low level and real well-known paths are masked. Other installations performed using either _winget_, or the _Python Install Manager_, which in turn is becoming the preferred installation method for Python on Windows, or the standalone Python installer, are not affected this problem. The possibility to support a _Microsoft Store_ based Python setup is under investigation, but will be discouraged in any case: besides all other problems, it will create configuration files that are both hard to find and hard to edit.
+[^1]: the reason is that, when Python is installed via the _Microsoft Store_, the _APPDATA_ directory is relocated within the interpreter in order to confine it in a sandbox: the way of handling file system redirections for packaged applications is [documented here](https://learn.microsoft.com/en-us/windows/msix/desktop/desktop-to-uwp-behind-the-scenes#file-system). **When** uses the redirected location to store configuration and data, and **whenever** works anyway, however this type of setup is discouraged because it leads to configuration files that are both hard to read and hard to find. Other installations performed using either _winget_, or the _Python Install Manager_, which in turn is becoming the preferred installation method for Python on Windows, or the standalone Python installer, are not affected by this problem. If a _Microsoft Store_ based setup is really needed, be careful to disable the setting that limits the path length, as it might cause issues because of the intrinsic length of the base path.
