@@ -32,6 +32,10 @@ These steps can be followed on both Windows 10 and Windows 11:
 
 Once a configuration is available, the resident application can be started from the command line using the `when start` command. A shortcut can be created as described [below](#create-application-icons). On Windows, the `when-bg` command can be used instead of `when` to launch the application _detached_ from a console window.
 
+:::{warning}
+Depending on how recent is the Windows installation, the latest supported _Visual C++ Redistributable Files_ (64 bit version) might need to be [downloaded and installed](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170#latest-supported-redistributable-version).
+:::
+
 
 ## Linux
 
