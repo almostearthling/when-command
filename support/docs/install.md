@@ -15,7 +15,10 @@ Note that even though a [recent release](https://github.com/almostearthling/when
 
 These steps can be followed on both Windows 10 and Windows 11:
 
-1. install **Python** using the standalone installer, and choosing to install it for all users[^1]
+1. install **Python** using one of the following methods:[^1]
+   * the [_winget_](https://learn.microsoft.com/en-us/windows/package-manager/winget) utility, by running `winget install Python` in a terminal window
+   * the [_Python Install Manager_](https://apps.microsoft.com/detail/9nq7512cxl7t), by running `py install 3` in a terminal window after installing it from the store
+   * the standalone installer, which can be found at the downloads page on the Python main site
 2. install pipx by issuing the command `py -m pip install --user pipx` in a console window: after installation launch `pipx ensurepath` from the command prompt
 3. install the latest release of **When**, using **pipx**:
 
@@ -164,4 +167,4 @@ Both the installation of **When** using the **pipx** method, and the installatio
 [`◀ Main`](main.md)
 
 
-[^1]: the reason is that, when Python is installed for the current user or via the _App Store_, the APPDATA directory is relocated within the interpreter to a non-canonical location; the problem is under investigation in order to support all installation methods for Python.
+[^1]: the reason is that, when Python is installed via the _Microsoft Store_, the _APPDATA_ directory is relocated within the interpreter in order to provide a sandbox for the interpreter: the way of handling file system redirections for packaged applications is [documented](https://learn.microsoft.com/en-us/windows/msix/desktop/desktop-to-uwp-behind-the-scenes#file-system) and there is no way to escape this because such redirections are enabled at low level and real well-known paths are masked. Other installations performed using either _winget_, or the _Python Install Manager_, which in turn is becoming the preferred installation method for Python on Windows, or the standalone Python installer, are not affected this problem. The possibility to support a _Microsoft Store_ based Python setup is under investigation, but will be discouraged in any case: besides all other problems, it will create configuration files that are both hard to find and hard to edit.
