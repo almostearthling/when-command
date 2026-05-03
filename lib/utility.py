@@ -258,6 +258,15 @@ def get_appdata() -> str:
             os.makedirs(appdata)
         except Exception:
             raise OSError(CLI_ERR_DATADIR_UNACCESSIBLE)
+    # the following is to work around UWP redirection on Windows: not sure
+    # whether or not it can be of any use on other platforms, so this remains
+    # Windows specific for the moment
+    if is_windows():
+        realappdata = os.path.realpath(appdata)
+        if realappdata != appdata:
+            appdata = realappdata
+            AppConfig.delete("APPDATA")
+            AppConfig.set("APPDATA", appdata)
     return appdata
 
 
