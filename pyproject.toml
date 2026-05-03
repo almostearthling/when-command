@@ -1,6 +1,6 @@
 [project]
 name = "when"
-version = "2.1.1"
+version = "2.1.2"
 description = "Interface for the **whenever** automation tool"
 authors = [
     { name = "Francesco Garosi", email = "francesco.garosi@gmail.com" },
@@ -32,7 +32,7 @@ Pygments = "^2.19.2"
 pygobject = { version = "3.50.0", markers = "sys_platform == 'linux'" }
 # pygobject = { version = "^3.52.2", markers = "sys_platform == 'linux'" }
 pystray = "^0.19.5"
-pywin32 = { version = "^308", markers = "sys_platform == 'win32'" }
+pywin32 = { version = ">=308", markers = "sys_platform == 'win32'" }
 requests = "^2.32.5"
 rich = "^13.9.4"
 semver = "^3.0.4"
