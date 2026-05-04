@@ -16,11 +16,11 @@ Note that even though a [recent release](https://github.com/almostearthling/when
 These steps can be followed on both Windows 10 and Windows 11:
 
 1. install **Python**, preferably using one of the following methods:[^1]
-   * the [_winget_](https://learn.microsoft.com/en-us/windows/package-manager/winget) utility, by running `winget install Python` in a terminal window[^2]
-   * the [_Python Install Manager_](https://apps.microsoft.com/detail/9nq7512cxl7t), by running `py install 3` in a terminal window after installing it from the store[^2]
+   * the [_winget_](https://learn.microsoft.com/en-us/windows/package-manager/winget) utility, by running `winget install Python` in a terminal window
+   * the [_Python Install Manager_](https://apps.microsoft.com/detail/9nq7512cxl7t), by running `py install 3` in a terminal window after installing it from the store
    * the standalone installer, which can be found at the downloads page on the Python main site
 2. install pipx by issuing the command `py -m pip install --user pipx` in a console window: after installation launch `pipx ensurepath` from the command prompt
-3. install the latest release of **When**, using **pipx**:
+3. install the latest release of **When**, using **pipx**:[^2]
 
    ```batch
    pipx install https://github.com/almostearthling/when-command/releases/latest/download/when-command-latest.zip
@@ -30,11 +30,11 @@ These steps can be followed on both Windows 10 and Windows 11:
 5. install **whenever** using the **When** installation tool: `when tool --install-whenever`
 6. launch the configuration utility, by typing `when config` on the command line: create a task and a condition of your choice, and save the configuration file by clicking the _Save_ button. The [simple trace](tutorial.md#simple-trace) example in the tutorial can be a good choice to verify that everything works as expected.
 
-Once a configuration is available, the resident application can be started from the command line using the `when start` command. A shortcut can be created as described [below](#create-application-icons). On Windows, the `when-bg` command can be used instead of `when` to launch the application _detached_ from a console window.
-
 :::{warning}
-Depending on how recent is the Windows installation, the latest supported _Visual C++ Redistributable Files_ (64 bit version) might need to be [downloaded and installed](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170#latest-supported-redistributable-version).
+Depending on how recent is the Windows installation, an error box may show up when you first start **When** by clicking one of the provided icons, reporting that the _VCRUNTIME140.dll_ and/or _MSVCP140.dll_ are missing: in this case, the latest supported _Visual C++ Redistributable Files_ (64 bit version) needs to be [downloaded and installed](https://aka.ms/vc14/vc_redist.x64.exe) ([source](https://docs.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist)). Thereafter, there is no need to reinstall **When** nor **whenever**, and the application should run without errors.
 :::
+
+Once a configuration is available, the resident application can be started from the command line using the `when start` command. A shortcut can be created as described [below](#create-application-icons). On Windows, the `when-bg` command can be used instead of `when` to launch the application _detached_ from a console window.
 
 
 ## Linux
@@ -172,4 +172,4 @@ Both the installation of **When** using the **pipx** method, and the installatio
 
 
 [^1]: the reason is that, when Python is installed via the _Microsoft Store_, the _APPDATA_ directory is relocated within the interpreter in order to confine it in a sandbox: the way of handling file system redirections for packaged applications is [documented here](https://learn.microsoft.com/en-us/windows/msix/desktop/desktop-to-uwp-behind-the-scenes#file-system). **When** uses the redirected location to store configuration and data, and **whenever** works anyway, however this type of setup is discouraged because it leads to configuration files that are both hard to read and hard to find. Other installations performed using either _winget_, or the _Python Install Manager_, which in turn is becoming the preferred installation method for Python on Windows, or the standalone Python installer, are not affected by this problem. If a _Microsoft Store_ based setup is really needed, be careful to disable the setting that limits the path length, as it might cause issues because of the intrinsic length of the base path.
-[^2]: the _PATH_ variable might need to be adjusted if this method is used, as suggested by the `pip` command, or the command `python -m pipx` has to be used instead of simply typing `pipx`; the same yields for _Microsoft Store_ based Python installations.
+[^2]: the _PATH_ variable might need to be adjusted if either _winget_ or the _Python Install Manager_ are used, as suggested by the `pip` command. Alternatively, the `pipx` command can simply be replaced with `python -m pipx`, without changes to the rest of the command line; the same yields for _Microsoft Store_ based Python installations.
