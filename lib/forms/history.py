@@ -91,6 +91,9 @@ class form_History(ApplicationForm):
             bootstyle=ttkc.SECONDARY,
         )
 
+        # this is a hack because the horizontal scrollbar is not documented
+        tab_history.hbar.pack_forget()
+
         # arrange items in the grid
         l_history.grid(row=0, column=0, sticky=tk.W, padx=PAD, pady=PAD)
         tab_history.grid(row=1, column=0, sticky=tk.NSEW, padx=PAD, pady=PAD)
