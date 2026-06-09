@@ -79,7 +79,7 @@ class App(object):
             import ctypes
 
             myappid = "when.python.application"
-            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)  # type: ignore
         self._window = get_tkroot()
         self._window.withdraw()
         self._icon = ImageTk.PhotoImage(get_image(APP_ICON))
