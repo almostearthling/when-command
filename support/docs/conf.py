@@ -9,7 +9,7 @@
 project = "The When Automation Tool"
 author = "Francesco Garosi"
 copyright = "2015-%Y, Francesco Garosi"
-release = '2.0'
+release = '2.1'
 
 html_logo = "graphics/rafi-clock-256.png"
 

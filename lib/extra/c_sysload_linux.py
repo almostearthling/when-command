@@ -102,7 +102,7 @@ class SystemLoadCondition(CommandCondition):
         self.command = "bash"
         self.command_arguments = [
             "-c",
-            "echo '%s <' `vmstat | tail -1 | awk '{print \$14}'` | bc"
+            "echo '%s <' `vmstat | tail -1 | awk '{print \\$14}'` | bc"
             % self.tags.get("threshold", DEFAULT_LOW_LOAD_PERC),
         ]
         self.success_stdout = "1"
