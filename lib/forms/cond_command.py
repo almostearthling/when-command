@@ -248,14 +248,21 @@ class form_CommandCondition(form_Condition):
     def _updatedata(self):
         assert isinstance(self._item, CommandCondition)
         command = self.data_get("command")
-        args = self.data_get("command_arguments")
-        startup_path = self.data_get("startup_path")
-        assert isinstance(command, str)
-        assert isinstance(args, str)
-        assert isinstance(startup_path, str)
+        if command is not None:
+            assert isinstance(command, str)
         self._item.command = command
-        self._item.command_arguments = arg_split(args)
-        self._item.startup_path = normpath(startup_path)
+        args = self.data_get("command_arguments")
+        if args is not None:
+            assert isinstance(args, str)
+            self._item.command_arguments = arg_split(args)
+        else:
+            self._item.command_arguments = None
+        startup_path = self.data_get("startup_path")
+        if startup_path is not None:
+            assert isinstance(startup_path, str)
+            self._item.startup_path = normpath(startup_path)
+        else:
+            self._item.startup_path = None
         v = bool(self.data_get("ignore_persistent_success"))
         self._item.recur_after_failed_check = v or None
         v = bool(self.data_get("include_environment"))
@@ -276,11 +283,17 @@ class form_CommandCondition(form_Condition):
         self._item.match_regular_expression = None
         self._item.case_sensitive = None
         v = self.data_get("timeout_seconds")
-        assert isinstance(v, (str, int))
-        self._item.timeout_seconds = int(v) or None
+        if v is not None:
+            assert isinstance(v, (str, int))
+            self._item.timeout_seconds = int(v) or None
+        else:
+            self._item.timeout_seconds = None
         v = self.data_get("check_after")
-        assert isinstance(v, (str, int))
-        self._item.check_after = int(v) or None
+        if v is not None:
+            assert isinstance(v, (str, int))
+            self._item.check_after = int(v) or None
+        else:
+            self._item.check_after = None
         match_exact = bool(self.data_get("match_exact"))
         case_sensitive = bool(self.data_get("case_sensitive"))
         match_regular_expression = bool(self.data_get("match_regular_expression"))
