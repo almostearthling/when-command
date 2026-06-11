@@ -402,7 +402,7 @@ def get_whenever_version() -> None | str:
                 universal_newlines=True,
                 text=True,
                 creationflags=(
-                    subprocess.CREATE_NO_WINDOW if sys.platform.startswith("win") else 0
+                    subprocess.CREATE_NO_WINDOW if is_windows() else 0  # type: ignore
                 ),
             )
             if result:
@@ -441,7 +441,7 @@ def retrieve_whenever_options():
             universal_newlines=True,
             text=True,
             creationflags=(
-                subprocess.CREATE_NO_WINDOW if sys.platform.startswith("win") else 0
+                subprocess.CREATE_NO_WINDOW if is_windows() else 0  # type: ignore
             ),
         )
         if result:
