@@ -215,8 +215,11 @@ class form_LuaScriptCondition(form_Condition):
     def _updatedata(self):
         assert isinstance(self._item, LuaScriptCondition)
         script = self.data_get("script")
-        assert isinstance(script, str)
-        self._item.script = script.strip() or ""
+        if script is not None:
+            assert isinstance(script, str)
+            self._item.script = script.strip() or ""
+        else:
+            self._item.script = None
         self._item.expect_all = self.data_get("expect_all") or None
         self._item.check_after = self.data_get("check_after") or None
         self._item.recur_after_failed_check = (

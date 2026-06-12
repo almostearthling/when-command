@@ -193,8 +193,11 @@ class form_LuaScriptTask(form_Task):
     def _updatedata(self):
         assert isinstance(self._item, LuaScriptTask)
         script = self.data_get("script")
-        assert isinstance(script, str)
-        self._item.script = script.strip() or ""
+        if script is not None:
+            assert isinstance(script, str)
+            self._item.script = script.strip() or ""
+        else:
+            self._item.script = None
         self._item.expect_all = bool(self.data_get("expect_all")) or None
         e = {}
         for c in self._results:
