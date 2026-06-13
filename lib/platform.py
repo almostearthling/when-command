@@ -13,8 +13,7 @@ _COMMANDS_UNAVAILABLE = []
 def is_linux() -> bool:
     global _PLATFORM
     if _PLATFORM is None:
-        platform = sys.platform
-        if platform.startswith("linux"):
+        if sys.platform  == "linux":
             _PLATFORM = "linux"
             return True
         else:
@@ -26,8 +25,7 @@ def is_linux() -> bool:
 def is_windows() -> bool:
     global _PLATFORM
     if _PLATFORM is None:
-        platform = sys.platform
-        if platform.startswith("win"):
+        if sys.platform.startswith("win"):
             _PLATFORM = "windows"
             return True
         else:
@@ -39,8 +37,7 @@ def is_windows() -> bool:
 def is_mac() -> bool:
     global _PLATFORM
     if _PLATFORM is None:
-        platform = sys.platform
-        if platform.startswith("darwin"):
+        if sys.platform == "darwin":
             _PLATFORM = "mac"
             return True
         else:
