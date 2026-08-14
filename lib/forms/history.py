@@ -8,9 +8,9 @@ import ttkbootstrap as ttk
 import ttkbootstrap.constants as ttkc
 
 from ttkbootstrap.widgets import tableview
-from ttkbootstrap.icons import Emoji
 
 from .ui import *
+from .colors import *
 
 
 # form class: this form is fixed and will not be derived
@@ -23,10 +23,10 @@ class form_History(ApplicationForm):
         bbox = (BBOX_RELOAD, BBOX_CLOSE)
         super().__init__(UI_TITLE_HISTORY, size, None, bbox, main)
 
-        # list box icons
-        self._icon_ok = Emoji.get("HEAVY CHECK MARK")
-        self._icon_fail = Emoji.get("CROSS MARK")
-        self._icon_unknown = Emoji.get("BLACK QUESTION MARK ORNAMENT")
+        # list box icons: rendered from Unicode emojis
+        self._icon_ok = "\u2714"        # check mark
+        self._icon_fail = "\u274C"      # cross mark
+        self._icon_unknown = "\u2753"   # red question mark
 
         # form data
         self._wrapper = wrapper

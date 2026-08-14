@@ -5,7 +5,9 @@
 
 import tkinter as tk
 import ttkbootstrap as ttk
-from ttkbootstrap_icons_mat import MatIcon as Icons
+# from ttkbootstrap_icons_mat import MatIcon as Icons
+from tkinter_icons import MaterialIcon as Icons
+
 
 from PIL import ImageTk
 

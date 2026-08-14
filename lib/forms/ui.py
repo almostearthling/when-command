@@ -5,14 +5,16 @@ import tkinter as tk
 # from tkinter import ttk
 import ttkbootstrap as ttk
 from ttkbootstrap import dialogs
-from ttkbootstrap.icons import Icon
-from ttkbootstrap_icons_mat import MatIcon as Icons
+
+# from ttkbootstrap.icons import Icon
+# from ttkbootstrap_icons_mat import MatIcon as Icons
+from tkinter_icons import Icon
+from tkinter_icons import MaterialIcon as Icons
 
 from typing import Callable, Any
 
 from ..utility import get_icon, get_appicon, get_tkroot
 from .colors import *  # type: ignore
-
 
 # default strings for UI (overwritten by `i18n.strings`)
 BTN_OK = "OK"
@@ -40,8 +42,6 @@ try:
     from ..i18n.strings import *
 except ImportError:
     pass
-
-
 
 
 # default UI values
@@ -328,28 +328,18 @@ class MessageBox(object):
         dialogs.Messagebox.show_warning(message, title, parent=self._parent)
 
     def askyesno(self, title, message):
-        buttons = [BTN_YES, BTN_NO]
-        dialog = dialogs.MessageDialog(
-            message,
-            title,
-            buttons=buttons,
-            icon=Icon.question,
-            parent=self._parent,
+        return (
+            True
+            if dialogs.Messagebox.yesno(message, title, parent=self._parent) == "Yes"
+            else False
         )
-        dialog.show()
-        return True if dialog.result == BTN_YES else False
 
     def askokcancel(self, title, message):
-        buttons = [BTN_OK, BTN_CANCEL]
-        dialog = dialogs.MessageDialog(
-            message,
-            title,
-            buttons=buttons,
-            icon=Icon.question,
-            parent=self._parent,
+        return (
+            True
+            if dialogs.Messagebox.okcancel(message, title, parent=self._parent) == "OK"
+            else False
         )
-        dialog.show()
-        return True if dialog.result == BTN_OK else False
 
 
 # base dialog box class: provide a button strip at the bottom and a contents
