@@ -68,7 +68,7 @@ class _btn_Base(ttk.Button):
             text=text,
             image=self._image,
             compound=tk.LEFT,
-            command=command,
+            command=command,  # type: ignore
             style="stdbutton.TButton",
         )
         self.enable(enabled)
@@ -98,7 +98,7 @@ class _btn_MenuEntry(ttk.Button):
             text=text,
             image=self._image,
             compound=tk.LEFT,
-            command=command,
+            command=command,  # type: ignore
             style="stdbutton.TButton",
         )
         self.enable(enabled)
@@ -328,7 +328,8 @@ class MessageBox(object):
         return (
             True
             if dialogs.Messagebox.yesno(
-                message, title, icon="question-circle-fill", parent=self._parent
+                # message, title, icon="question-circle-fill", parent=self._parent
+                message, title, icon=ttk.Icon("question-circle-fill", 30, "info"), parent=self._parent
             )
             == "Yes"
             else False
@@ -338,7 +339,8 @@ class MessageBox(object):
         return (
             True
             if dialogs.Messagebox.okcancel(
-                message, title, icon="question-circle-fill", parent=self._parent
+                # message, title, icon="question-circle-fill", parent=self._parent
+                message, title, icon=ttk.Icon("question-circle-fill", 30, "info"), parent=self._parent
             )
             == "OK"
             else False

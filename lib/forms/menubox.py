@@ -35,7 +35,7 @@ class _btn_MenuEntry(ttk.Button):
             text=text,
             image=self._image,
             compound=tk.LEFT,
-            command=command,
+            command=command,  # type: ignore
             style="menubutton.TButton",
         )
         self.enable(enabled)
