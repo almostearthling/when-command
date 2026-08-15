@@ -327,14 +327,20 @@ class MessageBox(object):
     def askyesno(self, title, message):
         return (
             True
-            if dialogs.Messagebox.yesno(message, title, parent=self._parent) == "Yes"
+            if dialogs.Messagebox.yesno(
+                message, title, icon="question-circle-fill", parent=self._parent
+            )
+            == "Yes"
             else False
         )
 
     def askokcancel(self, title, message):
         return (
             True
-            if dialogs.Messagebox.okcancel(message, title, parent=self._parent) == "OK"
+            if dialogs.Messagebox.okcancel(
+                message, title, icon="question-circle-fill", parent=self._parent
+            )
+            == "OK"
             else False
         )
 
