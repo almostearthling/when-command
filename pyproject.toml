@@ -41,8 +41,6 @@ tklinenums = "^1.7.1"
 tomlkit = "^0.14.0"
 tomlkit-extras = "^0.2.0"
 ttkbootstrap = "^1.20.4"
-# ttkbootstrap-icons = "^3.3.0"
-# ttkbootstrap-icons-mat = "^1.0.0"
 winshell = { version = "^0.6", markers = "sys_platform == 'win32'" }
 wmi = { version = "^1.5.1", markers = "sys_platform == 'win32'" }
 tkinter-icons = {extras = ["bootstrap", "material"], version = "^5.0.1"}

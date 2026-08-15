@@ -6,7 +6,6 @@ import os
 import tkinter as tk
 import ttkbootstrap as ttk
 import ttkbootstrap.constants as ttkc
-# from ttkbootstrap_icons_mat import MatIcon as Icons
 from tkinter_icons import MaterialIcon as Icons
 
 from ..i18n.strings import *

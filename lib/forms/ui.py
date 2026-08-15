@@ -6,9 +6,6 @@ import tkinter as tk
 import ttkbootstrap as ttk
 from ttkbootstrap import dialogs
 
-# from ttkbootstrap.icons import Icon
-# from ttkbootstrap_icons_mat import MatIcon as Icons
-from tkinter_icons import Icon
 from tkinter_icons import MaterialIcon as Icons
 
 from typing import Callable, Any
