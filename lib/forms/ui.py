@@ -328,8 +328,7 @@ class MessageBox(object):
         return (
             True
             if dialogs.Messagebox.yesno(
-                # message, title, icon="question-circle-fill", parent=self._parent
-                message, title, icon=ttk.Icon("question-circle-fill", 30, "info"), parent=self._parent
+                message, title, icon="question-circle-fill", parent=self._parent
             )
             == "Yes"
             else False
@@ -339,8 +338,7 @@ class MessageBox(object):
         return (
             True
             if dialogs.Messagebox.okcancel(
-                # message, title, icon="question-circle-fill", parent=self._parent
-                message, title, icon=ttk.Icon("question-circle-fill", 30, "info"), parent=self._parent
+                message, title, icon="question-circle-fill", parent=self._parent
             )
             == "OK"
             else False
