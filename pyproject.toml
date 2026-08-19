@@ -43,7 +43,7 @@ tomlkit-extras = "^0.2.0"
 ttkbootstrap = "^2.2.2"
 winshell = { version = "^0.6", markers = "sys_platform == 'win32'" }
 wmi = { version = "^1.5.1", markers = "sys_platform == 'win32'" }
-tkinter-icons = {extras = ["bootstrap", "material"], version = "^5.0.1"}
+tkinter-icons = { extras = ["bootstrap", "material"], version = "^5.0.1" }
 
 [build-system]
 requires = ["poetry-core"]

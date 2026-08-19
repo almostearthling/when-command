@@ -22,6 +22,7 @@ from PIL import Image, ImageTk
 from time import time
 
 import tkinter as tk
+import ttkbootstrap as ttk
 
 from rich.console import Console
 
@@ -68,6 +69,11 @@ _LUA_INIT_NAME = "init.lua"
 # ]
 # """.format(sep=os.path.sep, base="{base}").replace("[", "{{").replace("]", "}}")
 # _LUAROCKS_INIT_NAME = "rocks.lua"
+
+
+# themes for UI and editor
+_UI_THEME = None
+_EDITOR_THEME = None
 
 
 # the common Tk root
@@ -538,17 +544,32 @@ def get_logfile() -> str:
 
 # get the GUI theme according to system theme or DEBUG mode
 def get_UI_theme():
-    if AppConfig.get("DEBUG"):
-        return AppConfig.get("DEFAULT_THEME_DEBUG")
+    global _UI_THEME, _EDITOR_THEME
+    if _UI_THEME is not None:
+        return _UI_THEME
     else:
-        if darkdetect.isDark():
-            return AppConfig.get("DEFAULT_THEME_DARK")
+        if AppConfig.get("DEBUG"):
+            _UI_THEME = AppConfig.get("DEFAULT_THEME_DEBUG")
+            _EDITOR_THEME = AppConfig.get("EDITOR_THEME_DEBUG")
+            return _UI_THEME
         else:
-            return AppConfig.get("DEFAULT_THEME_LIGHT")
+            base = AppConfig.get("DEFAULT_THEME") or "bootstrap"
+            style = ttk.Style.get_instance()
+            if style is None or base not in style.theme_names():
+                base = "bootstrap"
+            if darkdetect.isDark():
+                _UI_THEME = "-".join([base, "dark"])
+                _EDITOR_THEME = AppConfig.get("EDITOR_THEME_DARK")
+            else:
+                _UI_THEME = "-".join([base, "light"])
+                _EDITOR_THEME = AppConfig.get("EDITOR_THEME_LIGHT")
+            return _UI_THEME
 
 
 # get the editor theme according to system theme or DEBUG mode
 def get_editor_theme():
+    if _EDITOR_THEME is not None:
+        return _EDITOR_THEME
     if AppConfig.get("DEBUG"):
         return AppConfig.get("EDITOR_THEME_DEBUG")
     else:

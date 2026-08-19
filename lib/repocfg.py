@@ -95,9 +95,10 @@ AppConfig = _AppConfiguration(
         "SIZE_MENU_BOX": (272, 460),
 
         # themes
-        "DEFAULT_THEME_DARK": "darkly",
-        "DEFAULT_THEME_LIGHT": "flatly",
-        "DEFAULT_THEME_DEBUG": "vapor",
+        "DEFAULT_THEME": str(os.environ.get("WHEN_APP_THEME")) or "bootstrap",
+        # "DEFAULT_THEME_DARK": "darkly",
+        # "DEFAULT_THEME_LIGHT": "flatly",
+        "DEFAULT_THEME_DEBUG": "vapor-dark",
 
         # editor themes
         "EDITOR_THEME_DARK": "ayu-dark",
