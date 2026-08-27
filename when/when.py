@@ -12,7 +12,6 @@ from PIL import ImageTk
 
 from typing import final
 
-
 BASEDIR = os.path.dirname(os.path.dirname(sys.argv[0])) or "."
 sys.path.append(BASEDIR)
 
@@ -51,7 +50,6 @@ from lib.repocfg import AppConfig
 from lib.runner.process import Wrapper
 
 from lib.internal import multi_conds_run_task as mcrt
-
 
 # main root window, to be withdrawn
 _root = None

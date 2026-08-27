@@ -57,7 +57,7 @@ In some cases (that is, in _Wayland_ based environments that do not fully suppor
 <!--
 ## :radioactive: Issues and Breaking Changes
 
-The configuration file format has not changed for more than six months now, therefore there are no breaking change to be careful about.
+The configuration file format has not changed for more than six months now, therefore there are no breaking changes to be careful about.
 -->
 
 

@@ -35,7 +35,6 @@ from .runner.logger import Logger
 from .platform import is_windows, is_linux, is_mac
 from .lua import lua_library_path
 
-
 # lowest whenever version supported
 _MIN_WHENEVER_SUPPORTED = Version.parse("1.2.0")
 

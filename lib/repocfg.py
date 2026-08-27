@@ -94,11 +94,12 @@ AppConfig = _AppConfiguration(
         # menu box size
         "SIZE_MENU_BOX": (272, 460),
 
-        # themes
+        # themes: for the DEBUG theme the `-dark`/`-light` suffix *must* be
+        # specified, in order to be able to test a specific theme using a
+        # debug instance; in the production case, dark or light is chosen
+        # according to the system setup
         "DEFAULT_THEME": str(os.environ.get("WHEN_APP_THEME")) or "bootstrap",
-        # "DEFAULT_THEME_DARK": "darkly",
-        # "DEFAULT_THEME_LIGHT": "flatly",
-        "DEFAULT_THEME_DEBUG": "vapor-dark",
+        "DEFAULT_THEME_DEBUG": str(os.environ.get("WHEN_APP_THEME")) or "vapor-dark",
 
         # editor themes
         "EDITOR_THEME_DARK": "ayu-dark",
