@@ -1,0 +1,38 @@
+# Localization
+
+Localization of **When** is an ongoing task: the appplication tries to start in a localized version if there is an available valid translation for the current language. If not, it just falls back to the standard english version. Only UI and CLI elements are translated: of course the generated [configuration file](configfile.md) is the same in all supported locales, as **whenever** does not expect any translated format.
+
+Currently supported languages are:
+
+* English (US, default)
+* Italian
+* French (*)
+* German (*)
+* ...
+
+and other languages may add up in the future. Some UI/CLI elements or messages may appear untranslated, in case a translation is still lacking.
+
+:::{note}
+Translations marked with a star _surely_ need to be proofread.
+:::
+
+Localization can be inhibited: to do so, the `WHEN_APP_USELOCALE` environment variable must be set to `no`. Otherwise, even if the variable is not set, **When** will try to:
+
+1. start in the specified language if the value assigned to the variable is of the form `yes:xx-XX` where `xx-XX` is a locale code in BCP47 form[^1] (such as `en-US`, `fr-FR`, `it-CH`, ...) and the language specified by `XX` is already supported
+2. start in the current language otherwise, including the case where the variable is not set.
+
+The possibility of forcing the interface language can also be useful when debugging **When** in a different language.
+
+
+## See Also
+
+* [Command Line Interface](cli.md)
+* [Configuration Utility](cfgform.md)
+* [Resident Wrapper](tray.md)
+* [Configuration File](configfile.md)
+
+
+[`◀ Main`](main.md)
+
+
+[^1]: in fact it can also be set to a Windows locale name.
