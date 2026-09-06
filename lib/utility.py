@@ -549,7 +549,7 @@ def get_UI_theme():
     else:
         if AppConfig.get("DEBUG"):
             _UI_THEME = AppConfig.get("DEFAULT_THEME_DEBUG")
-            _EDITOR_THEME = AppConfig.get("EDITOR_THEME_DEBUG")
+            _EDITOR_THEME = AppConfig.get("EDITOR_THEME_DARK")
             return _UI_THEME
         else:
             base = AppConfig.get("DEFAULT_THEME") or "bootstrap"
