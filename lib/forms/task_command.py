@@ -232,7 +232,7 @@ class form_CommandTask(form_Task):
         args = self.data_get("command_arguments")
         if args is not None:
             assert isinstance(args, str)
-            self._item.command_arguments = arg_split(args)
+            self._item.command_arguments = arg_split(args, posix=not is_windows())
         else:
             self._item.command_arguments = None
         startup_path = self.data_get("startup_path")
